@@ -1,0 +1,486 @@
+import React, { useState } from 'react';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { GradientBackground } from '../../src/components/GradientBackground';
+import { Button } from '../../src/components/Button';
+import { Card } from '../../src/components/Card';
+import { colors, radius, spacing, typography } from '../../src/theme';
+import { useAuthStore } from '../../src/store/authStore';
+import { loginWithEmailPassword, sendMobileOtp, verifyMobileOtp } from '../../src/services/authService';
+
+type AuthMode = 'email' | 'otp';
+
+export default function LoginScreen() {
+  const router = useRouter();
+  const setUserSession = useAuthStore((s) => s.setUserSession);
+
+  const [mode, setMode] = useState<AuthMode>('email');
+
+  // Email form states
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
+  // OTP form states
+  const [phone, setPhone] = useState('');
+  const [otp, setOtp] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpBanner, setOtpBanner] = useState<string | null>(null);
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Handle Email Login
+  const handleEmailLogin = async () => {
+    if (!email.trim() || !email.includes('@')) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+    if (!password) {
+      setError('Please enter your account password.');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    const res = await loginWithEmailPassword(email, password);
+    setLoading(false);
+
+    if (res.success && res.user) {
+      setUserSession(res.user);
+      if (res.user.role === 'admin') {
+        router.replace('/admin');
+      } else {
+        router.replace('/(tabs)');
+      }
+    } else {
+      setError(res.error || 'Login failed.');
+    }
+  };
+
+  // Handle Send Mobile OTP
+  const handleSendOtp = async () => {
+    if (!/^\d{10}$/.test(phone.trim())) {
+      setError('Please enter a valid 10-digit mobile number.');
+      return;
+    }
+    setLoading(true);
+    setError(null);
+
+    const res = await sendMobileOtp(phone);
+    setLoading(false);
+
+    if (res.success) {
+      setOtpSent(true);
+      setOtpBanner(res.message);
+    } else {
+      setError(res.message);
+    }
+  };
+
+  // Handle Verify Mobile OTP
+  const handleVerifyOtp = async () => {
+    if (!otp.trim() || otp.trim().length !== 6) {
+      setError('Please enter the 6-digit OTP sent to your phone.');
+      return;
+    }
+    setLoading(true);
+    setError(null);
+
+    const res = await verifyMobileOtp(phone, otp);
+    setLoading(false);
+
+    if (res.success && res.user) {
+      setUserSession(res.user);
+      router.replace('/(tabs)');
+    } else {
+      setError(res.error || 'OTP verification failed.');
+    }
+  };
+
+  // Fast Demo Logins
+  const handleDemoUser = async () => {
+    setLoading(true);
+    const res = await loginWithEmailPassword('seeker@astroguru.app', 'seeker123');
+    setLoading(false);
+    if (res.user) {
+      setUserSession(res.user);
+      router.replace('/(tabs)');
+    }
+  };
+
+  const handleDemoAdmin = async () => {
+    setLoading(true);
+    const res = await loginWithEmailPassword('admin@astroguru.app', 'admin123');
+    setLoading(false);
+    if (res.user) {
+      setUserSession(res.user);
+      router.replace('/admin');
+    }
+  };
+
+  return (
+    <GradientBackground>
+      <SafeAreaView style={{ flex: 1 }}>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+          <ScrollView
+            contentContainerStyle={styles.scroll}
+            showsVerticalScrollIndicator={false}
+          >
+            {/* Header Logo */}
+            <View style={styles.hero}>
+              <View style={styles.logoCircle}>
+                <LinearGradient
+                  colors={[colors.gold, colors.saffron]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={StyleSheet.absoluteFill}
+                />
+                <Text style={styles.logoIcon}>✨</Text>
+              </View>
+              <Text style={styles.brandTitle}>AstroGuru</Text>
+              <Text style={styles.brandSubtitle}>Sign in to access your birth chart & Jyotishis</Text>
+            </View>
+
+            {/* Mode Switcher Tabs */}
+            <View style={styles.tabRow}>
+              <Pressable
+                onPress={() => { setMode('email'); setError(null); }}
+                style={[styles.tabBtn, mode === 'email' && styles.tabBtnActive]}
+              >
+                {mode === 'email' && (
+                  <LinearGradient colors={[colors.gold, colors.saffron]} style={StyleSheet.absoluteFill} />
+                )}
+                <Text style={[styles.tabText, mode === 'email' && styles.tabTextActive]}>
+                  📧 Email Sign In
+                </Text>
+              </Pressable>
+
+              <Pressable
+                onPress={() => { setMode('otp'); setError(null); }}
+                style={[styles.tabBtn, mode === 'otp' && styles.tabBtnActive]}
+              >
+                {mode === 'otp' && (
+                  <LinearGradient colors={[colors.auroraA, colors.auroraB]} style={StyleSheet.absoluteFill} />
+                )}
+                <Text style={[styles.tabText, mode === 'otp' && styles.tabTextActive]}>
+                  📱 Mobile OTP
+                </Text>
+              </Pressable>
+            </View>
+
+            {/* Form Card */}
+            <Card style={styles.card}>
+              {mode === 'email' ? (
+                <>
+                  <Text style={styles.cardHeader}>Welcome Back</Text>
+
+                  {/* Email */}
+                  <View style={styles.field}>
+                    <Text style={styles.label}>Email Address</Text>
+                    <TextInput
+                      value={email}
+                      onChangeText={(t) => { setEmail(t); setError(null); }}
+                      placeholder="seeker@astroguru.app"
+                      placeholderTextColor={colors.textFaint}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      style={styles.input}
+                    />
+                  </View>
+
+                  {/* Password */}
+                  <View style={styles.field}>
+                    <Text style={styles.label}>Password</Text>
+                    <View style={styles.passwordWrap}>
+                      <TextInput
+                        value={password}
+                        onChangeText={(t) => { setPassword(t); setError(null); }}
+                        placeholder="••••••••"
+                        placeholderTextColor={colors.textFaint}
+                        secureTextEntry={!showPassword}
+                        style={[styles.input, { flex: 1 }]}
+                      />
+                      <Pressable
+                        onPress={() => setShowPassword(!showPassword)}
+                        style={styles.eyeBtn}
+                      >
+                        <Text style={styles.eyeIcon}>{showPassword ? '👁️' : '🙈'}</Text>
+                      </Pressable>
+                    </View>
+                  </View>
+
+                  {!!error && <Text style={styles.errorText}>⚠️ {error}</Text>}
+
+                  <Button
+                    label={loading ? 'Verifying Account…' : 'Sign In'}
+                    variant="gold"
+                    size="lg"
+                    loading={loading}
+                    onPress={handleEmailLogin}
+                    style={{ marginTop: spacing.xs }}
+                  />
+                </>
+              ) : (
+                <>
+                  <Text style={styles.cardHeader}>Mobile OTP Sign In</Text>
+
+                  {/* Phone */}
+                  <View style={styles.field}>
+                    <Text style={styles.label}>10-Digit Mobile Number</Text>
+                    <View style={styles.phoneWrap}>
+                      <View style={styles.codeBox}>
+                        <Text style={styles.codeText}>+91</Text>
+                      </View>
+                      <TextInput
+                        value={phone}
+                        onChangeText={(t) => { setPhone(t); setError(null); }}
+                        placeholder="9876543210"
+                        placeholderTextColor={colors.textFaint}
+                        keyboardType="phone-pad"
+                        maxLength={10}
+                        style={[styles.input, { flex: 1 }]}
+                      />
+                    </View>
+                  </View>
+
+                  {otpSent && (
+                    <View style={styles.field}>
+                      <Text style={styles.label}>Enter 6-Digit OTP</Text>
+                      <TextInput
+                        value={otp}
+                        onChangeText={(t) => { setOtp(t); setError(null); }}
+                        placeholder="123456"
+                        placeholderTextColor={colors.textFaint}
+                        keyboardType="numeric"
+                        maxLength={6}
+                        style={styles.otpInput}
+                      />
+                    </View>
+                  )}
+
+                  {!!otpBanner && (
+                    <View style={styles.otpBannerBox}>
+                      <Text style={styles.otpBannerText}>📲 {otpBanner}</Text>
+                    </View>
+                  )}
+
+                  {!!error && <Text style={styles.errorText}>⚠️ {error}</Text>}
+
+                  {!otpSent ? (
+                    <Button
+                      label={loading ? 'Sending OTP…' : 'Send SMS OTP'}
+                      variant="gold"
+                      size="lg"
+                      loading={loading}
+                      onPress={handleSendOtp}
+                    />
+                  ) : (
+                    <Button
+                      label={loading ? 'Verifying OTP…' : 'Verify & Sign In'}
+                      variant="gold"
+                      size="lg"
+                      loading={loading}
+                      onPress={handleVerifyOtp}
+                    />
+                  )}
+                </>
+              )}
+
+              {/* Fast Demo Logins */}
+              <View style={styles.divider}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.dividerText}>QUICK DEMO LOGIN</Text>
+                <View style={styles.dividerLine} />
+              </View>
+
+              <View style={styles.demoRow}>
+                <Button
+                  label="👤 User Demo"
+                  variant="outline"
+                  size="sm"
+                  fullWidth={false}
+                  style={{ flex: 1 }}
+                  onPress={handleDemoUser}
+                />
+                <Button
+                  label="⚡ Admin Demo"
+                  variant="outline"
+                  size="sm"
+                  fullWidth={false}
+                  style={{ flex: 1, borderColor: colors.gold }}
+                  onPress={handleDemoAdmin}
+                />
+              </View>
+            </Card>
+
+            {/* Footer switch to Signup */}
+            <View style={styles.footerRow}>
+              <Text style={styles.footerText}>Don't have an account?</Text>
+              <Pressable onPress={() => router.push('/(auth)/signup')}>
+                <Text style={styles.footerLink}>Create Account</Text>
+              </Pressable>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </GradientBackground>
+  );
+}
+
+const styles = StyleSheet.create({
+  scroll: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.xl,
+    flexGrow: 1,
+    justifyContent: 'center',
+    gap: spacing.lg,
+  },
+  hero: {
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  logoCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    marginBottom: spacing.xs,
+  },
+  logoIcon: { fontSize: 36 },
+  brandTitle: { ...typography.display, fontSize: 32, color: colors.text },
+  brandSubtitle: { ...typography.small, color: colors.textMuted, textAlign: 'center' },
+
+  tabRow: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderRadius: radius.pill,
+    padding: 3,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+  },
+  tabBtn: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 9,
+    borderRadius: radius.pill,
+    overflow: 'hidden',
+  },
+  tabBtnActive: {},
+  tabText: { ...typography.tiny, color: colors.textMuted, fontWeight: '700' },
+  tabTextActive: { color: colors.bg, fontWeight: '800' },
+
+  card: {
+    gap: spacing.md,
+    padding: spacing.xl,
+  },
+  cardHeader: { ...typography.h2, color: colors.text, textAlign: 'center' },
+
+  field: { gap: spacing.xs },
+  label: { ...typography.tiny, color: colors.textMuted, fontWeight: '700' },
+  input: {
+    backgroundColor: 'rgba(255,255,255,0.07)',
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 12,
+    color: colors.text,
+    fontSize: 15,
+  },
+  phoneWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  codeBox: {
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+  },
+  codeText: { ...typography.small, color: colors.gold, fontWeight: '800' },
+  otpInput: {
+    backgroundColor: 'rgba(255,255,255,0.07)',
+    borderWidth: 1,
+    borderColor: colors.gold,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 12,
+    color: colors.gold,
+    fontSize: 18,
+    letterSpacing: 6,
+    textAlign: 'center',
+    fontWeight: '800',
+  },
+
+  otpBannerBox: {
+    backgroundColor: 'rgba(61,220,132,0.14)',
+    borderWidth: 1,
+    borderColor: colors.success,
+    borderRadius: radius.md,
+    padding: spacing.md,
+  },
+  otpBannerText: { ...typography.tiny, color: colors.success, fontWeight: '700', textAlign: 'center' },
+
+  passwordWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  eyeBtn: {
+    position: 'absolute',
+    right: 12,
+    padding: 4,
+  },
+  eyeIcon: { fontSize: 16 },
+
+  errorText: { ...typography.small, color: colors.danger, textAlign: 'center' },
+
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    marginVertical: spacing.xs,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.cardBorder,
+  },
+  dividerText: { ...typography.tiny, fontSize: 9.5, color: colors.textFaint, letterSpacing: 1 },
+
+  demoRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+
+  footerRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: spacing.xs,
+    marginTop: spacing.sm,
+  },
+  footerText: { ...typography.small, color: colors.textMuted },
+  footerLink: { ...typography.small, color: colors.gold, fontWeight: '800' },
+});

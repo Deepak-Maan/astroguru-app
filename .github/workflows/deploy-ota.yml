@@ -1,0 +1,33 @@
+name: Auto OTA Update & Web Deployment
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  publish-ota-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🏗 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 📦 Install Project Dependencies
+        run: npm ci
+
+      - name: ⚡ Install EAS CLI
+        run: npm install -g eas-cli
+
+      - name: 🚀 Publish Expo Over-The-Air (OTA) Update
+        run: npx eas-cli update --auto --non-interactive
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: 🌐 Build Production Web Bundle
+        run: npm run build:web
