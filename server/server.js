@@ -17,15 +17,6 @@ const DB_FILE = path.join(__dirname, 'db.json');
 const initialDb = {
   users: [
     {
-      id: 'usr_demo_1',
-      name: 'Demo Seeker',
-      email: 'seeker@astroguru.app',
-      password: 'seeker123',
-      phone: '9876543210',
-      role: 'user',
-      wallet: 310,
-    },
-    {
       id: 'usr_admin_1',
       name: 'Master Admin',
       email: 'admin@astroguru.app',
@@ -39,6 +30,8 @@ const initialDb = {
     {
       id: 'astro-1',
       name: 'Acharya Dev Sharma',
+      email: 'acharya@astroguru.app',
+      password: 'astro123',
       avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200',
       rating: 4.9,
       reviews: 1420,
@@ -53,6 +46,8 @@ const initialDb = {
     {
       id: 'astro-2',
       name: 'Dr. Radhika Veda',
+      email: 'radhika@astroguru.app',
+      password: 'astro123',
       avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200',
       rating: 4.8,
       reviews: 980,
@@ -67,18 +62,7 @@ const initialDb = {
   ],
   chatMessages: [],
   callSessions: [],
-  inventory: [
-    {
-      id: 'gem-1',
-      name: 'Natural Yellow Sapphire (Pukhraj)',
-      sanskritName: 'पुखराज',
-      planet: 'Jupiter (Brihaspati)',
-      planetIcon: '🟡',
-      price: 4999,
-      stock: 15,
-      available: true,
-    },
-  ],
+  inventory: [],
   spells: [],
   orders: [],
   spellOrders: [],
@@ -111,95 +95,72 @@ function saveDb(data) {
   fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
 }
 
-// ── REAL CHAT SYSTEM ENDPOINTS ──
-app.get('/api/chat/messages/:astrologerId', (req, res) => {
-  const { astrologerId } = req.params;
-  const db = loadDb();
-  const messages = (db.chatMessages || []).filter((m) => m.astrologerId === astrologerId);
-  res.json({ success: true, messages });
-});
-
-app.post('/api/chat/messages', (req, res) => {
-  const { astrologerId, userId, role, text } = req.body;
+// ── EXPERT AUTH ENDPOINTS ──
+app.post('/api/auth/expert/signup', (req, res) => {
+  const { name, email, phone, password, specialties, languages, experienceYears, pricePerMin, about } = req.body;
   const db = loadDb();
 
-  const msg = {
-    id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
-    astrologerId,
-    userId: userId || 'usr_demo_1',
-    role: role || 'user',
-    text,
-    at: Date.now(),
-    timestamp: new Date().toISOString(),
-  };
-
-  if (!db.chatMessages) db.chatMessages = [];
-  db.chatMessages.push(msg);
-  saveDb(db);
-
-  res.json({ success: true, message: msg });
-});
-
-// ── REAL CALL SYSTEM ENDPOINTS ──
-app.post('/api/consultations/call/start', (req, res) => {
-  const { astrologerId, userId, callType } = req.body;
-  const db = loadDb();
-
-  const astro = db.astrologers.find((a) => a.id === astrologerId);
-  if (!astro) return res.status(404).json({ success: false, error: 'Astrologer not found' });
-
-  const session = {
-    callId: `call_${Date.now()}`,
-    astrologerId,
-    astrologerName: astro.name,
-    userId: userId || 'usr_demo_1',
-    callType: callType || 'audio',
-    channelToken: `rtc_token_${crypto.randomBytes(16).toString('hex')}`,
-    startedAt: new Date().toISOString(),
-    status: 'ACTIVE',
-    pricePerMin: astro.pricePerMin,
-  };
-
-  if (!db.callSessions) db.callSessions = [];
-  db.callSessions.unshift(session);
-  saveDb(db);
-
-  res.json({ success: true, session });
-});
-
-app.post('/api/consultations/call/end', (req, res) => {
-  const { callId, durationSeconds } = req.body;
-  const db = loadDb();
-
-  const session = (db.callSessions || []).find((s) => s.callId === callId);
-  if (!session) return res.status(404).json({ success: false, error: 'Call session not found' });
-
-  const minutes = Math.ceil((durationSeconds || 60) / 60);
-  const totalCost = minutes * (session.pricePerMin || 25);
-
-  session.status = 'COMPLETED';
-  session.durationSeconds = durationSeconds || 60;
-  session.totalCost = totalCost;
-
-  // Deduct from user wallet
-  const user = db.users.find((u) => u.id === session.userId);
-  if (user) {
-    user.wallet = Math.max(0, user.wallet - totalCost);
+  const existing = db.astrologers.find((a) => (a.email || '').toLowerCase() === (email || '').toLowerCase());
+  if (existing) {
+    return res.status(400).json({ success: false, error: 'An expert account with this email already exists.' });
   }
+
+  const expertId = `astro_${Date.now()}`;
+  const newExpert = {
+    id: expertId,
+    name,
+    email,
+    password,
+    phone,
+    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200',
+    rating: 5.0,
+    reviews: 1,
+    pricePerMin: Number(pricePerMin) || 25,
+    experienceYears: Number(experienceYears) || 5,
+    specialties: specialties || ['Vedic Astrology'],
+    languages: languages || ['Hindi', 'English'],
+    consultations: 0,
+    online: true,
+    about: about || 'Certified Vedic Jyotish Expert',
+    role: 'astrologer',
+  };
+
+  db.astrologers.unshift(newExpert);
+
+  // Also add to users list with role 'astrologer'
+  db.users.push({
+    id: expertId,
+    name,
+    email,
+    password,
+    phone,
+    role: 'astrologer',
+    wallet: 0,
+  });
+
   saveDb(db);
 
-  res.json({
-    success: true,
-    summary: {
-      callId,
-      durationMinutes: minutes,
-      totalCost,
-      remainingWallet: user ? user.wallet : 0,
-    },
-  });
+  const { password: _, ...cleanExpert } = newExpert;
+  res.json({ success: true, expert: cleanExpert, message: 'Expert registered successfully!' });
 });
 
-// ── AUTH ENDPOINTS ──
+app.post('/api/auth/expert/login', (req, res) => {
+  const { email, password } = req.body;
+  const db = loadDb();
+
+  const expert = db.astrologers.find(
+    (a) => (a.email || '').toLowerCase() === (email || '').toLowerCase() && a.password === password
+  );
+
+  if (!expert) {
+    return res.status(401).json({ success: false, error: 'Invalid expert email or password.' });
+  }
+
+  const { password: _, ...cleanExpert } = expert;
+  res.json({ success: true, expert: cleanExpert, token: `token_${expert.id}` });
+});
+
+// ── REGULAR AUTH ENDPOINTS ──
 app.post('/api/auth/login', (req, res) => {
   const { email, password } = req.body;
   const db = loadDb();
@@ -220,5 +181,5 @@ app.get('/api/astrologers', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`⚡ AstroGuru Live REST API & Real Call/Chat Server running on http://localhost:${PORT}`);
+  console.log(`⚡ AstroGuru Live REST API Server running on http://localhost:${PORT}`);
 });

@@ -66,7 +66,7 @@ export default function LoginScreen() {
         router.replace('/(tabs)');
       }
     } else {
-      setError(res.error || 'Login failed.');
+      setError(res.error || 'Login failed. Please check your credentials.');
     }
   };
 
@@ -107,27 +107,6 @@ export default function LoginScreen() {
       router.replace('/(tabs)');
     } else {
       setError(res.error || 'OTP verification failed.');
-    }
-  };
-
-  // Fast Demo Logins
-  const handleDemoUser = async () => {
-    setLoading(true);
-    const res = await loginWithEmailPassword('seeker@astroguru.app', 'seeker123');
-    setLoading(false);
-    if (res.user) {
-      setUserSession(res.user);
-      router.replace('/(tabs)');
-    }
-  };
-
-  const handleDemoAdmin = async () => {
-    setLoading(true);
-    const res = await loginWithEmailPassword('admin@astroguru.app', 'admin123');
-    setLoading(false);
-    if (res.user) {
-      setUserSession(res.user);
-      router.replace('/admin');
     }
   };
 
@@ -196,7 +175,7 @@ export default function LoginScreen() {
                     <TextInput
                       value={email}
                       onChangeText={(t) => { setEmail(t); setError(null); }}
-                      placeholder="seeker@astroguru.app"
+                      placeholder="your.email@example.com"
                       placeholderTextColor={colors.textFaint}
                       keyboardType="email-address"
                       autoCapitalize="none"
@@ -302,32 +281,6 @@ export default function LoginScreen() {
                   )}
                 </>
               )}
-
-              {/* Fast Demo Logins */}
-              <View style={styles.divider}>
-                <View style={styles.dividerLine} />
-                <Text style={styles.dividerText}>QUICK DEMO LOGIN</Text>
-                <View style={styles.dividerLine} />
-              </View>
-
-              <View style={styles.demoRow}>
-                <Button
-                  label="👤 User Demo"
-                  variant="outline"
-                  size="sm"
-                  fullWidth={false}
-                  style={{ flex: 1 }}
-                  onPress={handleDemoUser}
-                />
-                <Button
-                  label="⚡ Admin Demo"
-                  variant="outline"
-                  size="sm"
-                  fullWidth={false}
-                  style={{ flex: 1, borderColor: colors.saffron }}
-                  onPress={handleDemoAdmin}
-                />
-              </View>
             </Card>
 
             {/* Footer switch to Signup */}
@@ -335,6 +288,14 @@ export default function LoginScreen() {
               <Text style={styles.footerText}>Don't have an account?</Text>
               <Pressable onPress={() => router.push('/(auth)/signup')}>
                 <Text style={styles.footerLink}>Create Account</Text>
+              </Pressable>
+            </View>
+
+            {/* Expert / Astrologer Portal Link */}
+            <View style={styles.footerRow}>
+              <Text style={styles.footerText}>Are you an Astrologer?</Text>
+              <Pressable onPress={() => router.push('/(auth)/expert-login')}>
+                <Text style={[styles.footerLink, { color: colors.auroraA }]}>Join as Expert →</Text>
               </Pressable>
             </View>
           </ScrollView>
@@ -461,24 +422,6 @@ const styles = StyleSheet.create({
   eyeIcon: { fontSize: 16 },
 
   errorText: { ...typography.small, color: colors.danger, textAlign: 'center', fontWeight: '700' },
-
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    marginVertical: spacing.xs,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#E2E8F0',
-  },
-  dividerText: { ...typography.tiny, fontSize: 9.5, color: colors.textFaint, letterSpacing: 1, fontWeight: '800' },
-
-  demoRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
 
   footerRow: {
     flexDirection: 'row',

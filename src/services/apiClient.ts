@@ -41,28 +41,23 @@ export const ApiClient = {
   // Health
   checkHealth: async () => request<{ status: string; features: string[] }>('/health'),
 
-  // Real Chat System
-  getChatMessages: async (astrologerId: string) =>
-    request<{ success: boolean; messages: any[] }>(`/chat/messages/${astrologerId}`),
-
-  sendChatMessage: async (astrologerId: string, userId: string, role: string, text: string) =>
-    request<{ success: boolean; message: any }>('/chat/messages', {
+  // Expert Auth
+  expertLogin: async (email: string, password: string) => {
+    const res = await request<{ success: boolean; expert?: any; token?: string; error?: string }>('/auth/expert/login', {
       method: 'POST',
-      body: JSON.stringify({ astrologerId, userId, role, text }),
-    }),
+      body: JSON.stringify({ email, password }),
+    });
+    if (res?.token) setAuthToken(res.token);
+    return res;
+  },
 
-  // Real Call System
-  startCallSession: async (astrologerId: string, userId: string, callType: 'audio' | 'video' = 'audio') =>
-    request<{ success: boolean; session: any }>('/consultations/call/start', {
+  expertSignup: async (expertData: Record<string, any>) => {
+    const res = await request<{ success: boolean; expert?: any; message?: string; error?: string }>('/auth/expert/signup', {
       method: 'POST',
-      body: JSON.stringify({ astrologerId, userId, callType }),
-    }),
-
-  endCallSession: async (callId: string, durationSeconds: number) =>
-    request<{ success: boolean; summary: any }>('/consultations/call/end', {
-      method: 'POST',
-      body: JSON.stringify({ callId, durationSeconds }),
-    }),
+      body: JSON.stringify(expertData),
+    });
+    return res;
+  },
 
   // Auth & JWT
   login: async (email: string, password: string) => {
@@ -76,4 +71,5 @@ export const ApiClient = {
 
   // Astrologers
   getAstrologers: async () => request<{ success: boolean; astrologers: any[] }>('/astrologers'),
+  checkUpdates: async () => request<{ success: boolean; updates: any }>('/updates/check'),
 };

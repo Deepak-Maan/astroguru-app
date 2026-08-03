@@ -95,7 +95,7 @@ export default function Profile() {
   return (
     <GradientBackground>
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-        <ScreenHeader title="Profile" />
+        <ScreenHeader title="Profile & Account" />
 
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
           {/* Identity hero */}
@@ -156,22 +156,24 @@ export default function Profile() {
             />
           </View>
 
-          {/* Admin Control Panel Button */}
-          <Pressable onPress={() => router.push('/admin')} style={({ pressed }) => [pressed && { opacity: 0.85 }]}>
-            <LinearGradient
-              colors={['#7D3C98', '#E67E22']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.adminBanner}
-            >
-              <Text style={styles.adminBannerIcon}>⚡</Text>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.adminBannerTitle}>Admin Control Panel</Text>
-                <Text style={styles.adminBannerSub}>Manage experts, revenue, stats & platform settings</Text>
-              </View>
-              <Text style={styles.adminBannerArrow}>›</Text>
-            </LinearGradient>
-          </Pressable>
+          {/* Admin Control Panel Button (for Admin roles) */}
+          {authUser?.role === 'admin' && (
+            <Pressable onPress={() => router.push('/admin')} style={({ pressed }) => [pressed && { opacity: 0.85 }]}>
+              <LinearGradient
+                colors={['#7D3C98', '#E67E22']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.adminBanner}
+              >
+                <Text style={styles.adminBannerIcon}>⚡</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.adminBannerTitle}>Admin Control Panel</Text>
+                  <Text style={styles.adminBannerSub}>Manage experts, revenue, stats & platform settings</Text>
+                </View>
+                <Text style={styles.adminBannerArrow}>›</Text>
+              </LinearGradient>
+            </Pressable>
+          )}
 
           {/* Wallet snapshot */}
           <Pressable onPress={() => router.push('/wallet')} style={({ pressed }) => [pressed && { opacity: 0.85 }]}>
@@ -193,12 +195,12 @@ export default function Profile() {
 
           {/* Super App Features */}
           <View>
-            <SectionHeader title="Super App Cosmic Features" />
+            <SectionHeader title="🌟 Super App Cosmic Features" />
             <Card padded={false}>
               <Row icon="🌌" label="Live Satsang & Virtual Prashad" onPress={() => router.push('/satsang')} accent={colors.saffron} />
               <Row icon="💎" label="AI Gemstone Finder & Lab Scanner" onPress={() => router.push('/gemstone-finder')} />
               <Row icon="📜" label="432Hz Ambient Vedic Mantra Player" onPress={() => router.push('/mantra-player')} />
-              <Row icon="🛰️" label="Astro-Cartography World Map" onPress={() => router.push('/astro-map')} />
+              <Row icon="🛰️" label="Astro-Cartography Relocation Map" onPress={() => router.push('/astro-map')} />
               <Row icon="📈" label="Astro-Finance & Stock Muhurat" onPress={() => router.push('/astro-finance')} />
               <Row icon="🏛️" label="24/7 Live Temple Darshan & Prashad" onPress={() => router.push('/live-darshan')} />
               <Row icon="🕊️" label="AI Soulmate Compatibility" onPress={() => router.push('/soulmate-ai')} />
@@ -206,26 +208,18 @@ export default function Profile() {
               <Row icon="⚡" label="Major Transit Push Alert Radar" onPress={() => router.push('/transit-alerts')} />
               <Row icon="🤖" label="Samudrika AI Face Reader" onPress={() => router.push('/face-reading')} />
               <Row icon="⚔️" label="Lal Kitab & Pitru Dosh Remedies" onPress={() => router.push('/lal-kitab')} />
-              <Row icon="🪄" label="Vedic Spells & Manifestation Rituals" onPress={() => router.push('/spells')} />
-              <Row icon="🔢" label="Name & Mobile Numerology" onPress={() => router.push('/numerology')} />
-              <Row icon="🕉️" label="Choghadiya & Vrat Calendar" onPress={() => router.push('/choghadiya')} />
-              <Row icon="🕯️" label="Virtual Temple Puja & Prashad" onPress={() => router.push('/puja')} />
-              <Row icon="🌙" label="Swapna Shastra (Dream Meaning)" onPress={() => router.push('/dreams')} />
-              <Row icon="🎙️" label="Daily Voice Horoscope Podcast" onPress={() => router.push('/audio-briefing')} />
-              <Row icon="🔮" label="36 Gun Milan Matchmaking" onPress={() => router.push('/matching')} />
-              <Row icon="🪐" label="Saturn Sade Sati & Transits" onPress={() => router.push('/sade-sati')} />
-              <Row icon="📿" label="Digital 108 Japa Mala Counter" onPress={() => router.push('/japa')} />
-              <Row icon="📄" label="10-Page Kundli PDF Export" onPress={() => router.push('/kundli-pdf')} />
-              <Row icon="⚡" label="Instant Consultation Queue" onPress={() => router.push('/instant-consult')} />
+              <Row icon="🪄" label="Vedic Spells & Manifestation Store" onPress={() => router.push('/spells')} />
+            </Card>
+          </View>
+
+          {/* Account & Settings */}
+          <View>
+            <SectionHeader title="⚙️ Account & Settings" />
+            <Card padded={false}>
               <Row icon="👑" label={isVip ? `AstroVIP — ${vipPlanId} (Active)` : 'Get AstroVIP Pass'} onPress={() => router.push('/vip')} accent={colors.saffron} />
-              <Row icon="🗓️" label="Daily Panchang & Muhurat" onPress={() => router.push('/panchang')} />
-              <Row icon="🃏" label="Tarot Card Reader" onPress={() => router.push('/tarot')} />
-              <Row icon="✋" label="AstroPalm AI Palmistry" onPress={() => router.push('/palmistry')} />
-              <Row icon="💎" label="Certified Gemstones Shop" onPress={() => router.push('/remedies')} />
-              <Row icon="✨" label="AI Jyotishi" onPress={() => router.push('/ai-chat')} />
-              <Row icon="💰" label="Wallet & transactions" onPress={() => router.push('/wallet')} />
-              <Row icon="⚙️" label="Settings" onPress={() => router.push('/settings')} />
-              <Row icon="🚪" label="Sign Out" onPress={handleSignOut} accent={colors.saffron} />
+              <Row icon="📄" label="10-Page Kundli PDF Export" onPress={() => router.push('/kundli-pdf')} />
+              <Row icon="⚙️" label="Settings & Security Vault" onPress={() => router.push('/settings')} />
+              <Row icon="🚪" label="Sign Out" onPress={handleSignOut} accent={colors.danger} />
             </Card>
           </View>
 
@@ -242,7 +236,7 @@ export default function Profile() {
             </Card>
           </View>
 
-          <Text style={styles.version}>AstroGuru · v1.0.0 · Signed in as {authUser?.email}</Text>
+          <Text style={styles.version}>AstroGuru · v1.2.0 · Signed in as {authUser?.email ?? 'Seeker'}</Text>
         </ScrollView>
       </SafeAreaView>
     </GradientBackground>

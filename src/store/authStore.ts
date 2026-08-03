@@ -15,15 +15,8 @@ interface AuthState {
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
-      user: {
-        id: 'usr_demo_1',
-        name: 'Demo Seeker',
-        email: 'seeker@astroguru.app',
-        phone: '9876543210',
-        role: 'user',
-        createdAt: '2026-01-01',
-      },
-      isAuthenticated: true,
+      user: null,
+      isAuthenticated: false,
       hydrated: false,
 
       setUserSession: (user: UserAccount) => {
