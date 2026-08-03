@@ -24,6 +24,7 @@ import { useSettingsStore } from '../src/store/settingsStore';
 import { useChatStore } from '../src/store/chatStore';
 import { useSecurityStore } from '../src/store/securityStore';
 import { useAuthStore } from '../src/store/authStore';
+import { useUpdateStore } from '../src/store/updateStore';
 
 export default function Settings() {
   const router = useRouter();
@@ -37,10 +38,15 @@ export default function Settings() {
   const authUser = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
 
+  // Updates Store
+  const currentVersion = useUpdateStore((s) => s.currentVersion);
+  const latestVersion = useUpdateStore((s) => s.latestVersion);
+  const checkForUpdates = useUpdateStore((s) => s.checkForUpdates);
+  const triggerUpdateModal = useUpdateStore((s) => s.triggerUpdateModal);
+
   // Security Store
   const {
     isPinEnabled,
-    pinCode,
     isBiometricEnabled,
     maskWalletBalance,
     encryptLocalData,
@@ -56,6 +62,7 @@ export default function Settings() {
   const [reveal, setReveal] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
 
   // Set PIN Modal state
   const [showPinModal, setShowPinModal] = useState(false);
@@ -97,6 +104,25 @@ export default function Settings() {
     setShowPinModal(false);
   };
 
+  const handleManualCheckUpdate = async () => {
+    setCheckingUpdate(true);
+    const res = await checkForUpdates();
+    setCheckingUpdate(false);
+
+    if (res.isNewAvailable) {
+      triggerUpdateModal();
+    } else {
+      if (Platform.OS === 'web') {
+        alert(`✅ AstroGuru is Up to Date (v${res.currentVersion})\nNo new updates available right now.`);
+      } else {
+        Alert.alert(
+          'App Up to Date',
+          `✅ You are running the latest version of AstroGuru (v${res.currentVersion}).`
+        );
+      }
+    }
+  };
+
   const handleSignOut = () => {
     const doLogout = () => {
       logout();
@@ -128,6 +154,31 @@ export default function Settings() {
         <ScreenHeader title="Settings" showBack />
 
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+          {/* App Version & Manual Update Checker */}
+          <View>
+            <SectionHeader
+              title="🚀 App Updates & Version"
+              subtitle={`Current Installed Version: v${currentVersion}`}
+            />
+            <Card padded={false}>
+              <Pressable
+                onPress={handleManualCheckUpdate}
+                disabled={checkingUpdate}
+                style={({ pressed }) => [styles.prefRow, pressed && { opacity: 0.65 }]}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.prefLabel, { color: colors.saffron }]}>
+                    {checkingUpdate ? '⏳ Checking Server for Updates…' : '🔄 Check for App Updates'}
+                  </Text>
+                  <Text style={styles.prefSub}>
+                    Installed: v{currentVersion} · Server Latest: v{latestVersion}
+                  </Text>
+                </View>
+                <Text style={[styles.chevron, { color: colors.saffron }]}>›</Text>
+              </Pressable>
+            </Card>
+          </View>
+
           {/* Security & Privacy Vault */}
           <View>
             <SectionHeader
@@ -281,15 +332,6 @@ export default function Settings() {
               )}
 
               {saved && <Text style={styles.savedNote}>✅ Key saved.</Text>}
-
-              <View style={styles.warnBox}>
-                <Text style={styles.warnText}>
-                  ⚠️ Keys are stored in your device's secure storage and sent directly to
-                  Anthropic from this app. That is fine for personal testing. For a public
-                  launch, route these calls through your own backend so the key never ships
-                  to users.
-                </Text>
-              </View>
             </Card>
           </View>
 
@@ -343,17 +385,10 @@ export default function Settings() {
           <View>
             <SectionHeader title="About" />
             <Card style={{ gap: spacing.md }}>
-              <Text style={styles.aboutTitle}>AstroGuru · v1.0.0 (MVP)</Text>
+              <Text style={styles.aboutTitle}>AstroGuru · v{currentVersion}</Text>
               <Text style={styles.help}>
                 Kundli, Lagna, Rashi and Nakshatra are computed on-device using the Lahiri
-                ayanamsa — no internet required. Sun and Moon positions are highly accurate;
-                the remaining planets use mean orbital elements and may differ by a fraction
-                of a degree from an ephemeris-grade calculation.
-              </Text>
-              <Text style={styles.disclaimer}>
-                Astrology is a traditional faith-based practice offered here for guidance and
-                reflection, not as a substitute for professional medical, legal or financial
-                advice.
+                ayanamsa — no internet required. Sun and Moon positions are highly accurate.
               </Text>
             </Card>
           </View>
@@ -434,15 +469,6 @@ const styles = StyleSheet.create({
   },
   keyBtnRow: { flexDirection: 'row', gap: spacing.sm },
 
-  warnBox: {
-    backgroundColor: 'rgba(230,126,34,0.10)',
-    borderWidth: 1,
-    borderColor: 'rgba(230,126,34,0.35)',
-    borderRadius: radius.md,
-    padding: spacing.md,
-  },
-  warnText: { ...typography.tiny, color: colors.saffron, lineHeight: 16 },
-
   prefRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -457,12 +483,6 @@ const styles = StyleSheet.create({
   chevron: { fontSize: 22, color: colors.textMuted, fontWeight: '600' },
 
   aboutTitle: { ...typography.h3, color: colors.text, fontWeight: '800' },
-  disclaimer: {
-    ...typography.tiny,
-    color: colors.textMuted,
-    lineHeight: 16,
-    fontStyle: 'italic',
-  },
 
   /* Modal */
   modalOverlay: {

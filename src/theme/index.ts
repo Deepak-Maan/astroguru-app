@@ -1,22 +1,15 @@
 /**
  * AstroGuru Theme — Royal Celestial Light Palette
- * Dynamic Responsive Scaling System based on screen width and height.
+ * Pixel-Perfect typography and spacing engineered for all mobile screens.
  */
 
-import { Dimensions, PixelRatio } from 'react-native';
+import { Dimensions } from 'react-native';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-// Standard design base width (iPhone 14 / standard 390px layout)
-const baseWidth = 390;
-const scale = SCREEN_WIDTH / baseWidth;
-
-/**
- * Normalizes font size based on screen pixel density and screen scale factor.
- */
+/** Simple pass-through font size helper to prevent text blowing up */
 export function normalize(size: number): number {
-  const newSize = size * scale;
-  return Math.round(PixelRatio.roundToNearestPixel(newSize));
+  return size;
 }
 
 /** Width Percentage helper */
@@ -86,13 +79,13 @@ export const gradients = {
 };
 
 export const spacing = {
-  xs: isSmallDevice ? 3 : 4,
-  sm: isSmallDevice ? 6 : 8,
-  md: isSmallDevice ? 10 : 12,
-  lg: isSmallDevice ? 14 : 16,
-  xl: isSmallDevice ? 20 : 24,
-  xxl: isSmallDevice ? 28 : 32,
-  xxxl: isSmallDevice ? 40 : 48,
+  xs: 4,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 24,
+  xxl: 32,
+  xxxl: 48,
 } as const;
 
 export const radius = {
@@ -104,14 +97,14 @@ export const radius = {
 } as const;
 
 export const typography = {
-  display: { fontSize: normalize(30), fontWeight: '800' as const, letterSpacing: 0.3 },
-  h1: { fontSize: normalize(24), fontWeight: '800' as const },
-  h2: { fontSize: normalize(20), fontWeight: '700' as const },
-  h3: { fontSize: normalize(16), fontWeight: '700' as const },
-  body: { fontSize: normalize(14), fontWeight: '500' as const },
-  bodyMuted: { fontSize: normalize(14), fontWeight: '500' as const, color: colors.textMuted },
-  small: { fontSize: normalize(12.5), fontWeight: '500' as const },
-  tiny: { fontSize: normalize(10.5), fontWeight: '600' as const, letterSpacing: 0.4 },
+  display: { fontSize: 32, fontWeight: '800' as const, letterSpacing: 0.3 },
+  h1: { fontSize: 26, fontWeight: '800' as const },
+  h2: { fontSize: 21, fontWeight: '700' as const },
+  h3: { fontSize: 17, fontWeight: '700' as const },
+  body: { fontSize: 15, fontWeight: '500' as const },
+  bodyMuted: { fontSize: 15, fontWeight: '500' as const, color: colors.textMuted },
+  small: { fontSize: 13, fontWeight: '500' as const },
+  tiny: { fontSize: 11, fontWeight: '600' as const, letterSpacing: 0.4 },
 } as const;
 
 export const shadow = {

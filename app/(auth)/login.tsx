@@ -164,7 +164,7 @@ export default function LoginScreen() {
                 style={[styles.tabBtn, mode === 'email' && styles.tabBtnActive]}
               >
                 {mode === 'email' && (
-                  <LinearGradient colors={[colors.gold, colors.saffron]} style={StyleSheet.absoluteFill} />
+                  <LinearGradient colors={[colors.saffron, colors.gold]} style={StyleSheet.absoluteFill} />
                 )}
                 <Text style={[styles.tabText, mode === 'email' && styles.tabTextActive]}>
                   📧 Email Sign In
@@ -324,7 +324,7 @@ export default function LoginScreen() {
                   variant="outline"
                   size="sm"
                   fullWidth={false}
-                  style={{ flex: 1, borderColor: colors.gold }}
+                  style={{ flex: 1, borderColor: colors.saffron }}
                   onPress={handleDemoAdmin}
                 />
               </View>
@@ -357,25 +357,30 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   logoCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
     marginBottom: spacing.xs,
   },
-  logoIcon: { fontSize: 36 },
-  brandTitle: { ...typography.display, fontSize: 32, color: colors.text },
-  brandSubtitle: { ...typography.small, color: colors.textMuted, textAlign: 'center' },
+  logoIcon: { fontSize: 32 },
+  brandTitle: { ...typography.display, fontSize: 28, color: colors.text, fontWeight: '800' },
+  brandSubtitle: { ...typography.small, color: colors.textMuted, textAlign: 'center', fontWeight: '600' },
 
   tabRow: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: '#FFFFFF',
     borderRadius: radius.pill,
     padding: 3,
     borderWidth: 1,
-    borderColor: colors.cardBorder,
+    borderColor: '#E2E8F0',
+    shadowColor: 'rgba(148,163,184,0.2)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.6,
+    shadowRadius: 4,
+    elevation: 2,
   },
   tabBtn: {
     flex: 1,
@@ -386,25 +391,26 @@ const styles = StyleSheet.create({
   },
   tabBtnActive: {},
   tabText: { ...typography.tiny, color: colors.textMuted, fontWeight: '700' },
-  tabTextActive: { color: colors.bg, fontWeight: '800' },
+  tabTextActive: { color: '#FFFFFF', fontWeight: '800' },
 
   card: {
     gap: spacing.md,
     padding: spacing.xl,
   },
-  cardHeader: { ...typography.h2, color: colors.text, textAlign: 'center' },
+  cardHeader: { ...typography.h2, color: colors.text, textAlign: 'center', fontWeight: '800' },
 
   field: { gap: spacing.xs },
   label: { ...typography.tiny, color: colors.textMuted, fontWeight: '700' },
   input: {
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    backgroundColor: '#F8FAFC',
     borderWidth: 1,
-    borderColor: colors.cardBorder,
+    borderColor: '#E2E8F0',
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
-    paddingVertical: 12,
+    paddingVertical: 11,
     color: colors.text,
-    fontSize: 15,
+    fontSize: 14,
+    fontWeight: '700',
   },
   phoneWrap: {
     flexDirection: 'row',
@@ -412,22 +418,22 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   codeBox: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: '#F1F5F9',
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
-    paddingVertical: 12,
+    paddingVertical: 11,
     borderWidth: 1,
-    borderColor: colors.cardBorder,
+    borderColor: '#E2E8F0',
   },
-  codeText: { ...typography.small, color: colors.gold, fontWeight: '800' },
+  codeText: { ...typography.small, color: colors.saffron, fontWeight: '800' },
   otpInput: {
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    backgroundColor: '#F8FAFC',
     borderWidth: 1,
-    borderColor: colors.gold,
+    borderColor: colors.saffron,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
-    paddingVertical: 12,
-    color: colors.gold,
+    paddingVertical: 11,
+    color: colors.saffron,
     fontSize: 18,
     letterSpacing: 6,
     textAlign: 'center',
@@ -435,7 +441,7 @@ const styles = StyleSheet.create({
   },
 
   otpBannerBox: {
-    backgroundColor: 'rgba(61,220,132,0.14)',
+    backgroundColor: 'rgba(16,185,129,0.12)',
     borderWidth: 1,
     borderColor: colors.success,
     borderRadius: radius.md,
@@ -454,7 +460,7 @@ const styles = StyleSheet.create({
   },
   eyeIcon: { fontSize: 16 },
 
-  errorText: { ...typography.small, color: colors.danger, textAlign: 'center' },
+  errorText: { ...typography.small, color: colors.danger, textAlign: 'center', fontWeight: '700' },
 
   divider: {
     flexDirection: 'row',
@@ -465,9 +471,9 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: colors.cardBorder,
+    backgroundColor: '#E2E8F0',
   },
-  dividerText: { ...typography.tiny, fontSize: 9.5, color: colors.textFaint, letterSpacing: 1 },
+  dividerText: { ...typography.tiny, fontSize: 9.5, color: colors.textFaint, letterSpacing: 1, fontWeight: '800' },
 
   demoRow: {
     flexDirection: 'row',
@@ -479,8 +485,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: spacing.xs,
-    marginTop: spacing.sm,
+    marginTop: spacing.xs,
   },
-  footerText: { ...typography.small, color: colors.textMuted },
-  footerLink: { ...typography.small, color: colors.gold, fontWeight: '800' },
+  footerText: { ...typography.small, color: colors.textMuted, fontWeight: '600' },
+  footerLink: { ...typography.small, color: colors.saffron, fontWeight: '800' },
 });
