@@ -1,0 +1,132 @@
+{
+  "users": [
+    {
+      "id": "usr_demo_1",
+      "name": "Demo Seeker",
+      "email": "seeker@astroguru.app",
+      "password": "seeker123",
+      "phone": "9876543210",
+      "role": "user",
+      "wallet": 310
+    },
+    {
+      "id": "usr_admin_1",
+      "name": "Master Admin",
+      "email": "admin@astroguru.app",
+      "password": "admin123",
+      "phone": "9999999999",
+      "role": "admin",
+      "wallet": 9999
+    }
+  ],
+  "astrologers": [
+    {
+      "id": "astro-1",
+      "name": "Acharya Dev Sharma",
+      "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200",
+      "rating": 4.9,
+      "reviews": 1420,
+      "pricePerMin": 25,
+      "experienceYears": 18,
+      "specialties": [
+        "Vedic Astrology",
+        "Kundli Prashna",
+        "Nadi Shastra"
+      ],
+      "languages": [
+        "Hindi",
+        "English",
+        "Sanskrit"
+      ],
+      "consultations": 8520,
+      "online": true,
+      "about": "Senior Vedic scholar with 18+ years experience specializing in planetary Dasha remedies and Lal Kitab calculations."
+    },
+    {
+      "id": "astro-2",
+      "name": "Dr. Radhika Veda",
+      "avatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200",
+      "rating": 4.8,
+      "reviews": 980,
+      "pricePerMin": 20,
+      "experienceYears": 12,
+      "specialties": [
+        "Tarot Cards",
+        "Love Compatibility",
+        "Numerology"
+      ],
+      "languages": [
+        "Hindi",
+        "English",
+        "Gujarati"
+      ],
+      "consultations": 4310,
+      "online": true,
+      "about": "Renowned intuitive Tarot reader & Marriage Matchmaking expert providing actionable relationship guidance."
+    }
+  ],
+  "inventory": [
+    {
+      "id": "gem-1",
+      "name": "Natural Yellow Sapphire (Pukhraj)",
+      "sanskritName": "पुखराज",
+      "planet": "Jupiter (Brihaspati)",
+      "planetIcon": "🟡",
+      "price": 4999,
+      "stock": 15,
+      "available": true
+    },
+    {
+      "id": "gem-2",
+      "name": "Original 5-Mukhi Rudraksha Mala",
+      "sanskritName": "रुद्राक्ष",
+      "planet": "Lord Shiva",
+      "planetIcon": "📿",
+      "price": 1100,
+      "stock": 45,
+      "available": true
+    }
+  ],
+  "spells": [
+    {
+      "id": "spell-1",
+      "title": "Kamadeva Vashikaran Love Spell",
+      "sanskritName": "कामदेव वशीकरण मंत्र",
+      "category": "Love & Relationship",
+      "price": 1100,
+      "icon": "💘",
+      "available": true
+    },
+    {
+      "id": "spell-2",
+      "title": "Mahalakshmi Wealth & Abundance Spell",
+      "sanskritName": "महालक्ष्मी धन वृद्धि अनुष्ठान",
+      "category": "Wealth & Prosperity",
+      "price": 1100,
+      "icon": "💰",
+      "available": true
+    }
+  ],
+  "orders": [
+    {
+      "id": "ORD-94821",
+      "userName": "Demo Seeker",
+      "phone": "9876543210",
+      "address": "Plot 42, Civil Lines, Jaipur, Rajasthan",
+      "itemName": "Original 5-Mukhi Rudraksha Mala",
+      "price": 1100,
+      "status": "Dispatched",
+      "date": "2026-08-01"
+    }
+  ],
+  "spellOrders": [],
+  "updates": {
+    "currentVersion": "1.2.0",
+    "latestVersion": "1.2.0",
+    "releaseNotes": [
+      "✨ Redesigned Modern Light UI",
+      "🛡️ Added Security Vault & PIN Lock"
+    ],
+    "isMandatory": false
+  }
+}
