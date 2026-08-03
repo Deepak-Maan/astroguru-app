@@ -1,7 +1,36 @@
 /**
  * AstroGuru Theme — Royal Celestial Light Palette
- * Luxurious pearlescent platinum backdrop, pure white elevated cards, deep royal navy typography, and vibrant saffron-gold & amethyst accents.
+ * Dynamic Responsive Scaling System based on screen width and height.
  */
+
+import { Dimensions, PixelRatio } from 'react-native';
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+// Standard design base width (iPhone 14 / standard 390px layout)
+const baseWidth = 390;
+const scale = SCREEN_WIDTH / baseWidth;
+
+/**
+ * Normalizes font size based on screen pixel density and screen scale factor.
+ */
+export function normalize(size: number): number {
+  const newSize = size * scale;
+  return Math.round(PixelRatio.roundToNearestPixel(newSize));
+}
+
+/** Width Percentage helper */
+export function wp(percentage: number): number {
+  return Math.round((percentage * SCREEN_WIDTH) / 100);
+}
+
+/** Height Percentage helper */
+export function hp(percentage: number): number {
+  return Math.round((percentage * SCREEN_HEIGHT) / 100);
+}
+
+export const isSmallDevice = SCREEN_WIDTH < 375;
+export const isTablet = SCREEN_WIDTH >= 768;
 
 export const colors = {
   // Backgrounds (Clean Airy Light Palette)
@@ -57,13 +86,13 @@ export const gradients = {
 };
 
 export const spacing = {
-  xs: 4,
-  sm: 8,
-  md: 12,
-  lg: 16,
-  xl: 24,
-  xxl: 32,
-  xxxl: 48,
+  xs: isSmallDevice ? 3 : 4,
+  sm: isSmallDevice ? 6 : 8,
+  md: isSmallDevice ? 10 : 12,
+  lg: isSmallDevice ? 14 : 16,
+  xl: isSmallDevice ? 20 : 24,
+  xxl: isSmallDevice ? 28 : 32,
+  xxxl: isSmallDevice ? 40 : 48,
 } as const;
 
 export const radius = {
@@ -75,14 +104,14 @@ export const radius = {
 } as const;
 
 export const typography = {
-  display: { fontSize: 32, fontWeight: '800' as const, letterSpacing: 0.3 },
-  h1: { fontSize: 26, fontWeight: '800' as const },
-  h2: { fontSize: 21, fontWeight: '700' as const },
-  h3: { fontSize: 17, fontWeight: '700' as const },
-  body: { fontSize: 15, fontWeight: '500' as const },
-  bodyMuted: { fontSize: 15, fontWeight: '500' as const, color: colors.textMuted },
-  small: { fontSize: 13, fontWeight: '500' as const },
-  tiny: { fontSize: 11, fontWeight: '600' as const, letterSpacing: 0.4 },
+  display: { fontSize: normalize(30), fontWeight: '800' as const, letterSpacing: 0.3 },
+  h1: { fontSize: normalize(24), fontWeight: '800' as const },
+  h2: { fontSize: normalize(20), fontWeight: '700' as const },
+  h3: { fontSize: normalize(16), fontWeight: '700' as const },
+  body: { fontSize: normalize(14), fontWeight: '500' as const },
+  bodyMuted: { fontSize: normalize(14), fontWeight: '500' as const, color: colors.textMuted },
+  small: { fontSize: normalize(12.5), fontWeight: '500' as const },
+  tiny: { fontSize: normalize(10.5), fontWeight: '600' as const, letterSpacing: 0.4 },
 } as const;
 
 export const shadow = {
