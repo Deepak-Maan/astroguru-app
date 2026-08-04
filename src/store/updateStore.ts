@@ -1,7 +1,10 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
 import { ApiClient } from '../services/apiClient';
+
+const APP_VERSION = Constants.expoConfig?.version || '1.0.0';
 
 export interface UpdateInfo {
   currentVersion: string;
@@ -26,8 +29,8 @@ interface UpdateState extends UpdateInfo {
 export const useUpdateStore = create<UpdateState>()(
   persist(
     (set, get) => ({
-      currentVersion: '1.0.0',
-      latestVersion: '1.2.0',
+      currentVersion: APP_VERSION,
+      latestVersion: '1.0.0',
       updateAvailable: false,
       isMandatory: false,
       releaseNotes: [
@@ -35,26 +38,27 @@ export const useUpdateStore = create<UpdateState>()(
         '🪄 New Vedic Spells & Manifestation Rituals Store',
         '🛒 E-Commerce Gemstone & Remedies Shipping Checkout',
         '⚡ Real Chat & Voice/Video Call Consultation Engine',
-        '⚡ Faster App Launch, Smooth 60FPS UI & Offline Persistence',
+        '📷 Live Camera Viewfinders for Palmistry & Face Reading',
+        '👑 Expert / Astrologer Sign In & Registration Portal',
       ],
       downloadProgress: 0,
       isDownloading: false,
       isReadyToInstall: false,
 
       checkForUpdates: async () => {
-        const { currentVersion } = get();
+        const currentVersion = get().currentVersion || APP_VERSION;
         try {
           const res = await ApiClient.checkUpdates();
           if (res && res.updates) {
             const { latestVersion, releaseNotes, isMandatory } = res.updates;
             const isNewAvailable = latestVersion !== currentVersion;
             set({
-              latestVersion: latestVersion || '1.2.0',
+              latestVersion: latestVersion || '1.0.0',
               releaseNotes: releaseNotes || get().releaseNotes,
               isMandatory: !!isMandatory,
               updateAvailable: isNewAvailable,
             });
-            return { isNewAvailable, currentVersion, latestVersion: latestVersion || '1.2.0' };
+            return { isNewAvailable, currentVersion, latestVersion: latestVersion || '1.0.0' };
           }
         } catch (err) {
           console.warn('[Update Store] Server check failed, checking local store.');
