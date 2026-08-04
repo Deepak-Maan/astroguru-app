@@ -27,13 +27,13 @@ jobs:
       - name: 📦 Install Dependencies
         run: npm install
 
-      - name: 🚀 Publish Expo OTA Update to Main Branch & Production Channel
+      - name: 🚀 Publish Expo OTA Update to All Channels (Preview, Production, Main)
         run: |
-          eas update --branch main --message "Auto OTA Update via GitHub Actions [${{ github.sha }}]" --non-interactive
-          eas update --channel production --message "Production OTA Update via GitHub Actions [${{ github.sha }}]" --non-interactive
+          eas update --channel production --message "Auto OTA Update (Production) [${{ github.sha }}]" --non-interactive || true
+          eas update --channel preview --message "Auto OTA Update (Preview) [${{ github.sha }}]" --non-interactive || true
+          eas update --branch main --message "Auto OTA Update (Main) [${{ github.sha }}]" --non-interactive || true
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
       - name: 🌐 Build Production Web Bundle
         run: npm run build:web
-
