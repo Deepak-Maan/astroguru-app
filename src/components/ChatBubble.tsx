@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { ActivityIndicator, Animated, StyleSheet, Text, View } from 'react-native';
+import { Animated, StyleSheet, Text, View } from 'react-native';
 import { colors, radius, spacing, typography } from '../theme';
 import { ChatMessage } from '../types';
 import { clockTime } from '../utils';
@@ -115,20 +115,20 @@ const styles = StyleSheet.create({
     maxWidth: '100%',
   },
   assistant: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#0E1726',
     borderWidth: 1,
-    borderColor: '#E3E8F3',
+    borderColor: 'rgba(16,185,129,0.25)',
     borderTopLeftRadius: radius.sm,
-    shadowColor: 'rgba(160,175,205,0.25)',
+    shadowColor: 'rgba(0,0,0,0.50)',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.8,
     shadowRadius: 6,
     elevation: 3,
   },
   user: {
-    backgroundColor: '#7D3C98',
+    backgroundColor: colors.saffron,
     borderTopRightRadius: radius.sm,
-    shadowColor: 'rgba(125,60,152,0.35)',
+    shadowColor: 'rgba(245,158,11,0.30)',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.8,
     shadowRadius: 8,
@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
   },
   author: {
     ...typography.tiny,
-    color: colors.auroraA,
+    color: colors.teal,
     fontWeight: '800',
     marginBottom: 4,
     textTransform: 'uppercase',

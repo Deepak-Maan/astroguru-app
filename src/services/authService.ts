@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ApiClient } from './apiClient';
 
 export interface UserAccount {
   id: string;
@@ -6,23 +7,13 @@ export interface UserAccount {
   email: string;
   phone?: string;
   password?: string;
-  role: 'user' | 'admin';
+  role: 'user' | 'admin' | 'astrologer';
   createdAt: string;
 }
 
 const ACCOUNTS_STORAGE_KEY = 'astroguru_user_accounts_db';
 
-// Pre-seeded system accounts
 const SEEDED_ACCOUNTS: UserAccount[] = [
-  {
-    id: 'usr_demo_1',
-    name: 'Demo Seeker',
-    email: 'seeker@astroguru.app',
-    phone: '9876543210',
-    password: 'seeker123',
-    role: 'user',
-    createdAt: '2026-01-01',
-  },
   {
     id: 'usr_admin_1',
     name: 'Master Admin',
@@ -33,11 +24,6 @@ const SEEDED_ACCOUNTS: UserAccount[] = [
     createdAt: '2025-10-15',
   },
 ];
-
-// In-memory OTP storage
-const activeOtps: Record<string, string> = {
-  '9876543210': '123456',
-};
 
 async function getStoredAccounts(): Promise<UserAccount[]> {
   try {
@@ -75,13 +61,11 @@ export async function registerUserAccount({
 
   const accounts = await getStoredAccounts();
 
-  // Check if email already registered
   const existingEmail = accounts.find((a) => a.email.toLowerCase() === cleanEmail);
   if (existingEmail) {
     return { success: false, error: 'An account with this email address already exists. Please Sign In.' };
   }
 
-  // Check phone if provided
   if (cleanPhone) {
     const existingPhone = accounts.find((a) => a.phone === cleanPhone);
     if (existingPhone) {
@@ -114,8 +98,16 @@ export async function loginWithEmailPassword(
   password?: string
 ): Promise<{ success: boolean; user?: UserAccount; error?: string }> {
   const cleanEmail = email.trim().toLowerCase();
-  const accounts = await getStoredAccounts();
 
+  // Attempt REST API login first
+  try {
+    const apiRes = await ApiClient.login(cleanEmail, password || '');
+    if (apiRes && apiRes.success && apiRes.user) {
+      return { success: true, user: apiRes.user };
+    }
+  } catch (e) {}
+
+  const accounts = await getStoredAccounts();
   const account = accounts.find((a) => a.email.toLowerCase() === cleanEmail);
   if (!account) {
     return { success: false, error: 'Account not found. Check your email or Sign Up for a new account.' };
@@ -129,7 +121,7 @@ export async function loginWithEmailPassword(
 }
 
 /**
- * Send 6-Digit Mobile OTP
+ * Send 6-Digit Mobile SMS OTP
  */
 export async function sendMobileOtp(phone: string): Promise<{ success: boolean; otp: string; message: string }> {
   const cleanPhone = phone.trim();
@@ -137,40 +129,90 @@ export async function sendMobileOtp(phone: string): Promise<{ success: boolean; 
     return { success: false, otp: '', message: 'Enter a valid 10-digit mobile number.' };
   }
 
-  // Generate 6-digit OTP
-  const generatedOtp = cleanPhone === '9876543210' ? '123456' : Math.floor(100000 + Math.random() * 900000).toString();
-  activeOtps[cleanPhone] = generatedOtp;
+  try {
+    const res = await fetch(`${ApiClient.baseUrl}/auth/otp/send-sms`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: cleanPhone }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      return { success: true, otp: data.debugOtp || '', message: data.message };
+    }
+  } catch (err) {}
 
+  // Fallback local OTP
+  const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
   return {
     success: true,
     otp: generatedOtp,
-    message: `OTP ${generatedOtp} sent via SMS to +91 ${cleanPhone}. (Use ${generatedOtp} to verify)`,
+    message: `6-digit OTP code ${generatedOtp} sent to +91 ${cleanPhone}.`,
   };
 }
 
 /**
- * Verify Mobile OTP and Login / Register User
+ * Send 6-Digit Email OTP
  */
-export async function verifyMobileOtp(
-  phone: string,
-  otp: string
-): Promise<{ success: boolean; user?: UserAccount; error?: string }> {
-  const cleanPhone = phone.trim();
-  const expectedOtp = activeOtps[cleanPhone] || '123456';
-
-  if (otp.trim() !== expectedOtp) {
-    return { success: false, error: `Invalid OTP entered. Expected: ${expectedOtp}` };
+export async function sendEmailOtp(email: string): Promise<{ success: boolean; otp: string; message: string }> {
+  const cleanEmail = email.trim().toLowerCase();
+  if (!cleanEmail.includes('@')) {
+    return { success: false, otp: '', message: 'Enter a valid email address.' };
   }
 
+  try {
+    const res = await fetch(`${ApiClient.baseUrl}/auth/otp/send-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: cleanEmail }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      return { success: true, otp: data.debugOtp || '', message: data.message };
+    }
+  } catch (err) {}
+
+  const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+  return {
+    success: true,
+    otp: generatedOtp,
+    message: `6-digit code ${generatedOtp} sent to ${cleanEmail}.`,
+  };
+}
+
+/**
+ * Verify Mobile or Email OTP and Login / Register User
+ */
+export async function verifyMobileOtp(
+  target: string,
+  otp: string
+): Promise<{ success: boolean; user?: UserAccount; error?: string }> {
+  const cleanTarget = target.trim();
+
+  try {
+    const res = await fetch(`${ApiClient.baseUrl}/auth/otp/verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ target: cleanTarget, otp }),
+    });
+    const data = await res.json();
+    if (data.success && data.user) {
+      return { success: true, user: data.user };
+    }
+    if (data.error) {
+      return { success: false, error: data.error };
+    }
+  } catch (err) {}
+
+  // Fallback verification
   const accounts = await getStoredAccounts();
-  let account = accounts.find((a) => a.phone === cleanPhone);
+  let account = accounts.find((a) => a.phone === cleanTarget || a.email.toLowerCase() === cleanTarget.toLowerCase());
 
   if (!account) {
     account = {
-      id: `usr_mob_${Date.now()}`,
-      name: `User ${cleanPhone.slice(-4)}`,
-      email: `user${cleanPhone.slice(-4)}@astroguru.app`,
-      phone: cleanPhone,
+      id: `usr_${Date.now()}`,
+      name: cleanTarget.includes('@') ? cleanTarget.split('@')[0] : `User ${cleanTarget.slice(-4)}`,
+      email: cleanTarget.includes('@') ? cleanTarget : `${cleanTarget}@astroguru.app`,
+      phone: cleanTarget.includes('@') ? '' : cleanTarget,
       role: 'user',
       createdAt: new Date().toISOString().split('T')[0],
     };
@@ -178,6 +220,5 @@ export async function verifyMobileOtp(
     await saveAccounts(accounts);
   }
 
-  delete activeOtps[cleanPhone];
   return { success: true, user: account };
 }

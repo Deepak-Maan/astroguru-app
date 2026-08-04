@@ -24,7 +24,7 @@ import { formatCurrency } from '../src/utils';
 export default function SatsangScreen() {
   const router = useRouter();
   const balance = useWalletStore((s) => s.balance);
-  const deduct = useWalletStore((s) => s.deduct);
+  const debit = useWalletStore((s) => s.debit);
 
   const [chatMessages, setChatMessages] = useState([
     { id: '1', user: 'Ramesh Sharma', text: 'Namaste Guruji 🙏', time: '14:50' },
@@ -46,16 +46,21 @@ export default function SatsangScreen() {
 
   const handleSendOffering = (name: string, price: number, icon: string) => {
     if (balance < price) {
+      alert(`Insufficient balance! Offering requires ${formatCurrency(price)}. Please recharge your wallet.`);
       router.push('/wallet');
       return;
     }
-    deduct(price);
-    setOfferingSuccess(`Offered ${icon} ${name} (${formatCurrency(price)}) to the Acharya!`);
-    setChatMessages([
-      ...chatMessages,
-      { id: Date.now().toString(), user: 'You', text: `Offered ${icon} ${name}!`, time: 'Just now' },
-    ]);
-    setTimeout(() => setOfferingSuccess(null), 3000);
+    const ok = debit(price, `Virtual offering: ${name}`);
+    if (ok) {
+      setOfferingSuccess(`Offered ${icon} ${name} (${formatCurrency(price)}) to the Acharya!`);
+      setChatMessages([
+        ...chatMessages,
+        { id: Date.now().toString(), user: 'You', text: `Offered ${icon} ${name}!`, time: 'Just now' },
+      ]);
+      setTimeout(() => setOfferingSuccess(null), 4000);
+    } else {
+      alert(`Could not process offering. Please check your wallet balance.`);
+    }
   };
 
   return (

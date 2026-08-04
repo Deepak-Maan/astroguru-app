@@ -466,7 +466,11 @@ const styles = StyleSheet.create({
   palmImage: { width: '100%', height: '100%', resizeMode: 'cover' },
 
   guideOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     alignItems: 'center',
     justifyContent: 'center',
   },

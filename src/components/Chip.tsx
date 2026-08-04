@@ -8,28 +8,30 @@ interface ChipProps {
   selected?: boolean;
   onPress?: () => void;
   style?: ViewStyle;
-  tone?: 'default' | 'gold' | 'teal';
+  tone?: 'default' | 'gold' | 'teal' | 'rose';
 }
 
 const TONE_COLORS = {
-  default: colors.auroraB,
+  default: colors.teal,
   gold: colors.gold,
   teal: colors.teal,
+  rose: colors.rose,
 };
 
 const TONE_BG = {
-  default: 'rgba(194,75,255,0.12)',
-  gold: 'rgba(245,197,66,0.12)',
-  teal: 'rgba(56,225,195,0.12)',
+  default: 'rgba(16,185,129,0.14)',
+  gold: 'rgba(245,158,11,0.14)',
+  teal: 'rgba(16,185,129,0.14)',
+  rose: 'rgba(244,63,94,0.14)',
 };
 
 const TONE_BORDER = {
-  default: 'rgba(194,75,255,0.35)',
-  gold: 'rgba(245,197,66,0.35)',
-  teal: 'rgba(56,225,195,0.35)',
+  default: 'rgba(16,185,129,0.35)',
+  gold: 'rgba(245,158,11,0.35)',
+  teal: 'rgba(16,185,129,0.35)',
+  rose: 'rgba(244,63,94,0.35)',
 };
 
-/** Small pill — used for filters, tags, specialties and suggestion chips. */
 export function Chip({ label, selected = false, onPress, style, tone = 'default' }: ChipProps) {
   const accent = TONE_COLORS[tone];
 
@@ -56,8 +58,8 @@ export function Chip({ label, selected = false, onPress, style, tone = 'default'
       <Text
         style={[
           styles.label,
-          selected && { color: colors.white },
-          !selected && tone !== 'default' && { color: accent },
+          selected && { color: colors.white, fontWeight: '800' },
+          !selected && tone !== 'default' && { color: accent, fontWeight: '700' },
         ]}
         numberOfLines={1}
       >
@@ -85,14 +87,14 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: colors.cardBorder,
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderColor: 'rgba(16,185,129,0.25)',
+    backgroundColor: '#0E1726',
     overflow: 'hidden',
-    alignSelf: 'flex-start',   // ← prevents vertical stretch in flex containers
+    alignSelf: 'flex-start',
     flexShrink: 0,
   },
   chipSelected: {
     borderColor: 'transparent',
   },
-  label: { ...typography.small, color: colors.textMuted, lineHeight: 18, fontSize: 13 },
+  label: { ...typography.small, color: colors.textMuted, lineHeight: 18, fontSize: 13, fontWeight: '600' },
 });

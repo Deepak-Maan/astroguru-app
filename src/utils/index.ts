@@ -97,17 +97,34 @@ export function formatCurrency(n: number): string {
   return `₹${n.toLocaleString('en-IN')}`;
 }
 
+/** Format real timestamp with 12-hour AM/PM clock time & date */
+export function formatRealTimestamp(ts: number): string {
+  const d = new Date(ts || Date.now());
+  const now = new Date();
+
+  const timeStr = d.toLocaleTimeString('en-IN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  });
+
+  if (d.toDateString() === now.toDateString()) {
+    return `Today at ${timeStr}`;
+  }
+
+  const dateStr = d.toLocaleDateString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+  return `${dateStr}, ${timeStr}`;
+}
+
 export function timeAgo(ts: number): string {
-  const s = Math.floor((Date.now() - ts) / 1000);
-  if (s < 60) return 'just now';
-  const m = Math.floor(s / 60);
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  return `${Math.floor(h / 24)}d ago`;
+  return formatRealTimestamp(ts);
 }
 
 export function clockTime(ts: number): string {
   const d = new Date(ts);
-  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  return d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
 }

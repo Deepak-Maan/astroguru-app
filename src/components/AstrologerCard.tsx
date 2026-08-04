@@ -22,10 +22,10 @@ export function AstrologerCard({ astrologer: a, onPress, compact = false }: Prop
         style={({ pressed }) => [styles.compact, pressed && { opacity: 0.75, transform: [{ scale: 0.96 }] }]}
       >
         <LinearGradient
-          colors={a.online ? ['rgba(245,158,11,0.08)', 'rgba(109,40,217,0.03)'] : ['#FFFFFF', '#F8FAFC']}
+          colors={a.online ? ['rgba(16,185,129,0.12)', 'rgba(245,158,11,0.04)'] : ['#0E1726', '#060A12']}
           style={StyleSheet.absoluteFill}
         />
-        <Avatar uri={a.avatar} name={a.name} size={62} online={a.online} showStatus />
+        <Avatar uri={a.avatar} name={a.name} size={50} online={a.online} showStatus />
         <Text style={styles.compactName} numberOfLines={1}>
           {a.name.split(' ').slice(-1)[0]}
         </Text>
@@ -48,15 +48,15 @@ export function AstrologerCard({ astrologer: a, onPress, compact = false }: Prop
         pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] },
       ]}
     >
-      {/* Background Gold-Leaf Metallic Gradient */}
+      {/* Background Cyber-Vedic Metallic Dark Gradient */}
       <LinearGradient
-        colors={['rgba(255,255,255,1)', 'rgba(250,245,255,0.70)']}
+        colors={['#0E1726', '#080E1A']}
         style={StyleSheet.absoluteFill}
       />
 
       {/* Left: Avatar */}
       <View style={styles.avatarCol}>
-        <Avatar uri={a.avatar} name={a.name} size={68} online={a.online} showStatus />
+        <Avatar uri={a.avatar} name={a.name} size={54} online={a.online} showStatus />
       </View>
 
       {/* Right: Details */}
@@ -110,67 +110,67 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     gap: spacing.md,
-    padding: spacing.lg,
-    backgroundColor: '#FFFFFF',
-    borderRadius: radius.xl,
+    padding: spacing.md,
+    backgroundColor: '#0E1726',
+    borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    marginBottom: spacing.md,
+    borderColor: 'rgba(16,185,129,0.25)',
+    marginBottom: spacing.sm + 2,
     overflow: 'hidden',
     alignItems: 'center',
-    shadowColor: 'rgba(148,163,184,0.35)',
-    shadowOffset: { width: 0, height: 6 },
+    shadowColor: 'rgba(0,0,0,0.60)',
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.8,
-    shadowRadius: 12,
-    elevation: 4,
+    shadowRadius: 8,
+    elevation: 3,
   },
   cardVerifiedBorder: {
-    borderColor: 'rgba(217,119,6,0.35)',
-    shadowColor: 'rgba(217,119,6,0.20)',
+    borderColor: 'rgba(245,158,11,0.45)',
+    shadowColor: 'rgba(245,158,11,0.25)',
   },
   avatarCol: {},
-  body: { flex: 1, gap: 3 },
+  body: { flex: 1, gap: 2 },
   nameRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
   },
-  name: { ...typography.h3, color: colors.text, flex: 1, fontSize: 16, fontWeight: '800' },
+  name: { ...typography.h3, color: colors.text, flex: 1, fontSize: 15, fontWeight: '800' },
 
   ratingPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(245,158,11,0.12)',
+    backgroundColor: 'rgba(245,158,11,0.14)',
     borderRadius: radius.pill,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
     borderWidth: 1,
-    borderColor: 'rgba(245,158,11,0.35)',
+    borderColor: 'rgba(245,158,11,0.40)',
   },
-  ratingText: { ...typography.tiny, color: colors.saffron, fontWeight: '800', fontSize: 11 },
+  ratingText: { ...typography.tiny, color: colors.saffron, fontWeight: '800', fontSize: 10.5 },
 
   verifiedTag: {
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(245,158,11,0.12)',
+    backgroundColor: 'rgba(245,158,11,0.14)',
     borderRadius: radius.pill,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingHorizontal: 7,
+    paddingVertical: 1,
     borderWidth: 1,
-    borderColor: 'rgba(245,158,11,0.35)',
+    borderColor: 'rgba(245,158,11,0.40)',
     marginVertical: 1,
   },
-  verifiedTagText: { ...typography.tiny, color: colors.saffron, fontWeight: '800', fontSize: 9.5 },
+  verifiedTagText: { ...typography.tiny, color: colors.saffron, fontWeight: '800', fontSize: 9 },
 
   specialties: {
     ...typography.small,
-    color: colors.auroraA,
+    color: colors.teal,
     fontWeight: '700',
-    fontSize: 12,
+    fontSize: 11.5,
   },
   meta: {
     ...typography.small,
     color: colors.textMuted,
-    fontSize: 11.5,
+    fontSize: 11,
     fontWeight: '600',
   },
 
@@ -178,67 +178,67 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 4,
+    marginTop: 2,
   },
   priceBadge: {
     flexDirection: 'row',
     alignItems: 'baseline',
     gap: 2,
   },
-  priceValue: { ...typography.h3, color: colors.saffron, fontSize: 17, fontWeight: '900' },
-  perMin: { ...typography.tiny, color: colors.textMuted, fontSize: 11, fontWeight: '600' },
+  priceValue: { ...typography.h3, color: colors.saffron, fontSize: 15.5, fontWeight: '900' },
+  perMin: { ...typography.tiny, color: colors.textMuted, fontSize: 10.5, fontWeight: '600' },
 
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
     borderRadius: radius.pill,
     borderWidth: 1,
   },
   statusOnline: {
-    backgroundColor: 'rgba(16,185,129,0.10)',
-    borderColor: 'rgba(16,185,129,0.35)',
+    backgroundColor: 'rgba(16,185,129,0.14)',
+    borderColor: 'rgba(16,185,129,0.40)',
   },
   statusOffline: {
-    backgroundColor: 'rgba(148,163,184,0.10)',
-    borderColor: 'rgba(148,163,184,0.3)',
+    backgroundColor: 'rgba(100,116,139,0.14)',
+    borderColor: 'rgba(100,116,139,0.3)',
   },
-  statusDot: { width: 6, height: 6, borderRadius: 3 },
-  statusText: { ...typography.tiny, fontWeight: '800', fontSize: 11 },
+  statusDot: { width: 5, height: 5, borderRadius: 2.5 },
+  statusText: { ...typography.tiny, fontWeight: '800', fontSize: 10 },
 
   /* ── Compact card ── */
   compact: {
-    width: 108,
+    width: 98,
     alignItems: 'center',
-    padding: spacing.md,
-    backgroundColor: '#FFFFFF',
-    borderRadius: radius.xl,
+    padding: spacing.sm + 2,
+    backgroundColor: '#0E1726',
+    borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    marginRight: spacing.md,
+    borderColor: 'rgba(16,185,129,0.25)',
+    marginRight: spacing.sm + 2,
     overflow: 'hidden',
-    gap: 4,
-    shadowColor: 'rgba(148,163,184,0.25)',
-    shadowOffset: { width: 0, height: 4 },
+    gap: 3,
+    shadowColor: 'rgba(0,0,0,0.50)',
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.8,
-    shadowRadius: 8,
+    shadowRadius: 6,
     elevation: 3,
   },
   compactName: {
     ...typography.small,
     color: colors.text,
     fontWeight: '800',
-    marginTop: 4,
-    fontSize: 12,
+    marginTop: 2,
+    fontSize: 11.5,
   },
   compactRating: {
-    backgroundColor: 'rgba(245,158,11,0.12)',
+    backgroundColor: 'rgba(245,158,11,0.14)',
     borderRadius: radius.pill,
     paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingVertical: 1,
   },
-  compactRatingText: { ...typography.tiny, color: colors.saffron, fontWeight: '800', fontSize: 10 },
-  compactPrice: { ...typography.tiny, color: colors.textMuted, fontSize: 10, fontWeight: '600' },
+  compactRatingText: { ...typography.tiny, color: colors.saffron, fontWeight: '800', fontSize: 9.5 },
+  compactPrice: { ...typography.tiny, color: colors.textMuted, fontSize: 9.5, fontWeight: '600' },
 });

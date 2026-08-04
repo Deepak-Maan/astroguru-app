@@ -18,7 +18,7 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.saffron,
-        tabBarInactiveTintColor: colors.textFaint,
+        tabBarInactiveTintColor: colors.textMuted,
         tabBarStyle: styles.bar,
         tabBarLabelStyle: styles.label,
         sceneStyle: { backgroundColor: colors.bg },
@@ -65,27 +65,29 @@ export default function TabsLayout() {
 
 const styles = StyleSheet.create({
   bar: {
-    backgroundColor: '#FFFFFF',
-    borderTopColor: '#E3E8F3',
+    backgroundColor: '#0A111E',
+    borderTopColor: 'rgba(16,185,129,0.25)',
     borderTopWidth: 1,
     height: Platform.OS === 'web' ? 64 : undefined,
     paddingTop: 5,
-    shadowColor: 'rgba(160,175,205,0.25)',
+    shadowColor: 'rgba(0,0,0,0.60)',
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.8,
     shadowRadius: 10,
     elevation: 8,
   },
-  label: { ...typography.tiny, fontSize: 10, letterSpacing: 0.2, fontWeight: '700' },
+  label: { ...typography.tiny, fontSize: 10, letterSpacing: 0.2, fontWeight: '800' },
   iconWrap: {
-    width: 36,
+    width: 38,
     height: 28,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 14,
   },
   iconWrapActive: {
-    backgroundColor: 'rgba(230,126,34,0.12)',
+    backgroundColor: 'rgba(245,158,11,0.18)',
+    borderWidth: 1,
+    borderColor: 'rgba(245,158,11,0.40)',
   },
   icon: { fontSize: 19 },
 });

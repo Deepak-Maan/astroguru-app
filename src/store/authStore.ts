@@ -2,6 +2,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { UserAccount } from '../services/authService';
+import { useSubscriptionStore } from './subscriptionStore';
+import { useUserStore } from './userStore';
+import { useWalletStore } from './walletStore';
 
 interface AuthState {
   user: UserAccount | null;
@@ -24,10 +27,30 @@ export const useAuthStore = create<AuthState>()(
           user,
           isAuthenticated: true,
         });
+        try {
+          useWalletStore.getState().syncUserSessionWallet();
+        } catch (e) {}
       },
 
-      logout: () => set({ user: null, isAuthenticated: false }),
-      setHydrated: () => set({ hydrated: true }),
+      logout: () => {
+        try {
+          useSubscriptionStore.getState().cancel();
+          useUserStore.getState().clear();
+        } catch (e) {}
+
+        set({ user: null, isAuthenticated: false });
+
+        try {
+          useWalletStore.getState().syncUserSessionWallet();
+        } catch (e) {}
+      },
+
+      setHydrated: () => {
+        set({ hydrated: true });
+        try {
+          useWalletStore.getState().syncUserSessionWallet();
+        } catch (e) {}
+      },
     }),
     {
       name: 'astroguru-auth',

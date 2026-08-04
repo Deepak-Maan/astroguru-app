@@ -362,7 +362,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   spellImage: { width: '100%', height: '100%', resizeMode: 'cover' },
-  spellOverlay: { ...StyleSheet.absoluteFillObject },
+  spellOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
   spellContent: {
     position: 'absolute',
     bottom: spacing.md,

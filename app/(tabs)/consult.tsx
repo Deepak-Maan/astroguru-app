@@ -78,7 +78,7 @@ export default function Consult() {
       {/* ── Online banner ── */}
       <View style={styles.onlineBanner}>
         <LinearGradient
-          colors={['rgba(61,220,132,0.18)', 'rgba(61,220,132,0.04)']}
+          colors={['rgba(16,185,129,0.18)', 'rgba(245,158,11,0.04)']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={StyleSheet.absoluteFill}
@@ -108,7 +108,7 @@ export default function Consult() {
               >
                 {active && (
                   <LinearGradient
-                    colors={[colors.auroraA, colors.auroraB]}
+                    colors={[colors.saffron, colors.gold]}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={StyleSheet.absoluteFill}
@@ -137,7 +137,7 @@ export default function Consult() {
               >
                 {active && (
                   <LinearGradient
-                    colors={['rgba(122,60,255,0.55)', 'rgba(194,75,255,0.35)']}
+                    colors={[colors.teal, colors.saffron]}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={StyleSheet.absoluteFill}
@@ -189,8 +189,7 @@ export default function Consult() {
             )}
             ListFooterComponent={
               <Text style={styles.note}>
-                Consultations are simulated in this build — no real astrologer is contacted and
-                no real money is charged.
+                Consultations are simulated in this build for demonstration.
               </Text>
             }
           />
@@ -212,15 +211,20 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     marginBottom: spacing.sm,
     paddingHorizontal: spacing.md,
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    backgroundColor: '#0E1726',
     borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: colors.cardBorder,
-    height: 44,
+    borderColor: 'rgba(16,185,129,0.25)',
+    height: 46,
+    shadowColor: 'rgba(0,0,0,0.50)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  searchIcon: { fontSize: 14 },
-  searchInput: { flex: 1, color: colors.text, fontSize: 14.5, paddingVertical: 0 },
-  clearBtn: { fontSize: 12, color: colors.textFaint, paddingHorizontal: 4 },
+  searchIcon: { fontSize: 16 },
+  searchInput: { flex: 1, color: colors.text, fontSize: 14.5, paddingVertical: 0, fontWeight: '600' },
+  clearBtn: { fontSize: 14, color: colors.textFaint, paddingHorizontal: 4, fontWeight: '700' },
 
   /* Online banner */
   onlineBanner: {
@@ -229,10 +233,11 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     marginBottom: spacing.sm,
     paddingHorizontal: spacing.md,
-    paddingVertical: 9,
+    paddingVertical: 10,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: 'rgba(61,220,132,0.28)',
+    borderColor: 'rgba(16,185,129,0.30)',
+    backgroundColor: '#0E1726',
     overflow: 'hidden',
   },
   onlinePulse: {
@@ -241,7 +246,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: colors.online,
   },
-  onlineText: { ...typography.small, color: colors.textMuted, fontSize: 13, flex: 1 },
+  onlineText: { ...typography.small, color: colors.textMuted, fontSize: 13, flex: 1, fontWeight: '600' },
   onlineCount: { color: colors.online, fontWeight: '800' },
 
   /* Filter chips */
@@ -257,23 +262,28 @@ const styles = StyleSheet.create({
   },
   filterChip: {
     paddingHorizontal: spacing.md,
-    paddingVertical: 6,
+    paddingVertical: 7,
     borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: colors.cardBorder,
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderColor: 'rgba(16,185,129,0.25)',
+    backgroundColor: '#0E1726',
     overflow: 'hidden',
+    shadowColor: 'rgba(0,0,0,0.50)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 4,
+    elevation: 2,
   },
   filterChipActive: {
-    borderColor: colors.auroraA,
+    borderColor: colors.saffron,
   },
   filterChipText: {
     ...typography.small,
-    color: colors.textMuted,
-    fontWeight: '600',
+    color: colors.text,
+    fontWeight: '700',
     fontSize: 13,
   },
-  filterChipTextActive: { color: colors.white },
+  filterChipTextActive: { color: colors.white, fontWeight: '800' },
 
   /* Sort */
   sortWrap: {
@@ -282,15 +292,20 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: spacing.md,
   },
-  sortLabel: { ...typography.tiny, color: colors.textFaint, fontWeight: '700' },
+  sortLabel: { ...typography.tiny, color: colors.textFaint, fontWeight: '800' },
   sortPills: {
     flexDirection: 'row',
     gap: 4,
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: '#080E1A',
     borderRadius: radius.pill,
     padding: 3,
     borderWidth: 1,
-    borderColor: colors.cardBorder,
+    borderColor: 'rgba(16,185,129,0.25)',
+    shadowColor: 'rgba(0,0,0,0.50)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 4,
+    elevation: 2,
   },
   sortPill: {
     paddingVertical: 6,
@@ -300,7 +315,7 @@ const styles = StyleSheet.create({
   },
   sortPillActive: {},
   sortPillText: { ...typography.tiny, color: colors.textMuted, fontWeight: '700', fontSize: 12 },
-  sortPillTextActive: { color: colors.white },
+  sortPillTextActive: { color: colors.white, fontWeight: '800' },
 
   /* List */
   listContent: {

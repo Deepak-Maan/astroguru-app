@@ -34,25 +34,24 @@ function rgb(hex: string): [number, number, number] {
 }
 
 export const NAVAGRAHA: Record<PlanetKey, GrahaStyle> = {
-  sun: { key: 'sun', sanskrit: 'Surya', order: 0, rgb: rgb('#FF7A45'), size: 1.0 },
+  sun: { key: 'sun', sanskrit: 'Surya', order: 0, rgb: rgb('#F59E0B'), size: 1.0 },
   moon: { key: 'moon', sanskrit: 'Chandra', order: 1, rgb: rgb('#FFF6E0'), size: 0.92 },
   mars: { key: 'mars', sanskrit: 'Mangala', order: 2, rgb: rgb('#FF4A4A'), size: 0.66 },
-  mercury: { key: 'mercury', sanskrit: 'Budha', order: 3, rgb: rgb('#4FE38B'), size: 0.6 },
-  jupiter: { key: 'jupiter', sanskrit: 'Guru', order: 4, rgb: rgb('#FFD34E'), size: 0.8 },
+  mercury: { key: 'mercury', sanskrit: 'Budha', order: 3, rgb: rgb('#10B981'), size: 0.6 },
+  jupiter: { key: 'jupiter', sanskrit: 'Guru', order: 4, rgb: rgb('#F59E0B'), size: 0.8 },
   venus: { key: 'venus', sanskrit: 'Shukra', order: 5, rgb: rgb('#DCE8FF'), size: 0.72 },
-  saturn: { key: 'saturn', sanskrit: 'Shani', order: 6, rgb: rgb('#6E7BC8'), size: 0.74 },
+  saturn: { key: 'saturn', sanskrit: 'Shani', order: 6, rgb: rgb('#06B6D4'), size: 0.74 },
   rahu: { key: 'rahu', sanskrit: 'Rahu', order: 7, rgb: rgb('#9AA0B5'), size: 0.56 },
   ketu: { key: 'ketu', sanskrit: 'Ketu', order: 8, rgb: rgb('#C08A6A'), size: 0.56 },
 };
 
 /**
- * Brass, as used for the astrolabes and the Jantar Mantar instruments — duller
- * and more metallic than the app's UI gold, which stays reserved for controls.
+ * Cyber-Vedic Holographic Gold & Emerald Palette for the 3D Ecliptic Band.
  */
 export const BRASS = {
-  base: rgb('#C9A227'),
-  bright: rgb('#F0DFA0'),
-  dim: rgb('#7C6420'),
+  base: rgb('#F59E0B'),
+  bright: rgb('#FDE68A'),
+  dim: rgb('#D97706'),
 };
 
-export const AURORA = rgb('#7A3CFF');
+export const AURORA = rgb('#10B981');

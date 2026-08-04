@@ -9,7 +9,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GradientBackground } from '../src/components/GradientBackground';
-import { Button } from '../src/components/Button';
 import { Card } from '../src/components/Card';
 import { Chip } from '../src/components/Chip';
 import { ScreenHeader } from '../src/components/ScreenHeader';
@@ -25,7 +24,6 @@ export default function SadeSatiScreen() {
   const rashi = RASHIS[selectedRashi];
 
   // Saturn (Shani) Sade Sati calculation logic
-  // Current Saturn is in Aquarius / Pisces boundary in 2026
   const sadeSatiStatus =
     selectedRashi === 9 || selectedRashi === 10 || selectedRashi === 11
       ? { active: true, phase: selectedRashi === 10 ? 'Phase 2 · Peak (Core Impact)' : 'Phase 1 · Rising', risk: 'High', remediesNeeded: true }
@@ -44,7 +42,7 @@ export default function SadeSatiScreen() {
               <View style={styles.rashiPicker}>
                 {RASHIS.map((r, i) => (
                   <Pressable
-                    key={r.id}
+                    key={r.sanskrit}
                     onPress={() => setSelectedRashi(i)}
                     style={[styles.rashiChip, selectedRashi === i && styles.chipActive]}
                   >

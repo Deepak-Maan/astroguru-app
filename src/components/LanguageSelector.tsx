@@ -28,7 +28,7 @@ export function LanguageSelector({ compact = true }: Props) {
         style={({ pressed }) => [styles.btn, pressed && { opacity: 0.75 }]}
       >
         <LinearGradient
-          colors={['rgba(230,126,34,0.10)', 'rgba(212,172,13,0.04)']}
+          colors={['rgba(16,185,129,0.14)', 'rgba(245,158,11,0.06)']}
           style={StyleSheet.absoluteFill}
         />
         <Text style={styles.flag}>{activeLangItem.flag}</Text>
@@ -50,7 +50,7 @@ export function LanguageSelector({ compact = true }: Props) {
                   >
                     {active && (
                       <LinearGradient
-                        colors={['#E67E22', '#D4AC0D']}
+                        colors={[colors.saffron, colors.gold]}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 0 }}
                         style={StyleSheet.absoluteFill}
@@ -86,10 +86,10 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: '#E3E8F3',
-    backgroundColor: '#FFFFFF',
+    borderColor: 'rgba(16,185,129,0.25)',
+    backgroundColor: '#0E1726',
     overflow: 'hidden',
-    shadowColor: 'rgba(160,175,205,0.25)',
+    shadowColor: 'rgba(0,0,0,0.50)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.8,
     shadowRadius: 4,
@@ -100,18 +100,18 @@ const styles = StyleSheet.create({
 
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(27,20,56,0.60)',
+    backgroundColor: 'rgba(4,7,13,0.80)',
     justifyContent: 'center',
     padding: spacing.lg,
   },
   modalContent: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#0E1726',
     borderRadius: radius.xl,
     padding: spacing.xl,
     borderWidth: 1,
-    borderColor: '#E3E8F3',
+    borderColor: 'rgba(16,185,129,0.25)',
     gap: spacing.md,
-    shadowColor: 'rgba(160,175,205,0.40)',
+    shadowColor: 'rgba(0,0,0,0.60)',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.9,
     shadowRadius: 18,
@@ -127,8 +127,8 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: '#E3E8F3',
-    backgroundColor: '#F8FAFC',
+    borderColor: 'rgba(16,185,129,0.20)',
+    backgroundColor: '#080E1A',
     overflow: 'hidden',
   },
   cellActive: { borderColor: colors.saffron },

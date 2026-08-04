@@ -1,4 +1,4 @@
-import { KundliData } from '../types';
+import { Kundli, PlanetPosition } from '../types';
 import { RASHIS } from '../data/rashis';
 import { PLANETS } from '../data/planets';
 
@@ -24,19 +24,19 @@ export interface LalKitabHouseInfo {
   isAndha: boolean; // Blind house
 }
 
-export function calculateLalKitab(kundli: KundliData) {
+export function calculateLalKitab(kundli: Kundli) {
   // In Lal Kitab, House 1 is always Aries (Mesh)
   const houses: LalKitabHouseInfo[] = Array.from({ length: 12 }, (_, i) => {
     const houseNum = i + 1;
     const rashi = RASHIS[i]; // Pakka Ghar 1=Aries, 2=Taurus, etc.
-    const occupants = kundli.planets
-      .filter((p) => p.house === houseNum)
-      .map((p) => PLANETS[p.key].name);
+    const occupants = (kundli.planets || [])
+      .filter((p: PlanetPosition) => p.house === houseNum)
+      .map((p: PlanetPosition) => PLANETS[p.key as keyof typeof PLANETS]?.name || p.name);
 
     return {
       house: houseNum,
       sign: rashi.sanskrit,
-      pakkaGharLord: PLANETS[rashi.lord].name,
+      pakkaGharLord: PLANETS[rashi.lord as keyof typeof PLANETS]?.name || rashi.lord,
       occupants: occupants,
       isSoya: occupants.length === 0 && houseNum !== 1 && houseNum !== 7,
       isAndha: houseNum === 10 && occupants.length > 1,

@@ -2,9 +2,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { ChatMessage } from '../types';
+import { useAuthStore } from './authStore';
 
 /** Per-astrologer consult session state. */
-interface Session {
+export interface Session {
   messages: ChatMessage[];
   startedAt: number | null;
   minutesBilled: number;
@@ -13,8 +14,16 @@ interface Session {
 }
 
 interface ChatState {
+  // Nested dictionary storing sessions per user: userSessions[userId][astrologerId]
+  userSessions: Record<string, Record<string, Session>>;
+
+  // User-isolated AI messages dictionary: userAiMessages[userId]
+  userAiMessages: Record<string, ChatMessage[]>;
+
+  getActiveUserId: () => string;
+
+  // Compatibility getters & actions
   sessions: Record<string, Session>;
-  /** AI astrologer conversation (separate from paid consults). */
   aiMessages: ChatMessage[];
 
   startSession: (astrologerId: string) => void;
@@ -39,70 +48,155 @@ const emptySession = (): Session => ({
 export const useChatStore = create<ChatState>()(
   persist(
     (set, get) => ({
-      sessions: {},
-      aiMessages: [],
+      userSessions: {},
+      userAiMessages: {},
 
-      startSession: (id) =>
-        set((s) => ({
-          sessions: {
-            ...s.sessions,
-            [id]: {
-              ...(s.sessions[id] ?? emptySession()),
-              startedAt: Date.now(),
-              ended: false,
-            },
-          },
-        })),
+      getActiveUserId: () => {
+        try {
+          const authUser = useAuthStore.getState()?.user;
+          if (authUser?.id) return authUser.id.toString();
+          if (authUser?.email) return authUser.email.toLowerCase().trim();
+        } catch (e) {}
+        return 'guest_seeker';
+      },
 
-      endSession: (id) =>
-        set((s) => ({
-          sessions: {
-            ...s.sessions,
-            [id]: { ...(s.sessions[id] ?? emptySession()), ended: true, startedAt: null },
-          },
-        })),
+      // Fallback getter for backward compatibility
+      get sessions() {
+        const userId = get().getActiveUserId();
+        return get().userSessions?.[userId] || {};
+      },
 
-      addMessage: (id, msg) =>
+      get aiMessages() {
+        const userId = get().getActiveUserId();
+        return get().userAiMessages?.[userId] || [];
+      },
+
+      startSession: (astrologerId) =>
         set((s) => {
-          const prev = s.sessions[id] ?? emptySession();
-          return {
-            sessions: {
-              ...s.sessions,
-              [id]: { ...prev, messages: [...prev.messages, msg] },
-            },
-          };
-        }),
+          const userId = s.getActiveUserId();
+          const userDict = s.userSessions[userId] || {};
+          const currentSession = userDict[astrologerId] || emptySession();
 
-      billMinute: (id, pricePerMin) =>
-        set((s) => {
-          const prev = s.sessions[id] ?? emptySession();
           return {
-            sessions: {
-              ...s.sessions,
-              [id]: {
-                ...prev,
-                minutesBilled: prev.minutesBilled + 1,
-                costSoFar: prev.costSoFar + pricePerMin,
+            userSessions: {
+              ...s.userSessions,
+              [userId]: {
+                ...userDict,
+                [astrologerId]: {
+                  ...currentSession,
+                  startedAt: Date.now(),
+                  ended: false,
+                },
               },
             },
           };
         }),
 
-      getSession: (id) => get().sessions[id] ?? emptySession(),
+      endSession: (astrologerId) =>
+        set((s) => {
+          const userId = s.getActiveUserId();
+          const userDict = s.userSessions[userId] || {};
+          const currentSession = userDict[astrologerId] || emptySession();
 
-      addAiMessage: (msg) => set((s) => ({ aiMessages: [...s.aiMessages, msg] })),
+          return {
+            userSessions: {
+              ...s.userSessions,
+              [userId]: {
+                ...userDict,
+                [astrologerId]: {
+                  ...currentSession,
+                  ended: true,
+                  startedAt: null,
+                },
+              },
+            },
+          };
+        }),
+
+      addMessage: (astrologerId, msg) =>
+        set((s) => {
+          const userId = s.getActiveUserId();
+          const userDict = s.userSessions[userId] || {};
+          const prev = userDict[astrologerId] || emptySession();
+
+          return {
+            userSessions: {
+              ...s.userSessions,
+              [userId]: {
+                ...userDict,
+                [astrologerId]: {
+                  ...prev,
+                  messages: [...prev.messages, msg],
+                },
+              },
+            },
+          };
+        }),
+
+      billMinute: (astrologerId, pricePerMin) =>
+        set((s) => {
+          const userId = s.getActiveUserId();
+          const userDict = s.userSessions[userId] || {};
+          const prev = userDict[astrologerId] || emptySession();
+
+          return {
+            userSessions: {
+              ...s.userSessions,
+              [userId]: {
+                ...userDict,
+                [astrologerId]: {
+                  ...prev,
+                  minutesBilled: prev.minutesBilled + 1,
+                  costSoFar: prev.costSoFar + pricePerMin,
+                },
+              },
+            },
+          };
+        }),
+
+      getSession: (astrologerId) => {
+        const userId = get().getActiveUserId();
+        return get().userSessions?.[userId]?.[astrologerId] || emptySession();
+      },
+
+      addAiMessage: (msg) =>
+        set((s) => {
+          const userId = s.getActiveUserId();
+          const currentAi = s.userAiMessages[userId] || [];
+          return {
+            userAiMessages: {
+              ...s.userAiMessages,
+              [userId]: [...currentAi, msg],
+            },
+          };
+        }),
 
       replaceAiMessage: (id, patch) =>
-        set((s) => ({
-          aiMessages: s.aiMessages.map((m) => (m.id === id ? { ...m, ...patch } : m)),
-        })),
+        set((s) => {
+          const userId = s.getActiveUserId();
+          const currentAi = s.userAiMessages[userId] || [];
+          return {
+            userAiMessages: {
+              ...s.userAiMessages,
+              [userId]: currentAi.map((m) => (m.id === id ? { ...m, ...patch } : m)),
+            },
+          };
+        }),
 
-      clearAiChat: () => set({ aiMessages: [] }),
+      clearAiChat: () =>
+        set((s) => {
+          const userId = s.getActiveUserId();
+          return {
+            userAiMessages: {
+              ...s.userAiMessages,
+              [userId]: [],
+            },
+          };
+        }),
     }),
     {
-      name: 'astroguru-chat',
+      name: 'astroguru-multi-user-chat',
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: (s) => ({ sessions: s.sessions, aiMessages: s.aiMessages }),
     },
   ),
 );

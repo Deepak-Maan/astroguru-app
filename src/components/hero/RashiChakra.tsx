@@ -233,7 +233,7 @@ export function RashiChakra({ kundli, onPress }: Props) {
     return (
       <Pressable onPress={onPress}>
         <LinearGradient
-          colors={['#FFFFFF', '#F4F6FB']}
+          colors={['#0E1726', '#060A12']}
           start={{ x: 0.1, y: 0 }}
           end={{ x: 0.9, y: 1 }}
           style={[styles.card, styles.fallback]}
@@ -248,9 +248,9 @@ export function RashiChakra({ kundli, onPress }: Props) {
     <GestureDetector gesture={gesture}>
       <View style={styles.card} onLayout={onLayout}>
         <GLView style={StyleSheet.absoluteFill} onContextCreate={onContextCreate} />
-        {/* Soft light gradient overlay */}
+        {/* Soft Cyber-Vedic dark gradient overlay */}
         <LinearGradient
-          colors={['rgba(244,246,251,0.05)', 'rgba(244,246,251,0.65)', '#FFFFFF']}
+          colors={['rgba(14,23,38,0.10)', 'rgba(14,23,38,0.75)', '#0E1726']}
           locations={[0.25, 0.65, 1]}
           style={StyleSheet.absoluteFill}
           pointerEvents="none"
@@ -266,16 +266,16 @@ const styles = StyleSheet.create({
     height: HERO_HEIGHT,
     borderRadius: radius.xl,
     overflow: 'hidden',
-    backgroundColor: '#150A33',
+    backgroundColor: '#0E1726',
     borderWidth: 1,
-    borderColor: '#E3E8F3',
-    shadowColor: 'rgba(160,175,205,0.35)',
+    borderColor: 'rgba(16,185,129,0.30)',
+    shadowColor: 'rgba(0,0,0,0.60)',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.8,
     shadowRadius: 14,
     elevation: 6,
   },
-  fallback: { justifyContent: 'flex-end', backgroundColor: '#FFFFFF' },
+  fallback: { justifyContent: 'flex-end', backgroundColor: '#0E1726' },
 
   overlay: {
     position: 'absolute',
@@ -294,7 +294,7 @@ const styles = StyleSheet.create({
   },
   headline: {
     ...typography.display,
-    fontSize: 30,
+    fontSize: 28,
     color: colors.text,
     marginTop: 2,
     fontWeight: '800',
@@ -321,6 +321,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: spacing.md,
   },
-  link: { ...typography.small, fontWeight: '800', color: colors.auroraA },
+  link: { ...typography.small, fontWeight: '800', color: colors.teal },
   hint: { ...typography.tiny, fontSize: 10, color: colors.textFaint },
 });

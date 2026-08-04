@@ -58,13 +58,13 @@ export default function AstrologerProfile() {
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
           {/* Hero identity card */}
           <LinearGradient
-            colors={['rgba(122,60,255,0.25)', 'rgba(194,75,255,0.08)']}
+            colors={['rgba(16,185,129,0.16)', 'rgba(245,158,11,0.06)']}
             start={{ x: 0, y: 0 }}
             end={{ x: 0, y: 1 }}
             style={styles.head}
           >
             {/* Online glow ring */}
-            <View style={[styles.avatarRing, { borderColor: astrologer.online ? 'rgba(61,220,132,0.5)' : 'rgba(107,103,133,0.4)' }]}>
+            <View style={[styles.avatarRing, { borderColor: astrologer.online ? 'rgba(16,185,129,0.60)' : 'rgba(100,116,139,0.40)' }]}>
               <Avatar
                 uri={astrologer.avatar}
                 name={astrologer.name}
@@ -131,7 +131,7 @@ export default function AstrologerProfile() {
             <SectionHeader title="Consultation Rate" />
             <View style={styles.priceRow}>
               <LinearGradient
-                colors={['rgba(245,197,66,0.18)', 'rgba(255,138,61,0.08)']}
+                colors={['rgba(245,158,11,0.18)', 'rgba(16,185,129,0.06)']}
                 style={styles.priceBox}
               >
                 <Text style={styles.price}>
@@ -165,16 +165,16 @@ export default function AstrologerProfile() {
           </Text>
         </ScrollView>
 
-        {/* Sticky CTA */}
+        {/* Sticky CTA with sleek medium buttons */}
         <View style={styles.actions}>
           <LinearGradient
-            colors={['rgba(11,6,32,0.0)', 'rgba(11,6,32,0.95)']}
+            colors={['rgba(6,10,18,0.0)', 'rgba(6,10,18,0.96)']}
             style={styles.actionsGradient}
           />
           <Button
             label={canAfford ? '💬 Chat now' : 'Add money'}
             variant={canAfford ? 'gold' : 'primary'}
-            size="lg"
+            size="md"
             fullWidth={false}
             style={{ flex: 1 }}
             onPress={startChat}
@@ -182,7 +182,7 @@ export default function AstrologerProfile() {
           <Button
             label="📞 Call"
             variant="outline"
-            size="lg"
+            size="md"
             fullWidth={false}
             style={{ flex: 1 }}
             disabled={!astrologer.online}
@@ -207,10 +207,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: radius.xl,
     borderWidth: 1,
-    borderColor: 'rgba(122,60,255,0.3)',
+    borderColor: 'rgba(16,185,129,0.30)',
+    backgroundColor: '#0E1726',
     padding: spacing.xl,
     gap: spacing.xs,
     overflow: 'hidden',
+    shadowColor: 'rgba(0,0,0,0.60)',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.8,
+    shadowRadius: 10,
+    elevation: 4,
   },
   avatarRing: {
     width: 106,
@@ -221,7 +227,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: spacing.sm,
   },
-  name: { ...typography.h1, color: colors.text, textAlign: 'center' },
+  name: { ...typography.h1, color: colors.text, textAlign: 'center', fontWeight: '800' },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 },
   statusDot: { width: 8, height: 8, borderRadius: 4 },
   statusText: { ...typography.small, fontWeight: '700' },
@@ -232,17 +238,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.md,
     borderRadius: radius.md,
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    backgroundColor: 'rgba(6,10,18,0.60)',
     borderWidth: 1,
-    borderColor: colors.cardBorder,
+    borderColor: 'rgba(16,185,129,0.25)',
     gap: 3,
   },
   statIcon: { fontSize: 16 },
-  statValue: { ...typography.h3, fontSize: 14, color: colors.goldSoft },
-  statLabel: { ...typography.tiny, fontSize: 9.5, color: colors.textFaint },
+  statValue: { ...typography.h3, fontSize: 14, color: colors.goldSoft, fontWeight: '800' },
+  statLabel: { ...typography.tiny, fontSize: 9.5, color: colors.textFaint, fontWeight: '600' },
 
-  about: { ...typography.body, color: colors.textMuted, lineHeight: 22 },
-  subLabel: { ...typography.tiny, color: colors.textFaint, marginBottom: spacing.sm },
+  about: { ...typography.body, color: colors.textMuted, lineHeight: 22, fontWeight: '600' },
+  subLabel: { ...typography.tiny, color: colors.textFaint, marginBottom: spacing.sm, fontWeight: '700' },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
 
   priceRow: { marginBottom: spacing.md },
@@ -250,12 +256,12 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     padding: spacing.lg,
     borderWidth: 1,
-    borderColor: 'rgba(245,197,66,0.35)',
+    borderColor: 'rgba(245,158,11,0.40)',
     overflow: 'hidden',
   },
-  price: { ...typography.display, fontSize: 30, color: colors.gold },
+  price: { ...typography.display, fontSize: 30, color: colors.saffron, fontWeight: '900' },
   perMin: { ...typography.body, color: colors.textMuted, fontWeight: '600', fontSize: 16 },
-  priceSub: { ...typography.tiny, color: colors.textFaint, marginTop: 4 },
+  priceSub: { ...typography.tiny, color: colors.textFaint, marginTop: 4, fontWeight: '600' },
 
   affordBox: {
     flexDirection: 'row',
@@ -263,16 +269,16 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: 'rgba(56,225,195,0.4)',
-    backgroundColor: 'rgba(56,225,195,0.08)',
+    borderColor: 'rgba(16,185,129,0.40)',
+    backgroundColor: 'rgba(16,185,129,0.08)',
     padding: spacing.md,
   },
   affordBoxDanger: {
-    borderColor: 'rgba(255,90,110,0.4)',
-    backgroundColor: 'rgba(255,90,110,0.08)',
+    borderColor: 'rgba(244,63,94,0.40)',
+    backgroundColor: 'rgba(244,63,94,0.08)',
   },
   affordIcon: { fontSize: 16, fontWeight: '800', marginTop: 1 },
-  affordText: { ...typography.small, color: colors.teal, lineHeight: 18, flex: 1 },
+  affordText: { ...typography.small, color: colors.teal, lineHeight: 18, flex: 1, fontWeight: '600' },
 
   mockNote: { ...typography.tiny, color: colors.textFaint, textAlign: 'center', lineHeight: 15 },
 
@@ -280,11 +286,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.sm,
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.lg,
+    paddingTop: spacing.md,
     paddingBottom: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: colors.cardBorder,
-    backgroundColor: 'rgba(11,6,32,0.96)',
+    borderTopColor: 'rgba(16,185,129,0.25)',
+    backgroundColor: 'rgba(6,10,18,0.96)',
     position: 'relative',
   },
   actionsGradient: {

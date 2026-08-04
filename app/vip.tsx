@@ -6,13 +6,13 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { GradientBackground } from '../src/components/GradientBackground';
 import { Button } from '../src/components/Button';
 import { Card } from '../src/components/Card';
-import { Chip } from '../src/components/Chip';
 import { ScreenHeader } from '../src/components/ScreenHeader';
 import { SectionHeader } from '../src/components/SectionHeader';
 import { colors, radius, spacing, typography } from '../src/theme';
 import { useSubscriptionStore, VIP_PLANS } from '../src/store/subscriptionStore';
 import { useWalletStore } from '../src/store/walletStore';
 import { formatCurrency } from '../src/utils';
+import { launchUpiPayment } from '../src/services/paymentService';
 
 export default function VipScreen() {
   const router = useRouter();
@@ -34,7 +34,7 @@ export default function VipScreen() {
 
   const plan = VIP_PLANS.find((p) => p.id === selectedPlan) || VIP_PLANS[1];
 
-  const handleSubscribe = () => {
+  const handleSubscribe = async () => {
     if (paymentMethod === 'wallet') {
       if (balance < plan.price) {
         setShowRechargeModal(true);
@@ -47,6 +47,15 @@ export default function VipScreen() {
         setPurchasing(false);
         setShowSuccessModal(true);
       }, 1000);
+    } else if (paymentMethod === 'upi') {
+      setPurchasing(true);
+      const txnId = `VIP${Date.now().toString().slice(-6)}`;
+      await launchUpiPayment({ app: 'generic', amount: plan.price, txnId });
+      setTimeout(() => {
+        subscribe(selectedPlan);
+        setPurchasing(false);
+        setShowSuccessModal(true);
+      }, 1400);
     } else {
       setPurchasing(true);
       setTimeout(() => {
@@ -142,7 +151,7 @@ export default function VipScreen() {
                   },
                   {
                     id: 'upi',
-                    label: 'UPI / GPay / PhonePe / Paytm',
+                    label: 'Real UPI App / GPay / PhonePe / Paytm',
                     icon: '📱',
                   },
                   {

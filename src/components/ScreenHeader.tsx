@@ -19,7 +19,6 @@ interface Props {
   right?: React.ReactNode;
 }
 
-/** Premium screen title bar with language switcher, optional back button, wallet balance pill, notification bell, and live Vedic Ticker. */
 export function ScreenHeader({
   title,
   subtitle,
@@ -54,7 +53,7 @@ export function ScreenHeader({
             style={({ pressed }) => [styles.backBtn, pressed && styles.backBtnPressed]}
           >
             <LinearGradient
-              colors={['#FFFFFF', '#F8FAFC']}
+              colors={['#0E1726', '#060A12']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={StyleSheet.absoluteFill}
@@ -101,7 +100,7 @@ export function ScreenHeader({
             style={({ pressed }) => [styles.walletWrap, pressed && { opacity: 0.75 }]}
           >
             <LinearGradient
-              colors={['rgba(230,126,34,0.14)', 'rgba(212,172,13,0.06)']}
+              colors={['rgba(245,158,11,0.18)', 'rgba(16,185,129,0.06)']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={StyleSheet.absoluteFill}
@@ -118,7 +117,7 @@ export function ScreenHeader({
       {showTicker && (
         <View style={styles.tickerPill}>
           <LinearGradient
-            colors={['rgba(230,126,34,0.08)', 'rgba(125,60,152,0.04)']}
+            colors={['rgba(16,185,129,0.14)', 'rgba(245,158,11,0.06)']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={StyleSheet.absoluteFill}
@@ -151,11 +150,11 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#0E1726',
     borderWidth: 1,
-    borderColor: '#E3E8F3',
+    borderColor: 'rgba(16,185,129,0.25)',
     overflow: 'hidden',
-    shadowColor: 'rgba(160,175,205,0.30)',
+    shadowColor: 'rgba(0,0,0,0.50)',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.8,
     shadowRadius: 6,
@@ -183,11 +182,11 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#0E1726',
     borderWidth: 1,
-    borderColor: '#E3E8F3',
+    borderColor: 'rgba(16,185,129,0.25)',
     position: 'relative',
-    shadowColor: 'rgba(160,175,205,0.3)',
+    shadowColor: 'rgba(0,0,0,0.50)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.8,
     shadowRadius: 4,
@@ -206,7 +205,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 3,
     borderWidth: 1,
-    borderColor: '#FFFFFF',
+    borderColor: '#0E1726',
   },
   unreadBadgeText: { ...typography.tiny, color: colors.white, fontSize: 9.5, fontWeight: '900' },
 
@@ -218,10 +217,10 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: 'rgba(230,126,34,0.4)',
-    backgroundColor: '#FFFFFF',
+    borderColor: 'rgba(245,158,11,0.40)',
+    backgroundColor: '#0E1726',
     overflow: 'hidden',
-    shadowColor: 'rgba(230,126,34,0.2)',
+    shadowColor: 'rgba(245,158,11,0.20)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.6,
     shadowRadius: 4,
@@ -241,8 +240,8 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: '#E3E8F3',
-    backgroundColor: '#FFFFFF',
+    borderColor: 'rgba(16,185,129,0.25)',
+    backgroundColor: '#0E1726',
     overflow: 'hidden',
   },
   tickerDot: { fontSize: 8 },

@@ -17,7 +17,7 @@ export function EmptyState({ icon = '✨', title, message, actionLabel, onAction
     <View style={styles.wrap}>
       <View style={styles.iconWrap}>
         <LinearGradient
-          colors={['rgba(122,60,255,0.20)', 'rgba(194,75,255,0.08)']}
+          colors={['rgba(16,185,129,0.18)', 'rgba(245,158,11,0.06)']}
           style={StyleSheet.absoluteFill}
         />
         <Text style={styles.icon}>{icon}</Text>
@@ -51,18 +51,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(122,60,255,0.3)',
+    borderColor: 'rgba(16,185,129,0.35)',
     marginBottom: spacing.lg,
     overflow: 'hidden',
   },
   icon: { fontSize: 38 },
-  title: { ...typography.h3, color: colors.text, textAlign: 'center', fontSize: 18 },
+  title: { ...typography.h3, color: colors.text, textAlign: 'center', fontSize: 18, fontWeight: '800' },
   message: {
     ...typography.small,
     color: colors.textMuted,
     textAlign: 'center',
     marginTop: spacing.sm,
     lineHeight: 20,
+    fontWeight: '600',
   },
   button: { marginTop: spacing.lg, minWidth: 180 },
 });

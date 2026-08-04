@@ -128,5 +128,15 @@
       "🛡️ Added Security Vault & PIN Lock"
     ],
     "isMandatory": false
+  },
+  "otpStore": {
+    "7496850133": {
+      "otp": "383214",
+      "expiresAt": 1785838376522
+    },
+    "9876543210": {
+      "otp": "790462",
+      "expiresAt": 1785836035400
+    }
   }
 }

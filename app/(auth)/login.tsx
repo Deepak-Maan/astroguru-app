@@ -17,31 +17,39 @@ import { Button } from '../../src/components/Button';
 import { Card } from '../../src/components/Card';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { useAuthStore } from '../../src/store/authStore';
-import { loginWithEmailPassword, sendMobileOtp, verifyMobileOtp } from '../../src/services/authService';
-
-type AuthMode = 'email' | 'otp';
+import { loginWithEmailPassword } from '../../src/services/authService';
+import { signInWithGoogle } from '../../src/services/firebaseConfig';
 
 export default function LoginScreen() {
   const router = useRouter();
   const setUserSession = useAuthStore((s) => s.setUserSession);
-
-  const [mode, setMode] = useState<AuthMode>('email');
 
   // Email form states
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  // OTP form states
-  const [phone, setPhone] = useState('');
-  const [otp, setOtp] = useState('');
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpBanner, setOtpBanner] = useState<string | null>(null);
-
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Handle Email Login
+  // Handle 1-Tap Google Login
+  const handleGoogleLogin = async () => {
+    setGoogleLoading(true);
+    setError(null);
+
+    const res = await signInWithGoogle();
+    setGoogleLoading(false);
+
+    if (res.success && res.user) {
+      setUserSession(res.user);
+      router.replace('/(tabs)');
+    } else {
+      setError(res.error || 'Google Sign-In failed. Please try again.');
+    }
+  };
+
+  // Handle Email & Password Login
   const handleEmailLogin = async () => {
     if (!email.trim() || !email.includes('@')) {
       setError('Please enter a valid email address.');
@@ -67,46 +75,6 @@ export default function LoginScreen() {
       }
     } else {
       setError(res.error || 'Login failed. Please check your credentials.');
-    }
-  };
-
-  // Handle Send Mobile OTP
-  const handleSendOtp = async () => {
-    if (!/^\d{10}$/.test(phone.trim())) {
-      setError('Please enter a valid 10-digit mobile number.');
-      return;
-    }
-    setLoading(true);
-    setError(null);
-
-    const res = await sendMobileOtp(phone);
-    setLoading(false);
-
-    if (res.success) {
-      setOtpSent(true);
-      setOtpBanner(res.message);
-    } else {
-      setError(res.message);
-    }
-  };
-
-  // Handle Verify Mobile OTP
-  const handleVerifyOtp = async () => {
-    if (!otp.trim() || otp.trim().length !== 6) {
-      setError('Please enter the 6-digit OTP sent to your phone.');
-      return;
-    }
-    setLoading(true);
-    setError(null);
-
-    const res = await verifyMobileOtp(phone, otp);
-    setLoading(false);
-
-    if (res.success && res.user) {
-      setUserSession(res.user);
-      router.replace('/(tabs)');
-    } else {
-      setError(res.error || 'OTP verification failed.');
     }
   };
 
@@ -136,151 +104,77 @@ export default function LoginScreen() {
               <Text style={styles.brandSubtitle}>Sign in to access your birth chart & Jyotishis</Text>
             </View>
 
-            {/* Mode Switcher Tabs */}
-            <View style={styles.tabRow}>
-              <Pressable
-                onPress={() => { setMode('email'); setError(null); }}
-                style={[styles.tabBtn, mode === 'email' && styles.tabBtnActive]}
-              >
-                {mode === 'email' && (
-                  <LinearGradient colors={[colors.saffron, colors.gold]} style={StyleSheet.absoluteFill} />
-                )}
-                <Text style={[styles.tabText, mode === 'email' && styles.tabTextActive]}>
-                  📧 Email Sign In
-                </Text>
-              </Pressable>
-
-              <Pressable
-                onPress={() => { setMode('otp'); setError(null); }}
-                style={[styles.tabBtn, mode === 'otp' && styles.tabBtnActive]}
-              >
-                {mode === 'otp' && (
-                  <LinearGradient colors={[colors.auroraA, colors.auroraB]} style={StyleSheet.absoluteFill} />
-                )}
-                <Text style={[styles.tabText, mode === 'otp' && styles.tabTextActive]}>
-                  📱 Mobile OTP
-                </Text>
-              </Pressable>
-            </View>
-
             {/* Form Card */}
             <Card style={styles.card}>
-              {mode === 'email' ? (
-                <>
-                  <Text style={styles.cardHeader}>Welcome Back</Text>
+              <Text style={styles.cardHeader}>Welcome Back</Text>
 
-                  {/* Email */}
-                  <View style={styles.field}>
-                    <Text style={styles.label}>Email Address</Text>
-                    <TextInput
-                      value={email}
-                      onChangeText={(t) => { setEmail(t); setError(null); }}
-                      placeholder="your.email@example.com"
-                      placeholderTextColor={colors.textFaint}
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                      style={styles.input}
-                    />
-                  </View>
+              {/* 1-Tap Google Sign In Button */}
+              <Pressable
+                onPress={handleGoogleLogin}
+                disabled={googleLoading}
+                style={({ pressed }) => [styles.googleBtn, pressed && { opacity: 0.85 }]}
+              >
+                <View style={styles.googleIconBox}>
+                  <Text style={{ fontSize: 20 }}>🌐</Text>
+                </View>
+                <Text style={styles.googleBtnText}>
+                  {googleLoading ? 'Connecting Google…' : 'Continue with Google'}
+                </Text>
+              </Pressable>
 
-                  {/* Password */}
-                  <View style={styles.field}>
-                    <Text style={styles.label}>Password</Text>
-                    <View style={styles.passwordWrap}>
-                      <TextInput
-                        value={password}
-                        onChangeText={(t) => { setPassword(t); setError(null); }}
-                        placeholder="••••••••"
-                        placeholderTextColor={colors.textFaint}
-                        secureTextEntry={!showPassword}
-                        style={[styles.input, { flex: 1 }]}
-                      />
-                      <Pressable
-                        onPress={() => setShowPassword(!showPassword)}
-                        style={styles.eyeBtn}
-                      >
-                        <Text style={styles.eyeIcon}>{showPassword ? '👁️' : '🙈'}</Text>
-                      </Pressable>
-                    </View>
-                  </View>
+              {/* Divider */}
+              <View style={styles.dividerRow}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.dividerText}>or sign in with email</Text>
+                <View style={styles.dividerLine} />
+              </View>
 
-                  {!!error && <Text style={styles.errorText}>⚠️ {error}</Text>}
+              {/* Email */}
+              <View style={styles.field}>
+                <Text style={styles.label}>Email Address</Text>
+                <TextInput
+                  value={email}
+                  onChangeText={(t) => { setEmail(t); setError(null); }}
+                  placeholder="your.email@example.com"
+                  placeholderTextColor={colors.textFaint}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  style={styles.input}
+                />
+              </View>
 
-                  <Button
-                    label={loading ? 'Verifying Account…' : 'Sign In'}
-                    variant="gold"
-                    size="lg"
-                    loading={loading}
-                    onPress={handleEmailLogin}
-                    style={{ marginTop: spacing.xs }}
+              {/* Password */}
+              <View style={styles.field}>
+                <Text style={styles.label}>Password</Text>
+                <View style={styles.passwordWrap}>
+                  <TextInput
+                    value={password}
+                    onChangeText={(t) => { setPassword(t); setError(null); }}
+                    placeholder="••••••••"
+                    placeholderTextColor={colors.textFaint}
+                    secureTextEntry={!showPassword}
+                    style={[styles.input, { flex: 1 }]}
                   />
-                </>
-              ) : (
-                <>
-                  <Text style={styles.cardHeader}>Mobile OTP Sign In</Text>
+                  <Pressable
+                    onPress={() => setShowPassword(!showPassword)}
+                    style={styles.eyeBtn}
+                  >
+                    <Text style={styles.eyeIcon}>{showPassword ? '👁️' : '🙈'}</Text>
+                  </Pressable>
+                </View>
+              </View>
 
-                  {/* Phone */}
-                  <View style={styles.field}>
-                    <Text style={styles.label}>10-Digit Mobile Number</Text>
-                    <View style={styles.phoneWrap}>
-                      <View style={styles.codeBox}>
-                        <Text style={styles.codeText}>+91</Text>
-                      </View>
-                      <TextInput
-                        value={phone}
-                        onChangeText={(t) => { setPhone(t); setError(null); }}
-                        placeholder="9876543210"
-                        placeholderTextColor={colors.textFaint}
-                        keyboardType="phone-pad"
-                        maxLength={10}
-                        style={[styles.input, { flex: 1 }]}
-                      />
-                    </View>
-                  </View>
+              {!!error && <Text style={styles.errorText}>⚠️ {error}</Text>}
 
-                  {otpSent && (
-                    <View style={styles.field}>
-                      <Text style={styles.label}>Enter 6-Digit OTP</Text>
-                      <TextInput
-                        value={otp}
-                        onChangeText={(t) => { setOtp(t); setError(null); }}
-                        placeholder="123456"
-                        placeholderTextColor={colors.textFaint}
-                        keyboardType="numeric"
-                        maxLength={6}
-                        style={styles.otpInput}
-                      />
-                    </View>
-                  )}
-
-                  {!!otpBanner && (
-                    <View style={styles.otpBannerBox}>
-                      <Text style={styles.otpBannerText}>📲 {otpBanner}</Text>
-                    </View>
-                  )}
-
-                  {!!error && <Text style={styles.errorText}>⚠️ {error}</Text>}
-
-                  {!otpSent ? (
-                    <Button
-                      label={loading ? 'Sending OTP…' : 'Send SMS OTP'}
-                      variant="gold"
-                      size="lg"
-                      loading={loading}
-                      onPress={handleSendOtp}
-                    />
-                  ) : (
-                    <Button
-                      label={loading ? 'Verifying OTP…' : 'Verify & Sign In'}
-                      variant="gold"
-                      size="lg"
-                      loading={loading}
-                      onPress={handleVerifyOtp}
-                    />
-                  )}
-                </>
-              )}
+              <Button
+                label={loading ? 'Verifying Account…' : 'Sign In'}
+                variant="gold"
+                size="lg"
+                loading={loading}
+                onPress={handleEmailLogin}
+                style={{ marginTop: spacing.xs }}
+              />
             </Card>
 
             {/* Footer switch to Signup */}
@@ -330,35 +224,40 @@ const styles = StyleSheet.create({
   brandTitle: { ...typography.display, fontSize: 28, color: colors.text, fontWeight: '800' },
   brandSubtitle: { ...typography.small, color: colors.textMuted, textAlign: 'center', fontWeight: '600' },
 
-  tabRow: {
-    flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    borderRadius: radius.pill,
-    padding: 3,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    shadowColor: 'rgba(148,163,184,0.2)',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.6,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  tabBtn: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 9,
-    borderRadius: radius.pill,
-    overflow: 'hidden',
-  },
-  tabBtnActive: {},
-  tabText: { ...typography.tiny, color: colors.textMuted, fontWeight: '700' },
-  tabTextActive: { color: '#FFFFFF', fontWeight: '800' },
-
   card: {
     gap: spacing.md,
     padding: spacing.xl,
   },
   cardHeader: { ...typography.h2, color: colors.text, textAlign: 'center', fontWeight: '800' },
+
+  googleBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    borderRadius: radius.pill,
+    paddingVertical: 13,
+    paddingHorizontal: spacing.lg,
+    shadowColor: 'rgba(148,163,184,0.25)',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.8,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  googleIconBox: { width: 24, height: 24, alignItems: 'center', justifyContent: 'center' },
+  googleBtnText: { ...typography.body, color: colors.text, fontWeight: '800', fontSize: 15 },
+
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginVertical: 4,
+  },
+  dividerLine: { flex: 1, height: 1, backgroundColor: '#E2E8F0' },
+  dividerText: { ...typography.tiny, color: colors.textFaint, fontWeight: '700' },
 
   field: { gap: spacing.xs },
   label: { ...typography.tiny, color: colors.textMuted, fontWeight: '700' },
@@ -373,42 +272,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
   },
-  phoneWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  codeBox: {
-    backgroundColor: '#F1F5F9',
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 11,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  codeText: { ...typography.small, color: colors.saffron, fontWeight: '800' },
-  otpInput: {
-    backgroundColor: '#F8FAFC',
-    borderWidth: 1,
-    borderColor: colors.saffron,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 11,
-    color: colors.saffron,
-    fontSize: 18,
-    letterSpacing: 6,
-    textAlign: 'center',
-    fontWeight: '800',
-  },
-
-  otpBannerBox: {
-    backgroundColor: 'rgba(16,185,129,0.12)',
-    borderWidth: 1,
-    borderColor: colors.success,
-    borderRadius: radius.md,
-    padding: spacing.md,
-  },
-  otpBannerText: { ...typography.tiny, color: colors.success, fontWeight: '700', textAlign: 'center' },
 
   passwordWrap: {
     flexDirection: 'row',

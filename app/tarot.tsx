@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
 
   tarotCardFront: { flex: 1, position: 'relative' },
   cardImage: { width: '100%', height: '100%', resizeMode: 'cover' },
-  cardGradOverlay: { ...StyleSheet.absoluteFillObject },
+  cardGradOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
   cardOverlayContent: {
     position: 'absolute',
     bottom: spacing.lg,

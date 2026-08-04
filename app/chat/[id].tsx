@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Animated,
+  Easing,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -19,111 +20,82 @@ import { Button } from '../../src/components/Button';
 import { ChatBubble } from '../../src/components/ChatBubble';
 import { EmptyState } from '../../src/components/EmptyState';
 import { colors, radius, spacing, typography } from '../../src/theme';
-import { astrologerById } from '../../src/data/astrologers';
+import { ASTROLOGERS } from '../../src/data/astrologers';
+import { greetingFor, replyTo, typingDelay } from '../../src/services/consult/replies';
 import { useChatStore } from '../../src/store/chatStore';
 import { useUserStore } from '../../src/store/userStore';
 import { useWalletStore } from '../../src/store/walletStore';
-import { greetingFor, replyTo, typingDelay } from '../../src/services/consult/replies';
 import { formatCurrency } from '../../src/utils';
 
-let seq = 0;
-const nextId = () => `c-${Date.now()}-${seq++}`;
-
-const WAVE_HEIGHTS = [14, 28, 20, 36, 24, 40, 18, 34, 22, 30, 26, 38];
+let idCounter = 0;
+const nextId = () => `m-${Date.now()}-${++idCounter}`;
 
 const QUICK_PROMPTS = [
-  '✨ Marriage & Relationship Timing',
-  '💼 Career Transition & Promotion',
-  '💰 Wealth & Property Prospects',
-  '🪐 Current Dasha Remedies',
+  '✨ Career & Finance 2026',
+  '❤️ Marriage & Compatibility',
+  '🪐 Kundli Dasha Remedies',
+  '🔮 Lucky Gemstone Advice',
 ];
 
-export default function ConsultChat() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+export default function ChatScreen() {
   const router = useRouter();
-  const astrologerId = String(id);
-  const astrologer = astrologerById(astrologerId);
-  const scrollRef = useRef<ScrollView>(null);
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const astrologer = ASTROLOGERS.find((a) => a.id === id);
 
-  const session = useChatStore((s) => s.sessions[astrologerId]);
+  const kundli = useUserStore((s) => s.kundli);
+  const balance = useWalletStore((s) => s.balance);
+  const debit = useWalletStore((s) => s.debit);
+  const topup = useWalletStore((s) => s.topup);
+
+  // Per-user chat store actions
+  const getSession = useChatStore((s) => s.getSession);
   const startSession = useChatStore((s) => s.startSession);
+  const billMinute = useChatStore((s) => s.billMinute);
   const endSession = useChatStore((s) => s.endSession);
   const addMessage = useChatStore((s) => s.addMessage);
-  const billMinute = useChatStore((s) => s.billMinute);
 
-  const debit = useWalletStore((s) => s.debit);
-  const balance = useWalletStore((s) => s.balance);
-  const kundli = useUserStore((s) => s.kundli);
+  const session = astrologer ? getSession(astrologer.id) : null;
+  const active = Boolean(session?.startedAt && !session?.ended);
+  const messages = session?.messages ?? [];
 
   const [draft, setDraft] = useState('');
   const [typing, setTyping] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [ranOut, setRanOut] = useState(false);
-
-  // Mode
   const [mode, setMode] = useState<'chat' | 'call'>('chat');
   const [isMuted, setIsMuted] = useState(false);
-  const [isSpeaker, setIsSpeaker] = useState(true);
+  const [isSpeaker, setIsSpeaker] = useState(false);
 
-  // Animated wave values for call mode
-  const waveAnims = useRef(WAVE_HEIGHTS.map(() => new Animated.Value(6))).current;
-  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const scrollRef = useRef<ScrollView>(null);
   const sendScaleAnim = useRef(new Animated.Value(1)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const waveAnims = useRef(Array.from({ length: 12 }, () => new Animated.Value(8))).current;
 
-  const messages = session?.messages ?? [];
-  const active = !!session?.startedAt && !session?.ended;
-  const cost = session?.costSoFar ?? 0;
   const price = astrologer?.pricePerMin ?? 0;
+  const cost = session?.costSoFar ?? 0;
 
-  const handleBack = () => {
-    if (router.canGoBack()) {
-      router.back();
-    } else {
-      router.replace('/(tabs)/consult');
-    }
-  };
-
-  // Pulsing avatar animation in call mode
+  // Pulse & Wave Animations for Audio Call Mode
   useEffect(() => {
     if (mode === 'call' && active) {
-      const pulse = Animated.loop(
+      Animated.loop(
         Animated.sequence([
-          Animated.timing(pulseAnim, { toValue: 1.12, duration: 800, useNativeDriver: true }),
-          Animated.timing(pulseAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 1.12, duration: 1000, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 1, duration: 1000, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
         ])
-      );
-      pulse.start();
-      return () => pulse.stop();
-    } else {
-      pulseAnim.setValue(1);
-    }
-  }, [mode, active]);
+      ).start();
 
-  // Start/stop soundwave animation
-  useEffect(() => {
-    if (mode === 'call' && active) {
-      const animations = waveAnims.map((anim, i) =>
+      const waveLoops = waveAnims.map((anim, i) =>
         Animated.loop(
           Animated.sequence([
-            Animated.timing(anim, {
-              toValue: WAVE_HEIGHTS[i],
-              duration: 280 + i * 70,
-              useNativeDriver: false,
-            }),
-            Animated.timing(anim, {
-              toValue: 4,
-              duration: 280 + i * 70,
-              useNativeDriver: false,
-            }),
+            Animated.timing(anim, { toValue: 18 + (i % 5) * 8, duration: 300 + (i % 4) * 120, easing: Easing.linear, useNativeDriver: false }),
+            Animated.timing(anim, { toValue: 6 + (i % 3) * 4, duration: 300 + (i % 4) * 120, easing: Easing.linear, useNativeDriver: false }),
           ])
         )
       );
-      animations.forEach((a) => a.start());
-      return () => animations.forEach((a) => a.stop());
-    } else {
-      waveAnims.forEach((anim) => anim.setValue(4));
+      waveLoops.forEach((loop) => loop.start());
+      return () => waveLoops.forEach((loop) => loop.stop());
     }
-  }, [mode, active]);
+  }, [mode, active, pulseAnim, waveAnims]);
 
   const scrollToEnd = useCallback(() => {
     requestAnimationFrame(() => scrollRef.current?.scrollToEnd({ animated: true }));
@@ -131,10 +103,18 @@ export default function ConsultChat() {
 
   const begin = useCallback(() => {
     if (!astrologer) return;
-    if (!debit(astrologer.pricePerMin, `Consult · ${astrologer.name} (min 1)`)) {
+    
+    // Auto-topup welcome trial if user has insufficient funds for first minute
+    if (balance < astrologer.pricePerMin) {
+      topup(100, 'Welcome Consultation Bonus');
+    }
+
+    const ok = debit(astrologer.pricePerMin, `Consult · ${astrologer.name} (min 1)`);
+    if (!ok) {
       setRanOut(true);
       return;
     }
+
     startSession(astrologer.id);
     billMinute(astrologer.id, astrologer.pricePerMin);
     setElapsed(0);
@@ -148,11 +128,10 @@ export default function ConsultChat() {
         at: Date.now(),
       });
     }
-  }, [astrologer, debit, startSession, billMinute, addMessage]);
+  }, [astrologer, balance, topup, debit, startSession, billMinute, addMessage]);
 
   useEffect(() => {
     if (astrologer && !session?.startedAt && !session?.ended) begin();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [astrologer?.id]);
 
   useEffect(() => {
@@ -183,7 +162,13 @@ export default function ConsultChat() {
 
   function send(textToSend?: string) {
     const text = (textToSend || draft).trim();
-    if (!text || !astrologer || !active) return;
+    if (!text || !astrologer) return;
+
+    // If session ended or ran out, restart seamlessly on message send
+    if (!active) {
+      begin();
+    }
+
     setDraft('');
     addMessage(astrologer.id, { id: nextId(), role: 'user', text, at: Date.now() });
     scrollToEnd();
@@ -200,20 +185,26 @@ export default function ConsultChat() {
     setTyping(true);
     setTimeout(() => {
       setTyping(false);
-      if (!useChatStore.getState().sessions[astrologer.id]?.ended) {
-        addMessage(astrologer.id, {
-          id: nextId(),
-          role: 'assistant',
-          text: reply,
-          at: Date.now(),
-        });
-      }
+      addMessage(astrologer.id, {
+        id: nextId(),
+        role: 'assistant',
+        text: reply,
+        at: Date.now(),
+      });
       scrollToEnd();
     }, typingDelay(reply));
   }
 
   function stop() {
     if (astrologer) endSession(astrologer.id);
+  }
+
+  function handleBack() {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(tabs)/consult');
+    }
   }
 
   if (!astrologer) {
@@ -233,43 +224,52 @@ export default function ConsultChat() {
 
   const mm = String(Math.floor(elapsed / 60)).padStart(2, '0');
   const ss = String(elapsed % 60).padStart(2, '0');
-  const minLeft = Math.floor(balance / price);
+  const minLeft = Math.max(1, Math.floor(balance / Math.max(1, price)));
 
   return (
     <GradientBackground>
       <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
-        {/* Header */}
+        {/* Screen Header Bar */}
         <View style={styles.header}>
-          <Pressable onPress={handleBack} hitSlop={12} style={styles.back}>
+          <Pressable onPress={handleBack} hitSlop={12} style={styles.backBtn}>
             <Text style={styles.backIcon}>‹</Text>
           </Pressable>
+          
           <Avatar
             uri={astrologer.avatar}
             name={astrologer.name}
-            size={40}
+            size={42}
             online={astrologer.online}
             showStatus
           />
+
           <View style={{ flex: 1 }}>
             <Text style={styles.hName} numberOfLines={1}>
               {astrologer.name}
             </Text>
-            <Text style={[styles.hMeta, { color: active ? colors.teal : colors.textFaint }]}>
-              {active ? `● Live · ${mm}:${ss}` : session?.ended ? 'Session ended' : 'Connecting…'}
-            </Text>
+            <View style={styles.statusRow}>
+              <View style={[styles.statusDot, { backgroundColor: active ? colors.online : colors.saffron }]} />
+              <Text style={styles.hMeta}>
+                {active ? `Live Consultation · ${mm}:${ss}` : 'Online Jyotishi'}
+              </Text>
+            </View>
           </View>
 
-          {/* Perfectly Centered Cost Pill */}
-          <View style={styles.costPill}>
-            <Text style={styles.costValue}>{formatCurrency(cost)}</Text>
-            <Text style={styles.costLabel}>{formatCurrency(price)}/min</Text>
-          </View>
+          {/* Dynamic Real Wallet Balance Pill */}
+          <Pressable onPress={() => router.push('/wallet')} style={styles.walletPill}>
+            <LinearGradient
+              colors={['rgba(230,126,34,0.12)', 'rgba(212,172,13,0.06)']}
+              style={StyleSheet.absoluteFill}
+            />
+            <Text style={styles.walletVal}>{formatCurrency(balance)}</Text>
+            <Text style={styles.walletRate}>{formatCurrency(price)}/min</Text>
+          </Pressable>
         </View>
 
-        {/* Balance + mode strip */}
+        {/* Sub-Header Session Info Strip */}
         <View style={styles.strip}>
           <Text style={styles.stripText}>
-            {formatCurrency(balance)} · ~{minLeft} min left
+            Spent: {formatCurrency(cost)} · ~{minLeft} min remaining
           </Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
             <Pressable
@@ -277,32 +277,36 @@ export default function ConsultChat() {
               style={styles.modeToggle}
             >
               <LinearGradient
-                colors={mode === 'call' ? [colors.auroraA, colors.auroraB] : ['rgba(255,255,255,0.10)', 'rgba(255,255,255,0.06)']}
+                colors={mode === 'call' ? [colors.saffron, colors.gold] : ['#F1F5F9', '#E2E8F0']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.modeToggleGrad}
               >
-                <Text style={styles.modeToggleText}>
+                <Text style={[styles.modeToggleText, mode === 'call' && { color: colors.white }]}>
                   {mode === 'chat' ? '📞 Audio Call' : '💬 Live Chat'}
                 </Text>
               </LinearGradient>
             </Pressable>
-            {active && (
+
+            {active ? (
               <Pressable onPress={stop} hitSlop={8} style={styles.endBtn}>
                 <Text style={styles.endBtnText}>End</Text>
+              </Pressable>
+            ) : (
+              <Pressable onPress={begin} hitSlop={8} style={styles.startBtn}>
+                <Text style={styles.startBtnText}>Connect</Text>
               </Pressable>
             )}
           </View>
         </View>
 
-        {/* ── CALL MODE ── */}
+        {/* ── AUDIO CALL MODE ── */}
         {mode === 'call' ? (
           <View style={styles.callScreen}>
-            {/* Pulsing Avatar Ring */}
             <Animated.View style={[styles.callAvatarRing, { transform: [{ scale: pulseAnim }] }]}>
               {active && (
                 <LinearGradient
-                  colors={[colors.auroraA + '55', colors.auroraB + '22']}
+                  colors={['rgba(230,126,34,0.30)', 'rgba(125,60,152,0.10)']}
                   style={StyleSheet.absoluteFill}
                 />
               )}
@@ -316,11 +320,11 @@ export default function ConsultChat() {
             </Animated.View>
 
             <Text style={styles.callName}>{astrologer.name}</Text>
-            <Text style={[styles.callStatus, { color: active ? colors.gold : colors.textFaint }]}>
-              {active ? `Live Consultation · ${mm}:${ss}` : 'Call Ended'}
+            <Text style={[styles.callStatus, { color: active ? colors.saffron : colors.textMuted }]}>
+              {active ? `Live Audio Call · ${mm}:${ss}` : 'Ready to Connect'}
             </Text>
 
-            {/* Animated 12-Bar Soundwave */}
+            {/* Soundwave Equalizer */}
             <View style={styles.waveContainer}>
               {waveAnims.map((anim, idx) => (
                 <Animated.View
@@ -330,16 +334,15 @@ export default function ConsultChat() {
                     {
                       height: anim,
                       backgroundColor: active
-                        ? idx % 3 === 0 ? colors.gold : idx % 3 === 1 ? colors.auroraB : colors.teal
-                        : colors.textFaint,
-                      opacity: active ? 1 : 0.3,
+                        ? idx % 3 === 0 ? colors.saffron : idx % 3 === 1 ? colors.gold : colors.teal
+                        : '#CBD5E1',
                     },
                   ]}
                 />
               ))}
             </View>
 
-            {/* Call controls */}
+            {/* Call Action Controls */}
             <View style={styles.callControls}>
               <Pressable
                 onPress={() => setIsMuted(!isMuted)}
@@ -351,10 +354,15 @@ export default function ConsultChat() {
                 </Text>
               </Pressable>
 
-              <Pressable onPress={stop} style={styles.callBtnEnd}>
-                <LinearGradient colors={['#FF5A6E', '#CC2244']} style={StyleSheet.absoluteFill} />
-                <Text style={styles.callBtnIcon}>📵</Text>
-                <Text style={[styles.callBtnLabel, { color: colors.white }]}>End Call</Text>
+              <Pressable onPress={active ? stop : begin} style={styles.callBtnEnd}>
+                <LinearGradient
+                  colors={active ? ['#EF4444', '#DC2626'] : ['#10B981', '#059669']}
+                  style={StyleSheet.absoluteFill}
+                />
+                <Text style={styles.callBtnIcon}>{active ? '📵' : '📞'}</Text>
+                <Text style={[styles.callBtnLabel, { color: colors.white }]}>
+                  {active ? 'End Call' : 'Start Call'}
+                </Text>
               </Pressable>
 
               <Pressable
@@ -362,14 +370,14 @@ export default function ConsultChat() {
                 style={[styles.callBtn, isSpeaker && styles.callBtnGold]}
               >
                 <Text style={styles.callBtnIcon}>🔊</Text>
-                <Text style={[styles.callBtnLabel, isSpeaker && { color: colors.gold }]}>
+                <Text style={[styles.callBtnLabel, isSpeaker && { color: colors.saffron }]}>
                   {isSpeaker ? 'Speaker' : 'Earpiece'}
                 </Text>
               </Pressable>
             </View>
           </View>
         ) : (
-          /* ── CHAT MODE ── */
+          /* ── LIVE CHAT MODE ── */
           <KeyboardAvoidingView
             style={{ flex: 1 }}
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -391,80 +399,74 @@ export default function ConsultChat() {
               )}
             </ScrollView>
 
-            {/* Quick Suggested Question Prompts Container with Fixed Height */}
-            {active && (
-              <View style={styles.promptWrapper}>
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.promptScroll}
-                  style={{ flexGrow: 0 }}
-                >
-                  {QUICK_PROMPTS.map((prompt) => (
-                    <Pressable
-                      key={prompt}
-                      onPress={() => send(prompt)}
-                      style={({ pressed }) => [styles.promptChip, pressed && { opacity: 0.75 }]}
-                    >
-                      <Text style={styles.promptText}>{prompt}</Text>
-                    </Pressable>
-                  ))}
-                </ScrollView>
-              </View>
-            )}
+            {/* Quick Suggested Prompts */}
+            <View style={styles.promptWrapper}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.promptScroll}
+                style={{ flexGrow: 0 }}
+              >
+                {QUICK_PROMPTS.map((prompt) => (
+                  <Pressable
+                    key={prompt}
+                    onPress={() => send(prompt)}
+                    style={({ pressed }) => [styles.promptChip, pressed && { opacity: 0.75 }]}
+                  >
+                    <Text style={styles.promptText}>{prompt}</Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
+            </View>
 
+            {/* Insufficient Funds Banner */}
             {ranOut && (
-              <View style={styles.notice}>
+              <View style={styles.noticeCard}>
                 <Text style={styles.noticeText}>
-                  💸 Your wallet ran out — consultation paused.
+                  💸 Wallet balance low. Recharge to continue consultation.
                 </Text>
                 <Button
-                  label="Add money to continue"
+                  label="💰 Quick Top-Up ₹100"
                   variant="gold"
                   size="sm"
-                  onPress={() => router.push('/wallet')}
+                  onPress={() => {
+                    topup(100, 'Instant Wallet Top-Up');
+                    begin();
+                  }}
                 />
               </View>
             )}
 
-            {!active && !ranOut && session?.ended && (
-              <View style={styles.notice}>
-                <Text style={styles.noticeText}>
-                  Session ended. Total: {formatCurrency(cost)}.
-                </Text>
-                <Button label="Start again" variant="primary" size="sm" onPress={begin} />
-              </View>
-            )}
-
-            {/* Animated Composer */}
+            {/* Sleek WhatsApp/Telegram Style Composer Pill with Integrated Send Button */}
             <View style={styles.composer}>
-              <TextInput
-                value={draft}
-                onChangeText={setDraft}
-                placeholder={active ? 'Type your question…' : 'Session is not active'}
-                placeholderTextColor={colors.textFaint}
-                style={[styles.input, !active && { opacity: 0.5 }]}
-                editable={active}
-                multiline
-                maxLength={500}
-              />
-              <Pressable
-                onPress={() => send()}
-                disabled={!draft.trim() || !active}
-                style={({ pressed }) => [
-                  styles.sendBtn,
-                  (!draft.trim() || !active) && styles.sendBtnOff,
-                  pressed && { opacity: 0.75 },
-                ]}
-              >
-                <Animated.View style={{ transform: [{ scale: sendScaleAnim }], flex: 1, width: '100%', alignItems: 'center', justifyContent: 'center' }}>
-                  <LinearGradient
-                    colors={draft.trim() && active ? [colors.auroraA, colors.auroraB] : ['rgba(255,255,255,0.10)', 'rgba(255,255,255,0.06)']}
-                    style={StyleSheet.absoluteFill}
-                  />
-                  <Text style={styles.sendIcon}>↑</Text>
-                </Animated.View>
-              </Pressable>
+              <View style={styles.inputPillContainer}>
+                <TextInput
+                  value={draft}
+                  onChangeText={setDraft}
+                  placeholder="Type your question to Acharya…"
+                  placeholderTextColor={colors.textFaint}
+                  style={styles.input}
+                  onSubmitEditing={() => send()}
+                  returnKeyType="send"
+                />
+                <Pressable
+                  onPress={() => send()}
+                  disabled={!draft.trim()}
+                  style={({ pressed }) => [
+                    styles.sendBtn,
+                    !draft.trim() && styles.sendBtnOff,
+                    pressed && { opacity: 0.8 },
+                  ]}
+                >
+                  <Animated.View style={{ transform: [{ scale: sendScaleAnim }], flex: 1, width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+                    <LinearGradient
+                      colors={draft.trim() ? [colors.saffron, colors.gold] : ['#CBD5E1', '#94A3B8']}
+                      style={StyleSheet.absoluteFill}
+                    />
+                    <Text style={styles.sendIcon}>➤</Text>
+                  </Animated.View>
+                </Pressable>
+              </View>
             </View>
           </KeyboardAvoidingView>
         )}
@@ -480,35 +482,43 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.cardBorder,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+    shadowColor: 'rgba(148,163,184,0.15)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.6,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  back: {
-    width: 34,
-    height: 34,
-    borderRadius: radius.pill,
+  backBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: '#F8FAFC',
     borderWidth: 1,
-    borderColor: colors.cardBorder,
+    borderColor: '#E2E8F0',
   },
-  backIcon: { color: colors.text, fontSize: 24, lineHeight: 26, marginTop: -3 },
-  hName: { ...typography.h3, fontSize: 15, color: colors.text },
-  hMeta: { ...typography.tiny, marginTop: 1 },
-  costPill: {
+  backIcon: { color: colors.text, fontSize: 26, lineHeight: 28, marginTop: -2 },
+  hName: { ...typography.h3, fontSize: 15, color: colors.text, fontWeight: '800' },
+  statusRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 },
+  statusDot: { width: 7, height: 7, borderRadius: 4 },
+  hMeta: { ...typography.tiny, color: colors.textMuted, fontSize: 11, fontWeight: '600' },
+  walletPill: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(245,197,66,0.12)',
+    backgroundColor: '#FFFFFF',
     paddingHorizontal: spacing.md,
     paddingVertical: 5,
     borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: 'rgba(245,197,66,0.4)',
-    minWidth: 64,
+    borderColor: 'rgba(230,126,34,0.4)',
+    overflow: 'hidden',
   },
-  costValue: { ...typography.h3, fontSize: 13, color: colors.gold, textAlign: 'center', lineHeight: 16 },
-  costLabel: { ...typography.tiny, fontSize: 9.5, color: colors.textMuted, textAlign: 'center', marginTop: 1 },
+  walletVal: { ...typography.h3, fontSize: 13, color: colors.saffron, textAlign: 'center', fontWeight: '800' },
+  walletRate: { ...typography.tiny, fontSize: 9.5, color: colors.textMuted, textAlign: 'center', fontWeight: '700' },
 
   strip: {
     flexDirection: 'row',
@@ -516,29 +526,38 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: spacing.lg,
     paddingVertical: 8,
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.cardBorder,
+    backgroundColor: '#F8FAFC',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
   },
-  stripText: { ...typography.tiny, color: colors.textMuted },
+  stripText: { ...typography.tiny, color: colors.textMuted, fontWeight: '700' },
   modeToggle: { borderRadius: radius.pill, overflow: 'hidden' },
   modeToggleGrad: {
     paddingVertical: 5,
     paddingHorizontal: 12,
     alignItems: 'center',
   },
-  modeToggleText: { ...typography.tiny, color: colors.gold, fontWeight: '800' },
+  modeToggleText: { ...typography.tiny, color: colors.text, fontWeight: '800' },
   endBtn: {
     paddingHorizontal: 12,
     paddingVertical: 5,
     borderRadius: radius.pill,
-    backgroundColor: 'rgba(255,90,110,0.18)',
+    backgroundColor: 'rgba(239,68,68,0.12)',
     borderWidth: 1,
-    borderColor: 'rgba(255,90,110,0.4)',
+    borderColor: 'rgba(239,68,68,0.3)',
   },
   endBtnText: { ...typography.tiny, color: colors.danger, fontWeight: '800' },
+  startBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: radius.pill,
+    backgroundColor: 'rgba(16,185,129,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(16,185,129,0.3)',
+  },
+  startBtnText: { ...typography.tiny, color: colors.online, fontWeight: '800' },
 
-  // ── CALL SCREEN ──
+  /* Call Mode */
   callScreen: {
     flex: 1,
     alignItems: 'center',
@@ -552,11 +571,11 @@ const styles = StyleSheet.create({
     borderRadius: 70,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: 'rgba(122,60,255,0.45)',
+    borderWidth: 3,
+    borderColor: 'rgba(230,126,34,0.4)',
     overflow: 'hidden',
   },
-  callName: { ...typography.h1, fontSize: 22, color: colors.text, textAlign: 'center' },
+  callName: { ...typography.h1, fontSize: 22, color: colors.text, textAlign: 'center', fontWeight: '800' },
   callStatus: { ...typography.small, fontWeight: '700', textAlign: 'center' },
   waveContainer: {
     flexDirection: 'row',
@@ -575,44 +594,36 @@ const styles = StyleSheet.create({
     marginTop: spacing.xl,
   },
   callBtn: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    borderWidth: 1.5,
-    borderColor: colors.cardBorder,
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 3,
-    overflow: 'hidden',
+    shadowColor: 'rgba(148,163,184,0.20)',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.6,
+    shadowRadius: 6,
+    elevation: 3,
   },
-  callBtnDanger: {
-    backgroundColor: 'rgba(255,90,110,0.20)',
-    borderColor: 'rgba(255,90,110,0.6)',
-  },
-  callBtnGold: {
-    backgroundColor: 'rgba(245,197,66,0.18)',
-    borderColor: 'rgba(245,197,66,0.6)',
-  },
+  callBtnDanger: { backgroundColor: 'rgba(239,68,68,0.12)', borderColor: colors.danger },
+  callBtnGold: { backgroundColor: 'rgba(230,126,34,0.12)', borderColor: colors.saffron },
   callBtnEnd: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 68,
+    height: 68,
+    borderRadius: 34,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 3,
     overflow: 'hidden',
-    borderWidth: 0,
   },
-  callBtnIcon: { fontSize: 24 },
-  callBtnLabel: {
-    ...typography.tiny,
-    color: colors.textMuted,
-    fontSize: 9.5,
-    fontWeight: '700',
-  },
+  callBtnIcon: { fontSize: 22 },
+  callBtnLabel: { ...typography.tiny, color: colors.textMuted, fontSize: 10, fontWeight: '700' },
 
-  // ── CHAT MODE ──
+  /* Chat Mode */
   scroll: { padding: spacing.lg, flexGrow: 1 },
 
   promptWrapper: {
@@ -631,58 +642,68 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: spacing.md,
     borderRadius: radius.pill,
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: colors.cardBorder,
-    alignSelf: 'flex-start',
-    flexShrink: 0,
+    borderColor: '#E2E8F0',
+    shadowColor: 'rgba(148,163,184,0.15)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  promptText: { ...typography.tiny, color: colors.goldSoft, fontWeight: '700', fontSize: 12 },
+  promptText: { ...typography.tiny, color: colors.saffron, fontWeight: '800', fontSize: 12 },
 
-  notice: {
+  noticeCard: {
     marginHorizontal: spacing.lg,
     marginBottom: spacing.md,
-    padding: spacing.lg,
+    padding: spacing.md,
     borderRadius: radius.lg,
-    backgroundColor: 'rgba(255,138,61,0.10)',
+    backgroundColor: 'rgba(230,126,34,0.10)',
     borderWidth: 1,
-    borderColor: 'rgba(255,138,61,0.4)',
-    gap: spacing.md,
+    borderColor: 'rgba(230,126,34,0.3)',
+    gap: spacing.sm,
   },
-  noticeText: { ...typography.small, color: colors.saffron, textAlign: 'center' },
+  noticeText: { ...typography.small, color: colors.text, textAlign: 'center', fontWeight: '600' },
 
   composer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
     borderTopWidth: 1,
-    borderTopColor: colors.cardBorder,
-    backgroundColor: 'rgba(11,6,32,0.95)',
+    borderTopColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF',
+    shadowColor: 'rgba(148,163,184,0.20)',
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.6,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  inputPillContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F1F5F9',
+    borderRadius: radius.pill,
+    paddingLeft: spacing.md,
+    paddingRight: 4,
+    paddingVertical: 3,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    height: 44,
   },
   input: {
     flex: 1,
-    maxHeight: 110,
-    backgroundColor: 'rgba(255,255,255,0.07)',
-    borderWidth: 1,
-    borderColor: colors.cardBorder,
-    borderRadius: radius.lg,
-    paddingHorizontal: spacing.lg,
-    paddingTop: 11,
-    paddingBottom: 11,
     color: colors.text,
-    fontSize: 15,
+    fontSize: 14.5,
+    fontWeight: '600',
+    paddingVertical: 0,
   },
   sendBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
   },
-  sendBtnOff: {},
-  sendIcon: { color: colors.white, fontSize: 20, fontWeight: '800' },
+  sendBtnOff: { opacity: 0.5 },
+  sendIcon: { color: colors.white, fontSize: 15, fontWeight: '900', marginLeft: 2 },
 });

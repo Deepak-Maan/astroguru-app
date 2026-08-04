@@ -25,8 +25,8 @@ interface Props {
   fullWidth?: boolean;
 }
 
-const heights: Record<Size, number> = { sm: 38, md: 48, lg: 56 };
-const fontSizes: Record<Size, number> = { sm: 14, md: 16, lg: 17 };
+const heights: Record<Size, number> = { sm: 34, md: 42, lg: 48 };
+const fontSizes: Record<Size, number> = { sm: 13, md: 14.5, lg: 15.5 };
 
 export function Button({
   label,
@@ -87,8 +87,8 @@ export function Button({
         <LinearGradient
           colors={
             variant === 'gold'
-              ? ['#E67E22', '#D4AC0D']
-              : ['#7D3C98', '#E67E22']
+              ? [colors.saffron, colors.gold]
+              : [colors.teal, colors.saffron]
           }
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
@@ -106,32 +106,32 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     overflow: 'hidden',
     justifyContent: 'center',
-    shadowColor: 'rgba(125,60,152,0.30)',
-    shadowOffset: { width: 0, height: 4 },
+    shadowColor: 'rgba(0,0,0,0.50)',
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.8,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowRadius: 6,
+    elevation: 3,
   },
   gradient: { flex: 1, justifyContent: 'center' },
   inner: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.xl,
+    gap: spacing.xs + 2,
+    paddingHorizontal: spacing.lg,
   },
   label: { ...typography.h3, color: colors.white, fontWeight: '800' },
   outline: {
-    borderWidth: 1.5,
-    borderColor: 'rgba(125,60,152,0.35)',
-    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: 'rgba(16,185,129,0.30)',
+    backgroundColor: '#0E1726',
     elevation: 2,
   },
   ghost: { backgroundColor: 'transparent', elevation: 0, shadowOpacity: 0 },
   danger: {
-    borderWidth: 1.5,
-    borderColor: 'rgba(231,76,60,0.5)',
-    backgroundColor: 'rgba(231,76,60,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(244,63,94,0.40)',
+    backgroundColor: 'rgba(244,63,94,0.12)',
   },
   pressed: { opacity: 0.86, transform: [{ scale: 0.985 }] },
   disabled: { opacity: 0.45 },

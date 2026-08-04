@@ -1,23 +1,20 @@
 /**
- * AstroGuru Theme — Royal Celestial Light Palette
- * Pixel-Perfect typography and spacing engineered for all mobile screens.
+ * AstroGuru Theme — Cyber-Vedic Emerald & Obsidian Palette (Theme 4)
+ * Futuristic Obsidian Space, Glowing Emerald & Holographic Saffron Gold.
  */
 
 import { Dimensions } from 'react-native';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-/** Simple pass-through font size helper to prevent text blowing up */
 export function normalize(size: number): number {
   return size;
 }
 
-/** Width Percentage helper */
 export function wp(percentage: number): number {
   return Math.round((percentage * SCREEN_WIDTH) / 100);
 }
 
-/** Height Percentage helper */
 export function hp(percentage: number): number {
   return Math.round((percentage * SCREEN_HEIGHT) / 100);
 }
@@ -26,45 +23,45 @@ export const isSmallDevice = SCREEN_WIDTH < 375;
 export const isTablet = SCREEN_WIDTH >= 768;
 
 export const colors = {
-  // Backgrounds (Clean Airy Light Palette)
-  bg: '#F8FAFC',
-  bgElevated: '#FFFFFF',
-  card: '#FFFFFF',
-  cardSolid: '#FFFFFF',
-  cardBorder: '#E2E8F0',
-  cardGlowBorder: 'rgba(217,119,6,0.40)',
+  // Backgrounds (Cyber-Vedic Obsidian Dark Palette)
+  bg: '#060A12',
+  bgElevated: '#0E1726',
+  card: '#0E1726',
+  cardSolid: '#0E1726',
+  cardBorder: 'rgba(16,185,129,0.25)',
+  cardGlowBorder: 'rgba(245,158,11,0.50)',
 
-  // Neumorphic Dual Shadows for Light Theme
-  shadowLight: '#FFFFFF',
-  shadowDark: 'rgba(148,163,184,0.25)',
+  // Dual Shadows for Dark Obsidian Theme
+  shadowLight: 'rgba(16,185,129,0.20)',
+  shadowDark: 'rgba(0,0,0,0.70)',
 
-  // Brand Accents (Royal Amethyst & Amber Saffron)
-  gradientTop: '#FAF5FF',
-  gradientMid: '#FFFBEB',
-  gradientBottom: '#F1F5F9',
-  auroraA: '#6D28D9',
-  auroraB: '#D97706',
+  // Brand Accents (Cyber Emerald & Holographic Saffron Gold)
+  gradientTop: '#04070D',
+  gradientMid: '#0A1322',
+  gradientBottom: '#050B14',
+  auroraA: '#10B981',
+  auroraB: '#F59E0B',
 
   // Luminous Warm Gold & Emerald Highlights
   gold: '#F59E0B',
-  goldSoft: '#FEF3C7',
-  saffron: '#D97706',
-  rose: '#EF4444',
-  teal: '#0D9488',
+  goldSoft: '#FDE68A',
+  saffron: '#F59E0B',
+  rose: '#F43F5E',
+  teal: '#10B981',
 
-  // Text (High Contrast Deep Slate Navy)
-  text: '#0F172A',
-  textMuted: '#475569',
+  // Text (High Contrast Starlight White & Slate Muted)
+  text: '#F8FAFC',
+  textMuted: '#94A3B8',
   textFaint: '#64748B',
 
   // Status Cues
   online: '#10B981',
-  offline: '#94A3B8',
-  danger: '#EF4444',
+  offline: '#64748B',
+  danger: '#F43F5E',
   success: '#10B981',
 
   // Overlays
-  overlay: 'rgba(15,23,42,0.60)',
+  overlay: 'rgba(4,7,13,0.80)',
   white: '#FFFFFF',
   black: '#000000',
 } as const;
@@ -73,9 +70,9 @@ export const gradients = {
   screen: [colors.gradientTop, colors.gradientMid, colors.gradientBottom] as const,
   aurora: [colors.auroraA, colors.auroraB] as const,
   gold: [colors.saffron, colors.gold] as const,
-  soft: ['#FFFFFF', '#F8FAFC'] as const,
-  card: ['#FFFFFF', '#F8FAFC'] as const,
-  cta: ['#6D28D9', '#D97706'] as const,
+  soft: ['#0E1726', '#060A12'] as const,
+  card: ['#0E1726', '#09101D'] as const,
+  cta: ['#10B981', '#F59E0B'] as const,
 };
 
 export const spacing = {
@@ -109,7 +106,7 @@ export const typography = {
 
 export const shadow = {
   card: {
-    shadowColor: 'rgba(148, 163, 184, 0.35)',
+    shadowColor: 'rgba(0, 0, 0, 0.60)',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.8,
     shadowRadius: 14,

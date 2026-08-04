@@ -101,7 +101,7 @@ export default function Profile() {
           {/* Identity hero */}
           <View style={styles.identityCard}>
             <LinearGradient
-              colors={['rgba(125,60,152,0.06)', 'rgba(230,126,34,0.03)']}
+              colors={['rgba(16,185,129,0.12)', 'rgba(245,158,11,0.06)']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={StyleSheet.absoluteFill}
@@ -117,7 +117,7 @@ export default function Profile() {
             )}
 
             {isVip && (
-              <View style={[styles.adminRoleTag, { borderColor: colors.saffron, backgroundColor: 'rgba(230,126,34,0.12)' }]}>
+              <View style={[styles.adminRoleTag, { borderColor: colors.saffron, backgroundColor: 'rgba(245,158,11,0.14)' }]}>
                 <Text style={[styles.adminRoleText, { color: colors.saffron }]}>
                   👑 VIP PASS · {vipPlanId?.toUpperCase()} · Expires {vipExpires}
                 </Text>
@@ -160,7 +160,7 @@ export default function Profile() {
           {authUser?.role === 'admin' && (
             <Pressable onPress={() => router.push('/admin')} style={({ pressed }) => [pressed && { opacity: 0.85 }]}>
               <LinearGradient
-                colors={['#7D3C98', '#E67E22']}
+                colors={['#10B981', '#F59E0B']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.adminBanner}
@@ -179,7 +179,7 @@ export default function Profile() {
           <Pressable onPress={() => router.push('/wallet')} style={({ pressed }) => [pressed && { opacity: 0.85 }]}>
             <View style={styles.walletCard}>
               <LinearGradient
-                colors={['rgba(230,126,34,0.12)', 'rgba(212,172,13,0.04)']}
+                colors={['rgba(245,158,11,0.16)', 'rgba(16,185,129,0.06)']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={StyleSheet.absoluteFill}
@@ -250,13 +250,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: radius.xl,
     borderWidth: 1,
-    borderColor: '#E3E8F3',
-    backgroundColor: '#FFFFFF',
+    borderColor: 'rgba(16,185,129,0.25)',
+    backgroundColor: '#0E1726',
     padding: spacing.xl,
     gap: spacing.xs,
     overflow: 'hidden',
-    shadowColor: 'rgba(160,175,205,0.30)',
-    shadowOffset: { width: 0, height: 4 },
+    shadowColor: 'rgba(0,0,0,0.60)',
+    shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.8,
     shadowRadius: 10,
     elevation: 4,
@@ -264,15 +264,15 @@ const styles = StyleSheet.create({
   name: { ...typography.h1, color: colors.text, marginTop: spacing.sm, textAlign: 'center', fontWeight: '800' },
   emailText: { ...typography.small, color: colors.saffron, marginTop: 1, fontWeight: '700' },
   adminRoleTag: {
-    backgroundColor: 'rgba(230,126,34,0.12)',
+    backgroundColor: 'rgba(16,185,129,0.14)',
     borderWidth: 1,
-    borderColor: colors.saffron,
+    borderColor: colors.teal,
     borderRadius: radius.pill,
     paddingHorizontal: 10,
     paddingVertical: 3,
     marginTop: 4,
   },
-  adminRoleText: { ...typography.tiny, color: colors.saffron, fontWeight: '800', fontSize: 10 },
+  adminRoleText: { ...typography.tiny, color: colors.teal, fontWeight: '800', fontSize: 10 },
   birth: { ...typography.small, color: colors.textMuted, textAlign: 'center', lineHeight: 18, marginTop: 4, fontWeight: '600' },
   badgeRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.lg, alignSelf: 'stretch' },
   badge: {
@@ -280,13 +280,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.md,
     borderRadius: radius.md,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: 'rgba(6,10,18,0.60)',
     borderWidth: 1,
-    borderColor: '#E3E8F3',
+    borderColor: 'rgba(16,185,129,0.25)',
     gap: 3,
   },
   badgeLabel: { ...typography.tiny, color: colors.textMuted, fontWeight: '600' },
-  badgeValue: { ...typography.small, color: colors.auroraA, fontWeight: '800', fontSize: 12 },
+  badgeValue: { ...typography.small, color: colors.saffron, fontWeight: '800', fontSize: 12 },
 
   adminBanner: {
     flexDirection: 'row',
@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     borderRadius: radius.xl,
     overflow: 'hidden',
-    shadowColor: 'rgba(125,60,152,0.30)',
+    shadowColor: 'rgba(16,185,129,0.30)',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.8,
     shadowRadius: 8,
@@ -311,11 +311,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: radius.xl,
     borderWidth: 1,
-    borderColor: '#E3E8F3',
-    backgroundColor: '#FFFFFF',
+    borderColor: 'rgba(245,158,11,0.35)',
+    backgroundColor: '#0E1726',
     padding: spacing.xl,
     overflow: 'hidden',
-    shadowColor: 'rgba(160,175,205,0.30)',
+    shadowColor: 'rgba(245,158,11,0.20)',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.8,
     shadowRadius: 10,
@@ -333,17 +333,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md + 2,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#E3E8F3',
+    borderTopColor: 'rgba(16,185,129,0.20)',
   },
   rowIconWrap: {
     width: 32,
     height: 32,
     borderRadius: 10,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: 'rgba(6,10,18,0.60)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#E3E8F3',
+    borderColor: 'rgba(16,185,129,0.25)',
   },
   rowIcon: { fontSize: 16 },
   rowLabel: { ...typography.body, color: colors.text, flex: 1, fontWeight: '700' },
