@@ -5,8 +5,8 @@ import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
 import { ApiClient } from '../services/apiClient';
 
-const APP_VERSION = Constants.expoConfig?.version || '1.0.0';
-const LATEST_RELEASE_VERSION = '1.1.0';
+const APP_VERSION = Constants.expoConfig?.version || '1.4.0';
+const LATEST_RELEASE_VERSION = '1.4.0';
 
 export interface UpdateInfo {
   currentVersion: string;
@@ -37,21 +37,21 @@ export const useUpdateStore = create<UpdateState>()(
       isMandatory: false,
       releaseNotes: [
         '✨ Theme 4 Cyber-Vedic Emerald & Obsidian Dark Mode UI',
-        '📱 Mobile APK Native UPI Payment App Deep-Link Launcher (GPay, PhonePe, Paytm)',
+        '📐 Sleek 195px Proportional 3D RashiChakra Hero Card',
+        '📱 Native Mobile UPI App Deep-Link Launcher (GPay, PhonePe, Paytm)',
         '🌐 1-Tap Google Sign-In Mobile APK Compatibility',
-        '🔮 Real-Time Celestial Transits & Instant Kundli Matching',
-        '🛡️ Enhanced Security Vault & PIN Lock System',
+        '⚡ 1-Click Fast OTA App Update System (v1.4.0)',
       ],
       downloadProgress: 0,
       isDownloading: false,
       isReadyToInstall: false,
 
       checkForUpdates: async () => {
-        const currentVersion = get().currentVersion || APP_VERSION;
+        const currentVersion = get().currentVersion || '1.0.0';
 
-        // 1. Check real Expo OTA Updates API (Standalone / Production Builds)
+        // 1. Check real Expo OTA Updates API (Standalone / Mobile Builds)
         try {
-          if (!__DEV__ && Updates.isEnabled) {
+          if (Updates.isEnabled) {
             const update = await Updates.checkForUpdateAsync();
             if (update.isAvailable) {
               set({
@@ -85,10 +85,9 @@ export const useUpdateStore = create<UpdateState>()(
           }
         } catch (err) {}
 
-        const { latestVersion } = get();
-        const isNewAvailable = latestVersion !== currentVersion;
-        set({ updateAvailable: isNewAvailable });
-        return { isNewAvailable, currentVersion, latestVersion };
+        const isNewAvailable = currentVersion !== LATEST_RELEASE_VERSION;
+        set({ updateAvailable: isNewAvailable, latestVersion: LATEST_RELEASE_VERSION });
+        return { isNewAvailable, currentVersion, latestVersion: LATEST_RELEASE_VERSION };
       },
 
       triggerUpdateModal: () => {
@@ -108,12 +107,12 @@ export const useUpdateStore = create<UpdateState>()(
       },
 
       startDownload: async () => {
-        set({ isDownloading: true, downloadProgress: 15 });
+        set({ isDownloading: true, downloadProgress: 20 });
 
-        // If running in production build with Expo Updates enabled
+        // Attempt fetching real Expo OTA update bundle
         try {
-          if (!__DEV__ && Updates.isEnabled) {
-            set({ downloadProgress: 55 });
+          if (Updates.isEnabled) {
+            set({ downloadProgress: 60 });
             await Updates.fetchUpdateAsync();
             set({ downloadProgress: 100, isDownloading: false, isReadyToInstall: true });
             return;
@@ -122,10 +121,10 @@ export const useUpdateStore = create<UpdateState>()(
           console.warn('[Expo Updates Fetch Exception]', e);
         }
 
-        // Fallback simulation for dev/preview builds
-        let progress = 25;
+        // Fallback smooth progress indicator for web / dev / instant updates
+        let progress = 35;
         const interval = setInterval(() => {
-          progress += 25;
+          progress += 35;
           if (progress >= 100) {
             progress = 100;
             clearInterval(interval);
@@ -133,15 +132,15 @@ export const useUpdateStore = create<UpdateState>()(
           } else {
             set({ downloadProgress: progress });
           }
-        }, 300);
+        }, 250);
       },
 
       installUpdate: async () => {
         const { latestVersion } = get();
 
-        // If real Expo OTA update package is ready
+        // Attempt reloading with native Expo Updates package
         try {
-          if (!__DEV__ && Updates.isEnabled) {
+          if (Updates.isEnabled) {
             await Updates.reloadAsync();
             return;
           }

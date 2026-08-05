@@ -2,7 +2,7 @@
   "expo": {
     "name": "AstroGuru",
     "slug": "astrologer-app",
-    "version": "1.1.0",
+    "version": "1.4.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "astroguru",
@@ -50,7 +50,7 @@
         "projectId": "3b6a7923-3266-4e7c-b80d-889b61a55e34"
       }
     },
-    "runtimeVersion": "1.0.0",
+    "runtimeVersion": "1.4.0",
     "updates": {
       "url": "https://u.expo.dev/3b6a7923-3266-4e7c-b80d-889b61a55e34",
       "enabled": true,
