@@ -24,7 +24,7 @@ import { RASHIS } from '../../data/rashis';
 import { NAKSHATRAS } from '../../data/nakshatras';
 import { ChakraHandles, createChakra } from './chakraScene';
 
-const HERO_HEIGHT = 304;
+const HERO_HEIGHT = 195;
 /** Radians of spin per point dragged. */
 const DRAG_SENSITIVITY = 0.006;
 /** Ambient drift, radians per second. */
@@ -216,7 +216,7 @@ export function RashiChakra({ kundli, onPress }: Props) {
       ) : (
         <>
           <Text style={styles.headline}>Add your birth details</Text>
-          <Text style={styles.readout}>
+          <Text style={styles.readout} numberOfLines={2}>
             The chakra fills with your nine grahas once we know when and where you were born.
           </Text>
         </>
@@ -250,8 +250,8 @@ export function RashiChakra({ kundli, onPress }: Props) {
         <GLView style={StyleSheet.absoluteFill} onContextCreate={onContextCreate} />
         {/* Soft Cyber-Vedic dark gradient overlay */}
         <LinearGradient
-          colors={['rgba(14,23,38,0.10)', 'rgba(14,23,38,0.75)', '#0E1726']}
-          locations={[0.25, 0.65, 1]}
+          colors={['rgba(14,23,38,0.05)', 'rgba(14,23,38,0.70)', '#0E1726']}
+          locations={[0.20, 0.60, 1]}
           style={StyleSheet.absoluteFill}
           pointerEvents="none"
         />
@@ -264,16 +264,16 @@ export function RashiChakra({ kundli, onPress }: Props) {
 const styles = StyleSheet.create({
   card: {
     height: HERO_HEIGHT,
-    borderRadius: radius.xl,
+    borderRadius: radius.md,
     overflow: 'hidden',
     backgroundColor: '#0E1726',
     borderWidth: 1,
     borderColor: 'rgba(16,185,129,0.30)',
     shadowColor: 'rgba(0,0,0,0.60)',
-    shadowOffset: { width: 0, height: 6 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.8,
-    shadowRadius: 14,
-    elevation: 6,
+    shadowRadius: 8,
+    elevation: 4,
   },
   fallback: { justifyContent: 'flex-end', backgroundColor: '#0E1726' },
 
@@ -282,21 +282,21 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    padding: spacing.lg,
-    gap: 3,
+    padding: spacing.md,
+    gap: 2,
   },
   eyebrow: {
     ...typography.tiny,
-    fontSize: 10,
-    letterSpacing: 3,
+    fontSize: 9.5,
+    letterSpacing: 2,
     color: colors.saffron,
     fontWeight: '800',
   },
   headline: {
     ...typography.display,
-    fontSize: 28,
+    fontSize: 22,
     color: colors.text,
-    marginTop: 2,
+    marginTop: 1,
     fontWeight: '800',
   },
   headlineLight: {
@@ -305,9 +305,9 @@ const styles = StyleSheet.create({
   },
   readout: {
     ...typography.small,
-    fontSize: 12.5,
+    fontSize: 11.5,
     color: colors.textMuted,
-    lineHeight: 18,
+    lineHeight: 16,
     fontWeight: '600',
   },
   degrees: {
@@ -319,8 +319,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: spacing.md,
+    marginTop: spacing.xs,
   },
-  link: { ...typography.small, fontWeight: '800', color: colors.teal },
-  hint: { ...typography.tiny, fontSize: 10, color: colors.textFaint },
+  link: { ...typography.small, fontWeight: '800', color: colors.teal, fontSize: 12.5 },
+  hint: { ...typography.tiny, fontSize: 9.5, color: colors.textFaint },
 });

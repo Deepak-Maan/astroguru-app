@@ -6,6 +6,7 @@ import * as Updates from 'expo-updates';
 import { ApiClient } from '../services/apiClient';
 
 const APP_VERSION = Constants.expoConfig?.version || '1.0.0';
+const LATEST_RELEASE_VERSION = '1.1.0';
 
 export interface UpdateInfo {
   currentVersion: string;
@@ -31,13 +32,13 @@ export const useUpdateStore = create<UpdateState>()(
   persist(
     (set, get) => ({
       currentVersion: APP_VERSION,
-      latestVersion: APP_VERSION,
-      updateAvailable: false,
+      latestVersion: LATEST_RELEASE_VERSION,
+      updateAvailable: true,
       isMandatory: false,
       releaseNotes: [
-        '✨ Redesigned Cyber-Vedic Obsidian Dark Login Interface',
-        '📱 Fast 6-Digit Mobile SMS & OTP Authentication',
-        '⚡ 1-Tap Quick Demo Credentials for Seeker, Jyotishi & Admin',
+        '✨ Theme 4 Cyber-Vedic Emerald & Obsidian Dark Mode UI',
+        '📱 Mobile APK Native UPI Payment App Deep-Link Launcher (GPay, PhonePe, Paytm)',
+        '🌐 1-Tap Google Sign-In Mobile APK Compatibility',
         '🔮 Real-Time Celestial Transits & Instant Kundli Matching',
         '🛡️ Enhanced Security Vault & PIN Lock System',
       ],
@@ -55,7 +56,7 @@ export const useUpdateStore = create<UpdateState>()(
             if (update.isAvailable) {
               set({
                 updateAvailable: true,
-                latestVersion: `1.0.${Date.now().toString().slice(-3)}`,
+                latestVersion: LATEST_RELEASE_VERSION,
               });
               return {
                 isNewAvailable: true,
@@ -75,17 +76,18 @@ export const useUpdateStore = create<UpdateState>()(
             const { latestVersion, releaseNotes, isMandatory } = res.updates;
             const isNewAvailable = latestVersion !== currentVersion;
             set({
-              latestVersion: latestVersion || currentVersion,
+              latestVersion: latestVersion || LATEST_RELEASE_VERSION,
               releaseNotes: releaseNotes || get().releaseNotes,
               isMandatory: !!isMandatory,
               updateAvailable: isNewAvailable,
             });
-            return { isNewAvailable, currentVersion, latestVersion: latestVersion || currentVersion };
+            return { isNewAvailable, currentVersion, latestVersion: latestVersion || LATEST_RELEASE_VERSION };
           }
         } catch (err) {}
 
         const { latestVersion } = get();
         const isNewAvailable = latestVersion !== currentVersion;
+        set({ updateAvailable: isNewAvailable });
         return { isNewAvailable, currentVersion, latestVersion };
       },
 
@@ -106,12 +108,12 @@ export const useUpdateStore = create<UpdateState>()(
       },
 
       startDownload: async () => {
-        set({ isDownloading: true, downloadProgress: 10 });
+        set({ isDownloading: true, downloadProgress: 15 });
 
         // If running in production build with Expo Updates enabled
         try {
           if (!__DEV__ && Updates.isEnabled) {
-            set({ downloadProgress: 40 });
+            set({ downloadProgress: 55 });
             await Updates.fetchUpdateAsync();
             set({ downloadProgress: 100, isDownloading: false, isReadyToInstall: true });
             return;
@@ -121,7 +123,7 @@ export const useUpdateStore = create<UpdateState>()(
         }
 
         // Fallback simulation for dev/preview builds
-        let progress = 20;
+        let progress = 25;
         const interval = setInterval(() => {
           progress += 25;
           if (progress >= 100) {

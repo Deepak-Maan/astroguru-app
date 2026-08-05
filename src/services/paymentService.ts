@@ -34,8 +34,10 @@ export async function launchUpiPayment({
   const note = encodeURIComponent(`AstroGuru Wallet Txn ${txnId}`);
   const baseParams = `pa=${DEFAULT_VPA}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=${amount}&tr=${txnId}&tn=${note}&cu=INR`;
 
-  let upiUrl = `upi://pay?${baseParams}`;
+  // Standard universal UPI link compatible with all installed Android/iOS payment apps
+  const universalUpiUrl = `upi://pay?${baseParams}`;
 
+  let upiUrl = universalUpiUrl;
   if (app === 'gpay') {
     upiUrl = `gpay://upi/pay?${baseParams}`;
   } else if (app === 'phonepe') {
@@ -58,28 +60,25 @@ export async function launchUpiPayment({
 
   pendingTxns.push(intent);
 
+  // Directly attempt opening the target app URI (bypasses Android 11+ package visibility query blocks)
   try {
-    const canOpen = await Linking.canOpenURL(upiUrl);
-    if (canOpen) {
-      await Linking.openURL(upiUrl);
+    await Linking.openURL(upiUrl);
+    return { success: true, intent };
+  } catch (err1) {
+    console.log(`Specific scheme ${upiUrl} failed, attempting universal upi:// scheme...`, err1);
+    try {
+      await Linking.openURL(universalUpiUrl);
       return { success: true, intent };
-    } else {
-      // Fallback to standard upi:// scheme
-      const canOpenGeneric = await Linking.canOpenURL(`upi://pay?${baseParams}`);
-      if (canOpenGeneric) {
-        await Linking.openURL(`upi://pay?${baseParams}`);
-        return { success: true, intent };
-      }
+    } catch (err2) {
+      console.log('Universal UPI openURL failed:', err2);
     }
-  } catch (err) {
-    console.log('Error launching UPI app:', err);
   }
 
-  // On Web or if app not installed, return intent so user can complete via UPI ID / QR / UTR
+  // Fallback for web or emulator without payment apps installed
   return {
     success: false,
     intent,
-    message: `Payment app (${app.toUpperCase()}) not installed. Use standard UPI VPA or enter UTR for manual verification.`,
+    message: `Payment app (${app.toUpperCase()}) could not be opened directly. Use UPI ID: ${DEFAULT_VPA} or enter UTR for verification.`,
   };
 }
 

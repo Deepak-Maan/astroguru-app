@@ -22,19 +22,18 @@ import { SectionHeader } from '../../src/components/SectionHeader';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { ASTROLOGERS } from '../../src/data/astrologers';
 import { Astrologer } from '../../src/types';
-import { useRemediesStore, OrderRecord } from '../../src/store/remediesStore';
-import { useSpellsStore, SpellOrderRecord } from '../../src/store/spellsStore';
-import { useUpdateStore } from '../../src/store/updateStore';
+import { useRemediesStore } from '../../src/store/remediesStore';
+import { useSpellsStore } from '../../src/store/spellsStore';
 import { formatCurrency } from '../../src/utils';
 
-type AdminTab = 'overview' | 'updates' | 'spells' | 'orders' | 'inventory' | 'astrologers' | 'revenue' | 'users';
+type AdminTab = 'overview' | 'spells' | 'orders' | 'inventory' | 'astrologers' | 'revenue' | 'users';
 
 export default function AdminDashboard() {
   const router = useRouter();
   const [tab, setTab] = useState<AdminTab>('overview');
   const [astrologers, setAstrologers] = useState<Astrologer[]>([...ASTROLOGERS]);
 
-  // Remedies, Spells & Update Stores
+  // Remedies & Spells Stores
   const inventory = useRemediesStore((s) => s.inventory);
   const orders = useRemediesStore((s) => s.orders);
   const updateItemPrice = useRemediesStore((s) => s.updateItemPrice);
@@ -47,18 +46,6 @@ export default function AdminDashboard() {
   const updateSpellPrice = useSpellsStore((s) => s.updateSpellPrice);
   const toggleSpellAvailable = useSpellsStore((s) => s.toggleSpellAvailable);
   const updateSpellOrderStatus = useSpellsStore((s) => s.updateSpellOrderStatus);
-
-  const currentVer = useUpdateStore((s) => s.currentVersion);
-  const latestVer = useUpdateStore((s) => s.latestVersion);
-  const broadcastUpdate = useUpdateStore((s) => s.broadcastUpdate);
-
-  // App Update Broadcast Form
-  const [newVersionInput, setNewVersionInput] = useState('1.3.0');
-  const [newNotesInput, setNewNotesInput] = useState(
-    '✨ Added AI Palmistry Line Analyzer\n🪄 Added 5 New Vedic Healing Spells\n⚡ Performance & Bug Fixes'
-  );
-  const [isMandatoryInput, setIsMandatoryInput] = useState(false);
-  const [broadcastDone, setBroadcastDone] = useState(false);
 
   // Modal for adding new astrologer
   const [showAddModal, setShowAddModal] = useState(false);
@@ -110,14 +97,6 @@ export default function AdminDashboard() {
     setNewName('');
   };
 
-  const handlePublishUpdate = () => {
-    if (!newVersionInput.trim()) return;
-    const notesArray = newNotesInput.split('\n').filter((n) => n.trim().length > 0);
-    broadcastUpdate(newVersionInput.trim(), notesArray, isMandatoryInput);
-    setBroadcastDone(true);
-    setTimeout(() => setBroadcastDone(false), 3000);
-  };
-
   const activeCount = astrologers.filter((a) => a.online).length;
 
   return (
@@ -141,7 +120,6 @@ export default function AdminDashboard() {
           >
             {[
               { id: 'overview', label: '📊 Stats' },
-              { id: 'updates', label: `🚀 Updates (${latestVer})` },
               { id: 'spells', label: `🪄 Spells (${spells.length})` },
               { id: 'orders', label: `🛒 Orders (${orders.length})` },
               { id: 'inventory', label: '📦 Inventory' },
@@ -156,7 +134,7 @@ export default function AdminDashboard() {
               >
                 {tab === t.id && (
                   <LinearGradient
-                    colors={['#7D3C98', '#E67E22']}
+                    colors={[colors.saffron, colors.gold]}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={StyleSheet.absoluteFill}
@@ -173,7 +151,7 @@ export default function AdminDashboard() {
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
           {/* ── OVERVIEW TAB ── */}
           {tab === 'overview' && (
-            <View style={{ gap: spacing.lg }}>
+            <View style={{ gap: spacing.md }}>
               {/* Stat Cards Grid */}
               <View style={styles.statsGrid}>
                 <View style={styles.statBox}>
@@ -206,12 +184,12 @@ export default function AdminDashboard() {
                 <SectionHeader title="Platform Controls" />
                 <View style={{ flexDirection: 'row', gap: spacing.sm }}>
                   <Button
-                    label="🚀 Broadcast Update"
+                    label="🛒 Manage Orders"
                     variant="gold"
                     size="sm"
                     fullWidth={false}
                     style={{ flex: 1 }}
-                    onPress={() => setTab('updates')}
+                    onPress={() => setTab('orders')}
                   />
                   <Button
                     label="🪄 Manage Spells"
@@ -226,74 +204,6 @@ export default function AdminDashboard() {
             </View>
           )}
 
-          {/* ── APP UPDATES CONTROL TAB ── */}
-          {tab === 'updates' && (
-            <View style={{ gap: spacing.md }}>
-              <SectionHeader title="App Version & OTA Updater" subtitle="Push Live Updates to All Users" />
-
-              {broadcastDone && (
-                <View style={styles.successBanner}>
-                  <Text style={styles.successText}>🚀 New Version Broadcasted to All Active Users!</Text>
-                </View>
-              )}
-
-              <Card style={{ gap: spacing.md }}>
-                <View style={styles.verRow}>
-                  <View style={styles.verBox}>
-                    <Text style={styles.verLabel}>Current Installed:</Text>
-                    <Text style={styles.verVal}>v{currentVer}</Text>
-                  </View>
-                  <View style={styles.verBox}>
-                    <Text style={styles.verLabel}>Latest Broadcast:</Text>
-                    <Text style={[styles.verVal, { color: colors.saffron }]}>v{latestVer}</Text>
-                  </View>
-                </View>
-
-                <View style={styles.field}>
-                  <Text style={styles.fieldLabel}>New Version Number (e.g. 1.3.0):</Text>
-                  <TextInput
-                    style={styles.fieldInput}
-                    value={newVersionInput}
-                    onChangeText={setNewVersionInput}
-                    placeholder="1.3.0"
-                  />
-                </View>
-
-                <View style={styles.field}>
-                  <Text style={styles.fieldLabel}>Release Notes (One note per line):</Text>
-                  <TextInput
-                    style={[styles.fieldInput, { height: 90 }]}
-                    value={newNotesInput}
-                    onChangeText={setNewNotesInput}
-                    multiline
-                    placeholder="Enter what's new in this release..."
-                  />
-                </View>
-
-                <Pressable
-                  onPress={() => setIsMandatoryInput(!isMandatoryInput)}
-                  style={styles.mandatoryRow}
-                >
-                  <Text style={styles.mandatoryText}>
-                    {isMandatoryInput ? '⚠️ Mandatory Update (Force Update)' : 'ℹ️ Optional Update'}
-                  </Text>
-                  <View style={[styles.toggleBtn, isMandatoryInput ? styles.toggleOnline : styles.toggleOffline]}>
-                    <Text style={[styles.toggleText, { color: isMandatoryInput ? colors.danger : colors.textMuted }]}>
-                      {isMandatoryInput ? 'MANDATORY' : 'OPTIONAL'}
-                    </Text>
-                  </View>
-                </Pressable>
-
-                <Button
-                  label="🚀 Broadcast Update Alert Now"
-                  variant="gold"
-                  size="md"
-                  onPress={handlePublishUpdate}
-                />
-              </Card>
-            </View>
-          )}
-
           {/* ── SPELLS & PRICE MANAGEMENT TAB ── */}
           {tab === 'spells' && (
             <View style={{ gap: spacing.md }}>
@@ -302,7 +212,7 @@ export default function AdminDashboard() {
               {spells.map((spell) => (
                 <Card key={spell.id} style={styles.inventoryCard}>
                   <View style={{ flexDirection: 'row', gap: spacing.md, alignItems: 'center' }}>
-                    <Text style={{ fontSize: 32 }}>{spell.icon}</Text>
+                    <Text style={{ fontSize: 28 }}>{spell.icon}</Text>
                     <View style={{ flex: 1 }}>
                       <Text style={styles.invTitle}>{spell.title}</Text>
                       <Text style={styles.invSub}>{spell.sanskritName} · {spell.category}</Text>
@@ -433,7 +343,7 @@ export default function AdminDashboard() {
               {inventory.map((item) => (
                 <Card key={item.id} style={styles.inventoryCard}>
                   <View style={{ flexDirection: 'row', gap: spacing.md, alignItems: 'center' }}>
-                    <Text style={{ fontSize: 32 }}>{item.planetIcon}</Text>
+                    <Text style={{ fontSize: 28 }}>{item.planetIcon}</Text>
                     <View style={{ flex: 1 }}>
                       <Text style={styles.invTitle}>{item.name}</Text>
                       <Text style={styles.invSub}>{item.sanskritName} · {item.planet}</Text>
@@ -601,6 +511,7 @@ export default function AdminDashboard() {
                     value={newName}
                     onChangeText={setNewName}
                     placeholder="e.g. Acharya Dev Sharma"
+                    placeholderTextColor={colors.textFaint}
                     style={styles.fieldInput}
                   />
                 </View>
@@ -611,6 +522,7 @@ export default function AdminDashboard() {
                     value={newSpecialty}
                     onChangeText={setNewSpecialty}
                     placeholder="Vedic, Palmistry, Nadi"
+                    placeholderTextColor={colors.textFaint}
                     style={styles.fieldInput}
                   />
                 </View>
@@ -643,6 +555,7 @@ export default function AdminDashboard() {
                     value={newLang}
                     onChangeText={setNewLang}
                     placeholder="Hindi, English, Gujarati"
+                    placeholderTextColor={colors.textFaint}
                     style={styles.fieldInput}
                   />
                 </View>
@@ -676,16 +589,16 @@ export default function AdminDashboard() {
 
 const styles = StyleSheet.create({
   tabsWrapper: {
-    height: 50,
-    backgroundColor: '#FFFFFF',
+    height: 48,
+    backgroundColor: '#060A12',
     borderBottomWidth: 1,
-    borderBottomColor: '#E3E8F3',
+    borderBottomColor: 'rgba(16,185,129,0.25)',
     justifyContent: 'center',
-    shadowColor: 'rgba(160,175,205,0.15)',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.6,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowColor: 'rgba(0,0,0,0.60)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.8,
+    shadowRadius: 6,
+    elevation: 3,
     zIndex: 10,
   },
   tabsRow: {
@@ -695,94 +608,64 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   tabBtn: {
-    minWidth: 80,
+    minWidth: 76,
     paddingHorizontal: spacing.md,
-    height: 36,
+    height: 32,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: radius.pill,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#0E1726',
     borderWidth: 1,
-    borderColor: '#E3E8F3',
+    borderColor: 'rgba(16,185,129,0.25)',
     overflow: 'hidden',
   },
   tabBtnActive: { borderColor: 'transparent' },
-  tabBtnText: { ...typography.tiny, color: colors.textMuted, fontWeight: '800', fontSize: 12 },
+  tabBtnText: { ...typography.tiny, color: colors.textMuted, fontWeight: '800', fontSize: 11.5 },
   tabBtnTextActive: { color: colors.white },
 
   scroll: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     paddingBottom: spacing.xxl,
-    gap: spacing.lg,
+    gap: spacing.md,
   },
 
   /* Overview */
   statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: spacing.sm,
+    gap: spacing.xs + 2,
   },
   statBox: {
     flexBasis: '47%',
     flexGrow: 1,
-    borderRadius: radius.lg,
-    padding: spacing.lg,
+    borderRadius: radius.md,
+    padding: spacing.md,
     borderWidth: 1,
-    borderColor: '#E3E8F3',
-    backgroundColor: '#FFFFFF',
-    gap: 4,
-    shadowColor: 'rgba(160,175,205,0.25)',
+    borderColor: 'rgba(16,185,129,0.25)',
+    backgroundColor: '#0E1726',
+    gap: 2,
+    shadowColor: 'rgba(0,0,0,0.50)',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.8,
     shadowRadius: 6,
     elevation: 3,
   },
-  statIcon: { fontSize: 24 },
-  statNum: { ...typography.h1, fontSize: 22, color: colors.text, fontWeight: '800' },
-  statTitle: { ...typography.tiny, color: colors.textMuted, fontWeight: '600' },
-
-  /* Updates */
-  successBanner: {
-    backgroundColor: 'rgba(39,174,96,0.12)',
-    borderWidth: 1,
-    borderColor: colors.success,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    alignItems: 'center',
-  },
-  successText: { ...typography.small, color: colors.success, fontWeight: '800' },
-  verRow: { flexDirection: 'row', gap: spacing.md },
-  verBox: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-    borderRadius: radius.md,
-    padding: spacing.md,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E3E8F3',
-  },
-  verLabel: { ...typography.tiny, color: colors.textMuted, fontWeight: '700' },
-  verVal: { ...typography.h2, color: colors.text, fontWeight: '800', marginTop: 2 },
-  mandatoryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 4,
-  },
-  mandatoryText: { ...typography.small, color: colors.text, fontWeight: '700' },
+  statIcon: { fontSize: 22 },
+  statNum: { ...typography.h1, fontSize: 19, color: colors.text, fontWeight: '800' },
+  statTitle: { ...typography.tiny, color: colors.textMuted, fontWeight: '600', fontSize: 11 },
 
   /* Orders */
   orderCard: { gap: spacing.xs },
-  orderId: { ...typography.h3, color: colors.saffron, fontSize: 16, fontWeight: '800' },
-  orderItemName: { ...typography.h2, color: colors.text, fontSize: 16, fontWeight: '800', marginTop: 2 },
-  orderPrice: { ...typography.h2, color: colors.saffron, fontWeight: '900' },
+  orderId: { ...typography.h3, color: colors.saffron, fontSize: 15, fontWeight: '800' },
+  orderItemName: { ...typography.h2, color: colors.text, fontSize: 15, fontWeight: '800', marginTop: 2 },
+  orderPrice: { ...typography.h2, color: colors.saffron, fontWeight: '900', fontSize: 17 },
   userInfoBox: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#080E1A',
     borderRadius: radius.md,
     padding: spacing.sm,
     borderWidth: 1,
-    borderColor: '#E3E8F3',
+    borderColor: 'rgba(16,185,129,0.25)',
     gap: 2,
     marginTop: 4,
   },
@@ -791,15 +674,15 @@ const styles = StyleSheet.create({
 
   /* Inventory */
   inventoryCard: { gap: spacing.sm },
-  invTitle: { ...typography.h3, color: colors.text, fontSize: 16, fontWeight: '800' },
+  invTitle: { ...typography.h3, color: colors.text, fontSize: 15, fontWeight: '800' },
   invSub: { ...typography.tiny, color: colors.textMuted },
   invControlsRow: { flexDirection: 'row', gap: spacing.md, marginTop: 4 },
   inputBoxCol: { flex: 1, gap: 2 },
   inputColLabel: { ...typography.tiny, color: colors.textMuted, fontWeight: '700' },
   invInput: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#080E1A',
     borderWidth: 1,
-    borderColor: '#E3E8F3',
+    borderColor: 'rgba(16,185,129,0.25)',
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
     paddingVertical: 6,
@@ -816,17 +699,17 @@ const styles = StyleSheet.create({
   manageSpec: { ...typography.tiny, color: colors.textMuted, marginTop: 1 },
   toggleBtn: {
     paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingVertical: 4,
     borderRadius: radius.pill,
     borderWidth: 1,
   },
   toggleOnline: {
-    backgroundColor: 'rgba(39,174,96,0.12)',
-    borderColor: 'rgba(39,174,96,0.4)',
+    backgroundColor: 'rgba(16,185,129,0.14)',
+    borderColor: 'rgba(16,185,129,0.40)',
   },
   toggleOffline: {
-    backgroundColor: '#F8FAFC',
-    borderColor: '#E3E8F3',
+    backgroundColor: 'rgba(100,116,139,0.14)',
+    borderColor: 'rgba(100,116,139,0.30)',
   },
   toggleText: { ...typography.tiny, fontWeight: '800', fontSize: 10 },
 
@@ -834,14 +717,14 @@ const styles = StyleSheet.create({
   revenueSplitRow: { flexDirection: 'row', gap: spacing.md },
   splitBox: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#080E1A',
     borderRadius: radius.md,
-    padding: spacing.lg,
+    padding: spacing.md,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#E3E8F3',
+    borderColor: 'rgba(16,185,129,0.25)',
   },
-  splitPct: { ...typography.display, fontSize: 32, color: colors.saffron, fontWeight: '900' },
+  splitPct: { ...typography.display, fontSize: 28, color: colors.saffron, fontWeight: '900' },
   splitLabel: { ...typography.tiny, color: colors.textMuted, marginTop: 4, textAlign: 'center', fontWeight: '700' },
 
   /* Users */
@@ -852,7 +735,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#E3E8F3',
+    borderTopColor: 'rgba(16,185,129,0.20)',
   },
   userName: { ...typography.small, color: colors.text, fontWeight: '700' },
   userEmail: { ...typography.tiny, color: colors.textMuted, marginTop: 1 },
@@ -861,30 +744,30 @@ const styles = StyleSheet.create({
   /* Modal */
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(27,20,56,0.60)',
+    backgroundColor: 'rgba(4,7,13,0.80)',
     justifyContent: 'center',
     padding: spacing.lg,
   },
   modalContent: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#0E1726',
     borderRadius: radius.xl,
-    padding: spacing.xl,
+    padding: spacing.lg,
     borderWidth: 1,
-    borderColor: '#E3E8F3',
+    borderColor: 'rgba(16,185,129,0.25)',
     gap: spacing.md,
-    shadowColor: 'rgba(160,175,205,0.40)',
+    shadowColor: 'rgba(0,0,0,0.60)',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.9,
-    shadowRadius: 18,
+    shadowOpacity: 0.8,
+    shadowRadius: 16,
     elevation: 8,
   },
   modalTitle: { ...typography.h2, color: colors.saffron, textAlign: 'center', fontWeight: '800' },
   field: { gap: 4 },
   fieldLabel: { ...typography.tiny, color: colors.textMuted, fontWeight: '700' },
   fieldInput: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#080E1A',
     borderWidth: 1,
-    borderColor: '#E3E8F3',
+    borderColor: 'rgba(16,185,129,0.25)',
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
     paddingVertical: 8,

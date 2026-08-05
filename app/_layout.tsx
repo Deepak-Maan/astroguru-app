@@ -9,12 +9,16 @@ import { AppUpdateModal } from '../src/components/AppUpdateModal';
 import { SecurityLockModal } from '../src/components/SecurityLockModal';
 import { NotificationToast } from '../src/components/NotificationToast';
 
+import { useUpdateStore } from '../src/store/updateStore';
+
 export default function RootLayout() {
   const loadSettings = useSettingsStore((s) => s.load);
+  const checkForUpdates = useUpdateStore((s) => s.checkForUpdates);
 
   useEffect(() => {
     loadSettings();
-  }, [loadSettings]);
+    checkForUpdates();
+  }, [loadSettings, checkForUpdates]);
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.bg }}>

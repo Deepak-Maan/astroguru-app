@@ -383,13 +383,19 @@ export default function Settings() {
 
           {/* About */}
           <View>
-            <SectionHeader title="About" />
+            <SectionHeader title="About & App Updates" />
             <Card style={{ gap: spacing.md }}>
               <Text style={styles.aboutTitle}>AstroGuru · v{currentVersion}</Text>
               <Text style={styles.help}>
                 Kundli, Lagna, Rashi and Nakshatra are computed on-device using the Lahiri
                 ayanamsa — no internet required. Sun and Moon positions are highly accurate.
               </Text>
+              <Button
+                label="⚡ Check for App Updates"
+                variant="gold"
+                size="sm"
+                onPress={() => triggerUpdateModal()}
+              />
             </Card>
           </View>
         </ScrollView>

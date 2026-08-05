@@ -104,7 +104,7 @@ export function AppUpdateModal() {
               )}
 
               {isReadyToInstall && (
-                <Button label="🎉 Restart & Install Update Now" variant="gold" size="md" onPress={installUpdate} />
+                <Button label="📦 Install New Version Now" variant="gold" size="md" onPress={installUpdate} />
               )}
             </View>
           </View>
