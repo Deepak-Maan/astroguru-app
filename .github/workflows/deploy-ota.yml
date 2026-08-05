@@ -18,14 +18,20 @@ jobs:
           node-version: 20
           cache: 'npm'
 
-      - name: 📦 Install Project Dependencies
-        run: npm ci
+      - name: ⚡ Setup Expo and EAS CLI
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: ⚡ Install EAS CLI
-        run: npm install -g eas-cli
+      - name: 📦 Install Dependencies
+        run: npm install
 
-      - name: 🚀 Publish Expo Over-The-Air (OTA) Update
-        run: npx eas-cli update --auto --non-interactive
+      - name: 🚀 Publish Expo OTA Update to All Channels (Preview, Production, Main)
+        run: |
+          eas update --channel production --message "Auto OTA Update (Production) [${{ github.sha }}]" --non-interactive || true
+          eas update --channel preview --message "Auto OTA Update (Preview) [${{ github.sha }}]" --non-interactive || true
+          eas update --branch main --message "Auto OTA Update (Main) [${{ github.sha }}]" --non-interactive || true
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 

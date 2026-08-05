@@ -23,85 +23,90 @@ export function AppUpdateModal() {
   if (!updateAvailable) return null;
 
   return (
-    <Modal visible={updateAvailable} animationType="slide" transparent>
+    <Modal visible={updateAvailable} animationType="fade" transparent statusBarTranslucent>
       <View style={styles.overlay}>
-        <View style={styles.content}>
-          {/* Header Banner */}
-          <View style={styles.header}>
-            <LinearGradient
-              colors={['#7D3C98', '#E67E22']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={StyleSheet.absoluteFill}
-            />
-            <Text style={{ fontSize: 42 }}>🚀</Text>
-            <Text style={styles.headerTitle}>New Update Available!</Text>
-            <View style={styles.versionBadge}>
-              <Text style={styles.versionText}>
-                v{currentVersion} ➔ <Text style={{ color: colors.saffron, fontWeight: '900' }}>v{latestVersion}</Text>
-              </Text>
-            </View>
-          </View>
-
-          {/* Release Notes */}
-          <View style={styles.notesContainer}>
-            <Text style={styles.notesHeader}>🎁 What's New in v{latestVersion}:</Text>
-            <ScrollView style={{ maxHeight: 180 }} contentContainerStyle={{ gap: 6 }}>
-              {releaseNotes.map((note, index) => (
-                <View key={index} style={styles.noteItem}>
-                  <Text style={styles.noteText}>{note}</Text>
-                </View>
-              ))}
-            </ScrollView>
-          </View>
-
-          {/* Download Progress Bar */}
-          {(isDownloading || isReadyToInstall) && (
-            <View style={styles.progressBox}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={styles.progressLabel}>
-                  {isReadyToInstall ? '✅ Package Downloaded!' : 'Downloading Update Package…'}
+        <View style={styles.webWrapper}>
+          <View style={styles.card}>
+            {/* Header Banner */}
+            <View style={styles.header}>
+              <LinearGradient
+                colors={[colors.auroraA, colors.saffron]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={StyleSheet.absoluteFill}
+              />
+              <View style={styles.badgePill}>
+                <Text style={styles.badgeText}>✨ NEW ASTROGURU VERSION READY</Text>
+              </View>
+              <Text style={{ fontSize: 38, marginVertical: 2 }}>🚀</Text>
+              <Text style={styles.headerTitle}>Update Available!</Text>
+              <View style={styles.versionBadge}>
+                <Text style={styles.versionText}>
+                  v{currentVersion} ➔ <Text style={{ color: colors.goldSoft, fontWeight: '900' }}>v{latestVersion}</Text>
                 </Text>
-                <Text style={styles.progressPct}>{downloadProgress}%</Text>
-              </View>
-              <View style={styles.track}>
-                <View style={[styles.bar, { width: `${downloadProgress}%` }]} />
               </View>
             </View>
-          )}
 
-          {/* Actions */}
-          <View style={styles.actionRow}>
-            {!isDownloading && !isReadyToInstall && (
-              <>
-                {!isMandatory && (
+            {/* Release Notes */}
+            <View style={styles.notesContainer}>
+              <Text style={styles.notesHeader}>🎁 What's New in Version {latestVersion}:</Text>
+              <ScrollView style={{ maxHeight: 180 }} contentContainerStyle={{ gap: 8 }} showsVerticalScrollIndicator={false}>
+                {releaseNotes.map((note, index) => (
+                  <View key={index} style={styles.noteItem}>
+                    <Text style={styles.noteText}>{note}</Text>
+                  </View>
+                ))}
+              </ScrollView>
+            </View>
+
+            {/* Download Progress Bar */}
+            {(isDownloading || isReadyToInstall) && (
+              <View style={styles.progressBox}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text style={styles.progressLabel}>
+                    {isReadyToInstall ? '✅ Update Package Downloaded!' : 'Downloading Update Bundle…'}
+                  </Text>
+                  <Text style={styles.progressPct}>{downloadProgress}%</Text>
+                </View>
+                <View style={styles.track}>
+                  <View style={[styles.bar, { width: `${downloadProgress}%` }]} />
+                </View>
+              </View>
+            )}
+
+            {/* Actions */}
+            <View style={styles.actionRow}>
+              {!isDownloading && !isReadyToInstall && (
+                <>
+                  {!isMandatory && (
+                    <Button
+                      label="Remind Later"
+                      variant="outline"
+                      size="md"
+                      fullWidth={false}
+                      style={{ flex: 1 }}
+                      onPress={dismissUpdate}
+                    />
+                  )}
                   <Button
-                    label="Remind Later"
-                    variant="outline"
+                    label="⚡ Update App Now"
+                    variant="gold"
                     size="md"
                     fullWidth={false}
-                    style={{ flex: 1 }}
-                    onPress={dismissUpdate}
+                    style={{ flex: 1.4 }}
+                    onPress={startDownload}
                   />
-                )}
-                <Button
-                  label="⚡ Update App Now"
-                  variant="gold"
-                  size="md"
-                  fullWidth={false}
-                  style={{ flex: 1.4 }}
-                  onPress={startDownload}
-                />
-              </>
-            )}
+                </>
+              )}
 
-            {isDownloading && (
-              <Button label="Downloading Package… (Wait)" variant="gold" size="md" disabled loading />
-            )}
+              {isDownloading && (
+                <Button label="Downloading Package… (Please Wait)" variant="gold" size="md" disabled loading />
+              )}
 
-            {isReadyToInstall && (
-              <Button label="🎉 Restart & Install Update" variant="gold" size="md" onPress={installUpdate} />
-            )}
+              {isReadyToInstall && (
+                <Button label="🎉 Restart & Install Update Now" variant="gold" size="md" onPress={installUpdate} />
+              )}
+            </View>
           </View>
         </View>
       </View>
@@ -112,54 +117,71 @@ export function AppUpdateModal() {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(27,20,56,0.65)',
+    backgroundColor: 'rgba(4,7,13,0.85)',
     justifyContent: 'center',
-    padding: spacing.lg,
+    padding: spacing.md,
   },
-  content: {
-    backgroundColor: '#FFFFFF',
+  webWrapper: {
+    width: '100%',
+    maxWidth: 440,
+    alignSelf: 'center',
+  },
+  card: {
+    backgroundColor: '#0D1524',
     borderRadius: radius.xl,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#E3E8F3',
+    borderColor: 'rgba(245,158,11,0.4)',
     gap: spacing.md,
-    shadowColor: 'rgba(160,175,205,0.40)',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.9,
-    shadowRadius: 18,
-    elevation: 8,
+    shadowColor: colors.saffron,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
+    elevation: 12,
   },
   header: {
     alignItems: 'center',
     paddingVertical: spacing.xl,
     paddingHorizontal: spacing.lg,
-    gap: spacing.xs,
+    gap: 4,
   },
-  headerTitle: { ...typography.h1, color: '#FFFFFF', fontSize: 22, fontWeight: '800' },
-  versionBadge: {
-    backgroundColor: 'rgba(255,255,255,0.92)',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
+  badgePill: {
+    backgroundColor: 'rgba(7,13,24,0.6)',
     borderRadius: radius.pill,
+    paddingHorizontal: 12,
+    paddingVertical: 3,
+    marginBottom: 4,
   },
-  versionText: { ...typography.tiny, color: colors.text, fontWeight: '800', fontSize: 12 },
+  badgeText: { ...typography.tiny, color: colors.goldSoft, fontWeight: '800', letterSpacing: 0.8 },
+  headerTitle: { ...typography.h1, color: '#FFFFFF', fontSize: 24, fontWeight: '800' },
+  versionBadge: {
+    backgroundColor: 'rgba(7,13,24,0.7)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.15)',
+    paddingHorizontal: 14,
+    paddingVertical: 5,
+    borderRadius: radius.pill,
+    marginTop: 4,
+  },
+  versionText: { ...typography.tiny, color: '#F8FAFC', fontWeight: '800', fontSize: 13 },
 
   notesContainer: { paddingHorizontal: spacing.xl, gap: spacing.xs },
-  notesHeader: { ...typography.h3, color: colors.text, fontSize: 15, fontWeight: '800' },
+  notesHeader: { ...typography.h3, color: colors.goldSoft, fontSize: 15, fontWeight: '800' },
   noteItem: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#070D18',
     borderRadius: radius.md,
     padding: spacing.sm,
     borderWidth: 1,
-    borderColor: '#E3E8F3',
+    borderColor: 'rgba(16,185,129,0.25)',
   },
-  noteText: { ...typography.small, color: colors.text, lineHeight: 18, fontWeight: '600' },
+  noteText: { ...typography.small, color: '#F8FAFC', lineHeight: 18, fontWeight: '600' },
 
-  progressBox: { paddingHorizontal: spacing.xl, gap: 4 },
+  progressBox: { paddingHorizontal: spacing.xl, gap: 6 },
   progressLabel: { ...typography.tiny, color: colors.textMuted, fontWeight: '700' },
-  progressPct: { ...typography.tiny, color: colors.saffron, fontWeight: '900' },
-  track: { height: 8, backgroundColor: '#F8FAFC', borderRadius: 4, overflow: 'hidden', borderWidth: 1, borderColor: '#E3E8F3' },
+  progressPct: { ...typography.tiny, color: colors.goldSoft, fontWeight: '900' },
+  track: { height: 8, backgroundColor: '#070D18', borderRadius: 4, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(245,158,11,0.3)' },
   bar: { height: '100%', backgroundColor: colors.saffron, borderRadius: 4 },
 
-  actionRow: { flexDirection: 'row', gap: spacing.sm, padding: spacing.xl, paddingTop: 0 },
+  actionRow: { flexDirection: 'row', gap: spacing.sm, padding: spacing.xl, paddingTop: spacing.xs },
 });
+

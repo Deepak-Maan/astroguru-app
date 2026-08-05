@@ -67,77 +67,91 @@ export default function ExpertLoginScreen() {
           style={{ flex: 1 }}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
-          <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-            <View style={styles.hero}>
-              <View style={styles.logoCircle}>
-                <LinearGradient
-                  colors={[colors.auroraA, colors.saffron]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={StyleSheet.absoluteFill}
-                />
-                <Text style={{ fontSize: 32 }}>👑</Text>
-              </View>
-              <Text style={styles.brandTitle}>Expert Jyotishi Portal</Text>
-              <Text style={styles.brandSubtitle}>Sign in to manage live consultations & earnings</Text>
-            </View>
-
-            <Card style={styles.card}>
-              <Text style={styles.cardHeader}>Astrologer Sign In</Text>
-
-              <View style={styles.field}>
-                <Text style={styles.label}>Expert Email Address</Text>
-                <TextInput
-                  value={email}
-                  onChangeText={(t) => { setEmail(t); setError(null); }}
-                  placeholder="acharya@astroguru.app"
-                  placeholderTextColor={colors.textFaint}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  style={styles.input}
-                />
-              </View>
-
-              <View style={styles.field}>
-                <Text style={styles.label}>Password</Text>
-                <View style={styles.passwordWrap}>
-                  <TextInput
-                    value={password}
-                    onChangeText={(t) => { setPassword(t); setError(null); }}
-                    placeholder="••••••••"
-                    placeholderTextColor={colors.textFaint}
-                    secureTextEntry={!showPassword}
-                    style={[styles.input, { flex: 1 }]}
+          <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+            <View style={styles.webWrapper}>
+              <View style={styles.hero}>
+                <View style={styles.logoOuterRing}>
+                  <LinearGradient
+                    colors={[colors.auroraA, colors.saffron]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={StyleSheet.absoluteFill}
                   />
-                  <Pressable onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
-                    <Text style={{ fontSize: 16 }}>{showPassword ? '👁️' : '🙈'}</Text>
+                  <View style={styles.logoInnerCircle}>
+                    <Text style={{ fontSize: 32 }}>👑</Text>
+                  </View>
+                </View>
+                <View style={styles.badgePill}>
+                  <Text style={styles.badgeText}>👑 EXPERT JYOTISHI PORTAL</Text>
+                </View>
+                <Text style={styles.brandTitle}>Astrologer Sign In</Text>
+                <Text style={styles.brandSubtitle}>Manage your live consultations, client chats & earnings</Text>
+              </View>
+
+              <Card elevated padded={false} style={styles.card}>
+                <View style={styles.cardBody}>
+                  <View style={styles.field}>
+                    <Text style={styles.label}>EXPERT EMAIL ADDRESS</Text>
+                    <TextInput
+                      value={email}
+                      onChangeText={(t) => { setEmail(t); setError(null); }}
+                      placeholder="acharya@astroguru.app"
+                      placeholderTextColor={colors.textFaint}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      style={styles.input}
+                    />
+                  </View>
+
+                  <View style={styles.field}>
+                    <Text style={styles.label}>PASSWORD</Text>
+                    <View style={styles.passwordWrap}>
+                      <TextInput
+                        value={password}
+                        onChangeText={(t) => { setPassword(t); setError(null); }}
+                        placeholder="••••••••"
+                        placeholderTextColor={colors.textFaint}
+                        secureTextEntry={!showPassword}
+                        style={[styles.input, { flex: 1, paddingRight: 44 }]}
+                      />
+                      <Pressable onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
+                        <Text style={{ fontSize: 16 }}>{showPassword ? '👁️' : '🙈'}</Text>
+                      </Pressable>
+                    </View>
+                  </View>
+
+                  {!!error && (
+                    <View style={styles.errorBox}>
+                      <Text style={styles.errorText}>⚠️ {error}</Text>
+                    </View>
+                  )}
+
+                  <Button
+                    label={loading ? 'Authenticating Expert…' : '👑 Sign In as Expert'}
+                    variant="gold"
+                    size="lg"
+                    loading={loading}
+                    onPress={handleExpertLogin}
+                    style={{ marginTop: spacing.xs }}
+                  />
+                </View>
+              </Card>
+
+              <View style={styles.footerContainer}>
+                <View style={styles.footerRow}>
+                  <Text style={styles.footerText}>New Expert?</Text>
+                  <Pressable onPress={() => router.push('/(auth)/expert-signup')}>
+                    <Text style={styles.footerLink}>Register as Astrologer</Text>
+                  </Pressable>
+                </View>
+
+                <View style={styles.footerRow}>
+                  <Text style={styles.footerText}>Seeking Consultation?</Text>
+                  <Pressable onPress={() => router.push('/(auth)/login')}>
+                    <Text style={[styles.footerLink, { color: colors.auroraA }]}>User Sign In →</Text>
                   </Pressable>
                 </View>
               </View>
-
-              {!!error && <Text style={styles.errorText}>⚠️ {error}</Text>}
-
-              <Button
-                label={loading ? 'Authenticating Expert…' : '👑 Sign In as Expert'}
-                variant="gold"
-                size="lg"
-                loading={loading}
-                onPress={handleExpertLogin}
-              />
-            </Card>
-
-            <View style={styles.footerRow}>
-              <Text style={styles.footerText}>New Expert?</Text>
-              <Pressable onPress={() => router.push('/(auth)/expert-signup')}>
-                <Text style={styles.footerLink}>Register as Astrologer</Text>
-              </Pressable>
-            </View>
-
-            <View style={styles.footerRow}>
-              <Text style={styles.footerText}>Seeking Consultation?</Text>
-              <Pressable onPress={() => router.push('/(auth)/login')}>
-                <Text style={styles.footerLink}>User Sign In</Text>
-              </Pressable>
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
@@ -147,20 +161,74 @@ export default function ExpertLoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  scroll: { paddingHorizontal: spacing.lg, paddingVertical: spacing.xl, flexGrow: 1, justifyContent: 'center', gap: spacing.lg },
+  scrollContainer: { paddingHorizontal: spacing.md, paddingVertical: spacing.xl, flexGrow: 1, justifyContent: 'center' },
+  webWrapper: { width: '100%', maxWidth: 460, alignSelf: 'center', gap: spacing.lg },
   hero: { alignItems: 'center', gap: spacing.xs },
-  logoCircle: { width: 68, height: 68, borderRadius: 34, alignItems: 'center', justifyContent: 'center', overflow: 'hidden', marginBottom: spacing.xs },
-  brandTitle: { ...typography.display, fontSize: 28, color: colors.text, fontWeight: '800' },
+  logoOuterRing: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    padding: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.xs,
+    shadowColor: colors.saffron,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  logoInnerCircle: { width: '100%', height: '100%', borderRadius: 36, backgroundColor: '#070D18', alignItems: 'center', justifyContent: 'center' },
+  badgePill: {
+    backgroundColor: 'rgba(245,158,11,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(245,158,11,0.35)',
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 4,
+    marginBottom: 2,
+  },
+  badgeText: { ...typography.tiny, color: colors.goldSoft, fontWeight: '800', letterSpacing: 0.8 },
+  brandTitle: { ...typography.display, fontSize: 30, color: colors.text, fontWeight: '800' },
   brandSubtitle: { ...typography.small, color: colors.textMuted, textAlign: 'center', fontWeight: '600' },
-  card: { gap: spacing.md, padding: spacing.xl },
-  cardHeader: { ...typography.h2, color: colors.saffron, textAlign: 'center', fontWeight: '800' },
+  card: {
+    borderRadius: radius.lg,
+    backgroundColor: '#0D1524',
+    borderWidth: 1,
+    borderColor: 'rgba(245,158,11,0.3)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.7,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  cardBody: { padding: spacing.xl, gap: spacing.md },
   field: { gap: spacing.xs },
-  label: { ...typography.tiny, color: colors.textMuted, fontWeight: '700' },
-  input: { backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: radius.md, paddingHorizontal: spacing.md, paddingVertical: 11, color: colors.text, fontSize: 14, fontWeight: '700' },
+  label: { ...typography.tiny, color: colors.textMuted, fontWeight: '800', letterSpacing: 0.6 },
+  input: {
+    backgroundColor: '#070D18',
+    borderWidth: 1,
+    borderColor: 'rgba(245,158,11,0.3)',
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 11,
+    color: '#F8FAFC',
+    fontSize: 15,
+    fontWeight: '700',
+  },
   passwordWrap: { flexDirection: 'row', alignItems: 'center' },
-  eyeBtn: { position: 'absolute', right: 12, padding: 4 },
+  eyeBtn: { position: 'absolute', right: 12, padding: 6 },
+  errorBox: {
+    backgroundColor: 'rgba(244,63,94,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(244,63,94,0.3)',
+    borderRadius: radius.md,
+    padding: spacing.md,
+  },
   errorText: { ...typography.small, color: colors.danger, textAlign: 'center', fontWeight: '700' },
+  footerContainer: { gap: spacing.xs, alignItems: 'center' },
   footerRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: spacing.xs },
   footerText: { ...typography.small, color: colors.textMuted, fontWeight: '600' },
-  footerLink: { ...typography.small, color: colors.saffron, fontWeight: '800' },
+  footerLink: { ...typography.small, color: colors.goldSoft, fontWeight: '800' },
 });
+
