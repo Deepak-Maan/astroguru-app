@@ -17,23 +17,17 @@ import { Button } from '../../src/components/Button';
 import { Card } from '../../src/components/Card';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { useAuthStore } from '../../src/store/authStore';
-<<<<<<< HEAD
-import { loginWithEmailPassword } from '../../src/services/authService';
-=======
 import {
   loginWithEmailPassword,
   sendMobileOtp,
   verifyMobileOtp,
 } from '../../src/services/authService';
->>>>>>> 751cb275cf879881ec315fb65fddbe41aa72f8e2
 import { signInWithGoogle } from '../../src/services/firebaseConfig';
 
 export default function LoginScreen() {
   const router = useRouter();
   const setUserSession = useAuthStore((s) => s.setUserSession);
 
-<<<<<<< HEAD
-=======
   // Tab State: 'otp' | 'email'
   const [loginMode, setLoginMode] = useState<'otp' | 'email'>('otp');
 
@@ -45,7 +39,6 @@ export default function LoginScreen() {
   const [otpLoading, setOtpLoading] = useState(false);
   const [verifyLoading, setVerifyLoading] = useState(false);
 
->>>>>>> 751cb275cf879881ec315fb65fddbe41aa72f8e2
   // Email form states
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -54,10 +47,7 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-<<<<<<< HEAD
-=======
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
->>>>>>> 751cb275cf879881ec315fb65fddbe41aa72f8e2
 
   // Handle 1-Tap Google Login
   const handleGoogleLogin = async () => {
@@ -75,8 +65,6 @@ export default function LoginScreen() {
     }
   };
 
-<<<<<<< HEAD
-=======
   // Handle Send Mobile OTP
   const handleSendOtp = async () => {
     if (!phone || phone.trim().length !== 10) {
@@ -121,7 +109,6 @@ export default function LoginScreen() {
     }
   };
 
->>>>>>> 751cb275cf879881ec315fb65fddbe41aa72f8e2
   // Handle Email & Password Login
   const handleEmailLogin = async () => {
     if (!email.trim() || !email.includes('@')) {
@@ -151,8 +138,6 @@ export default function LoginScreen() {
     }
   };
 
-<<<<<<< HEAD
-=======
   // Quick Demo Auto-Fill Helpers
   const handleQuickLogin = async (type: 'user' | 'astro' | 'admin') => {
     setLoading(true);
@@ -194,7 +179,6 @@ export default function LoginScreen() {
     }
   };
 
->>>>>>> 751cb275cf879881ec315fb65fddbe41aa72f8e2
   return (
     <GradientBackground>
       <SafeAreaView style={{ flex: 1 }}>
@@ -203,113 +187,6 @@ export default function LoginScreen() {
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
           <ScrollView
-<<<<<<< HEAD
-            contentContainerStyle={styles.scroll}
-            showsVerticalScrollIndicator={false}
-          >
-            {/* Header Logo */}
-            <View style={styles.hero}>
-              <View style={styles.logoCircle}>
-                <LinearGradient
-                  colors={[colors.gold, colors.saffron]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={StyleSheet.absoluteFill}
-                />
-                <Text style={styles.logoIcon}>✨</Text>
-              </View>
-              <Text style={styles.brandTitle}>AstroGuru</Text>
-              <Text style={styles.brandSubtitle}>Sign in to access your birth chart & Jyotishis</Text>
-            </View>
-
-            {/* Form Card */}
-            <Card style={styles.card}>
-              <Text style={styles.cardHeader}>Welcome Back</Text>
-
-              {/* 1-Tap Google Sign In Button */}
-              <Pressable
-                onPress={handleGoogleLogin}
-                disabled={googleLoading}
-                style={({ pressed }) => [styles.googleBtn, pressed && { opacity: 0.85 }]}
-              >
-                <View style={styles.googleIconBox}>
-                  <Text style={{ fontSize: 20 }}>🌐</Text>
-                </View>
-                <Text style={styles.googleBtnText}>
-                  {googleLoading ? 'Connecting Google…' : 'Continue with Google'}
-                </Text>
-              </Pressable>
-
-              {/* Divider */}
-              <View style={styles.dividerRow}>
-                <View style={styles.dividerLine} />
-                <Text style={styles.dividerText}>or sign in with email</Text>
-                <View style={styles.dividerLine} />
-              </View>
-
-              {/* Email */}
-              <View style={styles.field}>
-                <Text style={styles.label}>Email Address</Text>
-                <TextInput
-                  value={email}
-                  onChangeText={(t) => { setEmail(t); setError(null); }}
-                  placeholder="your.email@example.com"
-                  placeholderTextColor={colors.textFaint}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  style={styles.input}
-                />
-              </View>
-
-              {/* Password */}
-              <View style={styles.field}>
-                <Text style={styles.label}>Password</Text>
-                <View style={styles.passwordWrap}>
-                  <TextInput
-                    value={password}
-                    onChangeText={(t) => { setPassword(t); setError(null); }}
-                    placeholder="••••••••"
-                    placeholderTextColor={colors.textFaint}
-                    secureTextEntry={!showPassword}
-                    style={[styles.input, { flex: 1 }]}
-                  />
-                  <Pressable
-                    onPress={() => setShowPassword(!showPassword)}
-                    style={styles.eyeBtn}
-                  >
-                    <Text style={styles.eyeIcon}>{showPassword ? '👁️' : '🙈'}</Text>
-                  </Pressable>
-                </View>
-              </View>
-
-              {!!error && <Text style={styles.errorText}>⚠️ {error}</Text>}
-
-              <Button
-                label={loading ? 'Verifying Account…' : 'Sign In'}
-                variant="gold"
-                size="lg"
-                loading={loading}
-                onPress={handleEmailLogin}
-                style={{ marginTop: spacing.xs }}
-              />
-            </Card>
-
-            {/* Footer switch to Signup */}
-            <View style={styles.footerRow}>
-              <Text style={styles.footerText}>Don't have an account?</Text>
-              <Pressable onPress={() => router.push('/(auth)/signup')}>
-                <Text style={styles.footerLink}>Create Account</Text>
-              </Pressable>
-            </View>
-
-            {/* Expert / Astrologer Portal Link */}
-            <View style={styles.footerRow}>
-              <Text style={styles.footerText}>Are you an Astrologer?</Text>
-              <Pressable onPress={() => router.push('/(auth)/expert-login')}>
-                <Text style={[styles.footerLink, { color: colors.auroraA }]}>Join as Expert →</Text>
-              </Pressable>
-=======
             contentContainerStyle={styles.scrollContainer}
             showsVerticalScrollIndicator={false}
           >
@@ -582,7 +459,6 @@ export default function LoginScreen() {
                   </Pressable>
                 </View>
               </View>
->>>>>>> 751cb275cf879881ec315fb65fddbe41aa72f8e2
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
@@ -592,13 +468,6 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-<<<<<<< HEAD
-  scroll: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.xl,
-    flexGrow: 1,
-    justifyContent: 'center',
-=======
   scrollContainer: {
     flexGrow: 1,
     justifyContent: 'center',
@@ -609,33 +478,12 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 460,
     alignSelf: 'center',
->>>>>>> 751cb275cf879881ec315fb65fddbe41aa72f8e2
     gap: spacing.lg,
   },
   hero: {
     alignItems: 'center',
     gap: spacing.xs,
   },
-<<<<<<< HEAD
-  logoCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-    marginBottom: spacing.xs,
-  },
-  logoIcon: { fontSize: 32 },
-  brandTitle: { ...typography.display, fontSize: 28, color: colors.text, fontWeight: '800' },
-  brandSubtitle: { ...typography.small, color: colors.textMuted, textAlign: 'center', fontWeight: '600' },
-
-  card: {
-    gap: spacing.md,
-    padding: spacing.xl,
-  },
-  cardHeader: { ...typography.h2, color: colors.text, textAlign: 'center', fontWeight: '800' },
-=======
   logoOuterRing: {
     width: 72,
     height: 72,
@@ -734,29 +582,12 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
     gap: spacing.md,
   },
->>>>>>> 751cb275cf879881ec315fb65fddbe41aa72f8e2
 
   googleBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
-<<<<<<< HEAD
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1.5,
-    borderColor: '#E2E8F0',
-    borderRadius: radius.pill,
-    paddingVertical: 13,
-    paddingHorizontal: spacing.lg,
-    shadowColor: 'rgba(148,163,184,0.25)',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.8,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  googleIconBox: { width: 24, height: 24, alignItems: 'center', justifyContent: 'center' },
-  googleBtnText: { ...typography.body, color: colors.text, fontWeight: '800', fontSize: 15 },
-=======
     backgroundColor: '#131F33',
     borderWidth: 1.5,
     borderColor: 'rgba(245,158,11,0.3)',
@@ -766,33 +597,11 @@ const styles = StyleSheet.create({
   },
   googleIconBox: { width: 24, height: 24, alignItems: 'center', justifyContent: 'center' },
   googleBtnText: { ...typography.body, color: colors.text, fontWeight: '700', fontSize: 15 },
->>>>>>> 751cb275cf879881ec315fb65fddbe41aa72f8e2
 
   dividerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-<<<<<<< HEAD
-    marginVertical: 4,
-  },
-  dividerLine: { flex: 1, height: 1, backgroundColor: '#E2E8F0' },
-  dividerText: { ...typography.tiny, color: colors.textFaint, fontWeight: '700' },
-
-  field: { gap: spacing.xs },
-  label: { ...typography.tiny, color: colors.textMuted, fontWeight: '700' },
-  input: {
-    backgroundColor: '#F8FAFC',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 11,
-    color: colors.text,
-    fontSize: 14,
-    fontWeight: '700',
-  },
-
-=======
     marginVertical: 2,
   },
   dividerLine: { flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.1)' },
@@ -856,7 +665,6 @@ const styles = StyleSheet.create({
     borderColor: colors.saffron,
   },
 
->>>>>>> 751cb275cf879881ec315fb65fddbe41aa72f8e2
   passwordWrap: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -864,14 +672,6 @@ const styles = StyleSheet.create({
   eyeBtn: {
     position: 'absolute',
     right: 12,
-<<<<<<< HEAD
-    padding: 4,
-  },
-  eyeIcon: { fontSize: 16 },
-
-  errorText: { ...typography.small, color: colors.danger, textAlign: 'center', fontWeight: '700' },
-
-=======
     padding: 6,
   },
   eyeIcon: { fontSize: 16 },
@@ -941,22 +741,13 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
     alignItems: 'center',
   },
->>>>>>> 751cb275cf879881ec315fb65fddbe41aa72f8e2
   footerRow: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     gap: spacing.xs,
-<<<<<<< HEAD
-    marginTop: spacing.xs,
-  },
-  footerText: { ...typography.small, color: colors.textMuted, fontWeight: '600' },
-  footerLink: { ...typography.small, color: colors.saffron, fontWeight: '800' },
-});
-=======
   },
   footerText: { ...typography.small, color: colors.textMuted, fontWeight: '600' },
   footerLink: { ...typography.small, color: colors.goldSoft, fontWeight: '800' },
 });
 
->>>>>>> 751cb275cf879881ec315fb65fddbe41aa72f8e2
