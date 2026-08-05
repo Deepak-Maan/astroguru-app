@@ -1,9 +1,11 @@
 import React from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, radius, spacing, typography } from '../theme';
 import { Button } from './Button';
 import { useUpdateStore } from '../store/updateStore';
+
+const DIRECT_APK_DOWNLOAD_URL = 'https://expo.dev/accounts/deepak00007/projects/astrologer-app/builds';
 
 export function AppUpdateModal() {
   const {
@@ -21,6 +23,14 @@ export function AppUpdateModal() {
   } = useUpdateStore();
 
   if (!updateAvailable) return null;
+
+  const handleDirectApkDownload = async () => {
+    try {
+      await Linking.openURL(DIRECT_APK_DOWNLOAD_URL);
+    } catch (e) {
+      console.warn('Failed to open direct APK link:', e);
+    }
+  };
 
   return (
     <Modal visible={updateAvailable} animationType="fade" transparent statusBarTranslucent>
@@ -50,7 +60,7 @@ export function AppUpdateModal() {
             {/* Release Notes */}
             <View style={styles.notesContainer}>
               <Text style={styles.notesHeader}>🎁 What's New in Version {latestVersion}:</Text>
-              <ScrollView style={{ maxHeight: 180 }} contentContainerStyle={{ gap: 8 }} showsVerticalScrollIndicator={false}>
+              <ScrollView style={{ maxHeight: 160 }} contentContainerStyle={{ gap: 8 }} showsVerticalScrollIndicator={false}>
                 {releaseNotes.map((note, index) => (
                   <View key={index} style={styles.noteItem}>
                     <Text style={styles.noteText}>{note}</Text>
@@ -75,27 +85,28 @@ export function AppUpdateModal() {
             )}
 
             {/* Actions */}
-            <View style={styles.actionRow}>
+            <View style={styles.actionColumn}>
               {!isDownloading && !isReadyToInstall && (
                 <>
-                  {!isMandatory && (
-                    <Button
-                      label="Remind Later"
-                      variant="outline"
-                      size="md"
-                      fullWidth={false}
-                      style={{ flex: 1 }}
-                      onPress={dismissUpdate}
-                    />
-                  )}
                   <Button
-                    label="⚡ Update App Now"
+                    label="⚡ Update App Now (Instant OTA)"
                     variant="gold"
                     size="md"
-                    fullWidth={false}
-                    style={{ flex: 1.4 }}
                     onPress={startDownload}
                   />
+                  <Button
+                    label="📥 Direct Download & Install APK (v1.4.0)"
+                    variant="outline"
+                    size="md"
+                    onPress={handleDirectApkDownload}
+                  />
+                  {!isMandatory && (
+                    <Pressable onPress={dismissUpdate} style={{ paddingVertical: 4, alignItems: 'center' }}>
+                      <Text style={{ ...typography.tiny, color: colors.textMuted, fontWeight: '700' }}>
+                        Remind Me Later
+                      </Text>
+                    </Pressable>
+                  )}
                 </>
               )}
 
@@ -141,7 +152,7 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    paddingVertical: spacing.xl,
+    paddingVertical: spacing.lg,
     paddingHorizontal: spacing.lg,
     gap: 4,
   },
@@ -182,6 +193,5 @@ const styles = StyleSheet.create({
   track: { height: 8, backgroundColor: '#070D18', borderRadius: 4, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(245,158,11,0.3)' },
   bar: { height: '100%', backgroundColor: colors.saffron, borderRadius: 4 },
 
-  actionRow: { flexDirection: 'row', gap: spacing.sm, padding: spacing.xl, paddingTop: spacing.xs },
+  actionColumn: { gap: spacing.xs, padding: spacing.xl, paddingTop: spacing.xs },
 });
-
