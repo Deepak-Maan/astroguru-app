@@ -1,5 +1,5 @@
-import React from 'react';
-import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { Alert, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -191,7 +191,7 @@ export default function Profile() {
                 </Card>
               </View>
 
-              <Text style={styles.version}>AstroGuru Acharya · v1.6.0 · {authUser?.email}</Text>
+              <Text style={styles.version}>AstroGuru Acharya · v2.0.0 · {authUser?.email}</Text>
             </ScrollView>
           </>
         ) : (
@@ -306,7 +306,7 @@ export default function Profile() {
                 </Card>
               </View>
 
-              <Text style={styles.version}>AstroGuru · v1.6.0 · Signed in as {authUser?.email ?? 'Seeker'}</Text>
+              <Text style={styles.version}>AstroGuru · v2.0.0 · Signed in as {authUser?.email ?? 'Seeker'}</Text>
             </ScrollView>
           </>
         )}

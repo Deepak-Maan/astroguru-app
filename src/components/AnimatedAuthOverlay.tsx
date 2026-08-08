@@ -141,7 +141,11 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   ringOuter: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     borderRadius: 28,
     overflow: 'hidden',
   },

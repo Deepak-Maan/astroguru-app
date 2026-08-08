@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
 
-const LATEST_RELEASE_VERSION = '1.9.0';
+const LATEST_RELEASE_VERSION = '2.0.0';
 
 export interface UpdateInfo {
   currentVersion: string;
@@ -30,16 +30,16 @@ interface UpdateState extends UpdateInfo {
 export const useUpdateStore = create<UpdateState>()(
   persist(
     (set, get) => ({
-      currentVersion: '1.8.0',
-      latestVersion: '1.9.0',
+      currentVersion: '1.9.0',
+      latestVersion: '2.0.0',
       updateAvailable: true,
       isMandatory: false,
       releaseNotes: [
-        '🚀 Complete Global App OTA Update Engine (v1.9.0)',
-        '🔮 Certified Jyotishi Workstation Performance & Null-Safety Enhancements',
-        '⚡ Instant Seeker ↔ Acharya Bidirectional Live Consultation Rooms',
-        '🛡️ Zero-Crash Multi-Tier Authentication & Unified REST Backend',
-        '📲 Universal In-App Update Modal Active for Seekers & Jyotishis',
+        '🌟 AstroGuru Major Version 2.0.0 Milestone Release',
+        '🎨 Screenshot-Matched UI Cards, Header & Floating Tab Bar Design',
+        '✨ Luminous Animated Auth Overlay for Login, Signup & Logout',
+        '🔮 Certified Jyotishi Workstation Dual-Workspace Isolation',
+        '📲 Universal OTA Update Engine Active Globally for All Roles',
       ],
       downloadProgress: 100,
       isDownloading: false,
