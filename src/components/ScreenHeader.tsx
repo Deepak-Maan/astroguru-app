@@ -263,5 +263,4 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(5, 150, 105, 0.2)',
   },
   shubhText: { ...typography.tiny, color: '#059669', fontSize: 10.5, fontWeight: '800' },
-});t: '600' },
 });

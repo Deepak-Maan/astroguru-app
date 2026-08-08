@@ -432,7 +432,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: colors.teal,
     alignItems: 'center',
-    justify.content: 'center',
+    justifyContent: 'center',
   },
   numBadgeVal: { ...typography.display, fontSize: 20, color: colors.white, fontWeight: '900' },
   numBannerTag: { ...typography.tiny, color: colors.teal, fontSize: 9, letterSpacing: 1.2, fontWeight: '800' },
@@ -474,9 +474,5 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 8,
     elevation: 3,
-  },
-});,
-    textAlign: 'center',
-    marginTop: spacing.xs,
   },
 });
