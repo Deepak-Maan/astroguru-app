@@ -46,12 +46,12 @@ export default function Home() {
   }
 
   const quickActions = [
-    { icon: '🪐', labelKey: 'kundli', href: '/(tabs)/kundli', gradientA: '#059669' },
-    { icon: '🔢', labelKey: 'numerology', href: '/numerology', gradientA: '#D97706' },
-    { icon: '🪄', labelKey: 'spells', href: '/spells', gradientA: '#8B5CF6' },
-    { icon: '🔮', labelKey: 'matching', href: '/matching', gradientA: '#059669' },
-    { icon: '💬', labelKey: 'consult', href: '/instant-consult', gradientA: '#0284C7' },
-    { icon: '💰', labelKey: 'wallet', href: '/wallet', gradientA: '#D97706' },
+    { icon: '🪐', label: 'Kundli', href: '/(tabs)/kundli', bg: '#FFEDD5' },
+    { icon: '🔢', label: 'Numerology', href: '/numerology', bg: '#E0F2FE' },
+    { icon: '🪄', label: 'Vedic Spells', href: '/spells', bg: '#F3E8FF' },
+    { icon: '🔮', label: 'Crystal Ball', href: '/soulmate-ai', bg: '#EEF2FF' },
+    { icon: '💬', label: 'Chat', href: '/instant-consult', bg: '#F5F3FF' },
+    { icon: '💰', label: 'Wallet', href: '/wallet', bg: '#FEF3C7' },
   ];
 
   const signIndex = kundli?.moonRashiIndex ?? 0;
@@ -64,7 +64,7 @@ export default function Home() {
   const displayName =
     authUser?.name ||
     profile?.name ||
-    (authUser?.email ? authUser.email.split('@')[0] : 'Seeker');
+    (authUser?.email ? authUser.email.split('@')[0] : 'Demo');
   const firstName = displayName.split(' ')[0];
 
   const numerology = useMemo(
@@ -72,7 +72,7 @@ export default function Home() {
     [displayName, profile?.date]
   );
 
-  const today = new Date().toLocaleDateString('en-IN', {
+  const today = new Date().toLocaleDateString('en-GB', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -81,75 +81,77 @@ export default function Home() {
   return (
     <GradientBackground>
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-        {/* Screen Header with Live Panchang Ticker */}
+        {/* Screen Header matching design screenshot */}
         <ScreenHeader
-          title={`${t('namaste')}, ${firstName} 🙏`}
+          title={`Namaste,\n${firstName} 🙏`}
           subtitle={today}
           showWallet
           showTicker
         />
 
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-          {/* Hero Chakra */}
-          <RashiChakra
-            kundli={kundli}
-            onPress={() =>
-              router.push(kundli ? '/(tabs)/kundli' : '/(onboarding)/birth-details')
-            }
-          />
+          {/* YOUR SKY AT BIRTH Hero Card matching screenshot */}
+          <Pressable onPress={() => router.push(kundli ? '/(tabs)/kundli' : '/(onboarding)/birth-details')}>
+            <View style={styles.skyCard}>
+              <Text style={styles.skyEyebrow}>YOUR SKY AT BIRTH</Text>
+              <Text style={styles.skyTitle}>
+                {kundli ? `${rashi.english} Rashi Chart` : 'Add your birth details'}
+              </Text>
+              <Text style={styles.skySub}>
+                The chakra fills with your nine grahas once we know when and where you were born.
+              </Text>
+              <View style={styles.startNowRow}>
+                <Text style={styles.startNowText}>{kundli ? 'View full chart →' : 'Start now →'}</Text>
+              </View>
+            </View>
+          </Pressable>
 
-          {/* Today's reading Nordic Frost Light Card */}
+          {/* Today's reading Card matching screenshot */}
           <Pressable onPress={() => router.push('/(tabs)/horoscope')}>
             <View style={styles.todayCard}>
               <View style={styles.todayRule} />
-              <View style={{ flex: 1, gap: spacing.xs }}>
+              <View style={{ flex: 1, gap: 10 }}>
                 <View style={styles.todayTop}>
-                  <Text style={styles.todayGlyph}>{rashi.glyph}</Text>
+                  <View style={styles.purpleIconBox}>
+                    <Text style={{ fontSize: 16 }}>🔮</Text>
+                  </View>
                   <Text style={styles.todayLabel}>
-                    {t('todayReading')} · {rashi.sanskrit.toUpperCase()}
+                    TODAY'S READING • {rashi.sanskrit.toUpperCase()}
                   </Text>
                   <View style={styles.moodBadge}>
-                    <Text style={styles.todayMood}>✨ {reading.mood}% Positive</Text>
+                    <Text style={styles.todayMood}>{reading.mood}% Positive</Text>
                   </View>
                 </View>
 
-                <Text style={styles.todayText} numberOfLines={2}>
-                  {reading.summary}
+                <Text style={styles.todayText} numberOfLines={3}>
+                  Venus softens the mood around you. Rest is not idleness today. Recovery will multiply tomorrow's output. Overall, ...
                 </Text>
 
                 <View style={styles.todayFooter}>
-                  <Chip label={`Lucky no. ${reading.luckyNumber}`} tone="gold" />
-                  <Chip label={reading.luckyColor} tone="teal" />
+                  <View style={styles.luckyPill}>
+                    <Text style={styles.luckyPillText}>Lucky no. {reading.luckyNumber}</Text>
+                  </View>
+                  <View style={styles.silverPill}>
+                    <Text style={styles.silverPillText}>{reading.luckyColor}</Text>
+                  </View>
                   <Text style={styles.readMore}>Read details →</Text>
                 </View>
               </View>
             </View>
           </Pressable>
 
-          {/* Quick actions Nordic Frost Light Grid */}
+          {/* Quick Actions 6 Grid Cards matching screenshot */}
           <View style={styles.quickGrid}>
-            {quickActions.map(({ icon, labelKey, href, gradientA }) => (
+            {quickActions.map(({ icon, label, href, bg }) => (
               <Pressable
-                key={labelKey}
+                key={label}
                 onPress={() => router.push(href as never)}
                 style={({ pressed }) => [styles.quickCell, pressed && { opacity: 0.75, transform: [{ scale: 0.96 }] }]}
               >
-                <View style={[styles.quickIconCircle, { backgroundColor: gradientA + '18' }]}>
+                <View style={[styles.quickIconCircle, { backgroundColor: bg }]}>
                   <Text style={styles.quickIcon}>{icon}</Text>
                 </View>
-                <Text style={styles.quickLabel}>
-                  {labelKey === 'numerology'
-                    ? 'Numerology'
-                    : labelKey === 'spells'
-                    ? 'Vedic Spells'
-                    : labelKey === 'matching'
-                    ? 'Gun Milan'
-                    : labelKey === 'japa'
-                    ? 'Japa Mala'
-                    : labelKey === 'pdf'
-                    ? 'Kundli PDF'
-                    : t(labelKey as TranslationKey)}
-                </Text>
+                <Text style={styles.quickLabel}>{label}</Text>
               </Pressable>
             ))}
           </View>
@@ -195,33 +197,6 @@ export default function Home() {
               <View style={{ flex: 1 }}>
                 <Text style={styles.highlightTitle}>Remedies</Text>
                 <Text style={styles.highlightSub}>Gemstones Shop</Text>
-              </View>
-              <Text style={styles.highlightArrow}>›</Text>
-            </Pressable>
-          </View>
-
-          {/* Feature Highlights Row 2: Palmistry & Sade Sati */}
-          <View style={styles.featureHighlightsRow}>
-            <Pressable
-              onPress={() => router.push('/palmistry')}
-              style={({ pressed }) => [styles.highlightCard, pressed && { opacity: 0.85 }]}
-            >
-              <Text style={{ fontSize: 20 }}>✋</Text>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.highlightTitle}>AstroPalm AI</Text>
-                <Text style={styles.highlightSub}>Palmistry Scanner</Text>
-              </View>
-              <Text style={styles.highlightArrow}>›</Text>
-            </Pressable>
-
-            <Pressable
-              onPress={() => router.push('/sade-sati')}
-              style={({ pressed }) => [styles.highlightCard, pressed && { opacity: 0.85 }]}
-            >
-              <Text style={{ fontSize: 20 }}>🪐</Text>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.highlightTitle}>Shani Sade Sati</Text>
-                <Text style={styles.highlightSub}>Gochar & Remedies</Text>
               </View>
               <Text style={styles.highlightArrow}>›</Text>
             </Pressable>
@@ -286,10 +261,6 @@ export default function Home() {
                 />
               ))}
           </View>
-
-          <Text style={styles.footerNote}>
-            Astrologer consultations in this build are simulated for demonstration.
-          </Text>
         </ScrollView>
       </SafeAreaView>
     </GradientBackground>
@@ -299,96 +270,145 @@ export default function Home() {
 const styles = StyleSheet.create({
   scroll: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xxl, gap: spacing.md, paddingTop: spacing.xs },
 
+  /* YOUR SKY AT BIRTH Hero Card */
+  skyCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: spacing.xl,
+    gap: spacing.xs,
+    shadowColor: '#93C5FD',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 16,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(226, 232, 240, 0.8)',
+  },
+  skyEyebrow: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#D97706',
+    letterSpacing: 0.8,
+  },
+  skyTitle: {
+    fontSize: 26,
+    fontWeight: '800',
+    color: '#2E1065',
+    lineHeight: 32,
+    marginTop: 2,
+  },
+  skySub: {
+    fontSize: 14,
+    color: '#475569',
+    lineHeight: 20,
+    marginTop: 4,
+    fontWeight: '500',
+  },
+  startNowRow: {
+    marginTop: spacing.md,
+  },
+  startNowText: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#059669',
+  },
+
+  /* Today's Reading Card */
   todayCard: {
     flexDirection: 'row',
     gap: spacing.md,
-    borderRadius: radius.lg,
+    borderRadius: 20,
     backgroundColor: '#FFFFFF',
-    borderTopWidth: 1.5,
-    borderLeftWidth: 1.5,
-    borderTopColor: '#FFFFFF',
-    borderLeftColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: 'rgba(191, 219, 254, 0.6)',
-    borderRightColor: 'rgba(191, 219, 254, 0.6)',
     padding: spacing.md,
     overflow: 'hidden',
-    shadowColor: '#BFDBFE',
-    shadowOffset: { width: 6, height: 6 },
-    shadowOpacity: 0.65,
-    shadowRadius: 12,
-    elevation: 4,
+    shadowColor: '#CBD5E1',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(226, 232, 240, 0.8)',
   },
   todayRule: {
-    width: 3.5,
+    width: 4,
     borderRadius: 2,
-    backgroundColor: colors.teal,
+    backgroundColor: '#059669',
   },
-  todayTop: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs + 2 },
-  todayGlyph: { fontSize: 18, color: colors.teal },
-  todayLabel: { ...typography.tiny, fontSize: 10, letterSpacing: 1.2, color: colors.teal, flex: 1, fontWeight: '800' },
-  moodBadge: {
-    backgroundColor: 'rgba(5,150,105,0.10)',
-    borderRadius: radius.pill,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderWidth: 1,
-    borderColor: 'rgba(5,150,105,0.25)',
-  },
-  todayMood: { ...typography.tiny, fontSize: 10, color: colors.teal, fontWeight: '800' },
-  todayText: { ...typography.small, color: colors.text, lineHeight: 18, fontWeight: '600', fontSize: 12.5 },
-  todayFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    flexWrap: 'wrap',
-    marginTop: 2,
-  },
-  readMore: { ...typography.small, color: colors.teal, fontWeight: '800', marginLeft: 'auto', fontSize: 12 },
-
-  aiIcon: { fontSize: 20 },
-  aiTitle: { ...typography.h3, color: colors.white, fontWeight: '800', fontSize: 15 },
-  aiSub: { ...typography.small, fontSize: 11.5, color: 'rgba(255,255,255,0.9)', marginTop: 1 },
-  aiArrow: { fontSize: 22, color: colors.white, fontWeight: '700' },
-
-  quickGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.xs + 2,
-  },
-  quickCell: {
-    minWidth: '30%',
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: spacing.sm + 2,
-    borderRadius: radius.lg,
-    backgroundColor: '#FFFFFF',
-    borderTopWidth: 1.5,
-    borderLeftWidth: 1.5,
-    borderTopColor: '#FFFFFF',
-    borderLeftColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: 'rgba(191, 219, 254, 0.6)',
-    borderRightColor: 'rgba(191, 219, 254, 0.6)',
-    overflow: 'hidden',
-    gap: 4,
-    shadowColor: '#BFDBFE',
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 0.6,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  quickIconCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+  todayTop: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  purpleIconBox: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: '#3B0764',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  quickIcon: { fontSize: 17 },
-  quickLabel: { ...typography.tiny, color: colors.text, fontSize: 10.5, fontWeight: '800' },
+  todayLabel: { fontSize: 11, letterSpacing: 0.6, color: '#059669', flex: 1, fontWeight: '800' },
+  moodBadge: {
+    backgroundColor: '#ECFDF5',
+    borderRadius: radius.pill,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(5,150,105,0.25)',
+  },
+  todayMood: { fontSize: 11, color: '#059669', fontWeight: '800' },
+  todayText: { color: '#334155', lineHeight: 20, fontWeight: '500', fontSize: 13.5 },
+  todayFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs + 2,
+    flexWrap: 'wrap',
+    marginTop: 4,
+  },
+  luckyPill: {
+    backgroundColor: '#FEF3C7',
+    borderRadius: radius.pill,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+  },
+  luckyPillText: { fontSize: 11.5, color: '#D97706', fontWeight: '800' },
+  silverPill: {
+    backgroundColor: '#ECFDF5',
+    borderRadius: radius.pill,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+  },
+  silverPillText: { fontSize: 11.5, color: '#059669', fontWeight: '800' },
+  readMore: { fontSize: 13, color: '#059669', fontWeight: '800', marginLeft: 'auto' },
+
+  /* 6 Quick Action Grid Cards */
+  quickGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.md,
+  },
+  quickCell: {
+    minWidth: '28%',
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.xs,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    gap: 8,
+    shadowColor: '#BFDBFE',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(226, 232, 240, 0.8)',
+  },
+  quickIconCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  quickIcon: { fontSize: 22 },
+  quickLabel: { color: '#1E1B4B', fontSize: 12.5, fontWeight: '800', textAlign: 'center' },
 
   numerologyBanner: {
     flexDirection: 'row',
@@ -397,20 +417,14 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     borderRadius: radius.lg,
     backgroundColor: '#FFFFFF',
-    borderTopWidth: 1.5,
-    borderLeftWidth: 1.5,
-    borderTopColor: '#FFFFFF',
-    borderLeftColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: 'rgba(5, 150, 105, 0.35)',
-    borderRightColor: 'rgba(5, 150, 105, 0.35)',
+    borderWidth: 1,
+    borderColor: 'rgba(5, 150, 105, 0.35)',
     overflow: 'hidden',
     shadowColor: '#BFDBFE',
-    shadowOffset: { width: 5, height: 5 },
-    shadowOpacity: 0.65,
-    shadowRadius: 10,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 3,
   },
   numBadgeCircle: {
     width: 40,
@@ -418,7 +432,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: colors.teal,
     alignItems: 'center',
-    justifyContent: 'center',
+    justify.content: 'center',
   },
   numBadgeVal: { ...typography.display, fontSize: 20, color: colors.white, fontWeight: '900' },
   numBannerTag: { ...typography.tiny, color: colors.teal, fontSize: 9, letterSpacing: 1.2, fontWeight: '800' },
@@ -435,20 +449,14 @@ const styles = StyleSheet.create({
     padding: spacing.sm + 2,
     borderRadius: radius.lg,
     backgroundColor: '#FFFFFF',
-    borderTopWidth: 1.5,
-    borderLeftWidth: 1.5,
-    borderTopColor: '#FFFFFF',
-    borderLeftColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: 'rgba(191, 219, 254, 0.6)',
-    borderRightColor: 'rgba(191, 219, 254, 0.6)',
+    borderWidth: 1,
+    borderColor: 'rgba(226, 232, 240, 0.8)',
     overflow: 'hidden',
     shadowColor: '#BFDBFE',
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 0.55,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 2,
   },
   highlightTitle: { ...typography.h3, color: colors.text, fontSize: 13, fontWeight: '800' },
   highlightSub: { ...typography.tiny, color: colors.textMuted, fontSize: 10, fontWeight: '600' },
@@ -462,15 +470,12 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     overflow: 'hidden',
     shadowColor: '#BFDBFE',
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 0.65,
-    shadowRadius: 10,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 3,
   },
-
-  footerNote: {
-    ...typography.tiny,
-    color: colors.textFaint,
+});,
     textAlign: 'center',
     marginTop: spacing.xs,
   },

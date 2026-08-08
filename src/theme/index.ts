@@ -23,12 +23,11 @@ export const isSmallDevice = SCREEN_WIDTH < 375;
 export const isTablet = SCREEN_WIDTH >= 768;
 
 export const colors = {
-  // Backgrounds (Nordic Frost Ice Blue Slate & Rich Off-White)
-  bg: '#EFF6FF',
+  // Backgrounds (Nordic Frost Ice Blue Slate)
+  bg: '#F3F7FC',
   bgElevated: '#F8FAFC',
-  card: '#F8FAFC',
-  cardSolid: '#F5F7FA',
-  cardOffWhite: '#F8FAFC',
+  card: '#FFFFFF',
+  cardSolid: '#FFFFFF',
   cardBorder: '#FFFFFF',
   cardGlowBorder: '#059669',
 
@@ -37,9 +36,9 @@ export const colors = {
   shadowDark: '#BFDBFE',
 
   // Brand Accents (Sacred Emerald Teal & Solar Gold)
-  gradientTop: '#F4F9FF',
-  gradientMid: '#EFF6FF',
-  gradientBottom: '#E2E8F0',
+  gradientTop: '#FFFFFF',
+  gradientMid: '#F3F7FC',
+  gradientBottom: '#E8F1FC',
   auroraA: '#059669',
   auroraB: '#D97706',
 
@@ -50,8 +49,8 @@ export const colors = {
   rose: '#E11D48',
   teal: '#059669',
 
-  // Text (Deep Slate Charcoal for Crisp Contrast)
-  text: '#0F172A',
+  // Text (Deep Royal Purple/Navy for Crisp Contrast)
+  text: '#1E1B4B',
   textMuted: '#475569',
   textFaint: '#94A3B8',
 
