@@ -51,6 +51,8 @@ function Row({
   );
 }
 
+import { AnimatedAuthOverlay } from '../../src/components/AnimatedAuthOverlay';
+
 export default function Profile() {
   const router = useRouter();
   const authUser = useAuthStore((s) => s.user);
@@ -65,7 +67,13 @@ export default function Profile() {
   const vipPlanId = useSubscriptionStore((s) => s.planId);
   const vipExpires = useSubscriptionStore((s) => s.expiresAt);
 
+  const [showLogoutOverlay, setShowLogoutOverlay] = useState(false);
+
   const handleSignOut = () => {
+    setShowLogoutOverlay(true);
+  };
+
+  const handleOverlayFinish = () => {
     logout();
     router.replace('/(auth)/login');
   };
@@ -100,6 +108,12 @@ export default function Profile() {
   return (
     <GradientBackground>
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
+        <AnimatedAuthOverlay
+          visible={showLogoutOverlay}
+          type="logout"
+          message={`Signing out ${authUser?.name || 'user'} safely... ✨`}
+          onFinished={handleOverlayFinish}
+        />
         {authUser?.role === 'astrologer' ? (
           /* ─── ACHARYA PROFILE ─── */
           <>

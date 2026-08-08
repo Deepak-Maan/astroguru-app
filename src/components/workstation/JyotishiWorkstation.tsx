@@ -26,11 +26,15 @@ import { KundliChart } from '../KundliChart';
 import { computeKundli } from '../../services/astrology';
 import { useLiveChatStore } from '../../store/liveChatStore';
 
+import { AnimatedAuthOverlay } from '../AnimatedAuthOverlay';
+
 export function JyotishiWorkstation() {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const logout = useAuthStore((s) => s.logout);
+
+  const [showLogoutOverlay, setShowLogoutOverlay] = useState(false);
 
   if (!isAuthenticated || !user) {
     return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
@@ -344,10 +348,7 @@ export function JyotishiWorkstation() {
 
             <Pressable
               style={styles.toolCell}
-              onPress={() => {
-                logout();
-                router.replace('/(auth)/login');
-              }}
+              onPress={() => setShowLogoutOverlay(true)}
             >
               <Text style={styles.toolIcon}>🚪</Text>
               <Text style={styles.toolTitle}>Sign Out Workstation</Text>
@@ -356,6 +357,17 @@ export function JyotishiWorkstation() {
           </View>
         </View>
       </ScrollView>
+
+      {/* Logout Animated Overlay */}
+      <AnimatedAuthOverlay
+        visible={showLogoutOverlay}
+        type="logout"
+        message="Securing workstation & signing out... ✨"
+        onFinished={() => {
+          logout();
+          router.replace('/(auth)/login');
+        }}
+      />
 
       {/* MODAL 1: Edit Per-Minute Consultation Rate */}
       <Modal visible={rateModalVisible} animationType="fade" transparent>

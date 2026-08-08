@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
+  Animated,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -16,6 +17,7 @@ import { GradientBackground } from '../../src/components/GradientBackground';
 import { Button } from '../../src/components/Button';
 import { Card } from '../../src/components/Card';
 import { Chip } from '../../src/components/Chip';
+import { AnimatedAuthOverlay } from '../../src/components/AnimatedAuthOverlay';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { City } from '../../src/types';
 import { searchCities } from '../../src/data/cities';
@@ -59,6 +61,55 @@ export default function SignupScreen() {
   const router = useRouter();
   const setUserSession = useAuthStore((s) => s.setUserSession);
   const setProfile = useUserStore((s) => s.setProfile);
+
+  // Entrance animations
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(24)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  // Overlay state
+  const [showOverlay, setShowOverlay] = useState(false);
+  const [pendingUser, setPendingUser] = useState<any | null>(null);
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 450,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 450,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.1,
+          duration: 1200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1200,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    pulse.start();
+
+    return () => pulse.stop();
+  }, []);
+
+  const handleOverlayFinish = () => {
+    if (pendingUser) {
+      setUserSession(pendingUser);
+      router.replace('/(tabs)');
+    }
+  };
 
   // Auth fields
   const [name, setName] = useState('');
@@ -132,8 +183,6 @@ export default function SignupScreen() {
     setLoading(false);
 
     if (res.success && res.user) {
-      setUserSession(res.user);
-
       // Save Birth Details Profile for Kundli calculation
       const pad = (n: string) => n.padStart(2, '0');
       setProfile({
@@ -144,7 +193,8 @@ export default function SignupScreen() {
         place: city,
       });
 
-      router.replace('/(tabs)');
+      setPendingUser(res.user);
+      setShowOverlay(true);
     } else {
       setError(res.error || 'Account registration failed.');
     }
@@ -153,6 +203,12 @@ export default function SignupScreen() {
   return (
     <GradientBackground>
       <SafeAreaView style={{ flex: 1 }}>
+        <AnimatedAuthOverlay
+          visible={showOverlay}
+          type="signup"
+          message={`Welcome ${name || 'Seeker'}! Generating birth chart & Lagna... ✨`}
+          onFinished={handleOverlayFinish}
+        />
         <KeyboardAvoidingView
           style={{ flex: 1 }}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -162,20 +218,21 @@ export default function SignupScreen() {
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            {/* Header */}
-            <View style={styles.hero}>
-              <View style={styles.logoCircle}>
-                <LinearGradient
-                  colors={[colors.saffron, colors.auroraA]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={StyleSheet.absoluteFill}
-                />
-                <Text style={styles.logoIcon}>🌟</Text>
+            <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }], gap: spacing.lg }}>
+              {/* Header */}
+              <View style={styles.hero}>
+                <Animated.View style={[styles.logoCircle, { transform: [{ scale: pulseAnim }] }]}>
+                  <LinearGradient
+                    colors={[colors.saffron, colors.auroraA]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={StyleSheet.absoluteFill}
+                  />
+                  <Text style={styles.logoIcon}>🌟</Text>
+                </Animated.View>
+                <Text style={styles.brandTitle}>Create Account</Text>
+                <Text style={styles.brandSubtitle}>Enter your details & birth chart info to get started</Text>
               </View>
-              <Text style={styles.brandTitle}>Create Account</Text>
-              <Text style={styles.brandSubtitle}>Enter your details & birth chart info to get started</Text>
-            </View>
 
             {/* Form Card */}
             <Card style={styles.card}>
@@ -368,13 +425,14 @@ export default function SignupScreen() {
               />
             </Card>
 
-            {/* Switch to Login */}
-            <View style={styles.footerRow}>
-              <Text style={styles.footerText}>Already have an account?</Text>
-              <Pressable onPress={() => router.push('/(auth)/login')}>
-                <Text style={styles.footerLink}>Sign In</Text>
-              </Pressable>
-            </View>
+              {/* Switch to Login */}
+              <View style={styles.footerRow}>
+                <Text style={styles.footerText}>Already have an account?</Text>
+                <Pressable onPress={() => router.push('/(auth)/login')}>
+                  <Text style={styles.footerLink}>Sign In</Text>
+                </Pressable>
+              </View>
+            </Animated.View>
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>

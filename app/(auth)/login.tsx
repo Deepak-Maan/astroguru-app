@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
+  Animated,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -15,6 +16,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { GradientBackground } from '../../src/components/GradientBackground';
 import { Button } from '../../src/components/Button';
 import { Card } from '../../src/components/Card';
+import { AnimatedAuthOverlay } from '../../src/components/AnimatedAuthOverlay';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { useAuthStore } from '../../src/store/authStore';
 import {
@@ -27,6 +29,64 @@ import { signInWithGoogle } from '../../src/services/firebaseConfig';
 export default function LoginScreen() {
   const router = useRouter();
   const setUserSession = useAuthStore((s) => s.setUserSession);
+
+  // Entrance animations
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(24)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  // Overlay state
+  const [showOverlay, setShowOverlay] = useState(false);
+  const [pendingUser, setPendingUser] = useState<any | null>(null);
+  const [targetRoute, setTargetRoute] = useState<'/(tabs)' | '/admin'>('/(tabs)');
+
+  useEffect(() => {
+    // Entrance fade & slide
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 450,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 450,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // Breathing pulse for logo
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.08,
+          duration: 1200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1200,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    pulse.start();
+
+    return () => pulse.stop();
+  }, []);
+
+  const triggerSuccessAnimation = (user: any, route: '/(tabs)' | '/admin' = '/(tabs)') => {
+    setPendingUser(user);
+    setTargetRoute(route);
+    setShowOverlay(true);
+  };
+
+  const handleOverlayFinish = () => {
+    if (pendingUser) {
+      setUserSession(pendingUser);
+      router.replace(targetRoute);
+    }
+  };
 
   // Tab State: 'otp' | 'email'
   const [loginMode, setLoginMode] = useState<'otp' | 'email'>('otp');
@@ -58,8 +118,7 @@ export default function LoginScreen() {
     setGoogleLoading(false);
 
     if (res.success && res.user) {
-      setUserSession(res.user);
-      router.replace('/(tabs)');
+      triggerSuccessAnimation(res.user, '/(tabs)');
     } else {
       setError(res.error || 'Google Sign-In failed. Please try again.');
     }
@@ -102,8 +161,7 @@ export default function LoginScreen() {
     setVerifyLoading(false);
 
     if (res.success && res.user) {
-      setUserSession(res.user);
-      router.replace('/(tabs)');
+      triggerSuccessAnimation(res.user, '/(tabs)');
     } else {
       setError(res.error || 'Invalid OTP code. Please check and try again.');
     }
@@ -127,12 +185,7 @@ export default function LoginScreen() {
     setLoading(false);
 
     if (res.success && res.user) {
-      setUserSession(res.user);
-      if (res.user.role === 'admin') {
-        router.replace('/admin');
-      } else {
-        router.replace('/(tabs)');
-      }
+      triggerSuccessAnimation(res.user, res.user.role === 'admin' ? '/admin' : '/(tabs)');
     } else {
       setError(res.error || 'Login failed. Please check your credentials.');
     }
@@ -159,29 +212,32 @@ export default function LoginScreen() {
     setLoading(false);
 
     if (res.success && res.user) {
-      setUserSession(res.user);
-      if (res.user.role === 'admin') {
-        router.replace('/admin');
-      } else {
-        router.replace('/(tabs)');
-      }
+      triggerSuccessAnimation(res.user, res.user.role === 'admin' ? '/admin' : '/(tabs)');
     } else {
       const role = type === 'admin' ? 'admin' : type === 'astro' ? 'astrologer' : 'user';
       const name = type === 'admin' ? 'Master Admin' : type === 'astro' ? 'Acharya Dev' : 'Astro Seeker';
-      setUserSession({
-        id: `usr_demo_${type}`,
-        name,
-        email: demoEmail,
-        role,
-        createdAt: '2026-01-01',
-      });
-      router.replace(role === 'admin' ? '/admin' : '/(tabs)');
+      triggerSuccessAnimation(
+        {
+          id: `usr_demo_${type}`,
+          name,
+          email: demoEmail,
+          role,
+          createdAt: '2026-01-01',
+        },
+        role === 'admin' ? '/admin' : '/(tabs)'
+      );
     }
   };
 
   return (
     <GradientBackground>
       <SafeAreaView style={{ flex: 1 }}>
+        <AnimatedAuthOverlay
+          visible={showOverlay}
+          type="login"
+          message={`Opening ${pendingUser?.name || 'AstroGuru'} workspace... ✨`}
+          onFinished={handleOverlayFinish}
+        />
         <KeyboardAvoidingView
           style={{ flex: 1 }}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -190,10 +246,15 @@ export default function LoginScreen() {
             contentContainerStyle={styles.scrollContainer}
             showsVerticalScrollIndicator={false}
           >
-            <View style={styles.webWrapper}>
+            <Animated.View
+              style={[
+                styles.webWrapper,
+                { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
+              ]}
+            >
               {/* Header Hero */}
               <View style={styles.hero}>
-                <View style={styles.logoOuterRing}>
+                <Animated.View style={[styles.logoOuterRing, { transform: [{ scale: pulseAnim }] }]}>
                   <LinearGradient
                     colors={[colors.teal, colors.gold]}
                     start={{ x: 0, y: 0 }}
@@ -203,7 +264,7 @@ export default function LoginScreen() {
                   <View style={styles.logoInnerCircle}>
                     <Text style={styles.logoIcon}>🔮</Text>
                   </View>
-                </View>
+                </Animated.View>
                 <View style={styles.badgePill}>
                   <Text style={styles.badgeText}>✨ VEDIC ASTROLOGY & AI JYOTISH</Text>
                 </View>
@@ -459,7 +520,7 @@ export default function LoginScreen() {
                   </Pressable>
                 </View>
               </View>
-            </View>
+            </Animated.View>
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
