@@ -31,23 +31,22 @@ export function JyotishiWorkstation() {
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
 
-  const {
-    isOnDuty,
-    ratePerMin,
-    todayEarnings,
-    completedCount,
-    rating,
-    payoutBalance,
-    clientQueue,
-    toggleDuty,
-    setRatePerMin,
-    acceptRequest,
-    declineRequest,
-    withdrawPayout,
-  } = useJyotishiStore();
+  const jyotishiState = useJyotishiStore();
+  const isOnDuty = jyotishiState?.isOnDuty ?? true;
+  const ratePerMin = jyotishiState?.ratePerMin ?? 25;
+  const todayEarnings = jyotishiState?.todayEarnings ?? 0;
+  const completedCount = jyotishiState?.completedCount ?? 0;
+  const rating = jyotishiState?.rating ?? 5.0;
+  const payoutBalance = jyotishiState?.payoutBalance ?? 0;
+  const clientQueue = jyotishiState?.clientQueue || [];
+  const toggleDuty = jyotishiState?.toggleDuty || (() => {});
+  const setRatePerMin = jyotishiState?.setRatePerMin || (() => {});
+  const acceptRequest = jyotishiState?.acceptRequest || (() => {});
+  const declineRequest = jyotishiState?.declineRequest || (() => {});
+  const withdrawPayout = jyotishiState?.withdrawPayout || (() => false);
 
   const [rateModalVisible, setRateModalVisible] = useState(false);
-  const [newRateInput, setNewRateInput] = useState(ratePerMin.toString());
+  const [newRateInput, setNewRateInput] = useState((ratePerMin ?? 25).toString());
 
   const [inspectKundliClient, setInspectKundliClient] = useState<any | null>(null);
   const [remedyNote, setRemedyNote] = useState('');
@@ -55,9 +54,9 @@ export function JyotishiWorkstation() {
 
   // ── Live chat rooms from seekers ──
   const acharyaId = user?.id?.toString() ?? 'acharya-1';
-  const liveRooms = useLiveChatStore((s) => s.getAcharyaRooms(acharyaId));
-  const waitingRooms = liveRooms.filter((r) => r.status === 'waiting');
-  const activeRooms = liveRooms.filter((r) => r.status === 'active');
+  const liveRooms = useLiveChatStore((s) => s?.getAcharyaRooms?.(acharyaId)) || [];
+  const waitingRooms = (liveRooms || []).filter((r) => r && r.status === 'waiting');
+  const activeRooms = (liveRooms || []).filter((r) => r && r.status === 'active');
   const acceptLiveRoom = useLiveChatStore((s) => s.acceptRoom);
   const endLiveRoom = useLiveChatStore((s) => s.endRoom);
 
@@ -73,14 +72,14 @@ export function JyotishiWorkstation() {
   };
 
   const handleWithdraw = () => {
-    const success = withdrawPayout(5000);
+    const success = withdrawPayout ? withdrawPayout(5000) : false;
     if (success) {
       if (Platform.OS === 'web') alert('✅ Payout Request Submitted!\n₹5,000 will be credited to your bank account within 24 hours.');
       else Alert.alert('Payout Submitted', '₹5,000 will be credited to your bank account within 24 hours.');
     }
   };
 
-  const activeQueue = clientQueue.filter((q) => q.status !== 'declined');
+  const activeQueue = (clientQueue || []).filter((q) => q && q.status !== 'declined');
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
@@ -256,7 +255,7 @@ export function JyotishiWorkstation() {
                     <Text style={styles.clientName}>{req.clientName}</Text>
                     <Text style={styles.clientTopic}>Topic: {req.topic}</Text>
                     <Text style={styles.clientBirthSub}>
-                      🗓️ {req.birthDetails.date} · ⏰ {req.birthDetails.time} · 📍 {req.birthDetails.place}
+                      🗓️ {req?.birthDetails?.date || 'N/A'} · ⏰ {req?.birthDetails?.time || 'N/A'} · 📍 {req?.birthDetails?.place || 'N/A'}
                     </Text>
                   </View>
                   <View style={styles.ratePill}>
@@ -395,7 +394,7 @@ export function JyotishiWorkstation() {
                   <View style={{ flex: 1 }}>
                     <Text style={styles.inspectTitle}>🪐 Client Birth Kundli Inspector</Text>
                     <Text style={styles.inspectSub}>
-                      {inspectKundliClient.clientName} · {inspectKundliClient.birthDetails.date} ({inspectKundliClient.birthDetails.place})
+                      {inspectKundliClient.clientName} · {inspectKundliClient?.birthDetails?.date || ''} ({inspectKundliClient?.birthDetails?.place || ''})
                     </Text>
                   </View>
                   <Pressable onPress={() => setInspectKundliClient(null)} style={styles.closeBtn}>
@@ -404,17 +403,19 @@ export function JyotishiWorkstation() {
                 </View>
 
                 {/* Kundli Chart Generator for Astrologer */}
-                <View style={{ alignItems: 'center' }}>
-                  <KundliChart
-                    kundli={computeKundli({
-                      name: inspectKundliClient.clientName,
-                      date: '15-08-1995',
-                      time: '08:30',
-                      gender: 'male',
-                      place: { name: inspectKundliClient.birthDetails.place, state: 'Delhi', lat: 28.6139, lon: 77.209, tz: 5.5 },
-                    })}
-                  />
-                </View>
+                {inspectKundliClient.birthDetails && (
+                  <View style={{ alignItems: 'center' }}>
+                    <KundliChart
+                      kundli={computeKundli({
+                        name: inspectKundliClient.clientName || 'Client',
+                        date: '15-08-1995',
+                        time: '08:30',
+                        gender: 'male',
+                        place: { name: inspectKundliClient.birthDetails.place || 'Delhi', state: 'Delhi', lat: 28.6139, lon: 77.209, tz: 5.5 },
+                      })}
+                    />
+                  </View>
+                )}
 
                 {/* Prescribe Remedy / Gemstone Section */}
                 <View style={styles.remedyBox}>
@@ -450,6 +451,7 @@ export function JyotishiWorkstation() {
     </SafeAreaView>
   );
 }
+
 
 const styles = StyleSheet.create({
   scroll: {

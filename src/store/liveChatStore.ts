@@ -241,14 +241,19 @@ export const useLiveChatStore = create<LiveChatState>()(
         }),
 
       getAcharyaRooms: (astrologerId) => {
-        return Object.values(get().rooms).filter((r) => r.astrologerId === astrologerId);
+        const roomsMap = get()?.rooms || {};
+        return Object.values(roomsMap).filter((r) => Boolean(r && r.astrologerId === astrologerId));
       },
 
-      getRoom: (roomId) => get().rooms[roomId] ?? null,
+      getRoom: (roomId) => {
+        const roomsMap = get()?.rooms || {};
+        return roomsMap[roomId] ?? null;
+      },
 
       getRoomByPair: (seekerId, astrologerId) => {
         const roomId = `${seekerId}__${astrologerId}`;
-        return get().rooms[roomId] ?? null;
+        const roomsMap = get()?.rooms || {};
+        return roomsMap[roomId] ?? null;
       },
     }),
     {
@@ -257,3 +262,4 @@ export const useLiveChatStore = create<LiveChatState>()(
     }
   )
 );
+
