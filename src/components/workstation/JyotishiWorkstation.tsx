@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Alert,
   Modal,
@@ -31,19 +31,18 @@ export function JyotishiWorkstation() {
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
 
-  const jyotishiState = useJyotishiStore();
-  const isOnDuty = jyotishiState?.isOnDuty ?? true;
-  const ratePerMin = jyotishiState?.ratePerMin ?? 25;
-  const todayEarnings = jyotishiState?.todayEarnings ?? 0;
-  const completedCount = jyotishiState?.completedCount ?? 0;
-  const rating = jyotishiState?.rating ?? 5.0;
-  const payoutBalance = jyotishiState?.payoutBalance ?? 0;
-  const clientQueue = jyotishiState?.clientQueue || [];
-  const toggleDuty = jyotishiState?.toggleDuty || (() => {});
-  const setRatePerMin = jyotishiState?.setRatePerMin || (() => {});
-  const acceptRequest = jyotishiState?.acceptRequest || (() => {});
-  const declineRequest = jyotishiState?.declineRequest || (() => {});
-  const withdrawPayout = jyotishiState?.withdrawPayout || (() => false);
+  const isOnDuty = useJyotishiStore((s) => s.isOnDuty ?? true);
+  const ratePerMin = useJyotishiStore((s) => s.ratePerMin ?? 25);
+  const todayEarnings = useJyotishiStore((s) => s.todayEarnings ?? 0);
+  const completedCount = useJyotishiStore((s) => s.completedCount ?? 0);
+  const rating = useJyotishiStore((s) => s.rating ?? 5.0);
+  const payoutBalance = useJyotishiStore((s) => s.payoutBalance ?? 0);
+  const clientQueue = useJyotishiStore((s) => s.clientQueue);
+  const toggleDuty = useJyotishiStore((s) => s.toggleDuty);
+  const setRatePerMin = useJyotishiStore((s) => s.setRatePerMin);
+  const acceptRequest = useJyotishiStore((s) => s.acceptRequest);
+  const declineRequest = useJyotishiStore((s) => s.declineRequest);
+  const withdrawPayout = useJyotishiStore((s) => s.withdrawPayout);
 
   const [rateModalVisible, setRateModalVisible] = useState(false);
   const [newRateInput, setNewRateInput] = useState((ratePerMin ?? 25).toString());
@@ -53,17 +52,23 @@ export function JyotishiWorkstation() {
   const [remedySent, setRemedySent] = useState(false);
 
   // ── Live chat rooms from seekers ──
-  const acharyaId = user?.id?.toString() ?? 'acharya-1';
-  const liveRooms = useLiveChatStore((s) => s?.getAcharyaRooms?.(acharyaId)) || [];
-  const waitingRooms = (liveRooms || []).filter((r) => r && r.status === 'waiting');
-  const activeRooms = (liveRooms || []).filter((r) => r && r.status === 'active');
+  const rooms = useLiveChatStore((s) => s.rooms);
   const acceptLiveRoom = useLiveChatStore((s) => s.acceptRoom);
   const endLiveRoom = useLiveChatStore((s) => s.endRoom);
+
+  const acharyaId = user?.id?.toString() ?? 'acharya-1';
+  const liveRooms = useMemo(() => {
+    const roomsMap = rooms || {};
+    return Object.values(roomsMap).filter((r) => Boolean(r && r.astrologerId === acharyaId));
+  }, [rooms, acharyaId]);
+
+  const waitingRooms = useMemo(() => liveRooms.filter((r) => r.status === 'waiting'), [liveRooms]);
+  const activeRooms = useMemo(() => liveRooms.filter((r) => r.status === 'active'), [liveRooms]);
 
   const handleUpdateRate = () => {
     const val = parseInt(newRateInput, 10);
     if (!isNaN(val) && val >= 5 && val <= 500) {
-      setRatePerMin(val);
+      if (setRatePerMin) setRatePerMin(val);
       setRateModalVisible(false);
     } else {
       if (Platform.OS === 'web') alert('Rate must be between ₹5/min and ₹500/min');
@@ -79,7 +84,10 @@ export function JyotishiWorkstation() {
     }
   };
 
-  const activeQueue = (clientQueue || []).filter((q) => q && q.status !== 'declined');
+  const activeQueue = useMemo(
+    () => (clientQueue || []).filter((q) => q && q.status !== 'declined'),
+    [clientQueue]
+  );
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>

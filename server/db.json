@@ -3,11 +3,20 @@
     {
       "id": "usr_demo_1",
       "name": "Demo Seeker",
-      "email": "seeker@astroguru.app",
-      "password": "seeker123",
+      "email": "user@astroguru.app",
+      "password": "user123",
       "phone": "9876543210",
       "role": "user",
       "wallet": 310
+    },
+    {
+      "id": "usr_demo_2",
+      "name": "Acharya Dev Sharma",
+      "email": "acharya@astroguru.app",
+      "password": "astro123",
+      "phone": "9876543211",
+      "role": "astrologer",
+      "wallet": 38400
     },
     {
       "id": "usr_admin_1",
@@ -23,6 +32,8 @@
     {
       "id": "astro-1",
       "name": "Acharya Dev Sharma",
+      "email": "acharya@astroguru.app",
+      "password": "astro123",
       "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200",
       "rating": 4.9,
       "reviews": 1420,
@@ -45,6 +56,8 @@
     {
       "id": "astro-2",
       "name": "Dr. Radhika Veda",
+      "email": "radhika@astroguru.app",
+      "password": "astro123",
       "avatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200",
       "rating": 4.8,
       "reviews": 980,

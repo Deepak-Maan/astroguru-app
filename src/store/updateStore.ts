@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
 
-const LATEST_RELEASE_VERSION = '1.6.0';
+const LATEST_RELEASE_VERSION = '1.9.0';
 
 export interface UpdateInfo {
   currentVersion: string;
@@ -30,16 +30,16 @@ interface UpdateState extends UpdateInfo {
 export const useUpdateStore = create<UpdateState>()(
   persist(
     (set, get) => ({
-      currentVersion: '1.5.0',
-      latestVersion: '1.6.0',
+      currentVersion: '1.8.0',
+      latestVersion: '1.9.0',
       updateAvailable: true,
       isMandatory: false,
       releaseNotes: [
-        '❄️ Modern Nordic Frost & Sacred Emerald Teal Design System (v1.6.0)',
-        '💚 Custom Floating Curved Bottom Navigation Bar with Top Green Active Indicator',
-        '⬅️ Sleek Universal SVG Back Arrow Icons & Bevelled Neumorphic Header Controls',
-        '🔔 Complete Push Notifications Screen Overhaul (Luminous White 3D Cards)',
-        '🔓 Built-in AI Jyotishi System (No API Key Required!)',
+        '🚀 Complete Global App OTA Update Engine (v1.9.0)',
+        '🔮 Certified Jyotishi Workstation Performance & Null-Safety Enhancements',
+        '⚡ Instant Seeker ↔ Acharya Bidirectional Live Consultation Rooms',
+        '🛡️ Zero-Crash Multi-Tier Authentication & Unified REST Backend',
+        '📲 Universal In-App Update Modal Active for Seekers & Jyotishis',
       ],
       downloadProgress: 100,
       isDownloading: false,

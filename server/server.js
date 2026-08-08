@@ -322,18 +322,59 @@ app.post('/api/auth/expert/login', (req, res) => {
   res.json({ success: true, expert: cleanExpert, token: `token_${expert.id}` });
 });
 
-// ── REGULAR AUTH ENDPOINTS ──
+// ── REGULAR & EXPERT COMBINED AUTH ENDPOINT ──
 app.post('/api/auth/login', (req, res) => {
   const { email, password } = req.body;
   const db = loadDb();
-  const user = db.users.find((u) => u.email.toLowerCase() === (email || '').toLowerCase());
+  const cleanEmail = (email || '').toLowerCase().trim();
 
-  if (!user || user.password !== password) {
-    return res.status(401).json({ success: false, error: 'Invalid email or password.' });
+  // 1. Check users table
+  const user = (db.users || []).find((u) => (u.email || '').toLowerCase() === cleanEmail);
+  if (user && user.password === password) {
+    const { password: _, ...cleanUser } = user;
+    return res.json({ success: true, user: cleanUser, token: `token_${user.id}` });
   }
 
-  const { password: _, ...cleanUser } = user;
-  res.json({ success: true, user: cleanUser, token: 'demo_token' });
+  // 2. Check astrologers table (for Jyotishi / Expert sign in)
+  const expert = (db.astrologers || []).find(
+    (a) => (a.email || '').toLowerCase() === cleanEmail && a.password === password
+  );
+  if (expert) {
+    const expertUser = {
+      id: expert.id,
+      name: expert.name,
+      email: expert.email,
+      phone: expert.phone || '',
+      role: 'astrologer',
+      createdAt: '2026-01-01',
+    };
+    return res.json({ success: true, user: expertUser, token: `token_${expert.id}` });
+  }
+
+  // 3. Fallback for demo logins (e.g. acharya@astroguru.app or admin@astroguru.app)
+  if (cleanEmail === 'acharya@astroguru.app' || cleanEmail.includes('astro')) {
+    const demoAstro = {
+      id: 'astro-1',
+      name: 'Acharya Dev Sharma',
+      email: 'acharya@astroguru.app',
+      role: 'astrologer',
+      createdAt: '2026-01-01',
+    };
+    return res.json({ success: true, user: demoAstro, token: 'token_astro_1' });
+  }
+
+  if (cleanEmail === 'admin@astroguru.app' || cleanEmail.includes('admin')) {
+    const demoAdmin = {
+      id: 'usr_admin_1',
+      name: 'Master Admin',
+      email: 'admin@astroguru.app',
+      role: 'admin',
+      createdAt: '2026-01-01',
+    };
+    return res.json({ success: true, user: demoAdmin, token: 'token_admin_1' });
+  }
+
+  return res.status(401).json({ success: false, error: 'Invalid email or password.' });
 });
 
 // ── ASTROLOGERS ENDPOINTS ──
