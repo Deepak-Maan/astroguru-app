@@ -27,10 +27,6 @@ export function LanguageSelector({ compact = true }: Props) {
         onPress={() => setModalVisible(true)}
         style={({ pressed }) => [styles.btn, pressed && { opacity: 0.75 }]}
       >
-        <LinearGradient
-          colors={['rgba(16,185,129,0.14)', 'rgba(245,158,11,0.06)']}
-          style={StyleSheet.absoluteFill}
-        />
         <Text style={styles.flag}>{activeLangItem.flag}</Text>
         <Text style={styles.btnText}>{activeLangItem.native}</Text>
       </Pressable>
@@ -50,7 +46,7 @@ export function LanguageSelector({ compact = true }: Props) {
                   >
                     {active && (
                       <LinearGradient
-                        colors={[colors.saffron, colors.gold]}
+                        colors={[colors.teal, '#047857']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 0 }}
                         style={StyleSheet.absoluteFill}
@@ -85,39 +81,51 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: 6,
     borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.25)',
-    backgroundColor: '#0E1726',
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.5,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderBottomColor: 'rgba(191, 219, 254, 0.6)',
+    borderRightColor: 'rgba(191, 219, 254, 0.6)',
     overflow: 'hidden',
-    shadowColor: 'rgba(0,0,0,0.50)',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowColor: '#BFDBFE',
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 0.55,
+    shadowRadius: 6,
+    elevation: 3,
   },
   flag: { fontSize: 13 },
   btnText: { ...typography.tiny, color: colors.text, fontWeight: '800', fontSize: 12 },
 
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(4,7,13,0.80)',
+    backgroundColor: 'rgba(15,23,42,0.45)',
     justifyContent: 'center',
     padding: spacing.lg,
   },
   modalContent: {
-    backgroundColor: '#0E1726',
+    backgroundColor: '#FFFFFF',
     borderRadius: radius.xl,
     padding: spacing.xl,
-    borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.25)',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.5,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderBottomColor: 'rgba(191, 219, 254, 0.6)',
+    borderRightColor: 'rgba(191, 219, 254, 0.6)',
     gap: spacing.md,
-    shadowColor: 'rgba(0,0,0,0.60)',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.9,
-    shadowRadius: 18,
+    shadowColor: '#BFDBFE',
+    shadowOffset: { width: 6, height: 6 },
+    shadowOpacity: 0.7,
+    shadowRadius: 16,
     elevation: 8,
   },
-  modalTitle: { ...typography.h2, color: colors.saffron, textAlign: 'center', fontSize: 18, fontWeight: '800' },
+  modalTitle: { ...typography.h2, color: colors.teal, textAlign: 'center', fontSize: 18, fontWeight: '800' },
 
   grid: { gap: spacing.sm },
   cell: {
@@ -127,11 +135,11 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.20)',
-    backgroundColor: '#080E1A',
+    borderColor: 'rgba(191, 219, 254, 0.6)',
+    backgroundColor: '#F8FAFC',
     overflow: 'hidden',
   },
-  cellActive: { borderColor: colors.saffron },
+  cellActive: { borderColor: colors.teal },
   cellFlag: { fontSize: 24 },
   cellNative: { ...typography.h3, color: colors.text, fontSize: 16, fontWeight: '800' },
   cellLabel: { ...typography.tiny, color: colors.textMuted, fontWeight: '600' },

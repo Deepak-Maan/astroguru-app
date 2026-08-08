@@ -21,6 +21,7 @@ interface NotificationState {
   toastNotification: NotificationItem | null;
 
   addNotification: (item: Omit<NotificationItem, 'id' | 'timestamp' | 'read'>) => void;
+  triggerAutoAcharyaLiveAlert: (astroName: string, title: string, avatar: string, id: string) => void;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   clearAll: () => void;
@@ -93,10 +94,20 @@ export const useNotificationStore = create<NotificationState>()(
           };
         });
 
-        // Auto-dismiss toast popup after 4 seconds
+        // Auto-dismiss toast popup after 5 seconds
         setTimeout(() => {
           set({ toastNotification: null });
-        }, 4000);
+        }, 5000);
+      },
+
+      triggerAutoAcharyaLiveAlert: (astroName, title, avatar, id) => {
+        get().addNotification({
+          type: 'astrologer_live',
+          title: `🔴 ${astroName} is NOW LIVE!`,
+          message: `${title || 'Vedic Jyotishi'} has just logged in for instant consultation. Tap to connect now.`,
+          avatar,
+          actionUrl: `/astrologer/${id}`,
+        });
       },
 
       markAsRead: (id) => {

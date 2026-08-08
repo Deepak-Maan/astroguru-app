@@ -12,6 +12,7 @@ import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { SectionHeader } from '../../src/components/SectionHeader';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { useUserStore } from '../../src/store/userStore';
+import { useAuthStore } from '../../src/store/authStore';
 import { RASHIS } from '../../src/data/rashis';
 import { NAKSHATRAS } from '../../src/data/nakshatras';
 import { PLANETS } from '../../src/data/planets';
@@ -37,10 +38,56 @@ function dms(deg: number): string {
 
 export default function KundliScreen() {
   const router = useRouter();
+  const authUser = useAuthStore((s) => s.user);
   const profile = useUserStore((s) => s.profile);
   const kundli = useUserStore((s) => s.kundli);
   const [tab, setTab] = useState<TabId>('chart');
   const [matchingResult, setMatchingResult] = useState<any | null>(null);
+
+  // If logged in as Certified Astrologer / Acharya, render Client Vault Inspector
+  if (authUser?.role === 'astrologer') {
+    return (
+      <GradientBackground>
+        <SafeAreaView style={{ flex: 1 }} edges={['top']}>
+          <ScreenHeader title="Acharya Client Kundli Vault" subtitle="Search & inspect client birth charts" hideLanguage />
+          <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.md }}>
+            <Card padded>
+              <Text style={{ ...typography.h2, color: colors.text, fontWeight: '800' }}>🔍 Search Client Chart Vault</Text>
+              <Text style={{ ...typography.small, color: colors.textMuted, marginTop: 4 }}>
+                Enter seeker birth details to generate real-time Vedic Kundli, Lagna analysis & Dasha timelines.
+              </Text>
+            </Card>
+
+            <View style={{ gap: spacing.sm }}>
+              <SectionHeader title="📂 Assigned Seekers" subtitle="Recent consultation charts" />
+              {['Rahul Sharma (New Delhi)', 'Priya Patel (Ahmedabad)', 'Amit Verma (Mumbai)'].map((client, i) => (
+                <Pressable
+                  key={i}
+                  onPress={() => router.push('/(tabs)')}
+                  style={({ pressed }) => [{
+                    backgroundColor: '#FFFFFF',
+                    borderRadius: radius.md,
+                    padding: spacing.md,
+                    borderWidth: 1,
+                    borderColor: 'rgba(191, 219, 254, 0.6)',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }, pressed && { opacity: 0.8 }]}
+                >
+                  <View>
+                    <Text style={{ ...typography.h3, color: colors.text, fontWeight: '800' }}>👤 {client}</Text>
+                    <Text style={{ ...typography.tiny, color: colors.teal, marginTop: 2, fontWeight: '700' }}>Vedic Kundli Generated · Active Session</Text>
+                  </View>
+                  <Text style={{ fontSize: 18, color: colors.teal, fontWeight: '800' }}>Inspect →</Text>
+                </Pressable>
+              ))}
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      </GradientBackground>
+    );
+  }
 
   if (!profile || !kundli) {
     return (
@@ -150,7 +197,7 @@ export default function KundliScreen() {
               <Card>
                 <SectionHeader title="Dosha Check" />
                 <View style={styles.doshaRow}>
-                  <View style={[styles.doshaIconWrap, { backgroundColor: kundli.mangalDosha ? 'rgba(244,63,94,0.18)' : 'rgba(16,185,129,0.18)' }]}>
+                  <View style={[styles.doshaIconWrap, { backgroundColor: kundli.mangalDosha ? 'rgba(225,29,72,0.12)' : 'rgba(5,150,105,0.12)' }]}>
                     <Text style={styles.doshaIcon}>{kundli.mangalDosha ? '⚠️' : '✅'}</Text>
                   </View>
                   <View style={{ flex: 1 }}>
@@ -276,7 +323,7 @@ export default function KundliScreen() {
                   >
                     {d.isActive && (
                       <LinearGradient
-                        colors={['rgba(245,158,11,0.18)', 'rgba(245,158,11,0.04)']}
+                        colors={['rgba(217,119,6,0.12)', 'rgba(217,119,6,0.02)']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 0 }}
                         style={StyleSheet.absoluteFill}
@@ -327,10 +374,6 @@ export default function KundliScreen() {
               {matchingResult && (
                 <Card>
                   <View style={styles.matchScore}>
-                    <LinearGradient
-                      colors={['rgba(245,158,11,0.18)', 'rgba(245,158,11,0.02)']}
-                      style={styles.matchScoreBg}
-                    />
                     <Text style={styles.matchScoreNum}>
                       {matchingResult.totalObtained}
                       <Text style={{ fontSize: 24, color: colors.textMuted }}> / {matchingResult.totalMax}</Text>
@@ -351,7 +394,7 @@ export default function KundliScreen() {
                         </Text>
                         <Text style={[styles.detailSub, { textAlign: 'left' }]}>{k.description}</Text>
                       </View>
-                      <View style={[styles.kootaScore, { backgroundColor: k.obtained > 0 ? 'rgba(245,158,11,0.18)' : 'rgba(255,255,255,0.05)' }]}>
+                      <View style={[styles.kootaScore, { backgroundColor: k.obtained > 0 ? 'rgba(217,119,6,0.12)' : 'rgba(148,163,184,0.15)' }]}>
                         <Text style={[styles.kootaScoreText, { color: k.obtained > 0 ? colors.gold : colors.textFaint }]}>
                           {k.obtained}/{k.total}
                         </Text>
@@ -371,7 +414,7 @@ export default function KundliScreen() {
 const styles = StyleSheet.create({
   tabsWrapper: {
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(16,185,129,0.25)',
+    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
     height: 48,
     marginBottom: spacing.xs,
   },
@@ -388,12 +431,23 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     paddingHorizontal: spacing.md,
     borderRadius: radius.pill,
-    backgroundColor: '#0E1726',
-    borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.25)',
+    backgroundColor: '#E6ECF5',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.5,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
+    borderRightColor: 'rgba(163, 177, 198, 0.4)',
     overflow: 'hidden',
     alignSelf: 'flex-start',
     flexShrink: 0,
+    shadowColor: '#A3B1C6',
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
+    elevation: 3,
   },
   tabActive: {
     borderColor: 'transparent',
@@ -414,10 +468,10 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     paddingVertical: spacing.md,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(16,185,129,0.20)',
+    borderTopColor: 'rgba(163, 177, 198, 0.3)',
   },
   detailLabel: { ...typography.small, color: colors.textMuted, flex: 1, fontWeight: '600' },
-  detailValue: { ...typography.h3, fontSize: 15, color: colors.goldSoft, textAlign: 'right', fontWeight: '800' },
+  detailValue: { ...typography.h3, fontSize: 15, color: colors.gold, textAlign: 'right', fontWeight: '800' },
   detailSub: { ...typography.tiny, color: colors.textFaint, marginTop: 2, textAlign: 'right', fontWeight: '600' },
 
   doshaRow: { flexDirection: 'row', gap: spacing.md, alignItems: 'flex-start' },
@@ -445,7 +499,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     gap: spacing.sm,
-    backgroundColor: 'rgba(6,10,18,0.80)',
+    backgroundColor: '#DFE6F0',
   },
   th: { ...typography.tiny, color: colors.gold, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: '800' },
   tableRow: {
@@ -455,7 +509,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     gap: spacing.sm,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(16,185,129,0.20)',
+    borderTopColor: 'rgba(163, 177, 198, 0.3)',
   },
   td: { ...typography.small, color: colors.text, fontWeight: '600' },
   tdStrong: { ...typography.small, color: colors.text, fontWeight: '800' },
@@ -466,9 +520,9 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: radius.pill,
-    backgroundColor: 'rgba(245,158,11,0.18)',
+    backgroundColor: 'rgba(217,119,6,0.12)',
     borderWidth: 1,
-    borderColor: 'rgba(245,158,11,0.40)',
+    borderColor: 'rgba(217,119,6,0.30)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -485,16 +539,17 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.sm,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(16,185,129,0.20)',
+    borderTopColor: 'rgba(163, 177, 198, 0.3)',
     borderRadius: radius.sm,
     overflow: 'hidden',
   },
   dashaRowActive: {
-    borderColor: 'rgba(245,158,11,0.50)',
+    borderColor: 'rgba(217,119,6,0.40)',
     borderWidth: 1,
     borderRadius: radius.md,
     marginHorizontal: -2,
     paddingHorizontal: spacing.md,
+    backgroundColor: 'rgba(217,119,6,0.06)',
   },
   dashaDot: {
     width: 8,
@@ -503,12 +558,17 @@ const styles = StyleSheet.create({
   },
   dashaName: { ...typography.h3, fontSize: 14, color: colors.text, fontWeight: '800' },
   dashaYears: { ...typography.tiny, color: colors.textFaint, marginTop: 2, fontWeight: '600' },
-  dashaDate: { ...typography.small, color: colors.goldSoft, fontWeight: '800', fontSize: 12 },
+  dashaDate: { ...typography.small, color: colors.gold, fontWeight: '800', fontSize: 12 },
 
   matchButton: {
     borderRadius: radius.pill,
     overflow: 'hidden',
     alignSelf: 'stretch',
+    shadowColor: '#A3B1C6',
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 6,
+    elevation: 3,
   },
   matchButtonGradient: {
     paddingVertical: spacing.md,
@@ -526,13 +586,10 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
     overflow: 'hidden',
     borderRadius: radius.md,
-  },
-  matchScoreBg: {
-    ...StyleSheet.absoluteFill,
-    borderRadius: radius.md,
+    backgroundColor: 'rgba(217,119,6,0.08)',
   },
   matchScoreNum: { fontSize: 52, fontWeight: '900', color: colors.gold },
-  matchScoreLabel: { ...typography.h3, color: colors.goldSoft, marginTop: 4, fontWeight: '800' },
+  matchScoreLabel: { ...typography.h3, color: colors.gold, marginTop: 4, fontWeight: '800' },
   matchVerdict: { ...typography.small, color: colors.textMuted, textAlign: 'center', marginTop: spacing.sm, lineHeight: 18, paddingHorizontal: spacing.lg, fontWeight: '600' },
 
   kootaScore: {

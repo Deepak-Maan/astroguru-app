@@ -48,7 +48,7 @@ export function SecurityLockModal() {
   return (
     <Modal visible={isPinEnabled && isLocked} animationType="fade" transparent={false}>
       <View style={styles.container}>
-        <LinearGradient colors={['#1B1438', '#0F0926']} style={StyleSheet.absoluteFill} />
+        <LinearGradient colors={['#EEF2F7', '#E6ECF5', '#DFE6F0']} style={StyleSheet.absoluteFill} />
 
         {/* Security Shield Header */}
         <View style={styles.header}>
@@ -116,7 +116,7 @@ export function SecurityLockModal() {
               onPress={handleBackspace}
               style={({ pressed }) => [styles.keyBtn, styles.keyBtnAction, pressed && { opacity: 0.6 }]}
             >
-              <Text style={{ fontSize: 22, color: colors.white }}>⌫</Text>
+              <Text style={{ fontSize: 22, color: colors.text }}>⌫</Text>
             </Pressable>
           </View>
         </View>
@@ -135,11 +135,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: spacing.xl,
-    backgroundColor: '#1B1438',
+    backgroundColor: '#E6ECF5',
   },
   header: { alignItems: 'center', gap: spacing.xs, marginBottom: spacing.xl },
-  title: { ...typography.h1, color: colors.white, fontSize: 22, fontWeight: '800' },
-  subtitle: { ...typography.small, color: 'rgba(255,255,255,0.7)', fontSize: 13 },
+  title: { ...typography.h1, color: colors.text, fontSize: 22, fontWeight: '800' },
+  subtitle: { ...typography.small, color: colors.textMuted, fontSize: 13, fontWeight: '600' },
 
   dotsRow: { flexDirection: 'row', gap: spacing.md, marginVertical: spacing.lg },
   dot: {
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     height: 16,
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.3)',
+    borderColor: '#A3B1C6',
     backgroundColor: 'transparent',
   },
   dotFilled: {
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
   },
   dotError: {
     borderColor: colors.danger,
-    backgroundColor: 'rgba(231,76,60,0.3)',
+    backgroundColor: 'rgba(225,29,72,0.3)',
   },
 
   errorText: { ...typography.tiny, color: colors.danger, fontWeight: '800', marginBottom: spacing.md },
@@ -167,21 +167,33 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: '#E6ECF5',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.5,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
+    borderRightColor: 'rgba(163, 177, 198, 0.4)',
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#A3B1C6',
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 0.6,
+    shadowRadius: 6,
+    elevation: 3,
   },
   keyBtnPressed: { backgroundColor: colors.saffron, borderColor: colors.saffron },
   keyBtnEmpty: { width: 72, height: 72 },
-  keyBtnAction: { backgroundColor: 'rgba(255,255,255,0.04)' },
-  keyText: { ...typography.h1, color: colors.white, fontSize: 26, fontWeight: '800' },
+  keyBtnAction: { backgroundColor: '#E6ECF5' },
+  keyText: { ...typography.h1, color: colors.text, fontSize: 26, fontWeight: '800' },
 
   securityNote: {
     ...typography.tiny,
-    color: 'rgba(255,255,255,0.5)',
+    color: colors.textFaint,
     marginTop: spacing.xxl,
     textAlign: 'center',
+    fontWeight: '600',
   },
 });

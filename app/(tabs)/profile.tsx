@@ -95,149 +95,202 @@ export default function Profile() {
   return (
     <GradientBackground>
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-        <ScreenHeader title="Profile & Account" />
+        {authUser?.role === 'astrologer' ? (
+          /* ─── ACHARYA PROFILE ─── */
+          <>
+            <ScreenHeader title="Acharya Profile" />
+            <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
-        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-          {/* Identity hero */}
-          <View style={styles.identityCard}>
-            <LinearGradient
-              colors={['rgba(16,185,129,0.12)', 'rgba(245,158,11,0.06)']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={StyleSheet.absoluteFill}
-            />
-            <Avatar name={authUser?.name ?? profile?.name ?? 'Seeker'} size={80} />
-            <Text style={styles.name}>{authUser?.name ?? profile?.name ?? 'Seeker'}</Text>
-            <Text style={styles.emailText}>{authUser?.email ?? 'seeker@astroguru.app'}</Text>
-
-            {authUser?.role === 'admin' && (
-              <View style={styles.adminRoleTag}>
-                <Text style={styles.adminRoleText}>⚡ PLATFORM ADMIN</Text>
-              </View>
-            )}
-
-            {isVip && (
-              <View style={[styles.adminRoleTag, { borderColor: colors.saffron, backgroundColor: 'rgba(245,158,11,0.14)' }]}>
-                <Text style={[styles.adminRoleText, { color: colors.saffron }]}>
-                  👑 VIP PASS · {vipPlanId?.toUpperCase()} · Expires {vipExpires}
-                </Text>
-              </View>
-            )}
-
-            {profile ? (
-              <Text style={styles.birth}>
-                {profile.date} · {profile.time} · {profile.place.name}
-              </Text>
-            ) : (
-              <Text style={styles.birth}>No birth details saved</Text>
-            )}
-
-            {kundli && (
-              <View style={styles.badgeRow}>
-                {[
-                  { label: 'Lagna', value: RASHIS[kundli.lagnaIndex].glyph + ' ' + RASHIS[kundli.lagnaIndex].sanskrit },
-                  { label: 'Rashi', value: RASHIS[kundli.moonRashiIndex].glyph + ' ' + RASHIS[kundli.moonRashiIndex].sanskrit },
-                  { label: 'Nakshatra', value: NAKSHATRAS[kundli.moonNakshatraIndex].name },
-                ].map(({ label, value }) => (
-                  <View key={label} style={styles.badge}>
-                    <Text style={styles.badgeLabel}>{label}</Text>
-                    <Text style={styles.badgeValue} numberOfLines={1}>{value}</Text>
-                  </View>
-                ))}
-              </View>
-            )}
-
-            <Button
-              label={profile ? 'Edit birth details' : 'Add birth details'}
-              variant="outline"
-              size="sm"
-              style={{ marginTop: spacing.lg }}
-              onPress={() => router.push('/(onboarding)/birth-details')}
-            />
-          </View>
-
-          {/* Admin Control Panel Button (for Admin roles) */}
-          {authUser?.role === 'admin' && (
-            <Pressable onPress={() => router.push('/admin')} style={({ pressed }) => [pressed && { opacity: 0.85 }]}>
-              <LinearGradient
-                colors={['#10B981', '#F59E0B']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.adminBanner}
-              >
-                <Text style={styles.adminBannerIcon}>⚡</Text>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.adminBannerTitle}>Admin Control Panel</Text>
-                  <Text style={styles.adminBannerSub}>Manage experts, revenue, stats & platform settings</Text>
+              {/* Identity Hero */}
+              <View style={styles.identityCard}>
+                <Avatar name={authUser?.name ?? 'Acharya'} size={80} />
+                <Text style={styles.name}>{authUser?.name ?? 'Acharya'}</Text>
+                <Text style={styles.emailText}>{authUser?.email ?? 'acharya@astroguru.app'}</Text>
+                <View style={[styles.adminRoleTag, { borderColor: colors.teal, backgroundColor: 'rgba(5,150,105,0.12)' }]}>
+                  <Text style={[styles.adminRoleText, { color: colors.teal }]}>🪔 CERTIFIED VEDIC ACHARYA</Text>
                 </View>
-                <Text style={styles.adminBannerArrow}>›</Text>
-              </LinearGradient>
-            </Pressable>
-          )}
-
-          {/* Wallet snapshot */}
-          <Pressable onPress={() => router.push('/wallet')} style={({ pressed }) => [pressed && { opacity: 0.85 }]}>
-            <View style={styles.walletCard}>
-              <LinearGradient
-                colors={['rgba(245,158,11,0.16)', 'rgba(16,185,129,0.06)']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={StyleSheet.absoluteFill}
-              />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.walletLabel}>Wallet Balance</Text>
-                <Text style={styles.walletValue}>{formatCurrency(balance)}</Text>
-                <Text style={styles.walletSub}>Tap to add money or view history</Text>
+                <View style={styles.badgeRow}>
+                  {[
+                    { label: 'Experience', value: '12 Years' },
+                    { label: 'Rating', value: '4.95 ★' },
+                    { label: 'Sessions', value: '4,200+' },
+                  ].map(({ label, value }) => (
+                    <View key={label} style={styles.badge}>
+                      <Text style={styles.badgeLabel}>{label}</Text>
+                      <Text style={styles.badgeValue} numberOfLines={1}>{value}</Text>
+                    </View>
+                  ))}
+                </View>
               </View>
-              <Text style={styles.walletIcon}>💰</Text>
-            </View>
-          </Pressable>
 
-          {/* Super App Features */}
-          <View>
-            <SectionHeader title="🌟 Super App Cosmic Features" />
-            <Card padded={false}>
-              <Row icon="🌌" label="Live Satsang & Virtual Prashad" onPress={() => router.push('/satsang')} accent={colors.saffron} />
-              <Row icon="💎" label="AI Gemstone Finder & Lab Scanner" onPress={() => router.push('/gemstone-finder')} />
-              <Row icon="📜" label="432Hz Ambient Vedic Mantra Player" onPress={() => router.push('/mantra-player')} />
-              <Row icon="🛰️" label="Astro-Cartography Relocation Map" onPress={() => router.push('/astro-map')} />
-              <Row icon="📈" label="Astro-Finance & Stock Muhurat" onPress={() => router.push('/astro-finance')} />
-              <Row icon="🏛️" label="24/7 Live Temple Darshan & Prashad" onPress={() => router.push('/live-darshan')} />
-              <Row icon="🕊️" label="AI Soulmate Compatibility" onPress={() => router.push('/soulmate-ai')} />
-              <Row icon="📖" label="Daily Bhagavad Gita Audio Wisdom" onPress={() => router.push('/gita-audio')} />
-              <Row icon="⚡" label="Major Transit Push Alert Radar" onPress={() => router.push('/transit-alerts')} />
-              <Row icon="🤖" label="Samudrika AI Face Reader" onPress={() => router.push('/face-reading')} />
-              <Row icon="⚔️" label="Lal Kitab & Pitru Dosh Remedies" onPress={() => router.push('/lal-kitab')} />
-              <Row icon="🪄" label="Vedic Spells & Manifestation Store" onPress={() => router.push('/spells')} />
-            </Card>
-          </View>
+              {/* Acharya Specialties */}
+              <Card padded>
+                <Text style={{ ...typography.h3, color: colors.text, fontWeight: '800', marginBottom: spacing.sm }}>🎯 Specializations</Text>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                  {['Vedic Kundli', 'Nadi Jyotish', 'Lal Kitab', 'Prashna', 'KP System', 'Muhurta', 'Gemology', 'Vastu'].map((s) => (
+                    <View key={s} style={{ backgroundColor: 'rgba(5,150,105,0.1)', borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(5,150,105,0.3)' }}>
+                      <Text style={{ color: colors.teal, fontSize: 12, fontWeight: '700' }}>{s}</Text>
+                    </View>
+                  ))}
+                </View>
+              </Card>
 
-          {/* Account & Settings */}
-          <View>
-            <SectionHeader title="⚙️ Account & Settings" />
-            <Card padded={false}>
-              <Row icon="👑" label={isVip ? `AstroVIP — ${vipPlanId} (Active)` : 'Get AstroVIP Pass'} onPress={() => router.push('/vip')} accent={colors.saffron} />
-              <Row icon="📄" label="10-Page Kundli PDF Export" onPress={() => router.push('/kundli-pdf')} />
-              <Row icon="⚙️" label="Settings & Security Vault" onPress={() => router.push('/settings')} />
-              <Row icon="🚪" label="Sign Out" onPress={handleSignOut} accent={colors.danger} />
-            </Card>
-          </View>
+              {/* Earnings Summary */}
+              <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+                <View style={[styles.identityCard, { flex: 1, padding: spacing.md }]}>
+                  <Text style={{ fontSize: 22, fontWeight: '900', color: colors.text }}>₹38,400</Text>
+                  <Text style={{ ...typography.tiny, color: colors.textMuted, fontWeight: '600' }}>Payout Balance</Text>
+                </View>
+                <View style={[styles.identityCard, { flex: 1, padding: spacing.md }]}>
+                  <Text style={{ fontSize: 22, fontWeight: '900', color: colors.teal }}>₹4,850</Text>
+                  <Text style={{ ...typography.tiny, color: colors.textMuted, fontWeight: '600' }}>Today's Earnings</Text>
+                </View>
+              </View>
 
-          {/* Danger zone */}
-          <View>
-            <SectionHeader title="Danger Zone" />
-            <Card padded={false}>
-              <Row
-                icon="🗑️"
-                label="Reset birth details"
-                onPress={confirmReset}
-                accent={colors.danger}
-              />
-            </Card>
-          </View>
+              {/* Acharya Tools */}
+              <View>
+                <SectionHeader title="🛠️ Acharya Tools" />
+                <Card padded={false}>
+                  <Row icon="📋" label="Manage Consultation Profile" onPress={() => router.push('/acharya/consultation-profile')} />
+                  <Row icon="📜" label="Certifications & Degrees" onPress={() => router.push('/acharya/certifications')} />
+                  <Row icon="💬" label="Client Reviews & Testimonials" onPress={() => router.push('/acharya/reviews')} />
+                  <Row icon="📣" label="Broadcast Announcement to Clients" onPress={() => router.push('/acharya/broadcast')} />
+                  <Row icon="📅" label="Set Availability Schedule" onPress={() => router.push('/acharya/availability')} />
+                  <Row icon="🎓" label="Acharya Training & Resources" onPress={() => router.push('/acharya/training')} accent={colors.gold} />
+                </Card>
+              </View>
 
-          <Text style={styles.version}>AstroGuru · v1.2.0 · Signed in as {authUser?.email ?? 'Seeker'}</Text>
-        </ScrollView>
+              {/* Platform Tools */}
+              <View>
+                <SectionHeader title="⚙️ Account & Settings" />
+                <Card padded={false}>
+                  <Row icon="🏦" label="Bank Account & UPI Settings" onPress={() => router.push('/acharya/bank-settings')} />
+                  <Row icon="📊" label="Monthly Earnings Report" onPress={() => router.push('/acharya/earnings-report')} />
+                  <Row icon="🔒" label="Security & Privacy Vault" onPress={() => router.push('/acharya/security')} />
+                  <Row icon="📞" label="Support & Help Center" onPress={() => router.push('/acharya/support')} />
+                  <Row icon="🚪" label="Sign Out" onPress={handleSignOut} accent={colors.danger} />
+                </Card>
+              </View>
+
+              <Text style={styles.version}>AstroGuru Acharya · v1.6.0 · {authUser?.email}</Text>
+            </ScrollView>
+          </>
+        ) : (
+          /* ─── SEEKER PROFILE ─── */
+          <>
+            <ScreenHeader title="Profile & Account" />
+            <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+              {/* Identity hero */}
+              <View style={styles.identityCard}>
+                <Avatar name={authUser?.name ?? profile?.name ?? 'Seeker'} size={80} />
+                <Text style={styles.name}>{authUser?.name ?? profile?.name ?? 'Seeker'}</Text>
+                <Text style={styles.emailText}>{authUser?.email ?? 'seeker@astroguru.app'}</Text>
+
+                {authUser?.role === 'admin' && (
+                  <View style={styles.adminRoleTag}>
+                    <Text style={styles.adminRoleText}>⚡ PLATFORM ADMIN</Text>
+                  </View>
+                )}
+
+                {isVip && (
+                  <View style={[styles.adminRoleTag, { borderColor: colors.gold, backgroundColor: 'rgba(217,119,6,0.12)' }]}>
+                    <Text style={[styles.adminRoleText, { color: colors.gold }]}>
+                      👑 VIP PASS · {vipPlanId?.toUpperCase()} · Expires {vipExpires}
+                    </Text>
+                  </View>
+                )}
+
+                {profile ? (
+                  <Text style={styles.birth}>
+                    {profile.date} · {profile.time} · {profile.place.name}
+                  </Text>
+                ) : (
+                  <Text style={styles.birth}>No birth details saved</Text>
+                )}
+
+                {kundli && (
+                  <View style={styles.badgeRow}>
+                    {[
+                      { label: 'Lagna', value: RASHIS[kundli.lagnaIndex].glyph + ' ' + RASHIS[kundli.lagnaIndex].sanskrit },
+                      { label: 'Rashi', value: RASHIS[kundli.moonRashiIndex].glyph + ' ' + RASHIS[kundli.moonRashiIndex].sanskrit },
+                      { label: 'Nakshatra', value: NAKSHATRAS[kundli.moonNakshatraIndex].name },
+                    ].map(({ label, value }) => (
+                      <View key={label} style={styles.badge}>
+                        <Text style={styles.badgeLabel}>{label}</Text>
+                        <Text style={styles.badgeValue} numberOfLines={1}>{value}</Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+
+                <Button
+                  label={profile ? 'Edit birth details' : 'Add birth details'}
+                  variant="outline"
+                  size="sm"
+                  style={{ marginTop: spacing.lg }}
+                  onPress={() => router.push('/(onboarding)/birth-details')}
+                />
+              </View>
+
+              {/* Wallet snapshot */}
+              <Pressable onPress={() => router.push('/wallet')} style={({ pressed }) => [pressed && { opacity: 0.85 }]}>
+                <View style={styles.walletCard}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.walletLabel}>Wallet Balance</Text>
+                    <Text style={styles.walletValue}>{formatCurrency(balance)}</Text>
+                    <Text style={styles.walletSub}>Tap to add money or view history</Text>
+                  </View>
+                  <Text style={styles.walletIcon}>💰</Text>
+                </View>
+              </Pressable>
+
+              {/* Super App Features */}
+              <View>
+                <SectionHeader title="🌟 Super App Cosmic Features" />
+                <Card padded={false}>
+                  <Row icon="🌌" label="Live Satsang & Virtual Prashad" onPress={() => router.push('/satsang')} accent={colors.gold} />
+                  <Row icon="💎" label="AI Gemstone Finder & Lab Scanner" onPress={() => router.push('/gemstone-finder')} />
+                  <Row icon="📜" label="432Hz Ambient Vedic Mantra Player" onPress={() => router.push('/mantra-player')} />
+                  <Row icon="🛰️" label="Astro-Cartography Relocation Map" onPress={() => router.push('/astro-map')} />
+                  <Row icon="📈" label="Astro-Finance & Stock Muhurat" onPress={() => router.push('/astro-finance')} />
+                  <Row icon="🏛️" label="24/7 Live Temple Darshan & Prashad" onPress={() => router.push('/live-darshan')} />
+                  <Row icon="🕊️" label="AI Soulmate Compatibility" onPress={() => router.push('/soulmate-ai')} />
+                  <Row icon="📖" label="Daily Bhagavad Gita Audio Wisdom" onPress={() => router.push('/gita-audio')} />
+                  <Row icon="⚡" label="Major Transit Push Alert Radar" onPress={() => router.push('/transit-alerts')} />
+                  <Row icon="🤖" label="Samudrika AI Face Reader" onPress={() => router.push('/face-reading')} />
+                  <Row icon="⚔️" label="Lal Kitab & Pitru Dosh Remedies" onPress={() => router.push('/lal-kitab')} />
+                  <Row icon="🪄" label="Vedic Spells & Manifestation Store" onPress={() => router.push('/spells')} />
+                </Card>
+              </View>
+
+              {/* Account & Settings */}
+              <View>
+                <SectionHeader title="⚙️ Account & Settings" />
+                <Card padded={false}>
+                  <Row icon="👑" label={isVip ? `AstroVIP — ${vipPlanId} (Active)` : 'Get AstroVIP Pass'} onPress={() => router.push('/vip')} accent={colors.gold} />
+                  <Row icon="📄" label="10-Page Kundli PDF Export" onPress={() => router.push('/kundli-pdf')} />
+                  <Row icon="⚙️" label="Settings & Security Vault" onPress={() => router.push('/settings')} />
+                  <Row icon="🚪" label="Sign Out" onPress={handleSignOut} accent={colors.danger} />
+                </Card>
+              </View>
+
+              {/* Danger zone */}
+              <View>
+                <SectionHeader title="Danger Zone" />
+                <Card padded={false}>
+                  <Row
+                    icon="🗑️"
+                    label="Reset birth details"
+                    onPress={confirmReset}
+                    accent={colors.danger}
+                  />
+                </Card>
+              </View>
+
+              <Text style={styles.version}>AstroGuru · v1.6.0 · Signed in as {authUser?.email ?? 'Seeker'}</Text>
+            </ScrollView>
+          </>
+        )}
       </SafeAreaView>
     </GradientBackground>
   );
@@ -249,22 +302,28 @@ const styles = StyleSheet.create({
   identityCard: {
     alignItems: 'center',
     borderRadius: radius.xl,
-    borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.25)',
-    backgroundColor: '#0E1726',
+    backgroundColor: '#E6ECF5',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.5,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
+    borderRightColor: 'rgba(163, 177, 198, 0.4)',
     padding: spacing.xl,
     gap: spacing.xs,
     overflow: 'hidden',
-    shadowColor: 'rgba(0,0,0,0.60)',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.8,
+    shadowColor: '#A3B1C6',
+    shadowOffset: { width: 6, height: 6 },
+    shadowOpacity: 0.65,
     shadowRadius: 10,
     elevation: 4,
   },
   name: { ...typography.h1, color: colors.text, marginTop: spacing.sm, textAlign: 'center', fontWeight: '800' },
-  emailText: { ...typography.small, color: colors.saffron, marginTop: 1, fontWeight: '700' },
+  emailText: { ...typography.small, color: colors.gold, marginTop: 1, fontWeight: '700' },
   adminRoleTag: {
-    backgroundColor: 'rgba(16,185,129,0.14)',
+    backgroundColor: 'rgba(5,150,105,0.12)',
     borderWidth: 1,
     borderColor: colors.teal,
     borderRadius: radius.pill,
@@ -280,13 +339,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.md,
     borderRadius: radius.md,
-    backgroundColor: 'rgba(6,10,18,0.60)',
+    backgroundColor: '#DFE6F0',
     borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.25)',
+    borderColor: 'rgba(163, 177, 198, 0.4)',
     gap: 3,
   },
   badgeLabel: { ...typography.tiny, color: colors.textMuted, fontWeight: '600' },
-  badgeValue: { ...typography.small, color: colors.saffron, fontWeight: '800', fontSize: 12 },
+  badgeValue: { ...typography.small, color: colors.gold, fontWeight: '800', fontSize: 12 },
 
   adminBanner: {
     flexDirection: 'row',
@@ -295,34 +354,40 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     borderRadius: radius.xl,
     overflow: 'hidden',
-    shadowColor: 'rgba(16,185,129,0.30)',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.8,
+    shadowColor: '#A3B1C6',
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 0.6,
     shadowRadius: 8,
     elevation: 4,
   },
   adminBannerIcon: { fontSize: 24 },
-  adminBannerTitle: { ...typography.h3, color: '#FFFFFF', fontWeight: '800' },
-  adminBannerSub: { ...typography.tiny, color: 'rgba(255,255,255,0.85)', marginTop: 1 },
-  adminBannerArrow: { fontSize: 24, color: '#FFFFFF', fontWeight: '800' },
+  adminBannerTitle: { ...typography.h3, color: colors.white, fontWeight: '800' },
+  adminBannerSub: { ...typography.tiny, color: 'rgba(255,255,255,0.9)', marginTop: 1 },
+  adminBannerArrow: { fontSize: 24, color: colors.white, fontWeight: '800' },
 
   walletCard: {
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: radius.xl,
-    borderWidth: 1,
-    borderColor: 'rgba(245,158,11,0.35)',
-    backgroundColor: '#0E1726',
+    backgroundColor: '#E6ECF5',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.5,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderBottomColor: 'rgba(217, 119, 6, 0.35)',
+    borderRightColor: 'rgba(217, 119, 6, 0.35)',
     padding: spacing.xl,
     overflow: 'hidden',
-    shadowColor: 'rgba(245,158,11,0.20)',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.8,
+    shadowColor: '#A3B1C6',
+    shadowOffset: { width: 6, height: 6 },
+    shadowOpacity: 0.65,
     shadowRadius: 10,
     elevation: 4,
   },
   walletLabel: { ...typography.small, color: colors.textMuted, fontWeight: '700' },
-  walletValue: { ...typography.display, fontSize: 30, color: colors.saffron, marginTop: 2, fontWeight: '800' },
+  walletValue: { ...typography.display, fontSize: 30, color: colors.gold, marginTop: 2, fontWeight: '800' },
   walletSub: { ...typography.tiny, color: colors.textFaint, marginTop: 3, fontWeight: '600' },
   walletIcon: { fontSize: 44, opacity: 0.85 },
 
@@ -333,17 +398,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md + 2,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(16,185,129,0.20)',
+    borderTopColor: 'rgba(163, 177, 198, 0.3)',
   },
   rowIconWrap: {
     width: 32,
     height: 32,
     borderRadius: 10,
-    backgroundColor: 'rgba(6,10,18,0.60)',
+    backgroundColor: '#DFE6F0',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.25)',
+    borderColor: 'rgba(163, 177, 198, 0.4)',
   },
   rowIcon: { fontSize: 16 },
   rowLabel: { ...typography.body, color: colors.text, flex: 1, fontWeight: '700' },

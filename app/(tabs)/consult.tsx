@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import {
+  Alert,
   FlatList,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -15,8 +17,13 @@ import { GradientBackground } from '../../src/components/GradientBackground';
 import { AstrologerCard } from '../../src/components/AstrologerCard';
 import { EmptyState } from '../../src/components/EmptyState';
 import { ScreenHeader } from '../../src/components/ScreenHeader';
+import { Card } from '../../src/components/Card';
+import { SectionHeader } from '../../src/components/SectionHeader';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { ASTROLOGERS } from '../../src/data/astrologers';
+import { useAuthStore } from '../../src/store/authStore';
+import { useJyotishiStore } from '../../src/store/jyotishiStore';
+import { formatCurrency } from '../../src/utils';
 
 const FILTERS = ['All', 'Online', 'Vedic', 'Tarot', 'Numerology', 'Love', 'Career', 'Remedies'];
 
@@ -27,8 +34,177 @@ const SORTS: { id: Sort; label: string; icon: string }[] = [
   { id: 'price', label: 'Cheapest', icon: '💸' },
 ];
 
+const EARNINGS_HISTORY = [
+  { id: '1', date: 'Today', sessions: 14, amount: 4850, status: 'credited' },
+  { id: '2', date: 'Yesterday', sessions: 11, amount: 3960, status: 'credited' },
+  { id: '3', date: '06 Aug 2026', sessions: 16, amount: 5400, status: 'credited' },
+  { id: '4', date: '05 Aug 2026', sessions: 9, amount: 2800, status: 'credited' },
+  { id: '5', date: '04 Aug 2026', sessions: 13, amount: 4320, status: 'credited' },
+  { id: '6', date: '03 Aug 2026', sessions: 18, amount: 6200, status: 'credited' },
+];
+
+function AcharyaPayouts() {
+  const payoutBalance = useJyotishiStore((s) => s.payoutBalance);
+  const todayEarnings = useJyotishiStore((s) => s.todayEarnings);
+  const completedCount = useJyotishiStore((s) => s.completedCount);
+  const withdrawPayout = useJyotishiStore((s) => s.withdrawPayout);
+  const [showWithdraw, setShowWithdraw] = useState(false);
+  const [withdrawAmount, setWithdrawAmount] = useState('');
+  const totalEarned = EARNINGS_HISTORY.reduce((s, e) => s + e.amount, 0);
+
+  const handleWithdraw = () => {
+    const amt = parseFloat(withdrawAmount);
+    if (!amt || amt <= 0) return;
+    const ok = withdrawPayout(amt);
+    if (ok) {
+      setShowWithdraw(false);
+      setWithdrawAmount('');
+      Alert.alert('✅ Withdrawal Initiated', `₹${amt.toLocaleString('en-IN')} will be credited to your bank within 24 hours.`);
+    } else {
+      Alert.alert('Insufficient Balance', 'Withdrawal amount exceeds available payout balance.');
+    }
+  };
+
+  return (
+    <GradientBackground>
+      <SafeAreaView style={{ flex: 1 }} edges={['top']}>
+        <ScreenHeader title="Payouts & Earnings" subtitle="Acharya earnings dashboard" />
+
+        <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.md }} showsVerticalScrollIndicator={false}>
+
+          {/* Summary Cards Row */}
+          <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+            <View style={[payStyles.statCard, { flex: 1 }]}>
+              <Text style={payStyles.statValue}>₹{totalEarned.toLocaleString('en-IN')}</Text>
+              <Text style={payStyles.statLabel}>Total Earned</Text>
+            </View>
+            <View style={[payStyles.statCard, { flex: 1 }]}>
+              <Text style={payStyles.statValue}>₹{payoutBalance.toLocaleString('en-IN')}</Text>
+              <Text style={payStyles.statLabel}>Payout Balance</Text>
+            </View>
+          </View>
+
+          {/* Today Snapshot */}
+          <View style={payStyles.todayCard}>
+            <View>
+              <Text style={payStyles.todayLabel}>📅 Today's Earnings</Text>
+              <Text style={payStyles.todayAmount}>₹{todayEarnings.toLocaleString('en-IN')}</Text>
+              <Text style={payStyles.todaySub}>{completedCount} sessions completed · ₹25/min rate</Text>
+            </View>
+            <Pressable style={payStyles.withdrawBtn} onPress={() => setShowWithdraw(true)}>
+              <Text style={payStyles.withdrawBtnText}>💳 Withdraw</Text>
+            </Pressable>
+          </View>
+
+          {/* Payout Schedule */}
+          <Card padded>
+            <Text style={{ ...typography.h3, color: colors.text, fontWeight: '800', marginBottom: spacing.sm }}>📆 Payout Schedule</Text>
+            {[{day: 'Monday', amt: '₹3,200'}, {day: 'Wednesday', amt: '₹4,100'}, {day: 'Friday', amt: '₹5,800'}].map((p, i) => (
+              <View key={i} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8, borderBottomWidth: i < 2 ? 1 : 0, borderColor: 'rgba(191,219,254,0.4)' }}>
+                <Text style={{ ...typography.body, color: colors.text, fontWeight: '700' }}>{p.day}</Text>
+                <Text style={{ ...typography.body, color: colors.teal, fontWeight: '800' }}>{p.amt}</Text>
+              </View>
+            ))}
+          </Card>
+
+          {/* Earnings History */}
+          <SectionHeader title="📊 Earnings History" subtitle="Daily breakdown" />
+          {EARNINGS_HISTORY.map((entry) => (
+            <View key={entry.id} style={payStyles.historyRow}>
+              <View>
+                <Text style={{ ...typography.h3, color: colors.text, fontWeight: '700' }}>{entry.date}</Text>
+                <Text style={{ ...typography.tiny, color: colors.textMuted }}>{entry.sessions} sessions</Text>
+              </View>
+              <View style={{ alignItems: 'flex-end' }}>
+                <Text style={{ ...typography.h3, color: colors.teal, fontWeight: '800' }}>₹{entry.amount.toLocaleString('en-IN')}</Text>
+                <Text style={{ ...typography.tiny, color: '#10B981', fontWeight: '700' }}>✅ {entry.status}</Text>
+              </View>
+            </View>
+          ))}
+
+          {/* Bank Details */}
+          <Card padded>
+            <Text style={{ ...typography.h3, color: colors.text, fontWeight: '800', marginBottom: spacing.sm }}>🏦 Bank Account Linked</Text>
+            <Text style={{ ...typography.body, color: colors.textMuted }}>HDFC Bank · ••••5678</Text>
+            <Text style={{ ...typography.tiny, color: colors.teal, marginTop: 4, fontWeight: '700' }}>Verified · UPI: acharya@hdfc</Text>
+          </Card>
+        </ScrollView>
+
+        {/* Withdraw Modal */}
+        <Modal visible={showWithdraw} transparent animationType="slide" onRequestClose={() => setShowWithdraw(false)}>
+          <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(15,23,42,0.5)' }}>
+            <View style={{ backgroundColor: '#FFFFFF', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: spacing.xl, gap: spacing.md }}>
+              <Text style={{ ...typography.h2, color: colors.text, fontWeight: '800' }}>💳 Withdraw Payout</Text>
+              <Text style={{ ...typography.body, color: colors.textMuted }}>Available: ₹{payoutBalance.toLocaleString('en-IN')}</Text>
+              <TextInput
+                value={withdrawAmount}
+                onChangeText={setWithdrawAmount}
+                keyboardType="numeric"
+                placeholder="Enter amount"
+                placeholderTextColor={colors.textFaint}
+                style={{ borderWidth: 1.5, borderColor: 'rgba(191,219,254,0.8)', borderRadius: radius.md, padding: 14, fontSize: 18, fontWeight: '700', color: colors.text, backgroundColor: '#F8FAFC' }}
+              />
+              <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+                <Pressable onPress={() => setShowWithdraw(false)} style={{ flex: 1, padding: 14, borderRadius: radius.md, borderWidth: 1.5, borderColor: colors.teal, alignItems: 'center' }}>
+                  <Text style={{ color: colors.teal, fontWeight: '700' }}>Cancel</Text>
+                </Pressable>
+                <Pressable onPress={handleWithdraw} style={{ flex: 1, padding: 14, borderRadius: radius.md, backgroundColor: colors.teal, alignItems: 'center' }}>
+                  <Text style={{ color: '#FFFFFF', fontWeight: '800' }}>Withdraw Now</Text>
+                </Pressable>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      </SafeAreaView>
+    </GradientBackground>
+  );
+}
+
+const payStyles = StyleSheet.create({
+  statCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(191,219,254,0.6)',
+    shadowColor: '#BFDBFE',
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  statValue: { fontSize: 20, fontWeight: '800', color: colors.text },
+  statLabel: { ...typography.tiny, color: colors.textMuted, marginTop: 2, fontWeight: '600', textAlign: 'center' },
+  todayCard: {
+    backgroundColor: colors.teal,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  todayLabel: { color: 'rgba(255,255,255,0.8)', fontSize: 12, fontWeight: '700' },
+  todayAmount: { color: '#FFFFFF', fontSize: 28, fontWeight: '900', letterSpacing: -1 },
+  todaySub: { color: 'rgba(255,255,255,0.75)', fontSize: 11, fontWeight: '600', marginTop: 2 },
+  withdrawBtn: { backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: radius.md, paddingHorizontal: 14, paddingVertical: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.5)' },
+  withdrawBtnText: { color: '#FFFFFF', fontWeight: '800', fontSize: 13 },
+  historyRow: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: radius.md,
+    padding: spacing.md,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(191,219,254,0.5)',
+  },
+});
+
 export default function Consult() {
   const router = useRouter();
+  const authUser = useAuthStore((s) => s.user);
+  if (authUser?.role === 'astrologer') return <AcharyaPayouts />;
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState('All');
   const [sort, setSort] = useState<Sort>('popular');
@@ -77,12 +253,6 @@ export default function Consult() {
 
       {/* ── Online banner ── */}
       <View style={styles.onlineBanner}>
-        <LinearGradient
-          colors={['rgba(16,185,129,0.18)', 'rgba(245,158,11,0.04)']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={StyleSheet.absoluteFill}
-        />
         <View style={styles.onlinePulse} />
         <Text style={styles.onlineText}>
           <Text style={styles.onlineCount}>{onlineCount} experts</Text>
@@ -137,7 +307,7 @@ export default function Consult() {
               >
                 {active && (
                   <LinearGradient
-                    colors={[colors.teal, colors.saffron]}
+                    colors={[colors.teal, colors.gold]}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={StyleSheet.absoluteFill}
@@ -211,15 +381,15 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     marginBottom: spacing.sm,
     paddingHorizontal: spacing.md,
-    backgroundColor: '#0E1726',
+    backgroundColor: '#DFE6F0',
     borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.25)',
+    borderColor: 'rgba(163, 177, 198, 0.4)',
     height: 46,
-    shadowColor: 'rgba(0,0,0,0.50)',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 4,
+    shadowColor: '#A3B1C6',
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
     elevation: 2,
   },
   searchIcon: { fontSize: 16 },
@@ -234,11 +404,22 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
     paddingHorizontal: spacing.md,
     paddingVertical: 10,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.30)',
-    backgroundColor: '#0E1726',
+    borderRadius: radius.lg,
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.5,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
+    borderRightColor: 'rgba(163, 177, 198, 0.4)',
+    backgroundColor: '#E6ECF5',
     overflow: 'hidden',
+    shadowColor: '#A3B1C6',
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 6,
+    elevation: 3,
   },
   onlinePulse: {
     width: 8,
@@ -264,18 +445,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: 7,
     borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.25)',
-    backgroundColor: '#0E1726',
+    backgroundColor: '#E6ECF5',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.5,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
+    borderRightColor: 'rgba(163, 177, 198, 0.4)',
     overflow: 'hidden',
-    shadowColor: 'rgba(0,0,0,0.50)',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowColor: '#A3B1C6',
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
+    elevation: 3,
   },
   filterChipActive: {
-    borderColor: colors.saffron,
+    borderColor: colors.gold,
   },
   filterChipText: {
     ...typography.small,
@@ -296,15 +483,21 @@ const styles = StyleSheet.create({
   sortPills: {
     flexDirection: 'row',
     gap: 4,
-    backgroundColor: '#080E1A',
+    backgroundColor: '#E6ECF5',
     borderRadius: radius.pill,
     padding: 3,
-    borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.25)',
-    shadowColor: 'rgba(0,0,0,0.50)',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 4,
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.5,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
+    borderRightColor: 'rgba(163, 177, 198, 0.4)',
+    shadowColor: '#A3B1C6',
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
     elevation: 2,
   },
   sortPill: {

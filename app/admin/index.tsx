@@ -26,12 +26,62 @@ import { useRemediesStore } from '../../src/store/remediesStore';
 import { useSpellsStore } from '../../src/store/spellsStore';
 import { formatCurrency } from '../../src/utils';
 
-type AdminTab = 'overview' | 'spells' | 'orders' | 'inventory' | 'astrologers' | 'revenue' | 'users';
+import { sendAdminBroadcastPushNotification, scheduleLocalPushNotification } from '../../src/services/pushNotificationService';
+import { useUpdateStore } from '../../src/store/updateStore';
+
+type AdminTab = 'overview' | 'spells' | 'orders' | 'inventory' | 'astrologers' | 'revenue' | 'users' | 'push_notifications';
 
 export default function AdminDashboard() {
   const router = useRouter();
   const [tab, setTab] = useState<AdminTab>('overview');
   const [astrologers, setAstrologers] = useState<Astrologer[]>([...ASTROLOGERS]);
+
+  // Manual App Update Broadcast States
+  const broadcastUpdate = useUpdateStore((s) => s.broadcastUpdate);
+  const currentAppVersion = useUpdateStore((s) => s.currentVersion);
+  const [updateVerInput, setUpdateVerInput] = useState('1.6.0');
+  const [updateNotesInput, setUpdateNotesInput] = useState(
+    '⚡ New Performance Enhancements & Vedic Astrology Algorithms\n✨ Theme 4 Dark Obsidian Updates\n📱 Live Experts Consultation Improvements'
+  );
+  const [otaBroadcastSuccess, setOtaBroadcastSuccess] = useState<string | null>(null);
+
+  const handleBroadcastAppUpdate = () => {
+    if (!updateVerInput.trim()) return;
+    const notesArray = updateNotesInput
+      .split('\n')
+      .map((n) => n.trim())
+      .filter((n) => n.length > 0);
+
+    broadcastUpdate(updateVerInput.trim(), notesArray, false);
+
+    setOtaBroadcastSuccess(
+      `🎉 App Update v${updateVerInput.trim()} broadcasted! Mobile users will now receive the update modal.`
+    );
+  };
+
+  // Push Broadcast States
+  const [notifTitle, setNotifTitle] = useState('');
+  const [notifBody, setNotifBody] = useState('');
+  const [notifTarget, setNotifTarget] = useState<'all' | 'vip' | 'astrologers'>('all');
+  const [sendingBroadcast, setSendingBroadcast] = useState(false);
+  const [broadcastSuccess, setBroadcastSuccess] = useState<string | null>(null);
+
+  const handleSendBroadcast = async () => {
+    if (!notifTitle.trim() || !notifBody.trim()) return;
+    setSendingBroadcast(true);
+    setBroadcastSuccess(null);
+
+    await sendAdminBroadcastPushNotification({
+      title: notifTitle,
+      body: notifBody,
+      type: 'astrologer_live',
+    });
+
+    setSendingBroadcast(false);
+    setBroadcastSuccess('🎉 Broadcast push notification successfully sent to 14,200 active devices!');
+    setNotifTitle('');
+    setNotifBody('');
+  };
 
   // Remedies & Spells Stores
   const inventory = useRemediesStore((s) => s.inventory);
@@ -55,10 +105,25 @@ export default function AdminDashboard() {
   const [newExp, setNewExp] = useState('8');
   const [newLang, setNewLang] = useState('Hindi, English');
 
-  // Toggle online/offline status
+  // Toggle online/offline status & trigger automatic push notification
   const toggleStatus = (id: string) => {
     setAstrologers((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, online: !a.online } : a))
+      prev.map((a) => {
+        if (a.id === id) {
+          const newStatus = !a.online;
+          if (newStatus) {
+            scheduleLocalPushNotification({
+              title: `🔴 ${a.name} is NOW LIVE!`,
+              body: `${a.specialties?.join(', ') || 'Senior Vedic Jyotishi'} is active for instant consultation (₹${a.pricePerMin}/min). Tap to connect now!`,
+              type: 'astrologer_live',
+              actionUrl: `/astrologer/${a.id}`,
+              avatarUrl: a.avatar,
+            });
+          }
+          return { ...a, online: newStatus };
+        }
+        return a;
+      })
     );
   };
 
@@ -126,6 +191,7 @@ export default function AdminDashboard() {
               { id: 'astrologers', label: '🔮 Experts' },
               { id: 'revenue', label: '💸 Revenue' },
               { id: 'users', label: '👥 Users' },
+              { id: 'push_notifications', label: '🔔 Broadcast Push' },
             ].map((t) => (
               <Pressable
                 key={t.id}
@@ -497,6 +563,84 @@ export default function AdminDashboard() {
               </Card>
             </View>
           )}
+
+          {/* ── PUSH NOTIFICATIONS BROADCAST TAB ── */}
+          {tab === 'push_notifications' && (
+            <View style={{ gap: spacing.md }}>
+              <Card style={{ gap: spacing.md }}>
+                <SectionHeader
+                  title="📣 Broadcast Push Notification"
+                  subtitle="Send instant mobile alerts to seekers & astrologers"
+                />
+
+                <View style={styles.field}>
+                  <Text style={styles.fieldLabel}>Notification Title</Text>
+                  <TextInput
+                    value={notifTitle}
+                    onChangeText={setNotifTitle}
+                    placeholder="e.g. 🔴 Acharya Dev is NOW LIVE!"
+                    placeholderTextColor={colors.textFaint}
+                    style={styles.fieldInput}
+                  />
+                </View>
+
+                <View style={styles.field}>
+                  <Text style={styles.fieldLabel}>Notification Message Body</Text>
+                  <TextInput
+                    value={notifBody}
+                    onChangeText={setNotifBody}
+                    placeholder="e.g. Tap now to join instant live audio/video consultation for Rahu Mahadasha remedies."
+                    placeholderTextColor={colors.textFaint}
+                    multiline
+                    numberOfLines={3}
+                    style={[styles.fieldInput, { height: 70, textAlignVertical: 'top' }]}
+                  />
+                </View>
+
+                {broadcastSuccess && (
+                  <View style={{ backgroundColor: 'rgba(16,185,129,0.15)', padding: spacing.md, borderRadius: radius.md, borderWidth: 1, borderColor: 'rgba(16,185,129,0.4)' }}>
+                    <Text style={{ ...typography.small, color: colors.auroraA, fontWeight: '700', textAlign: 'center' }}>
+                      {broadcastSuccess}
+                    </Text>
+                  </View>
+                )}
+
+                <Button
+                  label={sendingBroadcast ? 'Broadcasting Push Alerts…' : '🚀 Send Instant Push Broadcast (14,200 Devices)'}
+                  variant="gold"
+                  size="md"
+                  loading={sendingBroadcast}
+                  onPress={handleSendBroadcast}
+                />
+              </Card>
+
+              {/* Scheduled Daily Astro Alerts */}
+              <Card style={{ gap: spacing.md }}>
+                <SectionHeader
+                  title="⏰ Automated Daily Astro Alerts"
+                  subtitle="Managed background cron schedules"
+                />
+
+                {[
+                  { time: '06:00 AM', title: '🌅 Daily Panchang & Shubh Muhurat', desc: 'Brahma Muhurat & Sunrise auspicious timings alert', active: true },
+                  { time: '09:00 AM', title: '🔮 Daily Horoscope & Moon Transit', desc: 'Rashi predictions for Mesha to Meena', active: true },
+                  { time: '12:30 PM', title: '⚠️ Rahu Kaal Cautionary Alert', desc: 'Avoid new endeavors during Rahu Kaal window', active: true },
+                  { time: '07:00 PM', title: '🪔 Evening Sandhya Aarti & Live Darshan', desc: 'Live temple darshan broadcast alert', active: true },
+                ].map((item, idx) => (
+                  <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#070D18', padding: spacing.md, borderRadius: radius.md, borderWidth: 1, borderColor: 'rgba(16,185,129,0.2)' }}>
+                    <View style={{ flex: 1, gap: 2 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Text style={{ ...typography.tiny, color: colors.saffron, fontWeight: '800' }}>{item.time}</Text>
+                        <Text style={{ ...typography.h3, color: '#F8FAFC', fontSize: 13, fontWeight: '800' }}>{item.title}</Text>
+                      </View>
+                      <Text style={{ ...typography.small, color: colors.textMuted, fontSize: 11.5 }}>{item.desc}</Text>
+                    </View>
+                    <Chip label={item.active ? 'ACTIVE' : 'OFF'} tone={item.active ? 'gold' : 'default'} selected={item.active} />
+                  </View>
+                ))}
+              </Card>
+            </View>
+          )}
         </ScrollView>
 
         {/* ── ADD ASTROLOGER MODAL ── */}
@@ -590,13 +734,13 @@ export default function AdminDashboard() {
 const styles = StyleSheet.create({
   tabsWrapper: {
     height: 48,
-    backgroundColor: '#060A12',
+    backgroundColor: '#E6ECF5',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(16,185,129,0.25)',
+    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
     justifyContent: 'center',
-    shadowColor: 'rgba(0,0,0,0.60)',
+    shadowColor: '#A3B1C6',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.8,
+    shadowOpacity: 0.5,
     shadowRadius: 6,
     elevation: 3,
     zIndex: 10,
@@ -614,9 +758,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: radius.pill,
-    backgroundColor: '#0E1726',
-    borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.25)',
+    backgroundColor: '#E6ECF5',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.5,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
+    borderRightColor: 'rgba(163, 177, 198, 0.4)',
     overflow: 'hidden',
   },
   tabBtnActive: { borderColor: 'transparent' },
@@ -641,13 +791,19 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     borderRadius: radius.md,
     padding: spacing.md,
-    borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.25)',
-    backgroundColor: '#0E1726',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.5,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
+    borderRightColor: 'rgba(163, 177, 198, 0.4)',
+    backgroundColor: '#E6ECF5',
     gap: 2,
-    shadowColor: 'rgba(0,0,0,0.50)',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.8,
+    shadowColor: '#A3B1C6',
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 0.5,
     shadowRadius: 6,
     elevation: 3,
   },
@@ -657,15 +813,15 @@ const styles = StyleSheet.create({
 
   /* Orders */
   orderCard: { gap: spacing.xs },
-  orderId: { ...typography.h3, color: colors.saffron, fontSize: 15, fontWeight: '800' },
+  orderId: { ...typography.h3, color: colors.gold, fontSize: 15, fontWeight: '800' },
   orderItemName: { ...typography.h2, color: colors.text, fontSize: 15, fontWeight: '800', marginTop: 2 },
-  orderPrice: { ...typography.h2, color: colors.saffron, fontWeight: '900', fontSize: 17 },
+  orderPrice: { ...typography.h2, color: colors.gold, fontWeight: '900', fontSize: 17 },
   userInfoBox: {
-    backgroundColor: '#080E1A',
+    backgroundColor: '#DFE6F0',
     borderRadius: radius.md,
     padding: spacing.sm,
     borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.25)',
+    borderColor: 'rgba(163, 177, 198, 0.4)',
     gap: 2,
     marginTop: 4,
   },
@@ -680,9 +836,9 @@ const styles = StyleSheet.create({
   inputBoxCol: { flex: 1, gap: 2 },
   inputColLabel: { ...typography.tiny, color: colors.textMuted, fontWeight: '700' },
   invInput: {
-    backgroundColor: '#080E1A',
+    backgroundColor: '#DFE6F0',
     borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.25)',
+    borderColor: 'rgba(163, 177, 198, 0.4)',
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
     paddingVertical: 6,
@@ -695,7 +851,7 @@ const styles = StyleSheet.create({
   tabHeading: { ...typography.h2, color: colors.text, fontWeight: '800' },
   manageCard: { padding: spacing.md, gap: spacing.xs },
   manageName: { ...typography.h3, color: colors.text, fontSize: 15, fontWeight: '800' },
-  manageMeta: { ...typography.tiny, color: colors.saffron, marginTop: 2, fontWeight: '700' },
+  manageMeta: { ...typography.tiny, color: colors.gold, marginTop: 2, fontWeight: '700' },
   manageSpec: { ...typography.tiny, color: colors.textMuted, marginTop: 1 },
   toggleBtn: {
     paddingHorizontal: 10,
@@ -704,12 +860,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   toggleOnline: {
-    backgroundColor: 'rgba(16,185,129,0.14)',
-    borderColor: 'rgba(16,185,129,0.40)',
+    backgroundColor: 'rgba(5,150,105,0.12)',
+    borderColor: 'rgba(5,150,105,0.35)',
   },
   toggleOffline: {
-    backgroundColor: 'rgba(100,116,139,0.14)',
-    borderColor: 'rgba(100,116,139,0.30)',
+    backgroundColor: 'rgba(148,163,184,0.15)',
+    borderColor: 'rgba(148,163,184,0.35)',
   },
   toggleText: { ...typography.tiny, fontWeight: '800', fontSize: 10 },
 
@@ -717,14 +873,14 @@ const styles = StyleSheet.create({
   revenueSplitRow: { flexDirection: 'row', gap: spacing.md },
   splitBox: {
     flex: 1,
-    backgroundColor: '#080E1A',
+    backgroundColor: '#DFE6F0',
     borderRadius: radius.md,
     padding: spacing.md,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.25)',
+    borderColor: 'rgba(163, 177, 198, 0.4)',
   },
-  splitPct: { ...typography.display, fontSize: 28, color: colors.saffron, fontWeight: '900' },
+  splitPct: { ...typography.display, fontSize: 28, color: colors.gold, fontWeight: '900' },
   splitLabel: { ...typography.tiny, color: colors.textMuted, marginTop: 4, textAlign: 'center', fontWeight: '700' },
 
   /* Users */
@@ -735,39 +891,45 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(16,185,129,0.20)',
+    borderTopColor: 'rgba(163, 177, 198, 0.3)',
   },
   userName: { ...typography.small, color: colors.text, fontWeight: '700' },
   userEmail: { ...typography.tiny, color: colors.textMuted, marginTop: 1 },
-  userWallet: { ...typography.small, color: colors.saffron, fontWeight: '800' },
+  userWallet: { ...typography.small, color: colors.gold, fontWeight: '800' },
 
   /* Modal */
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(4,7,13,0.80)',
+    backgroundColor: 'rgba(30,41,59,0.50)',
     justifyContent: 'center',
     padding: spacing.lg,
   },
   modalContent: {
-    backgroundColor: '#0E1726',
+    backgroundColor: '#E6ECF5',
     borderRadius: radius.xl,
     padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.25)',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.5,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
+    borderRightColor: 'rgba(163, 177, 198, 0.4)',
     gap: spacing.md,
-    shadowColor: 'rgba(0,0,0,0.60)',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.8,
-    shadowRadius: 16,
+    shadowColor: '#A3B1C6',
+    shadowOffset: { width: 6, height: 6 },
+    shadowOpacity: 0.7,
+    shadowRadius: 12,
     elevation: 8,
   },
-  modalTitle: { ...typography.h2, color: colors.saffron, textAlign: 'center', fontWeight: '800' },
+  modalTitle: { ...typography.h2, color: colors.gold, textAlign: 'center', fontWeight: '800' },
   field: { gap: 4 },
   fieldLabel: { ...typography.tiny, color: colors.textMuted, fontWeight: '700' },
   fieldInput: {
-    backgroundColor: '#080E1A',
+    backgroundColor: '#DFE6F0',
     borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.25)',
+    borderColor: 'rgba(163, 177, 198, 0.4)',
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
     paddingVertical: 8,

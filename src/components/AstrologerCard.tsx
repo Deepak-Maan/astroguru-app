@@ -21,10 +21,6 @@ export function AstrologerCard({ astrologer: a, onPress, compact = false }: Prop
         accessibilityRole="button"
         style={({ pressed }) => [styles.compact, pressed && { opacity: 0.75, transform: [{ scale: 0.96 }] }]}
       >
-        <LinearGradient
-          colors={a.online ? ['rgba(16,185,129,0.12)', 'rgba(245,158,11,0.04)'] : ['#0E1726', '#060A12']}
-          style={StyleSheet.absoluteFill}
-        />
         <Avatar uri={a.avatar} name={a.name} size={50} online={a.online} showStatus />
         <Text style={styles.compactName} numberOfLines={1}>
           {a.name.split(' ').slice(-1)[0]}
@@ -48,12 +44,6 @@ export function AstrologerCard({ astrologer: a, onPress, compact = false }: Prop
         pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] },
       ]}
     >
-      {/* Background Cyber-Vedic Metallic Dark Gradient */}
-      <LinearGradient
-        colors={['#0E1726', '#080E1A']}
-        style={StyleSheet.absoluteFill}
-      />
-
       {/* Left: Avatar */}
       <View style={styles.avatarCol}>
         <Avatar uri={a.avatar} name={a.name} size={54} online={a.online} showStatus />
@@ -111,22 +101,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.md,
     padding: spacing.md,
-    backgroundColor: '#0E1726',
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.25)',
+    backgroundColor: '#E6ECF5',
+    borderRadius: radius.lg,
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.5,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
+    borderRightColor: 'rgba(163, 177, 198, 0.4)',
     marginBottom: spacing.sm + 2,
     overflow: 'hidden',
     alignItems: 'center',
-    shadowColor: 'rgba(0,0,0,0.60)',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.8,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowColor: '#A3B1C6',
+    shadowOffset: { width: 6, height: 6 },
+    shadowOpacity: 0.65,
+    shadowRadius: 10,
+    elevation: 4,
   },
   cardVerifiedBorder: {
-    borderColor: 'rgba(245,158,11,0.45)',
-    shadowColor: 'rgba(245,158,11,0.25)',
+    borderBottomColor: 'rgba(217,119,6,0.4)',
+    borderRightColor: 'rgba(217,119,6,0.4)',
   },
   avatarCol: {},
   body: { flex: 1, gap: 2 },
@@ -140,26 +136,26 @@ const styles = StyleSheet.create({
   ratingPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(245,158,11,0.14)',
+    backgroundColor: 'rgba(217,119,6,0.12)',
     borderRadius: radius.pill,
     paddingHorizontal: 7,
     paddingVertical: 2,
     borderWidth: 1,
-    borderColor: 'rgba(245,158,11,0.40)',
+    borderColor: 'rgba(217,119,6,0.30)',
   },
-  ratingText: { ...typography.tiny, color: colors.saffron, fontWeight: '800', fontSize: 10.5 },
+  ratingText: { ...typography.tiny, color: colors.gold, fontWeight: '800', fontSize: 10.5 },
 
   verifiedTag: {
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(245,158,11,0.14)',
+    backgroundColor: 'rgba(217,119,6,0.12)',
     borderRadius: radius.pill,
     paddingHorizontal: 7,
     paddingVertical: 1,
     borderWidth: 1,
-    borderColor: 'rgba(245,158,11,0.40)',
+    borderColor: 'rgba(217,119,6,0.30)',
     marginVertical: 1,
   },
-  verifiedTagText: { ...typography.tiny, color: colors.saffron, fontWeight: '800', fontSize: 9 },
+  verifiedTagText: { ...typography.tiny, color: colors.gold, fontWeight: '800', fontSize: 9 },
 
   specialties: {
     ...typography.small,
@@ -185,7 +181,7 @@ const styles = StyleSheet.create({
     alignItems: 'baseline',
     gap: 2,
   },
-  priceValue: { ...typography.h3, color: colors.saffron, fontSize: 15.5, fontWeight: '900' },
+  priceValue: { ...typography.h3, color: colors.gold, fontSize: 15.5, fontWeight: '900' },
   perMin: { ...typography.tiny, color: colors.textMuted, fontSize: 10.5, fontWeight: '600' },
 
   statusBadge: {
@@ -198,31 +194,37 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   statusOnline: {
-    backgroundColor: 'rgba(16,185,129,0.14)',
-    borderColor: 'rgba(16,185,129,0.40)',
+    backgroundColor: 'rgba(5,150,105,0.12)',
+    borderColor: 'rgba(5,150,105,0.35)',
   },
   statusOffline: {
-    backgroundColor: 'rgba(100,116,139,0.14)',
-    borderColor: 'rgba(100,116,139,0.3)',
+    backgroundColor: 'rgba(148,163,184,0.15)',
+    borderColor: 'rgba(148,163,184,0.35)',
   },
   statusDot: { width: 5, height: 5, borderRadius: 2.5 },
   statusText: { ...typography.tiny, fontWeight: '800', fontSize: 10 },
 
   /* ── Compact card ── */
   compact: {
-    width: 98,
+    width: 100,
     alignItems: 'center',
     padding: spacing.sm + 2,
-    backgroundColor: '#0E1726',
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.25)',
+    backgroundColor: '#E6ECF5',
+    borderRadius: radius.lg,
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.5,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
+    borderRightColor: 'rgba(163, 177, 198, 0.4)',
     marginRight: spacing.sm + 2,
     overflow: 'hidden',
     gap: 3,
-    shadowColor: 'rgba(0,0,0,0.50)',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.8,
+    shadowColor: '#A3B1C6',
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 0.5,
     shadowRadius: 6,
     elevation: 3,
   },
@@ -234,11 +236,11 @@ const styles = StyleSheet.create({
     fontSize: 11.5,
   },
   compactRating: {
-    backgroundColor: 'rgba(245,158,11,0.14)',
+    backgroundColor: 'rgba(217,119,6,0.12)',
     borderRadius: radius.pill,
     paddingHorizontal: 6,
     paddingVertical: 1,
   },
-  compactRatingText: { ...typography.tiny, color: colors.saffron, fontWeight: '800', fontSize: 9.5 },
+  compactRatingText: { ...typography.tiny, color: colors.gold, fontWeight: '800', fontSize: 9.5 },
   compactPrice: { ...typography.tiny, color: colors.textMuted, fontSize: 9.5, fontWeight: '600' },
 });

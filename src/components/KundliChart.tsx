@@ -66,17 +66,17 @@ export function KundliChart({ kundli, size = 300 }: Props) {
   return (
     <View style={[styles.wrap, { width: S, height: S }]}>
       <Svg width={S} height={S} viewBox={`0 0 ${S} ${S}`}>
-        {/* Region fills (subtle alternating tint) */}
+        {/* Region fills (subtle alternating tint for light theme) */}
         {Object.entries(HOUSES).map(([num, pts]) => (
           <Polygon
             key={`fill-${num}`}
             points={toStr(pts)}
-            fill={Number(num) % 2 === 0 ? 'rgba(255,255,255,0.035)' : 'rgba(122,60,255,0.10)'}
+            fill={Number(num) % 2 === 0 ? 'rgba(255,255,255,0.45)' : 'rgba(217,119,6,0.06)'}
           />
         ))}
 
         {/* Frame + internal lines */}
-        <G stroke={colors.gold} strokeWidth={1.4} strokeOpacity={0.85}>
+        <G stroke={colors.gold} strokeWidth={1.6} strokeOpacity={0.9}>
           <Polygon points={toStr([TL, TR, BR, BL])} fill="none" />
           <Line x1={TL[0]} y1={TL[1]} x2={BR[0]} y2={BR[1]} />
           <Line x1={TR[0]} y1={TR[1]} x2={BL[0]} y2={BL[1]} />
@@ -110,7 +110,7 @@ export function KundliChart({ kundli, size = 300 }: Props) {
                 y={labelY - (rows.length > 0 ? 14 + (rows.length - 1) * 5 : 0)}
                 fill={colors.gold}
                 fontSize={10}
-                fontWeight="700"
+                fontWeight="800"
                 textAnchor="middle"
               >
                 {rashiIndex + 1}
@@ -123,7 +123,7 @@ export function KundliChart({ kundli, size = 300 }: Props) {
                   y={startY + ri * 11}
                   fill={colors.text}
                   fontSize={10.5}
-                  fontWeight="600"
+                  fontWeight="700"
                   textAnchor="middle"
                 >
                   {row
@@ -144,7 +144,7 @@ export function KundliChart({ kundli, size = 300 }: Props) {
           y={16}
           fill={colors.teal}
           fontSize={9}
-          fontWeight="700"
+          fontWeight="800"
           textAnchor="middle"
         >
           {`LAGNA · ${RASHIS[kundli.lagnaIndex].sanskrit.toUpperCase()}`}

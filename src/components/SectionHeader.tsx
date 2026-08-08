@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   textCol: { flex: 1 },
-  title: { ...typography.h2, color: colors.text },
-  subtitle: { ...typography.small, color: colors.textMuted, marginTop: 2 },
-  action: { ...typography.small, color: colors.gold, fontWeight: '700' },
+  title: { ...typography.h2, color: colors.text, fontWeight: '800' },
+  subtitle: { ...typography.small, color: colors.textMuted, marginTop: 2, fontSize: 12, fontWeight: '600' },
+  action: { ...typography.small, color: colors.gold, fontWeight: '800' },
 });

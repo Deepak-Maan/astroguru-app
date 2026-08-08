@@ -13,12 +13,12 @@ import { useUpdateStore } from '../src/store/updateStore';
 
 export default function RootLayout() {
   const loadSettings = useSettingsStore((s) => s.load);
-  const checkForUpdates = useUpdateStore((s) => s.checkForUpdates);
+  const autoCheckAndFetchOnStartup = useUpdateStore((s) => s.autoCheckAndFetchOnStartup);
 
   useEffect(() => {
     loadSettings();
-    checkForUpdates();
-  }, [loadSettings, checkForUpdates]);
+    autoCheckAndFetchOnStartup();
+  }, [loadSettings, autoCheckAndFetchOnStartup]);
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.bg }}>
@@ -69,6 +69,17 @@ export default function RootLayout() {
           <Stack.Screen name="ai-chat" />
           <Stack.Screen name="astrologer/[id]" />
           <Stack.Screen name="chat/[id]" />
+          <Stack.Screen name="acharya-chat/[roomId]" />
+          <Stack.Screen name="acharya/consultation-profile" />
+          <Stack.Screen name="acharya/certifications" />
+          <Stack.Screen name="acharya/reviews" />
+          <Stack.Screen name="acharya/broadcast" />
+          <Stack.Screen name="acharya/availability" />
+          <Stack.Screen name="acharya/training" />
+          <Stack.Screen name="acharya/bank-settings" />
+          <Stack.Screen name="acharya/earnings-report" />
+          <Stack.Screen name="acharya/security" />
+          <Stack.Screen name="acharya/support" />
         </Stack>
         <NotificationToast />
         <AppUpdateModal />

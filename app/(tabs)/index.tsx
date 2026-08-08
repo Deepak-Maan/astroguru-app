@@ -20,6 +20,8 @@ import { RASHIS } from '../../src/data/rashis';
 import { getHoroscope } from '../../src/services/horoscope';
 import { computeNumerologyDetails } from '../../src/services/numerologyPrediction';
 
+import { JyotishiWorkstation } from '../../src/components/workstation/JyotishiWorkstation';
+
 export default function Home() {
   const router = useRouter();
   const authUser = useAuthStore((s) => s.user);
@@ -28,13 +30,22 @@ export default function Home() {
   const isVip = useSubscriptionStore((s) => s.isVip);
   const t = useLanguageStore((s) => s.t);
 
+  // If user role is Astrologer / Jyotishi, render dedicated Jyotishi Workstation Dashboard
+  if (authUser?.role === 'astrologer') {
+    return (
+      <GradientBackground>
+        <JyotishiWorkstation />
+      </GradientBackground>
+    );
+  }
+
   const quickActions = [
-    { icon: '🪐', labelKey: 'kundli', href: '/(tabs)/kundli', gradientA: '#10B981', gradientB: '#059669' },
-    { icon: '🔢', labelKey: 'numerology', href: '/numerology', gradientA: '#F59E0B', gradientB: '#D97706' },
-    { icon: '🪄', labelKey: 'spells', href: '/spells', gradientA: '#8B5CF6', gradientB: '#F59E0B' },
-    { icon: '🔮', labelKey: 'matching', href: '/matching', gradientA: '#F59E0B', gradientB: '#10B981' },
-    { icon: '💬', labelKey: 'consult', href: '/instant-consult', gradientA: '#06B6D4', gradientB: '#3B82F6' },
-    { icon: '💰', labelKey: 'wallet', href: '/wallet', gradientA: '#F59E0B', gradientB: '#E67E22' },
+    { icon: '🪐', labelKey: 'kundli', href: '/(tabs)/kundli', gradientA: '#059669' },
+    { icon: '🔢', labelKey: 'numerology', href: '/numerology', gradientA: '#D97706' },
+    { icon: '🪄', labelKey: 'spells', href: '/spells', gradientA: '#8B5CF6' },
+    { icon: '🔮', labelKey: 'matching', href: '/matching', gradientA: '#059669' },
+    { icon: '💬', labelKey: 'consult', href: '/instant-consult', gradientA: '#0284C7' },
+    { icon: '💰', labelKey: 'wallet', href: '/wallet', gradientA: '#D97706' },
   ];
 
   const signIndex = kundli?.moonRashiIndex ?? 0;
@@ -81,15 +92,9 @@ export default function Home() {
             }
           />
 
-          {/* Today's reading 3D Dark Glass Card */}
+          {/* Today's reading Nordic Frost Light Card */}
           <Pressable onPress={() => router.push('/(tabs)/horoscope')}>
             <View style={styles.todayCard}>
-              <LinearGradient
-                colors={['rgba(16,185,129,0.14)', 'rgba(245,158,11,0.06)', 'rgba(14,23,38,0.95)']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={StyleSheet.absoluteFill}
-              />
               <View style={styles.todayRule} />
               <View style={{ flex: 1, gap: spacing.xs }}>
                 <View style={styles.todayTop}>
@@ -115,19 +120,15 @@ export default function Home() {
             </View>
           </Pressable>
 
-          {/* Quick actions 3D Cyber Glass Grid */}
+          {/* Quick actions Nordic Frost Light Grid */}
           <View style={styles.quickGrid}>
-            {quickActions.map(({ icon, labelKey, href, gradientA, gradientB }) => (
+            {quickActions.map(({ icon, labelKey, href, gradientA }) => (
               <Pressable
                 key={labelKey}
                 onPress={() => router.push(href as never)}
                 style={({ pressed }) => [styles.quickCell, pressed && { opacity: 0.75, transform: [{ scale: 0.96 }] }]}
               >
-                <LinearGradient
-                  colors={[gradientA + '22', gradientB + '08']}
-                  style={StyleSheet.absoluteFill}
-                />
-                <View style={[styles.quickIconCircle, { backgroundColor: gradientA + '33' }]}>
+                <View style={[styles.quickIconCircle, { backgroundColor: gradientA + '18' }]}>
                   <Text style={styles.quickIcon}>{icon}</Text>
                 </View>
                 <Text style={styles.quickLabel}>
@@ -147,15 +148,9 @@ export default function Home() {
             ))}
           </View>
 
-          {/* Dedicated Numerology Past & Future Predictions Cyber Banner */}
+          {/* Dedicated Numerology Past & Future Predictions Banner */}
           <Pressable onPress={() => router.push('/numerology')} style={({ pressed }) => [pressed && { opacity: 0.85 }]}>
             <View style={styles.numerologyBanner}>
-              <LinearGradient
-                colors={['rgba(245,158,11,0.20)', 'rgba(16,185,129,0.08)']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={StyleSheet.absoluteFill}
-              />
               <View style={styles.numBadgeCircle}>
                 <Text style={styles.numBadgeVal}>{numerology.lifePathNumber}</Text>
               </View>
@@ -178,10 +173,6 @@ export default function Home() {
               onPress={() => router.push('/spells')}
               style={({ pressed }) => [styles.highlightCard, pressed && { opacity: 0.85 }]}
             >
-              <LinearGradient
-                colors={['rgba(139,92,246,0.18)', 'rgba(245,158,11,0.06)']}
-                style={StyleSheet.absoluteFill}
-              />
               <Text style={{ fontSize: 20 }}>🪄</Text>
               <View style={{ flex: 1 }}>
                 <Text style={styles.highlightTitle}>Vedic Spells</Text>
@@ -194,10 +185,6 @@ export default function Home() {
               onPress={() => router.push('/remedies')}
               style={({ pressed }) => [styles.highlightCard, pressed && { opacity: 0.85 }]}
             >
-              <LinearGradient
-                colors={['rgba(245,158,11,0.18)', 'rgba(16,185,129,0.06)']}
-                style={StyleSheet.absoluteFill}
-              />
               <Text style={{ fontSize: 20 }}>💎</Text>
               <View style={{ flex: 1 }}>
                 <Text style={styles.highlightTitle}>Remedies</Text>
@@ -213,10 +200,6 @@ export default function Home() {
               onPress={() => router.push('/palmistry')}
               style={({ pressed }) => [styles.highlightCard, pressed && { opacity: 0.85 }]}
             >
-              <LinearGradient
-                colors={['rgba(16,185,129,0.18)', 'rgba(6,182,212,0.06)']}
-                style={StyleSheet.absoluteFill}
-              />
               <Text style={{ fontSize: 20 }}>✋</Text>
               <View style={{ flex: 1 }}>
                 <Text style={styles.highlightTitle}>AstroPalm AI</Text>
@@ -229,10 +212,6 @@ export default function Home() {
               onPress={() => router.push('/sade-sati')}
               style={({ pressed }) => [styles.highlightCard, pressed && { opacity: 0.85 }]}
             >
-              <LinearGradient
-                colors={['rgba(244,63,94,0.18)', 'rgba(245,158,11,0.06)']}
-                style={StyleSheet.absoluteFill}
-              />
               <Text style={{ fontSize: 20 }}>🪐</Text>
               <View style={{ flex: 1 }}>
                 <Text style={styles.highlightTitle}>Shani Sade Sati</Text>
@@ -245,7 +224,7 @@ export default function Home() {
           {/* VIP / AI Banner */}
           <Pressable onPress={() => router.push('/vip')} style={({ pressed }) => [pressed && { opacity: 0.85 }]}>
             <LinearGradient
-              colors={isVip ? ['#F59E0B', '#D97706'] : ['#10B981', '#059669']}
+              colors={isVip ? [colors.gold, colors.saffron] : [colors.teal, '#047857']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.vipBanner}
@@ -317,34 +296,39 @@ const styles = StyleSheet.create({
   todayCard: {
     flexDirection: 'row',
     gap: spacing.md,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.30)',
-    backgroundColor: '#0E1726',
+    borderRadius: radius.lg,
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.5,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderBottomColor: 'rgba(191, 219, 254, 0.6)',
+    borderRightColor: 'rgba(191, 219, 254, 0.6)',
     padding: spacing.md,
     overflow: 'hidden',
-    shadowColor: 'rgba(0,0,0,0.60)',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.8,
-    shadowRadius: 8,
+    shadowColor: '#BFDBFE',
+    shadowOffset: { width: 6, height: 6 },
+    shadowOpacity: 0.65,
+    shadowRadius: 12,
     elevation: 4,
   },
   todayRule: {
-    width: 3,
-    borderRadius: 1.5,
-    backgroundColor: colors.saffron,
-    opacity: 0.9,
+    width: 3.5,
+    borderRadius: 2,
+    backgroundColor: colors.teal,
   },
   todayTop: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs + 2 },
-  todayGlyph: { fontSize: 18, color: colors.saffron },
-  todayLabel: { ...typography.tiny, fontSize: 10, letterSpacing: 1.2, color: colors.saffron, flex: 1, fontWeight: '800' },
+  todayGlyph: { fontSize: 18, color: colors.teal },
+  todayLabel: { ...typography.tiny, fontSize: 10, letterSpacing: 1.2, color: colors.teal, flex: 1, fontWeight: '800' },
   moodBadge: {
-    backgroundColor: 'rgba(16,185,129,0.18)',
+    backgroundColor: 'rgba(5,150,105,0.10)',
     borderRadius: radius.pill,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.40)',
+    borderColor: 'rgba(5,150,105,0.25)',
   },
   todayMood: { ...typography.tiny, fontSize: 10, color: colors.teal, fontWeight: '800' },
   todayText: { ...typography.small, color: colors.text, lineHeight: 18, fontWeight: '600', fontSize: 12.5 },
@@ -355,12 +339,12 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     marginTop: 2,
   },
-  readMore: { ...typography.small, color: colors.saffron, fontWeight: '800', marginLeft: 'auto', fontSize: 12 },
+  readMore: { ...typography.small, color: colors.teal, fontWeight: '800', marginLeft: 'auto', fontSize: 12 },
 
   aiIcon: { fontSize: 20 },
-  aiTitle: { ...typography.h3, color: '#FFFFFF', fontWeight: '800', fontSize: 15 },
-  aiSub: { ...typography.small, fontSize: 11.5, color: 'rgba(255,255,255,0.85)', marginTop: 1 },
-  aiArrow: { fontSize: 22, color: '#FFFFFF', fontWeight: '700' },
+  aiTitle: { ...typography.h3, color: colors.white, fontWeight: '800', fontSize: 15 },
+  aiSub: { ...typography.small, fontSize: 11.5, color: 'rgba(255,255,255,0.9)', marginTop: 1 },
+  aiArrow: { fontSize: 22, color: colors.white, fontWeight: '700' },
 
   quickGrid: {
     flexDirection: 'row',
@@ -372,16 +356,22 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingVertical: spacing.sm + 2,
-    borderRadius: radius.md,
-    backgroundColor: '#0E1726',
-    borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.22)',
+    borderRadius: radius.lg,
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.5,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderBottomColor: 'rgba(191, 219, 254, 0.6)',
+    borderRightColor: 'rgba(191, 219, 254, 0.6)',
     overflow: 'hidden',
     gap: 4,
-    shadowColor: 'rgba(0,0,0,0.50)',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.8,
-    shadowRadius: 6,
+    shadowColor: '#BFDBFE',
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 0.6,
+    shadowRadius: 8,
     elevation: 3,
   },
   quickIconCircle: {
@@ -399,30 +389,36 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm + 2,
     padding: spacing.md,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: 'rgba(245,158,11,0.40)',
-    backgroundColor: '#0E1726',
+    borderRadius: radius.lg,
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.5,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderBottomColor: 'rgba(5, 150, 105, 0.35)',
+    borderRightColor: 'rgba(5, 150, 105, 0.35)',
     overflow: 'hidden',
-    shadowColor: 'rgba(245,158,11,0.25)',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.8,
-    shadowRadius: 6,
-    elevation: 3,
+    shadowColor: '#BFDBFE',
+    shadowOffset: { width: 5, height: 5 },
+    shadowOpacity: 0.65,
+    shadowRadius: 10,
+    elevation: 4,
   },
   numBadgeCircle: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: colors.saffron,
+    backgroundColor: colors.teal,
     alignItems: 'center',
     justifyContent: 'center',
   },
   numBadgeVal: { ...typography.display, fontSize: 20, color: colors.white, fontWeight: '900' },
-  numBannerTag: { ...typography.tiny, color: colors.saffron, fontSize: 9, letterSpacing: 1.2, fontWeight: '800' },
+  numBannerTag: { ...typography.tiny, color: colors.teal, fontSize: 9, letterSpacing: 1.2, fontWeight: '800' },
   numBannerTitle: { ...typography.h3, color: colors.text, fontSize: 13, fontWeight: '800' },
   numBannerSub: { ...typography.tiny, color: colors.textMuted, fontSize: 10.5, lineHeight: 14, fontWeight: '600' },
-  numBannerArrow: { fontSize: 20, color: colors.saffron, fontWeight: '800' },
+  numBannerArrow: { fontSize: 20, color: colors.teal, fontWeight: '800' },
 
   featureHighlightsRow: { flexDirection: 'row', gap: spacing.xs + 2 },
   highlightCard: {
@@ -431,16 +427,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.xs + 2,
     padding: spacing.sm + 2,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.22)',
-    backgroundColor: '#0E1726',
+    borderRadius: radius.lg,
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.5,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderBottomColor: 'rgba(191, 219, 254, 0.6)',
+    borderRightColor: 'rgba(191, 219, 254, 0.6)',
     overflow: 'hidden',
-    shadowColor: 'rgba(0,0,0,0.40)',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowColor: '#BFDBFE',
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 0.55,
+    shadowRadius: 8,
+    elevation: 3,
   },
   highlightTitle: { ...typography.h3, color: colors.text, fontSize: 13, fontWeight: '800' },
   highlightSub: { ...typography.tiny, color: colors.textMuted, fontSize: 10, fontWeight: '600' },
@@ -450,14 +452,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm + 2,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     padding: spacing.md,
     overflow: 'hidden',
-    shadowColor: 'rgba(16,185,129,0.30)',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.8,
-    shadowRadius: 6,
-    elevation: 3,
+    shadowColor: '#BFDBFE',
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 0.65,
+    shadowRadius: 10,
+    elevation: 4,
   },
 
   footerNote: {

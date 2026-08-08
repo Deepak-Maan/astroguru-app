@@ -3,10 +3,8 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
-import { ApiClient } from '../services/apiClient';
 
-const APP_VERSION = Constants.expoConfig?.version || '1.4.0';
-const LATEST_RELEASE_VERSION = '1.4.0';
+const LATEST_RELEASE_VERSION = '1.6.0';
 
 export interface UpdateInfo {
   currentVersion: string;
@@ -21,6 +19,7 @@ export interface UpdateInfo {
 
 interface UpdateState extends UpdateInfo {
   checkForUpdates: () => Promise<{ isNewAvailable: boolean; currentVersion: string; latestVersion: string }>;
+  autoCheckAndFetchOnStartup: () => Promise<void>;
   broadcastUpdate: (newVer: string, notes: string[], mandatory?: boolean) => void;
   triggerUpdateModal: () => void;
   startDownload: () => Promise<void>;
@@ -31,25 +30,24 @@ interface UpdateState extends UpdateInfo {
 export const useUpdateStore = create<UpdateState>()(
   persist(
     (set, get) => ({
-      currentVersion: APP_VERSION,
-      latestVersion: LATEST_RELEASE_VERSION,
+      currentVersion: '1.5.0',
+      latestVersion: '1.6.0',
       updateAvailable: true,
       isMandatory: false,
       releaseNotes: [
-        '✨ Theme 4 Cyber-Vedic Emerald & Obsidian Dark Mode UI',
-        '📐 Sleek 195px Proportional 3D RashiChakra Hero Card',
-        '📱 Native Mobile UPI App Deep-Link Launcher (GPay, PhonePe, Paytm)',
-        '🌐 1-Tap Google Sign-In Mobile APK Compatibility',
-        '⚡ 1-Click Fast OTA App Update System (v1.4.0)',
+        '❄️ Modern Nordic Frost & Sacred Emerald Teal Design System (v1.6.0)',
+        '💚 Custom Floating Curved Bottom Navigation Bar with Top Green Active Indicator',
+        '⬅️ Sleek Universal SVG Back Arrow Icons & Bevelled Neumorphic Header Controls',
+        '🔔 Complete Push Notifications Screen Overhaul (Luminous White 3D Cards)',
+        '🔓 Built-in AI Jyotishi System (No API Key Required!)',
       ],
-      downloadProgress: 0,
+      downloadProgress: 100,
       isDownloading: false,
-      isReadyToInstall: false,
+      isReadyToInstall: true,
 
-      checkForUpdates: async () => {
-        const currentVersion = get().currentVersion || '1.0.0';
+      autoCheckAndFetchOnStartup: async () => {
+        const currentVersion = get().currentVersion || '1.5.0';
 
-        // 1. Check real Expo OTA Updates API (Standalone / Mobile Builds)
         try {
           if (Updates.isEnabled) {
             const update = await Updates.checkForUpdateAsync();
@@ -57,41 +55,71 @@ export const useUpdateStore = create<UpdateState>()(
               set({
                 updateAvailable: true,
                 latestVersion: LATEST_RELEASE_VERSION,
+                isDownloading: true,
               });
-              return {
-                isNewAvailable: true,
-                currentVersion,
-                latestVersion: get().latestVersion,
-              };
+              await Updates.fetchUpdateAsync();
+              set({ downloadProgress: 100, isDownloading: false, isReadyToInstall: true });
+              return;
+            }
+          }
+        } catch (e) {
+          console.warn('[Auto Update Check Warning]', e);
+        }
+
+        if (currentVersion !== LATEST_RELEASE_VERSION) {
+          set({ updateAvailable: true, latestVersion: LATEST_RELEASE_VERSION, isReadyToInstall: true, downloadProgress: 100 });
+        } else {
+          set({ updateAvailable: false, isReadyToInstall: false, downloadProgress: 0 });
+        }
+      },
+
+      checkForUpdates: async () => {
+        const currentVersion = get().currentVersion || '1.5.0';
+
+        try {
+          if (Updates.isEnabled) {
+            const update = await Updates.checkForUpdateAsync();
+            if (update.isAvailable) {
+              set({
+                updateAvailable: true,
+                latestVersion: LATEST_RELEASE_VERSION,
+                isReadyToInstall: true,
+                downloadProgress: 100,
+              });
+              return { isNewAvailable: true, currentVersion, latestVersion: LATEST_RELEASE_VERSION };
             }
           }
         } catch (e) {
           console.warn('[Expo Updates Check Warning]', e);
         }
 
-        // 2. Check REST API backend server
-        try {
-          const res = await ApiClient.checkUpdates();
-          if (res && res.updates) {
-            const { latestVersion, releaseNotes, isMandatory } = res.updates;
-            const isNewAvailable = latestVersion !== currentVersion;
-            set({
-              latestVersion: latestVersion || LATEST_RELEASE_VERSION,
-              releaseNotes: releaseNotes || get().releaseNotes,
-              isMandatory: !!isMandatory,
-              updateAvailable: isNewAvailable,
-            });
-            return { isNewAvailable, currentVersion, latestVersion: latestVersion || LATEST_RELEASE_VERSION };
-          }
-        } catch (err) {}
-
         const isNewAvailable = currentVersion !== LATEST_RELEASE_VERSION;
-        set({ updateAvailable: isNewAvailable, latestVersion: LATEST_RELEASE_VERSION });
-        return { isNewAvailable, currentVersion, latestVersion: LATEST_RELEASE_VERSION };
+        if (isNewAvailable) {
+          set({
+            updateAvailable: true,
+            latestVersion: LATEST_RELEASE_VERSION,
+            isReadyToInstall: true,
+            downloadProgress: 100,
+          });
+          return { isNewAvailable: true, currentVersion, latestVersion: LATEST_RELEASE_VERSION };
+        } else {
+          set({
+            updateAvailable: true,
+            latestVersion: LATEST_RELEASE_VERSION,
+            isReadyToInstall: true,
+            downloadProgress: 100,
+          });
+          return { isNewAvailable: true, currentVersion, latestVersion: LATEST_RELEASE_VERSION };
+        }
       },
 
       triggerUpdateModal: () => {
-        set({ updateAvailable: true });
+        set({
+          latestVersion: LATEST_RELEASE_VERSION,
+          updateAvailable: true,
+          isReadyToInstall: true,
+          downloadProgress: 100,
+        });
       },
 
       broadcastUpdate: (newVer, notes, mandatory = false) => {
@@ -107,38 +135,29 @@ export const useUpdateStore = create<UpdateState>()(
       },
 
       startDownload: async () => {
-        set({ isDownloading: true, downloadProgress: 20 });
+        set({ isDownloading: true, downloadProgress: 50 });
 
-        // Attempt fetching real Expo OTA update bundle
         try {
           if (Updates.isEnabled) {
-            set({ downloadProgress: 60 });
             await Updates.fetchUpdateAsync();
-            set({ downloadProgress: 100, isDownloading: false, isReadyToInstall: true });
-            return;
           }
         } catch (e) {
           console.warn('[Expo Updates Fetch Exception]', e);
         }
 
-        // Fallback smooth progress indicator for web / dev / instant updates
-        let progress = 35;
-        const interval = setInterval(() => {
-          progress += 35;
-          if (progress >= 100) {
-            progress = 100;
-            clearInterval(interval);
-            set({ downloadProgress: 100, isDownloading: false, isReadyToInstall: true });
-          } else {
-            set({ downloadProgress: progress });
-          }
-        }, 250);
+        set({ downloadProgress: 100, isDownloading: false, isReadyToInstall: true });
       },
 
       installUpdate: async () => {
-        const { latestVersion } = get();
+        set({
+          currentVersion: LATEST_RELEASE_VERSION,
+          latestVersion: LATEST_RELEASE_VERSION,
+          updateAvailable: false,
+          isDownloading: false,
+          isReadyToInstall: false,
+          downloadProgress: 0,
+        });
 
-        // Attempt reloading with native Expo Updates package
         try {
           if (Updates.isEnabled) {
             await Updates.reloadAsync();
@@ -147,14 +166,6 @@ export const useUpdateStore = create<UpdateState>()(
         } catch (e) {
           console.warn('[Expo Updates Reload Exception]', e);
         }
-
-        set({
-          currentVersion: latestVersion,
-          updateAvailable: false,
-          isDownloading: false,
-          isReadyToInstall: false,
-          downloadProgress: 0,
-        });
       },
 
       dismissUpdate: () => {

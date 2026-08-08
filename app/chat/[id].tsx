@@ -23,8 +23,10 @@ import { colors, radius, spacing, typography } from '../../src/theme';
 import { ASTROLOGERS } from '../../src/data/astrologers';
 import { greetingFor, replyTo, typingDelay } from '../../src/services/consult/replies';
 import { useChatStore } from '../../src/store/chatStore';
+import { useLiveChatStore } from '../../src/store/liveChatStore';
 import { useUserStore } from '../../src/store/userStore';
 import { useWalletStore } from '../../src/store/walletStore';
+import { useAuthStore } from '../../src/store/authStore';
 import { formatCurrency } from '../../src/utils';
 
 let idCounter = 0;
@@ -41,6 +43,7 @@ export default function ChatScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const astrologer = ASTROLOGERS.find((a) => a.id === id);
+  const authUser = useAuthStore((s) => s.user);
 
   const kundli = useUserStore((s) => s.kundli);
   const balance = useWalletStore((s) => s.balance);
@@ -53,6 +56,20 @@ export default function ChatScreen() {
   const billMinute = useChatStore((s) => s.billMinute);
   const endSession = useChatStore((s) => s.endSession);
   const addMessage = useChatStore((s) => s.addMessage);
+
+  // ── Live bidirectional chat room (Seeker ↔ Acharya) ──
+  const createRoom = useLiveChatStore((s) => s.createRoom);
+  const sendLiveMessage = useLiveChatStore((s) => s.sendMessage);
+  const markRead = useLiveChatStore((s) => s.markRead);
+  const liveRoom = useLiveChatStore((s) =>
+    astrologer && authUser?.id
+      ? s.getRoomByPair(authUser.id.toString(), astrologer.id)
+      : null
+  );
+  const liveRoomId = liveRoom?.roomId ?? null;
+  const liveMessages = liveRoom?.messages ?? [];
+  const isLiveActive = liveRoom?.status === 'active';
+  const isLiveEnded = liveRoom?.status === 'ended';
 
   const session = astrologer ? getSession(astrologer.id) : null;
   const active = Boolean(session?.startedAt && !session?.ended);
@@ -120,6 +137,18 @@ export default function ChatScreen() {
     setElapsed(0);
     setRanOut(false);
 
+    // ── Create or open a live bidirectional room for Acharya to see ──
+    if (authUser?.id) {
+      createRoom({
+        seekerId: authUser.id.toString(),
+        seekerName: authUser.name ?? 'Seeker',
+        astrologerId: astrologer.id,
+        astrologerName: astrologer.name,
+        topic: QUICK_PROMPTS[0],
+        ratePerMin: astrologer.pricePerMin,
+      });
+    }
+
     if ((useChatStore.getState().sessions[astrologer.id]?.messages.length ?? 0) === 0) {
       addMessage(astrologer.id, {
         id: nextId(),
@@ -128,7 +157,7 @@ export default function ChatScreen() {
         at: Date.now(),
       });
     }
-  }, [astrologer, balance, topup, debit, startSession, billMinute, addMessage]);
+  }, [astrologer, balance, topup, debit, startSession, billMinute, addMessage, createRoom, authUser]);
 
   useEffect(() => {
     if (astrologer && !session?.startedAt && !session?.ended) begin();
@@ -171,6 +200,12 @@ export default function ChatScreen() {
 
     setDraft('');
     addMessage(astrologer.id, { id: nextId(), role: 'user', text, at: Date.now() });
+
+    // ── Mirror to live room so Acharya sees it in real time ──
+    if (liveRoomId && authUser?.name) {
+      sendLiveMessage(liveRoomId, 'seeker', authUser.name, text);
+    }
+
     scrollToEnd();
 
     // Button pop animation

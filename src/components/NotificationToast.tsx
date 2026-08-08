@@ -28,10 +28,6 @@ export function NotificationToast() {
       onPress={handleTapToast}
       style={({ pressed }) => [styles.toastContainer, pressed && { opacity: 0.9, transform: [{ scale: 0.98 }] }]}
     >
-      <LinearGradient
-        colors={['rgba(255,255,255,0.98)', 'rgba(248,250,252,0.98)']}
-        style={StyleSheet.absoluteFill}
-      />
       <View style={styles.contentRow}>
         {toastNotification.avatar ? (
           <Image source={{ uri: toastNotification.avatar }} style={styles.avatar} />
@@ -64,12 +60,19 @@ const styles = StyleSheet.create({
     right: spacing.lg,
     zIndex: 9999,
     borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(230,126,34,0.4)',
+    backgroundColor: '#E6ECF5',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.5,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderBottomColor: 'rgba(217, 119, 6, 0.4)',
+    borderRightColor: 'rgba(217, 119, 6, 0.4)',
     overflow: 'hidden',
-    shadowColor: 'rgba(230,126,34,0.30)',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.9,
+    shadowColor: '#A3B1C6',
+    shadowOffset: { width: 6, height: 6 },
+    shadowOpacity: 0.7,
     shadowRadius: 12,
     elevation: 8,
   },
@@ -79,15 +82,15 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     gap: spacing.md,
   },
-  avatar: { width: 44, height: 44, borderRadius: 22, borderWidth: 1, borderColor: colors.saffron },
+  avatar: { width: 44, height: 44, borderRadius: 22, borderWidth: 1.5, borderColor: colors.gold },
   title: { ...typography.h3, color: colors.text, fontSize: 14, fontWeight: '800' },
-  message: { ...typography.small, color: colors.textMuted, fontSize: 12, lineHeight: 16 },
+  message: { ...typography.small, color: colors.textMuted, fontSize: 12, lineHeight: 16, fontWeight: '600' },
   closeBtn: {
     padding: 6,
     borderRadius: radius.pill,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#E6ECF5',
     borderWidth: 1,
-    borderColor: '#E3E8F3',
+    borderColor: '#FFFFFF',
   },
   closeText: { ...typography.tiny, color: colors.textMuted, fontWeight: '800' },
 });

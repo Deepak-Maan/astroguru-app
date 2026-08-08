@@ -12,12 +12,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GradientBackground } from '../src/components/GradientBackground';
 import { Button } from '../src/components/Button';
-import { Card } from '../src/components/Card';
-import { Chip } from '../src/components/Chip';
 import { ScreenHeader } from '../src/components/ScreenHeader';
-import { SectionHeader } from '../src/components/SectionHeader';
 import { colors, radius, spacing, typography } from '../src/theme';
-import { useNotificationStore, NotificationType } from '../src/store/notificationStore';
+import { useNotificationStore } from '../src/store/notificationStore';
 
 type FilterType = 'all' | 'chat_message' | 'astrologer_live' | 'order';
 
@@ -41,7 +38,7 @@ export default function NotificationsScreen() {
     <GradientBackground>
       <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
         <ScreenHeader
-          title="Notifications"
+          title="Push Notifications"
           subtitle={unreadCount > 0 ? `${unreadCount} unread alerts` : 'All alerts read'}
           showBack
         />
@@ -66,7 +63,7 @@ export default function NotificationsScreen() {
             >
               {filter === t.id && (
                 <LinearGradient
-                  colors={['#7D3C98', '#E67E22']}
+                  colors={[colors.teal, '#047857']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                   style={StyleSheet.absoluteFill}
@@ -103,7 +100,9 @@ export default function NotificationsScreen() {
             <View style={styles.emptyBox}>
               <Text style={{ fontSize: 44 }}>🔔</Text>
               <Text style={styles.emptyTitle}>No Notifications</Text>
-              <Text style={styles.emptySub}>You are all caught up! New astrologer messages and live status alerts will appear here.</Text>
+              <Text style={styles.emptySub}>
+                You are all caught up! New astrologer messages and live status alerts will appear here.
+              </Text>
             </View>
           ) : (
             filteredList.map((notif) => (
@@ -154,24 +153,50 @@ export default function NotificationsScreen() {
 }
 
 const styles = StyleSheet.create({
-  tabsScroll: { flexGrow: 0, borderBottomWidth: 1, borderBottomColor: '#E3E8F3', backgroundColor: '#FFFFFF' },
-  tabsRow: { flexDirection: 'row', paddingHorizontal: spacing.lg, paddingVertical: spacing.xs, gap: spacing.xs },
+  tabsScroll: {
+    flexGrow: 0,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(191, 219, 254, 0.6)',
+    backgroundColor: '#EFF6FF',
+  },
+  tabsRow: {
+    flexDirection: 'row',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    gap: spacing.xs,
+  },
   tabBtn: {
     paddingHorizontal: spacing.md,
     height: 34,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: radius.pill,
-    backgroundColor: '#F8FAFC',
-    borderWidth: 1,
-    borderColor: '#E3E8F3',
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.5,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderBottomColor: 'rgba(191, 219, 254, 0.6)',
+    borderRightColor: 'rgba(191, 219, 254, 0.6)',
     overflow: 'hidden',
+    shadowColor: '#BFDBFE',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 2,
   },
   tabBtnActive: { borderColor: 'transparent' },
-  tabBtnText: { ...typography.tiny, color: colors.textMuted, fontWeight: '800' },
+  tabBtnText: { ...typography.tiny, color: colors.text, fontWeight: '800' },
   tabBtnTextActive: { color: colors.white },
 
-  scroll: { paddingHorizontal: spacing.lg, paddingVertical: spacing.md, paddingBottom: spacing.xxl, gap: spacing.md },
+  scroll: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    paddingBottom: spacing.xxl,
+    gap: spacing.md,
+  },
 
   topActionsRow: { flexDirection: 'row', justifyContent: 'flex-end', gap: spacing.sm },
 
@@ -179,44 +204,51 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: radius.lg,
     padding: spacing.md,
-    borderWidth: 1,
-    borderColor: '#E3E8F3',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.5,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderBottomColor: 'rgba(191, 219, 254, 0.6)',
+    borderRightColor: 'rgba(191, 219, 254, 0.6)',
     position: 'relative',
-    shadowColor: 'rgba(160,175,205,0.20)',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.8,
-    shadowRadius: 6,
-    elevation: 3,
+    shadowColor: '#BFDBFE',
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 0.65,
+    shadowRadius: 10,
+    elevation: 4,
   },
   notifCardUnread: {
-    borderColor: 'rgba(230,126,34,0.4)',
-    backgroundColor: '#FFFDF9',
+    borderBottomColor: 'rgba(5, 150, 105, 0.4)',
+    borderRightColor: 'rgba(5, 150, 105, 0.4)',
+    backgroundColor: '#FFFFFF',
   },
   unreadIndicator: {
     position: 'absolute',
-    top: 10,
-    right: 10,
+    top: 12,
+    right: 12,
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: colors.saffron,
+    backgroundColor: colors.teal,
   },
-  avatar: { width: 46, height: 46, borderRadius: 23, borderWidth: 1, borderColor: '#E3E8F3' },
+  avatar: { width: 44, height: 44, borderRadius: 22, borderWidth: 1.5, borderColor: colors.teal },
   iconCircle: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: '#F8FAFC',
     borderWidth: 1,
-    borderColor: '#E3E8F3',
+    borderColor: 'rgba(191, 219, 254, 0.6)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   notifTitle: { ...typography.h3, color: colors.text, fontSize: 14, fontWeight: '800' },
-  notifMsg: { ...typography.small, color: colors.textMuted, fontSize: 12.5, lineHeight: 17 },
-  notifTime: { ...typography.tiny, color: colors.textFaint, marginTop: 2, fontSize: 10 },
+  notifMsg: { ...typography.small, color: colors.textMuted, fontSize: 12.5, lineHeight: 17, fontWeight: '600' },
+  notifTime: { ...typography.tiny, color: colors.teal, marginTop: 2, fontSize: 10, fontWeight: '700' },
 
   emptyBox: { alignItems: 'center', paddingVertical: spacing.xxl, gap: spacing.xs },
   emptyTitle: { ...typography.h2, color: colors.text, fontWeight: '800' },
-  emptySub: { ...typography.small, color: colors.textMuted, textAlign: 'center', maxWidth: 280 },
+  emptySub: { ...typography.small, color: colors.textMuted, textAlign: 'center', maxWidth: 280, fontWeight: '600' },
 });

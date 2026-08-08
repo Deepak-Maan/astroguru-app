@@ -25,7 +25,7 @@ interface Props {
   fullWidth?: boolean;
 }
 
-const heights: Record<Size, number> = { sm: 34, md: 42, lg: 48 };
+const heights: Record<Size, number> = { sm: 36, md: 44, lg: 50 };
 const fontSizes: Record<Size, number> = { sm: 13, md: 14.5, lg: 15.5 };
 
 export function Button({
@@ -45,7 +45,7 @@ export function Button({
   const content = (
     <View style={styles.inner}>
       {loading ? (
-        <ActivityIndicator size="small" color={colors.white} />
+        <ActivityIndicator size="small" color={isFlat ? colors.text : colors.white} />
       ) : (
         <>
           {icon}
@@ -87,8 +87,8 @@ export function Button({
         <LinearGradient
           colors={
             variant === 'gold'
-              ? [colors.saffron, colors.gold]
-              : [colors.teal, colors.saffron]
+              ? [colors.gold, colors.saffron]
+              : [colors.teal, '#047857']
           }
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
@@ -106,11 +106,11 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     overflow: 'hidden',
     justifyContent: 'center',
-    shadowColor: 'rgba(0,0,0,0.50)',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.8,
-    shadowRadius: 6,
-    elevation: 3,
+    shadowColor: '#BFDBFE',
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 0.6,
+    shadowRadius: 8,
+    elevation: 4,
   },
   gradient: { flex: 1, justifyContent: 'center' },
   inner: {
@@ -122,17 +122,22 @@ const styles = StyleSheet.create({
   },
   label: { ...typography.h3, color: colors.white, fontWeight: '800' },
   outline: {
-    borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.30)',
-    backgroundColor: '#0E1726',
-    elevation: 2,
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.5,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderBottomColor: 'rgba(191, 219, 254, 0.6)',
+    borderRightColor: 'rgba(191, 219, 254, 0.6)',
+    backgroundColor: '#FFFFFF',
   },
   ghost: { backgroundColor: 'transparent', elevation: 0, shadowOpacity: 0 },
   danger: {
     borderWidth: 1,
-    borderColor: 'rgba(244,63,94,0.40)',
-    backgroundColor: 'rgba(244,63,94,0.12)',
+    borderColor: 'rgba(225,29,72,0.30)',
+    backgroundColor: 'rgba(225,29,72,0.08)',
   },
-  pressed: { opacity: 0.86, transform: [{ scale: 0.985 }] },
+  pressed: { opacity: 0.88, transform: [{ scale: 0.98 }] },
   disabled: { opacity: 0.45 },
 });

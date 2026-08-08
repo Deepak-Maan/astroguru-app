@@ -195,7 +195,7 @@ export default function LoginScreen() {
               <View style={styles.hero}>
                 <View style={styles.logoOuterRing}>
                   <LinearGradient
-                    colors={[colors.auroraA, colors.saffron]}
+                    colors={[colors.teal, colors.gold]}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
                     style={StyleSheet.absoluteFill}
@@ -213,7 +213,7 @@ export default function LoginScreen() {
                 </Text>
               </View>
 
-              {/* Glassmorphic Form Card */}
+              {/* Nordic Frost Neumorphic Form Card */}
               <Card elevated padded={false} style={styles.card}>
                 {/* Tab Switcher: Mobile OTP vs Email & Password */}
                 <View style={styles.tabContainer}>
@@ -329,7 +329,7 @@ export default function LoginScreen() {
                       {!otpSent ? (
                         <Button
                           label={otpLoading ? 'Sending Code…' : 'Send Verification OTP →'}
-                          variant="gold"
+                          variant="primary"
                           size="lg"
                           loading={otpLoading}
                           onPress={handleSendOtp}
@@ -338,7 +338,7 @@ export default function LoginScreen() {
                       ) : (
                         <Button
                           label={verifyLoading ? 'Verifying OTP…' : 'Verify & Enter AstroGuru ⚡'}
-                          variant="gold"
+                          variant="primary"
                           size="lg"
                           loading={verifyLoading}
                           onPress={handleVerifyOtp}
@@ -402,7 +402,7 @@ export default function LoginScreen() {
 
                       <Button
                         label={loading ? 'Verifying Account…' : 'Sign In with Email ✨'}
-                        variant="gold"
+                        variant="primary"
                         size="lg"
                         loading={loading}
                         onPress={handleEmailLogin}
@@ -453,7 +453,7 @@ export default function LoginScreen() {
                 <View style={styles.footerRow}>
                   <Text style={styles.footerText}>Are you a Certified Astrologer?</Text>
                   <Pressable onPress={() => router.push('/(auth)/expert-login')}>
-                    <Text style={[styles.footerLink, { color: colors.auroraA }]}>
+                    <Text style={[styles.footerLink, { color: colors.teal }]}>
                       Join Expert Portal →
                     </Text>
                   </Pressable>
@@ -492,7 +492,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.xs,
-    shadowColor: colors.saffron,
+    shadowColor: colors.teal,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.6,
     shadowRadius: 16,
@@ -502,15 +502,15 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: 36,
-    backgroundColor: '#070D18',
+    backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
   },
   logoIcon: { fontSize: 34 },
   badgePill: {
-    backgroundColor: 'rgba(245,158,11,0.12)',
+    backgroundColor: 'rgba(5, 150, 105, 0.10)',
     borderWidth: 1,
-    borderColor: 'rgba(245,158,11,0.35)',
+    borderColor: 'rgba(5, 150, 105, 0.25)',
     borderRadius: radius.pill,
     paddingHorizontal: spacing.md,
     paddingVertical: 4,
@@ -518,7 +518,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     ...typography.tiny,
-    color: colors.goldSoft,
+    color: colors.teal,
     fontWeight: '800',
     letterSpacing: 0.8,
   },
@@ -539,20 +539,26 @@ const styles = StyleSheet.create({
 
   card: {
     borderRadius: radius.lg,
-    backgroundColor: '#0D1524',
-    borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.3)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.7,
-    shadowRadius: 20,
-    elevation: 10,
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.5,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderBottomColor: 'rgba(191, 219, 254, 0.6)',
+    borderRightColor: 'rgba(191, 219, 254, 0.6)',
+    shadowColor: '#BFDBFE',
+    shadowOffset: { width: 6, height: 6 },
+    shadowOpacity: 0.65,
+    shadowRadius: 12,
+    elevation: 6,
   },
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: '#070D18',
+    backgroundColor: '#F8FAFC',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.08)',
+    borderBottomColor: 'rgba(191, 219, 254, 0.6)',
     padding: 6,
   },
   tabButton: {
@@ -563,9 +569,20 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
   },
   tabButtonActive: {
-    backgroundColor: '#131F33',
-    borderWidth: 1,
-    borderColor: 'rgba(245,158,11,0.4)',
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.5,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderBottomColor: 'rgba(5, 150, 105, 0.35)',
+    borderRightColor: 'rgba(5, 150, 105, 0.35)',
+    shadowColor: '#BFDBFE',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 2,
   },
   tabText: {
     ...typography.body,
@@ -574,7 +591,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   tabTextActive: {
-    color: colors.goldSoft,
+    color: colors.teal,
     fontWeight: '800',
   },
 
@@ -588,15 +605,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
-    backgroundColor: '#131F33',
-    borderWidth: 1.5,
-    borderColor: 'rgba(245,158,11,0.3)',
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.5,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderBottomColor: 'rgba(191, 219, 254, 0.6)',
+    borderRightColor: 'rgba(191, 219, 254, 0.6)',
     borderRadius: radius.pill,
     paddingVertical: 13,
     paddingHorizontal: spacing.lg,
+    shadowColor: '#BFDBFE',
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 0.55,
+    shadowRadius: 6,
+    elevation: 3,
   },
   googleIconBox: { width: 24, height: 24, alignItems: 'center', justifyContent: 'center' },
-  googleBtnText: { ...typography.body, color: colors.text, fontWeight: '700', fontSize: 15 },
+  googleBtnText: { ...typography.body, color: colors.text, fontWeight: '800', fontSize: 15 },
 
   dividerRow: {
     flexDirection: 'row',
@@ -604,15 +632,15 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     marginVertical: 2,
   },
-  dividerLine: { flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.1)' },
+  dividerLine: { flex: 1, height: 1, backgroundColor: 'rgba(191, 219, 254, 0.6)' },
   dividerText: { ...typography.tiny, color: colors.textFaint, fontWeight: '700' },
 
   formGap: { gap: spacing.md },
   field: { gap: spacing.xs },
   labelRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   label: { ...typography.tiny, color: colors.textMuted, fontWeight: '800', letterSpacing: 0.6 },
-  forgotLink: { ...typography.tiny, color: colors.goldSoft, fontWeight: '700' },
-  autoFillHint: { ...typography.tiny, color: colors.auroraA, fontWeight: '800' },
+  forgotLink: { ...typography.tiny, color: colors.teal, fontWeight: '700' },
+  autoFillHint: { ...typography.tiny, color: colors.teal, fontWeight: '800' },
 
   phoneInputRow: {
     flexDirection: 'row',
@@ -623,9 +651,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#131F33',
+    backgroundColor: '#F8FAFC',
     borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.3)',
+    borderColor: 'rgba(191, 219, 254, 0.8)',
     borderRadius: radius.md,
     paddingHorizontal: 12,
     paddingVertical: 11,
@@ -634,25 +662,25 @@ const styles = StyleSheet.create({
   countryCodeText: { ...typography.body, color: colors.text, fontWeight: '800', fontSize: 14 },
   phoneInput: {
     flex: 1,
-    backgroundColor: '#070D18',
+    backgroundColor: '#F8FAFC',
     borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.3)',
+    borderColor: 'rgba(191, 219, 254, 0.8)',
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
     paddingVertical: 11,
-    color: '#F8FAFC',
+    color: colors.text,
     fontSize: 15,
     fontWeight: '700',
   },
 
   input: {
-    backgroundColor: '#070D18',
+    backgroundColor: '#F8FAFC',
     borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.3)',
+    borderColor: 'rgba(191, 219, 254, 0.8)',
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
     paddingVertical: 11,
-    color: '#F8FAFC',
+    color: colors.text,
     fontSize: 15,
     fontWeight: '700',
   },
@@ -661,8 +689,8 @@ const styles = StyleSheet.create({
     fontSize: 22,
     letterSpacing: 8,
     fontWeight: '900',
-    color: colors.goldSoft,
-    borderColor: colors.saffron,
+    color: colors.teal,
+    borderColor: colors.teal,
   },
 
   passwordWrap: {
@@ -677,18 +705,18 @@ const styles = StyleSheet.create({
   eyeIcon: { fontSize: 16 },
 
   infoBox: {
-    backgroundColor: 'rgba(16,185,129,0.12)',
+    backgroundColor: 'rgba(5, 150, 105, 0.10)',
     borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.3)',
+    borderColor: 'rgba(5, 150, 105, 0.25)',
     borderRadius: radius.md,
     padding: spacing.md,
   },
-  infoText: { ...typography.small, color: colors.auroraA, fontWeight: '700', textAlign: 'center' },
+  infoText: { ...typography.small, color: colors.teal, fontWeight: '700', textAlign: 'center' },
 
   errorBox: {
-    backgroundColor: 'rgba(244,63,94,0.12)',
+    backgroundColor: 'rgba(225, 29, 72, 0.10)',
     borderWidth: 1,
-    borderColor: 'rgba(244,63,94,0.3)',
+    borderColor: 'rgba(225, 29, 72, 0.25)',
     borderRadius: radius.md,
     padding: spacing.md,
   },
@@ -698,7 +726,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
     paddingTop: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.08)',
+    borderTopColor: 'rgba(191, 219, 254, 0.6)',
     gap: spacing.sm,
   },
   demoTitle: {
@@ -719,20 +747,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
-    backgroundColor: '#131F33',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.5,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderBottomColor: 'rgba(191, 219, 254, 0.6)',
+    borderRightColor: 'rgba(191, 219, 254, 0.6)',
     borderRadius: radius.pill,
     paddingVertical: 8,
     paddingHorizontal: 8,
+    shadowColor: '#BFDBFE',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 2,
   },
   demoChipAstro: {
-    borderColor: 'rgba(245,158,11,0.4)',
-    backgroundColor: 'rgba(245,158,11,0.1)',
+    borderBottomColor: 'rgba(5, 150, 105, 0.35)',
+    borderRightColor: 'rgba(5, 150, 105, 0.35)',
   },
   demoChipAdmin: {
-    borderColor: 'rgba(16,185,129,0.4)',
-    backgroundColor: 'rgba(16,185,129,0.1)',
+    borderBottomColor: 'rgba(217, 119, 6, 0.35)',
+    borderRightColor: 'rgba(217, 119, 6, 0.35)',
   },
   demoChipIcon: { fontSize: 14 },
   demoChipText: { ...typography.tiny, color: colors.text, fontWeight: '700' },
@@ -748,6 +787,5 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   footerText: { ...typography.small, color: colors.textMuted, fontWeight: '600' },
-  footerLink: { ...typography.small, color: colors.goldSoft, fontWeight: '800' },
+  footerLink: { ...typography.small, color: colors.teal, fontWeight: '800' },
 });
-

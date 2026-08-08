@@ -40,7 +40,7 @@ export function AppUpdateModal() {
             {/* Header Banner */}
             <View style={styles.header}>
               <LinearGradient
-                colors={[colors.auroraA, colors.saffron]}
+                colors={[colors.saffron, colors.gold]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={StyleSheet.absoluteFill}
@@ -52,7 +52,7 @@ export function AppUpdateModal() {
               <Text style={styles.headerTitle}>Update Available!</Text>
               <View style={styles.versionBadge}>
                 <Text style={styles.versionText}>
-                  v{currentVersion} ➔ <Text style={{ color: colors.goldSoft, fontWeight: '900' }}>v{latestVersion}</Text>
+                  v{currentVersion} ➔ <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>v{latestVersion}</Text>
                 </Text>
               </View>
             </View>
@@ -95,7 +95,7 @@ export function AppUpdateModal() {
                     onPress={startDownload}
                   />
                   <Button
-                    label="📥 Direct Download & Install APK (v1.4.0)"
+                    label="📥 Direct Download & Install APK"
                     variant="outline"
                     size="md"
                     onPress={handleDirectApkDownload}
@@ -128,7 +128,7 @@ export function AppUpdateModal() {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(4,7,13,0.85)',
+    backgroundColor: 'rgba(30,41,59,0.50)',
     justifyContent: 'center',
     padding: spacing.md,
   },
@@ -138,17 +138,23 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   card: {
-    backgroundColor: '#0D1524',
+    backgroundColor: '#E6ECF5',
     borderRadius: radius.xl,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(245,158,11,0.4)',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.5,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
+    borderRightColor: 'rgba(163, 177, 198, 0.4)',
     gap: spacing.md,
-    shadowColor: colors.saffron,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.5,
-    shadowRadius: 20,
-    elevation: 12,
+    shadowColor: '#A3B1C6',
+    shadowOffset: { width: 8, height: 8 },
+    shadowOpacity: 0.7,
+    shadowRadius: 16,
+    elevation: 10,
   },
   header: {
     alignItems: 'center',
@@ -157,40 +163,46 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   badgePill: {
-    backgroundColor: 'rgba(7,13,24,0.6)',
+    backgroundColor: 'rgba(0,0,0,0.25)',
     borderRadius: radius.pill,
     paddingHorizontal: 12,
     paddingVertical: 3,
     marginBottom: 4,
   },
-  badgeText: { ...typography.tiny, color: colors.goldSoft, fontWeight: '800', letterSpacing: 0.8 },
+  badgeText: { ...typography.tiny, color: '#FFFFFF', fontWeight: '800', letterSpacing: 0.8 },
   headerTitle: { ...typography.h1, color: '#FFFFFF', fontSize: 24, fontWeight: '800' },
   versionBadge: {
-    backgroundColor: 'rgba(7,13,24,0.7)',
+    backgroundColor: 'rgba(0,0,0,0.35)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.15)',
+    borderColor: 'rgba(255,255,255,0.3)',
     paddingHorizontal: 14,
     paddingVertical: 5,
     borderRadius: radius.pill,
     marginTop: 4,
   },
-  versionText: { ...typography.tiny, color: '#F8FAFC', fontWeight: '800', fontSize: 13 },
+  versionText: { ...typography.tiny, color: '#FFFFFF', fontWeight: '800', fontSize: 13 },
 
   notesContainer: { paddingHorizontal: spacing.xl, gap: spacing.xs },
-  notesHeader: { ...typography.h3, color: colors.goldSoft, fontSize: 15, fontWeight: '800' },
+  notesHeader: { ...typography.h3, color: colors.gold, fontSize: 15, fontWeight: '800' },
   noteItem: {
-    backgroundColor: '#070D18',
+    backgroundColor: '#EEF2F7',
     borderRadius: radius.md,
     padding: spacing.sm,
-    borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.25)',
+    borderTopWidth: 1,
+    borderLeftWidth: 1,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderBottomColor: 'rgba(163, 177, 198, 0.3)',
+    borderRightColor: 'rgba(163, 177, 198, 0.3)',
   },
-  noteText: { ...typography.small, color: '#F8FAFC', lineHeight: 18, fontWeight: '600' },
+  noteText: { ...typography.small, color: colors.text, lineHeight: 18, fontWeight: '600' },
 
   progressBox: { paddingHorizontal: spacing.xl, gap: 6 },
   progressLabel: { ...typography.tiny, color: colors.textMuted, fontWeight: '700' },
-  progressPct: { ...typography.tiny, color: colors.goldSoft, fontWeight: '900' },
-  track: { height: 8, backgroundColor: '#070D18', borderRadius: 4, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(245,158,11,0.3)' },
+  progressPct: { ...typography.tiny, color: colors.gold, fontWeight: '900' },
+  track: { height: 8, backgroundColor: '#DFE6F0', borderRadius: 4, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(217,119,6,0.3)' },
   bar: { height: '100%', backgroundColor: colors.saffron, borderRadius: 4 },
 
   actionColumn: { gap: spacing.xs, padding: spacing.xl, paddingTop: spacing.xs },

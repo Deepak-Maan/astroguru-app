@@ -13,7 +13,7 @@ interface Props {
 }
 
 /** Fixed star/constellation dots for light theme. */
-function useStars(count = 50) {
+function useStars(count = 35) {
   return useMemo(() => {
     const rnd = seededRandom(20260729);
     return Array.from({ length: count }, (_, i) => ({
@@ -21,12 +21,12 @@ function useStars(count = 50) {
       top: `${rnd() * 100}%`,
       left: `${rnd() * 100}%`,
       size: rnd() < 0.3 ? 3.5 : 2,
-      opacity: 0.15 + rnd() * 0.45,
+      opacity: 0.18 + rnd() * 0.35,
     }));
   }, [count]);
 }
 
-/** Royal Celestial Background: GSAP 60FPS Web Animations + Native Animated Fallback. */
+/** Nordic Frost Neumorphic Light Background: GSAP 60FPS Web Animations + Native Fallback. */
 export function GradientBackground({ children, style, stars = true }: Props) {
   const starList = useStars();
 
@@ -46,13 +46,12 @@ export function GradientBackground({ children, style, stars = true }: Props) {
       const bottomEl = glowBottomRef.current;
       const mandalaEl = mandalaRef.current;
 
-      // ── GSAP ANIMATIONS WITH DIRECT REF TARGETING ──
       const ctx = gsap.context(() => {
         if (topEl) {
           gsap.to(topEl, {
-            scale: 1.28,
-            opacity: 0.14,
-            duration: 5,
+            scale: 1.25,
+            opacity: 0.1,
+            duration: 6,
             repeat: -1,
             yoyo: true,
             ease: 'sine.inOut',
@@ -61,9 +60,9 @@ export function GradientBackground({ children, style, stars = true }: Props) {
 
         if (bottomEl) {
           gsap.to(bottomEl, {
-            scale: 1.22,
-            opacity: 0.12,
-            duration: 7,
+            scale: 1.2,
+            opacity: 0.08,
+            duration: 8,
             repeat: -1,
             yoyo: true,
             ease: 'sine.inOut',
@@ -73,7 +72,7 @@ export function GradientBackground({ children, style, stars = true }: Props) {
         if (mandalaEl) {
           gsap.to(mandalaEl, {
             rotation: 360,
-            duration: 30,
+            duration: 35,
             repeat: -1,
             ease: 'none',
           });
@@ -83,7 +82,6 @@ export function GradientBackground({ children, style, stars = true }: Props) {
       return () => ctx.revert();
     }
 
-    // ── NATIVE REACT NATIVE ANIMATED FALLBACK ──
     Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, { toValue: 1, duration: 4000, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
@@ -109,16 +107,16 @@ export function GradientBackground({ children, style, stars = true }: Props) {
 
   return (
     <View style={[styles.root, style]}>
-      {/* Base Pearlescent Gradient */}
+      {/* Base Nordic Frost Ice Blue Slate Gradient */}
       <LinearGradient
-        colors={[colors.gradientTop, colors.gradientMid, colors.gradientBottom]}
+        colors={['#F4F9FF', '#EFF6FF', '#E2E8F0']}
         locations={[0, 0.5, 1]}
         start={{ x: 0.1, y: 0 }}
         end={{ x: 0.9, y: 1 }}
         style={StyleSheet.absoluteFill}
       />
 
-      {/* GSAP Glow Orb Top-Right (Saffron Amber) */}
+      {/* Glow Orb Top-Right (Sacred Emerald Teal) */}
       <Animated.View
         ref={glowTopRef}
         pointerEvents="none"
@@ -128,7 +126,7 @@ export function GradientBackground({ children, style, stars = true }: Props) {
         ]}
       />
 
-      {/* GSAP Glow Orb Bottom-Left (Royal Amethyst) */}
+      {/* Glow Orb Bottom-Left (Solar Amber Gold) */}
       <Animated.View
         ref={glowBottomRef}
         pointerEvents="none"
@@ -138,7 +136,7 @@ export function GradientBackground({ children, style, stars = true }: Props) {
         ]}
       />
 
-      {/* GSAP 360° Rotating Sacred Geometry Ring */}
+      {/* 360° Rotating Sacred Geometry Ring */}
       <Animated.View
         ref={mandalaRef}
         pointerEvents="none"
@@ -148,7 +146,7 @@ export function GradientBackground({ children, style, stars = true }: Props) {
         ]}
       />
 
-      {/* Twinkling Particle Constellation Stars */}
+      {/* Constellation Stars for Light Mode */}
       {stars && (
         <View style={StyleSheet.absoluteFill} pointerEvents="none">
           {starList.map((s, i) => (
@@ -161,7 +159,7 @@ export function GradientBackground({ children, style, stars = true }: Props) {
                 width: s.size,
                 height: s.size,
                 borderRadius: s.size,
-                backgroundColor: i % 2 === 0 ? colors.auroraA : colors.saffron,
+                backgroundColor: i % 2 === 0 ? colors.teal : colors.gold,
                 opacity: Animated.multiply(s.opacity, starOpacityMult),
               }}
             />
@@ -175,7 +173,7 @@ export function GradientBackground({ children, style, stars = true }: Props) {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.bg, overflow: 'hidden' },
+  root: { flex: 1, backgroundColor: '#EFF6FF', overflow: 'hidden' },
   content: { flex: 1 },
 
   glowTop: {
@@ -185,7 +183,7 @@ const styles = StyleSheet.create({
     width: 380,
     height: 380,
     borderRadius: 190,
-    backgroundColor: colors.saffron,
+    backgroundColor: '#059669',
     opacity: 0.08,
   },
   glowBottom: {
@@ -195,7 +193,7 @@ const styles = StyleSheet.create({
     width: 390,
     height: 390,
     borderRadius: 195,
-    backgroundColor: colors.auroraA,
+    backgroundColor: '#F59E0B',
     opacity: 0.07,
   },
 
@@ -207,8 +205,8 @@ const styles = StyleSheet.create({
     height: 520,
     borderRadius: 260,
     borderWidth: 1.5,
-    borderColor: 'rgba(217,119,6,0.09)',
+    borderColor: 'rgba(5,150,105,0.14)',
     borderStyle: 'dashed',
-    opacity: 0.7,
+    opacity: 0.6,
   },
 });

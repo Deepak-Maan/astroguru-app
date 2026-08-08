@@ -233,7 +233,7 @@ export function RashiChakra({ kundli, onPress }: Props) {
     return (
       <Pressable onPress={onPress}>
         <LinearGradient
-          colors={['#0E1726', '#060A12']}
+          colors={['#EEF2F7', '#E6ECF5']}
           start={{ x: 0.1, y: 0 }}
           end={{ x: 0.9, y: 1 }}
           style={[styles.card, styles.fallback]}
@@ -248,9 +248,9 @@ export function RashiChakra({ kundli, onPress }: Props) {
     <GestureDetector gesture={gesture}>
       <View style={styles.card} onLayout={onLayout}>
         <GLView style={StyleSheet.absoluteFill} onContextCreate={onContextCreate} />
-        {/* Soft Cyber-Vedic dark gradient overlay */}
+        {/* Soft Neumorphic Light gradient overlay */}
         <LinearGradient
-          colors={['rgba(14,23,38,0.05)', 'rgba(14,23,38,0.70)', '#0E1726']}
+          colors={['rgba(238,242,247,0.10)', 'rgba(230,236,245,0.75)', '#E6ECF5']}
           locations={[0.20, 0.60, 1]}
           style={StyleSheet.absoluteFill}
           pointerEvents="none"
@@ -264,18 +264,24 @@ export function RashiChakra({ kundli, onPress }: Props) {
 const styles = StyleSheet.create({
   card: {
     height: HERO_HEIGHT,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     overflow: 'hidden',
-    backgroundColor: '#0E1726',
-    borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.30)',
-    shadowColor: 'rgba(0,0,0,0.60)',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.8,
-    shadowRadius: 8,
-    elevation: 4,
+    backgroundColor: '#E6ECF5',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.5,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
+    borderRightColor: 'rgba(163, 177, 198, 0.4)',
+    shadowColor: '#A3B1C6',
+    shadowOffset: { width: 6, height: 6 },
+    shadowOpacity: 0.65,
+    shadowRadius: 10,
+    elevation: 5,
   },
-  fallback: { justifyContent: 'flex-end', backgroundColor: '#0E1726' },
+  fallback: { justifyContent: 'flex-end', backgroundColor: '#E6ECF5' },
 
   overlay: {
     position: 'absolute',
@@ -289,7 +295,7 @@ const styles = StyleSheet.create({
     ...typography.tiny,
     fontSize: 9.5,
     letterSpacing: 2,
-    color: colors.saffron,
+    color: colors.gold,
     fontWeight: '800',
   },
   headline: {
@@ -300,7 +306,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   headlineLight: {
-    fontWeight: '400',
+    fontWeight: '500',
     color: colors.textMuted,
   },
   readout: {
@@ -311,7 +317,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   degrees: {
-    color: colors.saffron,
+    color: colors.gold,
     fontWeight: '800',
     fontVariant: ['tabular-nums'],
   },

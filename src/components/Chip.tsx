@@ -19,17 +19,17 @@ const TONE_COLORS = {
 };
 
 const TONE_BG = {
-  default: 'rgba(16,185,129,0.14)',
-  gold: 'rgba(245,158,11,0.14)',
-  teal: 'rgba(16,185,129,0.14)',
-  rose: 'rgba(244,63,94,0.14)',
+  default: 'rgba(5,150,105,0.12)',
+  gold: 'rgba(217,119,6,0.12)',
+  teal: 'rgba(5,150,105,0.12)',
+  rose: 'rgba(225,29,72,0.12)',
 };
 
 const TONE_BORDER = {
-  default: 'rgba(16,185,129,0.35)',
-  gold: 'rgba(245,158,11,0.35)',
-  teal: 'rgba(16,185,129,0.35)',
-  rose: 'rgba(244,63,94,0.35)',
+  default: 'rgba(5,150,105,0.30)',
+  gold: 'rgba(217,119,6,0.30)',
+  teal: 'rgba(5,150,105,0.30)',
+  rose: 'rgba(225,29,72,0.30)',
 };
 
 export function Chip({ label, selected = false, onPress, style, tone = 'default' }: ChipProps) {
@@ -49,7 +49,7 @@ export function Chip({ label, selected = false, onPress, style, tone = 'default'
     >
       {selected && (
         <LinearGradient
-          colors={[accent + 'DD', accent + '99']}
+          colors={[accent + 'EE', accent + 'CC']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={StyleSheet.absoluteFill}
@@ -86,15 +86,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: 6,
     borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.25)',
-    backgroundColor: '#0E1726',
+    backgroundColor: '#E6ECF5',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.5,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
+    borderRightColor: 'rgba(163, 177, 198, 0.4)',
     overflow: 'hidden',
     alignSelf: 'flex-start',
     flexShrink: 0,
+    shadowColor: '#A3B1C6',
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
+    elevation: 3,
   },
   chipSelected: {
     borderColor: 'transparent',
   },
-  label: { ...typography.small, color: colors.textMuted, lineHeight: 18, fontSize: 13, fontWeight: '600' },
+  label: { ...typography.small, color: colors.text, lineHeight: 18, fontSize: 13, fontWeight: '700' },
 });

@@ -261,80 +261,6 @@ export default function Settings() {
             </Card>
           </View>
 
-          {/* API key */}
-          <View>
-            <SectionHeader
-              title="AI Astrologer Key"
-              subtitle="Powers the AI Jyotishi chat"
-            />
-            <Card style={{ gap: spacing.md }}>
-              {apiKey ? (
-                <>
-                  <View style={styles.keyActive}>
-                    <Text style={styles.keyActiveIcon}>✅</Text>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.keyActiveTitle}>Key saved on this device</Text>
-                      <Text style={styles.keyMasked}>
-                        {reveal ? apiKey : masked}
-                      </Text>
-                    </View>
-                  </View>
-                  <View style={styles.keyBtnRow}>
-                    <Button
-                      label={reveal ? 'Hide' : 'Reveal'}
-                      variant="outline"
-                      size="sm"
-                      fullWidth={false}
-                      style={{ flex: 1 }}
-                      onPress={() => setReveal((r) => !r)}
-                    />
-                    <Button
-                      label="Remove key"
-                      variant="danger"
-                      size="sm"
-                      fullWidth={false}
-                      style={{ flex: 1 }}
-                      onPress={remove}
-                    />
-                  </View>
-                </>
-              ) : (
-                <>
-                  <Text style={styles.help}>
-                    The AI Jyotishi reads your computed Kundli and answers questions about it.
-                    Paste an Anthropic API key to enable it — everything else in the app works
-                    without a key.
-                  </Text>
-                  <TextInput
-                    value={draft}
-                    onChangeText={setDraft}
-                    placeholder="sk-ant-api03-…"
-                    placeholderTextColor={colors.textFaint}
-                    style={styles.input}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    secureTextEntry={!reveal}
-                    multiline={reveal}
-                  />
-                  <Pressable onPress={() => setReveal((r) => !r)}>
-                    <Text style={styles.toggleReveal}>
-                      {reveal ? 'Hide key' : 'Show key while typing'}
-                    </Text>
-                  </Pressable>
-                  {!!error && <Text style={styles.error}>{error}</Text>}
-                  <Button label="Save key" variant="gold" onPress={save} />
-                  <Pressable
-                    onPress={() => Linking.openURL('https://console.anthropic.com/settings/keys')}
-                  >
-                    <Text style={styles.link}>Get a key from console.anthropic.com →</Text>
-                  </Pressable>
-                </>
-              )}
-
-              {saved && <Text style={styles.savedNote}>✅ Key saved.</Text>}
-            </Card>
-          </View>
-
           {/* Preferences */}
           <View>
             <SectionHeader title="Preferences" />
@@ -383,19 +309,13 @@ export default function Settings() {
 
           {/* About */}
           <View>
-            <SectionHeader title="About & App Updates" />
+            <SectionHeader title="About AstroGuru" />
             <Card style={{ gap: spacing.md }}>
               <Text style={styles.aboutTitle}>AstroGuru · v{currentVersion}</Text>
               <Text style={styles.help}>
                 Kundli, Lagna, Rashi and Nakshatra are computed on-device using the Lahiri
                 ayanamsa — no internet required. Sun and Moon positions are highly accurate.
               </Text>
-              <Button
-                label="⚡ Check for App Updates"
-                variant="gold"
-                size="sm"
-                onPress={() => triggerUpdateModal()}
-              />
             </Card>
           </View>
         </ScrollView>
@@ -449,9 +369,9 @@ const styles = StyleSheet.create({
   scroll: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xxl, gap: spacing.xl },
   help: { ...typography.small, color: colors.textMuted, lineHeight: 19 },
   input: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#DFE6F0',
     borderWidth: 1,
-    borderColor: '#E3E8F3',
+    borderColor: 'rgba(163, 177, 198, 0.4)',
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
     paddingVertical: 11,
@@ -459,9 +379,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     minHeight: 44,
   },
-  toggleReveal: { ...typography.tiny, color: colors.saffron, fontWeight: '700' },
+  toggleReveal: { ...typography.tiny, color: colors.gold, fontWeight: '700' },
   error: { ...typography.small, color: colors.danger },
-  link: { ...typography.small, color: colors.saffron, fontWeight: '700', textAlign: 'center' },
+  link: { ...typography.small, color: colors.gold, fontWeight: '700', textAlign: 'center' },
   savedNote: { ...typography.small, color: colors.success, fontWeight: '700' },
 
   keyActive: { flexDirection: 'row', gap: spacing.md, alignItems: 'center' },
@@ -482,7 +402,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md + 2,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#E3E8F3',
+    borderTopColor: 'rgba(163, 177, 198, 0.3)',
   },
   prefLabel: { ...typography.body, color: colors.text, fontWeight: '700' },
   prefSub: { ...typography.tiny, color: colors.textMuted, marginTop: 2, fontWeight: '600' },
@@ -493,31 +413,37 @@ const styles = StyleSheet.create({
   /* Modal */
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(27,20,56,0.60)',
+    backgroundColor: 'rgba(30,41,59,0.50)',
     justifyContent: 'center',
     padding: spacing.lg,
   },
   modalContent: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#E6ECF5',
     borderRadius: radius.xl,
     padding: spacing.xl,
-    borderWidth: 1,
-    borderColor: '#E3E8F3',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.5,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
+    borderRightColor: 'rgba(163, 177, 198, 0.4)',
     gap: spacing.md,
-    shadowColor: 'rgba(160,175,205,0.40)',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.9,
-    shadowRadius: 18,
+    shadowColor: '#A3B1C6',
+    shadowOffset: { width: 6, height: 6 },
+    shadowOpacity: 0.7,
+    shadowRadius: 16,
     elevation: 8,
   },
-  modalTitle: { ...typography.h2, color: colors.saffron, textAlign: 'center', fontWeight: '800' },
+  modalTitle: { ...typography.h2, color: colors.gold, textAlign: 'center', fontWeight: '800' },
   modalSub: { ...typography.small, color: colors.textMuted, textAlign: 'center', marginTop: -4 },
   field: { gap: 4 },
   fieldLabel: { ...typography.tiny, color: colors.textMuted, fontWeight: '700' },
   fieldInput: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#DFE6F0',
     borderWidth: 1,
-    borderColor: '#E3E8F3',
+    borderColor: 'rgba(163, 177, 198, 0.4)',
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
     paddingVertical: 10,
