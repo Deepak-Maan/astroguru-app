@@ -143,6 +143,12 @@ function AcharyaTransits() {
 
 export default function Horoscope() {
   const authUser = useAuthStore((s) => s.user);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+
+  if (!isAuthenticated || !authUser) {
+    return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
+  }
+
   if (authUser?.role === 'astrologer') return <AcharyaTransits />;
 
   const kundli = useUserStore((s) => s.kundli);

@@ -25,10 +25,16 @@ import { JyotishiWorkstation } from '../../src/components/workstation/JyotishiWo
 export default function Home() {
   const router = useRouter();
   const authUser = useAuthStore((s) => s.user);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const profile = useUserStore((s) => s.profile);
   const kundli = useUserStore((s) => s.kundli);
   const isVip = useSubscriptionStore((s) => s.isVip);
   const t = useLanguageStore((s) => s.t);
+
+  // If logging out or unauthenticated, return clean blank background during transition
+  if (!isAuthenticated || !authUser) {
+    return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
+  }
 
   // If user role is Astrologer / Jyotishi, render dedicated Jyotishi Workstation Dashboard
   if (authUser?.role === 'astrologer') {

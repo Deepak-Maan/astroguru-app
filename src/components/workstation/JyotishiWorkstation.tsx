@@ -29,7 +29,12 @@ import { useLiveChatStore } from '../../store/liveChatStore';
 export function JyotishiWorkstation() {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const logout = useAuthStore((s) => s.logout);
+
+  if (!isAuthenticated || !user) {
+    return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
+  }
 
   const isOnDuty = useJyotishiStore((s) => s.isOnDuty ?? true);
   const ratePerMin = useJyotishiStore((s) => s.ratePerMin ?? 25);
@@ -499,19 +504,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F8FAFC',
     borderRadius: radius.lg,
     borderTopWidth: 1.5,
     borderLeftWidth: 1.5,
     borderTopColor: '#FFFFFF',
     borderLeftColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: 'rgba(5, 150, 105, 0.35)',
-    borderRightColor: 'rgba(5, 150, 105, 0.35)',
+    borderBottomWidth: 1.2,
+    borderRightWidth: 1.2,
+    borderBottomColor: 'rgba(5, 150, 105, 0.45)',
+    borderRightColor: 'rgba(5, 150, 105, 0.45)',
     padding: spacing.md,
     shadowColor: '#BFDBFE',
-    shadowOffset: { width: 6, height: 6 },
+    shadowOffset: { width: 4, height: 6 },
     shadowOpacity: 0.65,
     shadowRadius: 12,
     elevation: 4,
@@ -534,16 +539,16 @@ const styles = StyleSheet.create({
   statCell: {
     minWidth: '47%',
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F8FAFC',
     borderRadius: radius.lg,
     borderTopWidth: 1.5,
     borderLeftWidth: 1.5,
     borderTopColor: '#FFFFFF',
     borderLeftColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: 'rgba(191, 219, 254, 0.6)',
-    borderRightColor: 'rgba(191, 219, 254, 0.6)',
+    borderBottomWidth: 1.2,
+    borderRightWidth: 1.2,
+    borderBottomColor: 'rgba(191, 219, 254, 0.75)',
+    borderRightColor: 'rgba(191, 219, 254, 0.75)',
     padding: spacing.md,
     gap: 4,
     shadowColor: '#BFDBFE',
@@ -573,20 +578,20 @@ const styles = StyleSheet.create({
 
   /* Client Card */
   clientCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F8FAFC',
     borderRadius: radius.lg,
     borderTopWidth: 1.5,
     borderLeftWidth: 1.5,
     borderTopColor: '#FFFFFF',
     borderLeftColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: 'rgba(191, 219, 254, 0.6)',
-    borderRightColor: 'rgba(191, 219, 254, 0.6)',
+    borderBottomWidth: 1.2,
+    borderRightWidth: 1.2,
+    borderBottomColor: 'rgba(191, 219, 254, 0.75)',
+    borderRightColor: 'rgba(191, 219, 254, 0.75)',
     padding: spacing.md,
     gap: spacing.md,
     shadowColor: '#BFDBFE',
-    shadowOffset: { width: 6, height: 6 },
+    shadowOffset: { width: 4, height: 6 },
     shadowOpacity: 0.65,
     shadowRadius: 10,
     elevation: 4,
@@ -664,16 +669,16 @@ const styles = StyleSheet.create({
   toolCell: {
     minWidth: '47%',
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F8FAFC',
     borderRadius: radius.lg,
     borderTopWidth: 1.5,
     borderLeftWidth: 1.5,
     borderTopColor: '#FFFFFF',
     borderLeftColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: 'rgba(191, 219, 254, 0.6)',
-    borderRightColor: 'rgba(191, 219, 254, 0.6)',
+    borderBottomWidth: 1.2,
+    borderRightWidth: 1.2,
+    borderBottomColor: 'rgba(191, 219, 254, 0.75)',
+    borderRightColor: 'rgba(191, 219, 254, 0.75)',
     padding: spacing.md,
     gap: 2,
     shadowColor: '#BFDBFE',

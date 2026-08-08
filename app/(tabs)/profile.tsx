@@ -53,12 +53,13 @@ function Row({
 
 export default function Profile() {
   const router = useRouter();
+  const authUser = useAuthStore((s) => s.user);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const profile = useUserStore((s) => s.profile);
   const kundli = useUserStore((s) => s.kundli);
   const clear = useUserStore((s) => s.clear);
   const balance = useWalletStore((s) => s.balance);
 
-  const authUser = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const isVip = useSubscriptionStore((s) => s.isVip);
   const vipPlanId = useSubscriptionStore((s) => s.planId);
@@ -68,6 +69,10 @@ export default function Profile() {
     logout();
     router.replace('/(auth)/login');
   };
+
+  if (!isAuthenticated || !authUser) {
+    return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
+  }
 
   function confirmReset() {
     const doReset = () => {

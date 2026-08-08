@@ -39,10 +39,15 @@ function dms(deg: number): string {
 export default function KundliScreen() {
   const router = useRouter();
   const authUser = useAuthStore((s) => s.user);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const profile = useUserStore((s) => s.profile);
   const kundli = useUserStore((s) => s.kundli);
   const [tab, setTab] = useState<TabId>('chart');
   const [matchingResult, setMatchingResult] = useState<any | null>(null);
+
+  if (!isAuthenticated || !authUser) {
+    return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
+  }
 
   // If logged in as Certified Astrologer / Acharya, render Client Vault Inspector
   if (authUser?.role === 'astrologer') {

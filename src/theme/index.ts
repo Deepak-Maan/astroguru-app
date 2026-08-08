@@ -23,11 +23,12 @@ export const isSmallDevice = SCREEN_WIDTH < 375;
 export const isTablet = SCREEN_WIDTH >= 768;
 
 export const colors = {
-  // Backgrounds (Nordic Frost Ice Blue Slate)
+  // Backgrounds (Nordic Frost Ice Blue Slate & Rich Off-White)
   bg: '#EFF6FF',
   bgElevated: '#F8FAFC',
-  card: '#FFFFFF',
-  cardSolid: '#FFFFFF',
+  card: '#F8FAFC',
+  cardSolid: '#F5F7FA',
+  cardOffWhite: '#F8FAFC',
   cardBorder: '#FFFFFF',
   cardGlowBorder: '#059669',
 

@@ -204,6 +204,12 @@ const payStyles = StyleSheet.create({
 export default function Consult() {
   const router = useRouter();
   const authUser = useAuthStore((s) => s.user);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+
+  if (!isAuthenticated || !authUser) {
+    return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
+  }
+
   if (authUser?.role === 'astrologer') return <AcharyaPayouts />;
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState('All');
