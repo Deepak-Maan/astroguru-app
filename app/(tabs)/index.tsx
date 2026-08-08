@@ -475,4 +475,8 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
+  aiIcon: { fontSize: 20 },
+  aiTitle: { ...typography.h3, color: colors.white, fontWeight: '800', fontSize: 15 },
+  aiSub: { ...typography.small, fontSize: 11.5, color: 'rgba(255,255,255,0.9)', marginTop: 1 },
+  aiArrow: { fontSize: 22, color: colors.white, fontWeight: '700' },
 });
