@@ -1,5 +1,5 @@
 import React from 'react';
-import { Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Linking, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, radius, spacing, typography } from '../theme';
 import { Button } from './Button';
@@ -22,7 +22,8 @@ export function AppUpdateModal() {
     dismissUpdate,
   } = useUpdateStore();
 
-  if (!updateAvailable) return null;
+  // On Web platform, updates happen automatically on page reload without modal popups
+  if (Platform.OS === 'web' || !updateAvailable) return null;
 
   const handleDirectApkDownload = async () => {
     try {

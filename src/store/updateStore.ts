@@ -1,10 +1,11 @@
+import { Platform } from 'react-native';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
 
-const LATEST_RELEASE_VERSION = '2.0.0';
+const LATEST_RELEASE_VERSION = '2.1.0';
 
 export interface UpdateInfo {
   currentVersion: string;
@@ -30,23 +31,35 @@ interface UpdateState extends UpdateInfo {
 export const useUpdateStore = create<UpdateState>()(
   persist(
     (set, get) => ({
-      currentVersion: '1.9.0',
-      latestVersion: '2.0.0',
-      updateAvailable: true,
+      currentVersion: '2.0.0',
+      latestVersion: '2.1.0',
+      updateAvailable: Platform.OS !== 'web',
       isMandatory: false,
       releaseNotes: [
-        '🌟 AstroGuru Major Version 2.0.0 Milestone Release',
-        '🎨 Screenshot-Matched UI Cards, Header & Floating Tab Bar Design',
-        '✨ Luminous Animated Auth Overlay for Login, Signup & Logout',
-        '🔮 Certified Jyotishi Workstation Dual-Workspace Isolation',
-        '📲 Universal OTA Update Engine Active Globally for All Roles',
+        '🌟 AstroGuru Release Version 2.1.0',
+        '📱 Mobile Native App Update Modal & Direct APK Downloader',
+        '🌐 Web Platform Silent Auto-Update System (No Popups)',
+        '🔒 Zero-Crash Seeker & Acharya Workstation Session Management',
+        '✨ Upgraded Dual-Ring Counter-Rotating & Implosion Auth Animations',
       ],
       downloadProgress: 100,
       isDownloading: false,
-      isReadyToInstall: true,
+      isReadyToInstall: Platform.OS !== 'web',
 
       autoCheckAndFetchOnStartup: async () => {
-        const currentVersion = get().currentVersion || '1.5.0';
+        // On Web, app updates automatically on bundle reload without modal prompt
+        if (Platform.OS === 'web') {
+          set({
+            currentVersion: LATEST_RELEASE_VERSION,
+            latestVersion: LATEST_RELEASE_VERSION,
+            updateAvailable: false,
+            isReadyToInstall: false,
+            downloadProgress: 0,
+          });
+          return;
+        }
+
+        const currentVersion = get().currentVersion || '2.0.0';
 
         try {
           if (Updates.isEnabled) {
