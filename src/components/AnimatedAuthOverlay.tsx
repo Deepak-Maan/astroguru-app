@@ -174,10 +174,16 @@ export function AnimatedAuthOverlay({ visible, type, message, onFinished }: Over
     return 'Clearing credentials & locking vault...';
   };
 
-  const getGradientColors = () => {
+  const getGradientColors = (): [string, string, string, string] => {
     if (type === 'login') return [colors.teal, colors.gold, '#3B0764', colors.teal];
     if (type === 'signup') return [colors.saffron, '#8B5CF6', colors.gold, colors.saffron];
     return ['#EF4444', '#8B5CF6', '#3B0764', '#EF4444'];
+  };
+
+  const getReversedGradientColors = (): [string, string, string, string] => {
+    if (type === 'login') return [colors.teal, '#3B0764', colors.gold, colors.teal];
+    if (type === 'signup') return [colors.saffron, colors.gold, '#8B5CF6', colors.saffron];
+    return ['#EF4444', '#3B0764', '#8B5CF6', '#EF4444'];
   };
 
   const progressPercent = progressWidth.interpolate({
@@ -220,7 +226,7 @@ export function AnimatedAuthOverlay({ visible, type, message, onFinished }: Over
           {/* Dual Counter-Rotating Ring 2: Counter-Clockwise Inner */}
           <Animated.View style={[styles.ringInner, { transform: [{ rotate: spinCcwDeg }] }]}>
             <LinearGradient
-              colors={getGradientColors().reverse()}
+              colors={getReversedGradientColors()}
               start={{ x: 1, y: 0 }}
               end={{ x: 0, y: 1 }}
               style={StyleSheet.absoluteFill}
