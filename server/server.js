@@ -76,9 +76,9 @@ const initialDb = {
   cronLogs: [],
   uploads: [],
   updates: {
-    currentVersion: '1.0.0',
-    latestVersion: '1.0.0',
-    releaseNotes: ['✨ Redesigned Modern Light UI', '🛡️ Added Security Vault & PIN Lock'],
+    currentVersion: '2.2.0',
+    latestVersion: '2.2.0',
+    releaseNotes: ['💬 Real Live Bidirectional Chat', '📱 Native Mobile App OTA & Direct APK Downloader'],
     isMandatory: false,
   },
 };
