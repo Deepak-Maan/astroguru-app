@@ -28,6 +28,18 @@ export default function NotificationsScreen() {
 
   const [filter, setFilter] = useState<FilterType>('all');
 
+  const addNotification = useNotificationStore((s) => s.addNotification);
+
+  const handleTriggerTestPush = () => {
+    addNotification({
+      type: 'astrologer_live',
+      title: '⚡ Major Planetary Transit Push Alert!',
+      message: 'Sun entering Simha (Leo) — auspicious muhurta active! Tap to view your chart remedies.',
+      avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200',
+      actionUrl: '/transit-alerts',
+    });
+  };
+
   const filteredList = notifications.filter((n) => {
     if (filter === 'all') return true;
     if (filter === 'order') return n.type === 'order_update' || n.type === 'spell_update';
@@ -79,6 +91,13 @@ export default function NotificationsScreen() {
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
           {/* Header Action Bar */}
           <View style={styles.topActionsRow}>
+            <Button
+              label="⚡ Test Push Alert"
+              variant="gold"
+              size="sm"
+              fullWidth={false}
+              onPress={handleTriggerTestPush}
+            />
             <Button
               label="Mark All Read"
               variant="outline"

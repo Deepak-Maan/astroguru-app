@@ -94,6 +94,25 @@ export const useNotificationStore = create<NotificationState>()(
           };
         });
 
+        // Trigger real device/browser push notification if permission granted
+        if (typeof window !== 'undefined' && 'Notification' in window) {
+          if (Notification.permission === 'granted') {
+            new Notification(newNotif.title, {
+              body: newNotif.message,
+              icon: newNotif.avatar || '/assets/icon.png',
+            });
+          } else if (Notification.permission !== 'denied') {
+            Notification.requestPermission().then((permission) => {
+              if (permission === 'granted') {
+                new Notification(newNotif.title, {
+                  body: newNotif.message,
+                  icon: newNotif.avatar || '/assets/icon.png',
+                });
+              }
+            });
+          }
+        }
+
         // Auto-dismiss toast popup after 5 seconds
         setTimeout(() => {
           set({ toastNotification: null });

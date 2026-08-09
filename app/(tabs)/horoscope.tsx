@@ -154,9 +154,36 @@ export default function Horoscope() {
   const kundli = useUserStore((s) => s.kundli);
   const [sign, setSign] = useState(kundli?.moonRashiIndex ?? 0);
   const [period, setPeriod] = useState<HoroscopePeriod>('daily');
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [speechRate, setSpeechRate] = useState<1 | 1.25>(1);
 
   const reading = useMemo(() => getHoroscope(sign, period), [sign, period]);
   const rashi = RASHIS[sign];
+
+  const handleToggleVoiceAudio = () => {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      if (isSpeaking) {
+        window.speechSynthesis.cancel();
+        setIsSpeaking(false);
+        return;
+      }
+
+      const text = `Namaste! Here is your ${period} Rashifal for ${rashi.sanskrit}, ${rashi.english}. ${reading.summary}. Love Guidance: ${reading.love}. Career & Finance: ${reading.career}. Health advice: ${reading.health}. Your lucky color for today is ${reading.luckyColor}, and lucky number is ${reading.luckyNumber}. Har Har Mahadev!`;
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = speechRate;
+      utterance.pitch = 1.0;
+
+      utterance.onend = () => setIsSpeaking(false);
+      utterance.onerror = () => setIsSpeaking(false);
+
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utterance);
+      setIsSpeaking(true);
+    } else {
+      setIsSpeaking(!isSpeaking);
+    }
+  };
 
   return (
     <GradientBackground>
@@ -227,6 +254,67 @@ export default function Horoscope() {
               </Pressable>
             ))}
           </View>
+
+          {/* 🎙️ AI VOICE HOROSCOPE AUDIO READER BANNER */}
+          <Pressable onPress={handleToggleVoiceAudio} style={({ pressed }) => [pressed && { opacity: 0.9 }]}>
+            <LinearGradient
+              colors={isSpeaking ? ['#D97706', '#B45309'] : ['#0F172A', '#1E293B']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={{
+                marginHorizontal: spacing.lg,
+                borderRadius: radius.xl,
+                padding: spacing.md,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: spacing.md,
+                borderWidth: 1.5,
+                borderColor: isSpeaking ? '#F59E0B' : 'rgba(217,119,6,0.4)',
+                shadowColor: '#D97706',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.4,
+                shadowRadius: 8,
+                elevation: 4,
+              }}
+            >
+              <View
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 22,
+                  backgroundColor: 'rgba(255,255,255,0.15)',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Text style={{ fontSize: 22 }}>{isSpeaking ? '🔊' : '🎙️'}</Text>
+              </View>
+
+              <View style={{ flex: 1 }}>
+                <Text style={{ ...typography.h3, color: '#FFFFFF', fontSize: 14, fontWeight: '800' }}>
+                  {isSpeaking ? 'Reading Audio Rashifal…' : `Listen to ${rashi.sanskrit} Voice Audio`}
+                </Text>
+                <Text style={{ ...typography.tiny, color: 'rgba(255,255,255,0.75)', marginTop: 2, fontWeight: '600' }}>
+                  {isSpeaking ? 'Tap to Pause Speech Engine' : 'AI Voice Reader · 1-Tap Rashifal Synthesis'}
+                </Text>
+              </View>
+
+              <View
+                style={{
+                  backgroundColor: 'rgba(255,255,255,0.2)',
+                  borderRadius: radius.pill,
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                  borderWidth: 1,
+                  borderColor: 'rgba(255,255,255,0.3)',
+                }}
+              >
+                <Text style={{ ...typography.tiny, color: '#FFFFFF', fontWeight: '800' }}>
+                  {isSpeaking ? 'PAUSE' : 'PLAY ▶'}
+                </Text>
+              </View>
+            </LinearGradient>
+          </Pressable>
 
           {/* Main reading card */}
           <Card>
