@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, Modal, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, Modal, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, radius, spacing, typography } from '../theme';
 
@@ -12,106 +12,246 @@ interface OverlayProps {
 
 export function AnimatedAuthOverlay({ visible, type, message, onFinished }: OverlayProps) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(0.75)).current;
-  const rotateAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.4)).current;
+  const rotateCw = useRef(new Animated.Value(0)).current;
+  const rotateCcw = useRef(new Animated.Value(1)).current;
+  const pulseIcon = useRef(new Animated.Value(0.7)).current;
+  const progressWidth = useRef(new Animated.Value(0)).current;
+  const twistLogout = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (visible) {
       fadeAnim.setValue(0);
-      scaleAnim.setValue(0.75);
-      rotateAnim.setValue(0);
+      scaleAnim.setValue(type === 'logout' ? 1.1 : 0.4);
+      rotateCw.setValue(0);
+      rotateCcw.setValue(1);
+      pulseIcon.setValue(0.7);
+      progressWidth.setValue(0);
+      twistLogout.setValue(0);
 
-      // Spin animation loop
-      const spinAnimation = Animated.loop(
-        Animated.timing(rotateAnim, {
+      // 1. Clockwise outer ring spin
+      const spinCw = Animated.loop(
+        Animated.timing(rotateCw, {
           toValue: 1,
-          duration: 1800,
+          duration: type === 'logout' ? 1200 : 1600,
+          easing: Easing.linear,
           useNativeDriver: true,
         })
       );
-      spinAnimation.start();
 
-      // Entrance spring & fade
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 250,
+      // 2. Counter-clockwise inner ring spin
+      const spinCcw = Animated.loop(
+        Animated.timing(rotateCcw, {
+          toValue: 0,
+          duration: type === 'logout' ? 1000 : 1400,
+          easing: Easing.linear,
           useNativeDriver: true,
-        }),
-        Animated.spring(scaleAnim, {
-          toValue: 1,
-          friction: 6,
-          tension: 80,
-          useNativeDriver: true,
-        }),
-      ]).start();
+        })
+      );
 
-      // Auto close after delay
+      spinCw.start();
+      spinCcw.start();
+
+      // 3. Icon Breathing Pulse
+      const pulseLoop = Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseIcon, {
+            toValue: 1.25,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseIcon, {
+            toValue: 1,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+      pulseLoop.start();
+
+      // 4. Progress bar fill
+      Animated.timing(progressWidth, {
+        toValue: 1,
+        duration: type === 'logout' ? 900 : 1100,
+        useNativeDriver: false,
+      }).start();
+
+      // 5. Entrance / Exit Animations
+      if (type === 'logout') {
+        // Logout: Implosion twist dissolve animation
+        Animated.parallel([
+          Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+          Animated.sequence([
+            Animated.timing(scaleAnim, {
+              toValue: 1.05,
+              duration: 200,
+              useNativeDriver: true,
+            }),
+            Animated.timing(scaleAnim, {
+              toValue: 0.85,
+              duration: 750,
+              useNativeDriver: true,
+            }),
+          ]),
+          Animated.timing(twistLogout, {
+            toValue: 1,
+            duration: 950,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      } else {
+        // Login / Signup: Cosmic Spring Entrance
+        Animated.parallel([
+          Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 250,
+            useNativeDriver: true,
+          }),
+          Animated.spring(scaleAnim, {
+            toValue: 1,
+            friction: 5,
+            tension: 90,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      }
+
+      // Auto finish after delay
+      const displayDuration = type === 'logout' ? 1050 : 1250;
       const timer = setTimeout(() => {
         Animated.timing(fadeAnim, {
           toValue: 0,
-          duration: 200,
+          duration: 220,
           useNativeDriver: true,
         }).start(() => {
-          spinAnimation.stop();
+          spinCw.stop();
+          spinCcw.stop();
+          pulseLoop.stop();
           onFinished?.();
         });
-      }, 1100);
+      }, displayDuration);
 
       return () => clearTimeout(timer);
     }
-  }, [visible]);
+  }, [visible, type]);
 
   if (!visible) return null;
 
-  const spin = rotateAnim.interpolate({
+  const spinCwDeg = rotateCw.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '360deg'],
   });
 
+  const spinCcwDeg = rotateCcw.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
+  const logoutRotate = twistLogout.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '-18deg'],
+  });
+
   const getEmoji = () => {
     if (type === 'login') return '✨';
-    if (type === 'signup') return '🎉';
-    return '🔒';
+    if (type === 'signup') return '🌟';
+    return '🛡️';
   };
 
   const getTitle = () => {
-    if (type === 'login') return 'Welcome Back!';
-    if (type === 'signup') return 'Account Created!';
-    return 'Securing Session';
+    if (type === 'login') return 'Cosmic Welcome!';
+    if (type === 'signup') return 'Lagna Chart Ready!';
+    return 'Session Secured';
   };
 
   const getDefaultSubtitle = () => {
-    if (type === 'login') return 'Opening your cosmic workspace...';
-    if (type === 'signup') return 'Preparing your birth chart & Grahas...';
-    return 'Signing out safely...';
+    if (type === 'login') return 'Aligning your birth chart & Grahas...';
+    if (type === 'signup') return 'Generating your 12-house natal chart...';
+    return 'Clearing credentials & locking vault...';
   };
+
+  const getGradientColors = () => {
+    if (type === 'login') return [colors.teal, colors.gold, '#3B0764', colors.teal];
+    if (type === 'signup') return [colors.saffron, '#8B5CF6', colors.gold, colors.saffron];
+    return ['#EF4444', '#8B5CF6', '#3B0764', '#EF4444'];
+  };
+
+  const progressPercent = progressWidth.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0%', '100%'],
+  });
 
   return (
     <Modal visible={visible} transparent animationType="none" statusBarTranslucent>
-      <Animated.View style={[styles.backdrop, { opacity: fadeAnim }]}>
-        <Animated.View style={[styles.card, { transform: [{ scale: scaleAnim }] }]}>
-          {/* Luminous Pulsing Outer Ring */}
-          <Animated.View style={[styles.ringOuter, { transform: [{ rotate: spin }] }]}>
+      <Animated.View
+        style={[
+          styles.backdrop,
+          {
+            opacity: fadeAnim,
+            backgroundColor: type === 'logout' ? 'rgba(15, 23, 42, 0.82)' : 'rgba(15, 23, 42, 0.65)',
+          },
+        ]}
+      >
+        <Animated.View
+          style={[
+            styles.card,
+            {
+              transform: [
+                { scale: scaleAnim },
+                { rotate: type === 'logout' ? logoutRotate : '0deg' },
+              ],
+            },
+          ]}
+        >
+          {/* Dual Counter-Rotating Ring 1: Clockwise Outer */}
+          <Animated.View style={[styles.ringOuter, { transform: [{ rotate: spinCwDeg }] }]}>
             <LinearGradient
-              colors={[colors.teal, colors.gold, colors.saffron, colors.teal]}
+              colors={getGradientColors()}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={StyleSheet.absoluteFill}
             />
           </Animated.View>
 
+          {/* Dual Counter-Rotating Ring 2: Counter-Clockwise Inner */}
+          <Animated.View style={[styles.ringInner, { transform: [{ rotate: spinCcwDeg }] }]}>
+            <LinearGradient
+              colors={getGradientColors().reverse()}
+              start={{ x: 1, y: 0 }}
+              end={{ x: 0, y: 1 }}
+              style={StyleSheet.absoluteFill}
+            />
+          </Animated.View>
+
           <View style={styles.cardInner}>
-            <Text style={styles.emoji}>{getEmoji()}</Text>
+            {/* Animated Pulsing Central Icon */}
+            <Animated.View style={[styles.emojiWrap, { transform: [{ scale: pulseIcon }] }]}>
+              <Text style={styles.emoji}>{getEmoji()}</Text>
+            </Animated.View>
+
             <Text style={styles.title}>{getTitle()}</Text>
             <Text style={styles.subtitle}>{message || getDefaultSubtitle()}</Text>
+
+            {/* Glowing Shimmer Progress Bar */}
             <View style={styles.pulseBarWrap}>
-              <LinearGradient
-                colors={[colors.teal, colors.gold]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.pulseBar}
-              />
+              <Animated.View style={[styles.pulseBar, { width: progressPercent }]}>
+                <LinearGradient
+                  colors={
+                    type === 'logout'
+                      ? ['#EF4444', '#8B5CF6']
+                      : type === 'signup'
+                      ? [colors.saffron, colors.gold]
+                      : [colors.teal, colors.gold]
+                  }
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={StyleSheet.absoluteFill}
+                />
+              </Animated.View>
             </View>
           </View>
         </Animated.View>
@@ -123,7 +263,6 @@ export function AnimatedAuthOverlay({ visible, type, message, onFinished }: Over
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.65)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: spacing.xl,
@@ -131,14 +270,14 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     maxWidth: 320,
-    borderRadius: 28,
-    padding: 3,
+    borderRadius: 32,
+    padding: 4,
     position: 'relative',
     shadowColor: colors.teal,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.5,
-    shadowRadius: 20,
-    elevation: 10,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.6,
+    shadowRadius: 24,
+    elevation: 12,
   },
   ringOuter: {
     position: 'absolute',
@@ -146,26 +285,52 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    borderRadius: 28,
+    borderRadius: 32,
     overflow: 'hidden',
+  },
+  ringInner: {
+    position: 'absolute',
+    top: 2,
+    left: 2,
+    right: 2,
+    bottom: 2,
+    borderRadius: 30,
+    overflow: 'hidden',
+    opacity: 0.85,
   },
   cardInner: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 25,
-    paddingVertical: spacing.xl,
+    borderRadius: 28,
+    paddingVertical: spacing.xl + 4,
     paddingHorizontal: spacing.lg,
     alignItems: 'center',
     gap: spacing.xs,
   },
-  emoji: {
-    fontSize: 44,
+  emojiWrap: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#F8FAFC',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 4,
+    borderWidth: 1.5,
+    borderColor: 'rgba(191, 219, 254, 0.8)',
+    shadowColor: '#BFDBFE',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  emoji: {
+    fontSize: 34,
   },
   title: {
     fontSize: 22,
-    fontWeight: '800',
+    fontWeight: '900',
     color: '#1E1B4B',
     textAlign: 'center',
+    letterSpacing: 0.3,
   },
   subtitle: {
     fontSize: 13,
@@ -173,18 +338,18 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     textAlign: 'center',
     lineHeight: 18,
+    paddingHorizontal: spacing.xs,
   },
   pulseBarWrap: {
-    width: 120,
-    height: 4,
-    borderRadius: 2,
+    width: 140,
+    height: 5,
+    borderRadius: 3,
     backgroundColor: '#E2E8F0',
     marginTop: spacing.md,
     overflow: 'hidden',
   },
   pulseBar: {
     height: '100%',
-    width: '100%',
-    borderRadius: 2,
+    borderRadius: 3,
   },
 });
