@@ -36,10 +36,6 @@ export function JyotishiWorkstation() {
 
   const [showLogoutOverlay, setShowLogoutOverlay] = useState(false);
 
-  if (!isAuthenticated || !user) {
-    return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
-  }
-
   const isOnDuty = useJyotishiStore((s) => s.isOnDuty ?? true);
   const ratePerMin = useJyotishiStore((s) => s.ratePerMin ?? 25);
   const todayEarnings = useJyotishiStore((s) => s.todayEarnings ?? 0);
@@ -97,6 +93,10 @@ export function JyotishiWorkstation() {
     () => (clientQueue || []).filter((q) => q && q.status !== 'declined'),
     [clientQueue]
   );
+
+  if (!isAuthenticated || !user) {
+    return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
+  }
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
@@ -364,8 +364,10 @@ export function JyotishiWorkstation() {
         type="logout"
         message="Securing workstation & signing out... ✨"
         onFinished={() => {
-          logout();
           router.replace('/(auth)/login');
+          setTimeout(() => {
+            logout();
+          }, 50);
         }}
       />
 

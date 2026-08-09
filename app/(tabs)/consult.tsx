@@ -206,11 +206,6 @@ export default function Consult() {
   const authUser = useAuthStore((s) => s.user);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
-  if (!isAuthenticated || !authUser) {
-    return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
-  }
-
-  if (authUser?.role === 'astrologer') return <AcharyaPayouts />;
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState('All');
   const [sort, setSort] = useState<Sort>('popular');
@@ -235,6 +230,12 @@ export default function Consult() {
     });
     return out.sort((x, y) => Number(y.online) - Number(x.online));
   }, [query, filter, sort]);
+
+  if (!isAuthenticated || !authUser) {
+    return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
+  }
+
+  if (authUser?.role === 'astrologer') return <AcharyaPayouts />;
 
   const onlineCount = ASTROLOGERS.filter((a) => a.online).length;
 

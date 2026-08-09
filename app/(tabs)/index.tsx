@@ -31,6 +31,28 @@ export default function Home() {
   const isVip = useSubscriptionStore((s) => s.isVip);
   const t = useLanguageStore((s) => s.t);
 
+  const signIndex = kundli?.moonRashiIndex ?? 0;
+  const rashi = RASHIS[signIndex];
+  const reading = useMemo(() => getHoroscope(signIndex, 'daily'), [signIndex]);
+
+  const featured = ASTROLOGERS.filter((a) => a.online).slice(0, 6);
+
+  // Dynamic user name from auth session or birth profile
+  const displayName =
+    authUser?.name ||
+    profile?.name ||
+    (authUser?.email ? authUser.email.split('@')[0] : 'Demo');
+  const firstName = displayName.split(' ')[0];
+
+  const numerology = useMemo(
+    () =>
+      computeNumerologyDetails(
+        profile?.date || '1995-08-15',
+        displayName
+      ),
+    [profile?.date, displayName]
+  );
+
   // If logging out or unauthenticated, return clean blank background during transition
   if (!isAuthenticated || !authUser) {
     return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
@@ -53,24 +75,6 @@ export default function Home() {
     { icon: '💬', label: 'Chat', href: '/instant-consult', bg: '#F5F3FF' },
     { icon: '💰', label: 'Wallet', href: '/wallet', bg: '#FEF3C7' },
   ];
-
-  const signIndex = kundli?.moonRashiIndex ?? 0;
-  const rashi = RASHIS[signIndex];
-  const reading = useMemo(() => getHoroscope(signIndex, 'daily'), [signIndex]);
-
-  const featured = ASTROLOGERS.filter((a) => a.online).slice(0, 6);
-
-  // Dynamic user name from auth session or birth profile
-  const displayName =
-    authUser?.name ||
-    profile?.name ||
-    (authUser?.email ? authUser.email.split('@')[0] : 'Demo');
-  const firstName = displayName.split(' ')[0];
-
-  const numerology = useMemo(
-    () => computeNumerologyDetails(displayName, profile?.date || '15-08-1998'),
-    [displayName, profile?.date]
-  );
 
   const today = new Date().toLocaleDateString('en-GB', {
     weekday: 'long',

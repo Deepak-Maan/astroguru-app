@@ -74,13 +74,11 @@ export default function Profile() {
   };
 
   const handleOverlayFinish = () => {
-    logout();
     router.replace('/(auth)/login');
+    setTimeout(() => {
+      logout();
+    }, 50);
   };
-
-  if (!isAuthenticated || !authUser) {
-    return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
-  }
 
   function confirmReset() {
     const doReset = () => {
@@ -114,7 +112,9 @@ export default function Profile() {
           message={`Signing out ${authUser?.name || 'user'} safely... ✨`}
           onFinished={handleOverlayFinish}
         />
-        {authUser?.role === 'astrologer' ? (
+        {!isAuthenticated || !authUser ? (
+          <View style={{ flex: 1, backgroundColor: colors.bg }} />
+        ) : authUser?.role === 'astrologer' ? (
           /* ─── ACHARYA PROFILE ─── */
           <>
             <ScreenHeader title="Acharya Profile" />
