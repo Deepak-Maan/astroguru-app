@@ -61,6 +61,7 @@ export default function ChatScreen() {
   const createRoom = useLiveChatStore((s) => s.createRoom);
   const sendLiveMessage = useLiveChatStore((s) => s.sendMessage);
   const markRead = useLiveChatStore((s) => s.markRead);
+  const syncRoomFromBackend = useLiveChatStore((s) => s.syncRoomFromBackend);
   const liveRoom = useLiveChatStore((s) =>
     astrologer && authUser?.id
       ? s.getRoomByPair(authUser.id.toString(), astrologer.id)
@@ -71,9 +72,33 @@ export default function ChatScreen() {
   const isLiveActive = liveRoom?.status === 'active';
   const isLiveEnded = liveRoom?.status === 'ended';
 
+  // 1.5s real-time background sync polling
+  useEffect(() => {
+    if (!liveRoomId) return;
+    syncRoomFromBackend(liveRoomId);
+    const poll = setInterval(() => {
+      syncRoomFromBackend(liveRoomId);
+    }, 1500);
+    return () => clearInterval(poll);
+  }, [liveRoomId]);
+
   const session = astrologer ? getSession(astrologer.id) : null;
   const active = Boolean(session?.startedAt && !session?.ended);
   const messages = session?.messages ?? [];
+
+  const displayMessages = useMemo(() => {
+    if (liveMessages.length > 0) {
+      return liveMessages
+        .filter((lm) => lm.role !== 'system')
+        .map((lm) => ({
+          id: lm.id,
+          role: lm.role === 'acharya' ? ('assistant' as const) : ('user' as const),
+          text: lm.text,
+          at: lm.at,
+        }));
+    }
+    return messages;
+  }, [liveMessages, messages]);
 
   const [draft, setDraft] = useState('');
   const [typing, setTyping] = useState(false);
@@ -423,7 +448,7 @@ export default function ChatScreen() {
               onContentSizeChange={scrollToEnd}
               showsVerticalScrollIndicator={false}
             >
-              {messages.map((m) => (
+              {displayMessages.map((m) => (
                 <ChatBubble key={m.id} message={m} authorLabel={astrologer.name} />
               ))}
               {typing && (

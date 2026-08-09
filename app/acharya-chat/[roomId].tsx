@@ -51,6 +51,7 @@ export default function AcharyaChatScreen() {
   const endRoom = useLiveChatStore((s) => s.endRoom);
   const markRead = useLiveChatStore((s) => s.markRead);
   const billRoomMinute = useLiveChatStore((s) => s.billRoomMinute);
+  const syncRoomFromBackend = useLiveChatStore((s) => s.syncRoomFromBackend);
   const todayEarnings = useJyotishiStore((s) => s.todayEarnings);
 
   const [draft, setDraft] = useState('');
@@ -64,6 +65,16 @@ export default function AcharyaChatScreen() {
   const isActive = room?.status === 'active';
   const isWaiting = room?.status === 'waiting';
   const isEnded = room?.status === 'ended';
+
+  // Real-time 1.5s background polling sync
+  useEffect(() => {
+    if (!roomId) return;
+    syncRoomFromBackend(roomId);
+    const poll = setInterval(() => {
+      syncRoomFromBackend(roomId);
+    }, 1500);
+    return () => clearInterval(poll);
+  }, [roomId]);
 
   // Mark read when Acharya opens the screen
   useEffect(() => {

@@ -79,6 +79,9 @@ interface LiveChatState {
 
   /** Get the live room for a seeker + acharya pair */
   getRoomByPair: (seekerId: string, astrologerId: string) => LiveRoom | null;
+
+  /** Poll & sync live messages from REST backend */
+  syncRoomFromBackend: (roomId: string) => Promise<void>;
 }
 
 let msgCounter = 0;
@@ -124,19 +127,38 @@ export const useLiveChatStore = create<LiveChatState>()(
         return roomId;
       },
 
-      sendMessage: (roomId, role, senderName, text) =>
+      sendMessage: (roomId, role, senderName, text) => {
+        const msg: LiveMessage = {
+          id: newMsgId(),
+          role,
+          senderName,
+          text,
+          at: Date.now(),
+          read: false,
+        };
+
         set((s) => {
           const room = s.rooms[roomId];
-          if (!room) return s;
-
-          const msg: LiveMessage = {
-            id: newMsgId(),
-            role,
-            senderName,
-            text,
-            at: Date.now(),
-            read: false,
-          };
+          if (!room) {
+            const parts = (roomId || '').split('__');
+            const newRoom: LiveRoom = {
+              roomId,
+              seekerId: parts[0] || 'usr_seeker',
+              seekerName: role === 'seeker' ? senderName : 'Seeker',
+              astrologerId: parts[1] || 'astro-1',
+              astrologerName: role === 'acharya' ? senderName : 'Acharya Dev',
+              topic: 'Vedic Astrology Consultation',
+              ratePerMin: 25,
+              startedAt: Date.now(),
+              endedAt: null,
+              minutesBilled: 0,
+              messages: [msg],
+              status: 'active',
+              unreadForSeeker: role === 'acharya' ? 1 : 0,
+              unreadForAcharya: role === 'seeker' ? 1 : 0,
+            };
+            return { rooms: { ...s.rooms, [roomId]: newRoom } };
+          }
 
           return {
             rooms: {
@@ -149,7 +171,15 @@ export const useLiveChatStore = create<LiveChatState>()(
               },
             },
           };
-        }),
+        });
+
+        // Fire-and-forget sync to backend server
+        fetch('http://localhost:5000/api/chat/send-message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ roomId, role, senderName, text }),
+        }).catch(() => {});
+      },
 
       markRead: (roomId, role) =>
         set((s) => {
@@ -254,6 +284,38 @@ export const useLiveChatStore = create<LiveChatState>()(
         const roomId = `${seekerId}__${astrologerId}`;
         const roomsMap = get()?.rooms || {};
         return roomsMap[roomId] ?? null;
+      },
+
+      syncRoomFromBackend: async (roomId: string) => {
+        if (!roomId) return;
+        try {
+          const res = await fetch(`http://localhost:5000/api/chat/messages?roomId=${encodeURIComponent(roomId)}`);
+          const data = await res.json();
+          if (data && data.success && Array.isArray(data.messages)) {
+            const serverMsgs: LiveMessage[] = data.messages;
+            const currentRoom = get().rooms[roomId];
+            if (!currentRoom) return;
+
+            // Merge server messages that don't exist locally
+            const existingIds = new Set(currentRoom.messages.map((m) => m.id));
+            const newMsgs = serverMsgs.filter((m) => !existingIds.has(m.id));
+
+            if (newMsgs.length > 0) {
+              set((s) => ({
+                rooms: {
+                  ...s.rooms,
+                  [roomId]: {
+                    ...currentRoom,
+                    messages: [...currentRoom.messages, ...newMsgs],
+                    status: data.room?.status || currentRoom.status,
+                  },
+                },
+              }));
+            }
+          }
+        } catch (e) {
+          // Offline fallback
+        }
       },
     }),
     {

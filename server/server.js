@@ -377,10 +377,128 @@ app.post('/api/auth/login', (req, res) => {
   return res.status(401).json({ success: false, error: 'Invalid email or password.' });
 });
 
-// ── ASTROLOGERS ENDPOINTS ──
-app.get('/api/astrologers', (req, res) => {
+// ── REAL BIDIRECTIONAL LIVE CHAT API ENDPOINTS ──
+app.get('/api/chat/rooms', (req, res) => {
   const db = loadDb();
-  res.json({ success: true, astrologers: db.astrologers });
+  const rooms = db.chatRooms || [];
+  res.json({ success: true, rooms });
+});
+
+app.post('/api/chat/create-room', (req, res) => {
+  const { seekerId, seekerName, astrologerId, astrologerName, topic, ratePerMin } = req.body;
+  const db = loadDb();
+  if (!db.chatRooms) db.chatRooms = [];
+
+  const roomId = `${seekerId}__${astrologerId}`;
+  let room = db.chatRooms.find((r) => r.roomId === roomId && r.status !== 'ended');
+
+  if (!room) {
+    room = {
+      roomId,
+      seekerId,
+      seekerName,
+      astrologerId,
+      astrologerName,
+      topic: topic || 'Vedic Astrology Consultation',
+      ratePerMin: Number(ratePerMin) || 25,
+      startedAt: null,
+      endedAt: null,
+      minutesBilled: 0,
+      status: 'waiting',
+      unreadForSeeker: 0,
+      unreadForAcharya: 1,
+      messages: [
+        {
+          id: `msg_${Date.now()}`,
+          role: 'system',
+          senderName: 'System',
+          text: `🔔 Consultation request from ${seekerName} · Topic: "${topic || 'General Guidance'}" · Rate: ₹${ratePerMin || 25}/min`,
+          at: Date.now(),
+          read: false,
+        },
+      ],
+    };
+    db.chatRooms.unshift(room);
+    saveDb(db);
+  }
+
+  res.json({ success: true, room });
+});
+
+app.post('/api/chat/send-message', (req, res) => {
+  const { roomId, role, senderName, text } = req.body;
+  const db = loadDb();
+  if (!db.chatRooms) db.chatRooms = [];
+
+  let room = db.chatRooms.find((r) => r.roomId === roomId);
+  if (!room) {
+    const parts = (roomId || '').split('__');
+    const seekerId = parts[0] || 'usr_seeker';
+    const astrologerId = parts[1] || 'astro-1';
+    room = {
+      roomId,
+      seekerId,
+      seekerName: senderName || 'Seeker',
+      astrologerId,
+      astrologerName: role === 'acharya' ? senderName : 'Acharya Dev',
+      topic: 'Vedic Consultation',
+      ratePerMin: 25,
+      startedAt: Date.now(),
+      endedAt: null,
+      minutesBilled: 0,
+      status: 'active',
+      unreadForSeeker: 0,
+      unreadForAcharya: 0,
+      messages: [],
+    };
+    db.chatRooms.unshift(room);
+  }
+
+  const msg = {
+    id: `msg_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+    role,
+    senderName,
+    text,
+    at: Date.now(),
+    read: false,
+  };
+
+  room.messages.push(msg);
+  if (role === 'seeker') room.unreadForAcharya = (room.unreadForAcharya || 0) + 1;
+  if (role === 'acharya') room.unreadForSeeker = (room.unreadForSeeker || 0) + 1;
+
+  saveDb(db);
+  res.json({ success: true, message: msg, room });
+});
+
+app.get('/api/chat/messages', (req, res) => {
+  const { roomId } = req.query;
+  const db = loadDb();
+  const room = (db.chatRooms || []).find((r) => r.roomId === roomId);
+  if (!room) {
+    return res.json({ success: true, messages: [], room: null });
+  }
+  res.json({ success: true, messages: room.messages, room });
+});
+
+app.post('/api/chat/accept-room', (req, res) => {
+  const { roomId } = req.body;
+  const db = loadDb();
+  const room = (db.chatRooms || []).find((r) => r.roomId === roomId);
+  if (room) {
+    room.status = 'active';
+    room.startedAt = Date.now();
+    room.messages.push({
+      id: `msg_${Date.now()}`,
+      role: 'system',
+      senderName: 'System',
+      text: `✅ ${room.astrologerName} accepted the consultation session. Live chat active!`,
+      at: Date.now(),
+      read: false,
+    });
+    saveDb(db);
+  }
+  res.json({ success: true, room });
 });
 
 app.listen(PORT, () => {
