@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
 
-const LATEST_RELEASE_VERSION = '2.5.0';
+const LATEST_RELEASE_VERSION = '2.6.0';
 
 export interface UpdateInfo {
   currentVersion: string;
