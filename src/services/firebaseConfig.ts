@@ -158,3 +158,19 @@ export async function verifyFirebaseMobileOtp(otp: string): Promise<{ success: b
     return { success: false, error: 'Incorrect OTP code entered. Please check the SMS received on your phone.' };
   }
 }
+
+/**
+ * Get active signed-in user from Firebase Auth instance
+ */
+export function getCurrentFirebaseUser() {
+  const user = firebaseAuth.currentUser;
+  if (!user) return null;
+  return {
+    uid: user.uid,
+    email: user.email,
+    displayName: user.displayName,
+    phoneNumber: user.phoneNumber,
+    photoURL: user.photoURL,
+    emailVerified: user.emailVerified,
+  };
+}
