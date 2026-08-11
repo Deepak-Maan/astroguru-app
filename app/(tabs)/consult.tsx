@@ -209,10 +209,40 @@ export default function Consult() {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState('All');
   const [sort, setSort] = useState<Sort>('popular');
+  const [astrologersList, setAstrologersList] = useState<Astrologer[]>(ASTROLOGERS);
+
+  useEffect(() => {
+    fetch('http://localhost:5000/api/astrologers')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.success && Array.isArray(data.astrologers)) {
+          const remoteList: Astrologer[] = data.astrologers.map((a: any) => ({
+            id: a.id,
+            name: a.name,
+            avatar: a.avatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200',
+            rating: a.rating || 5.0,
+            reviews: a.reviews || 1,
+            pricePerMin: a.pricePerMin || 25,
+            experienceYears: a.experienceYears || 10,
+            specialties: a.specialties || ['Vedic Astrology'],
+            languages: a.languages || ['Hindi', 'English'],
+            consultations: a.consultations || 0,
+            online: a.online ?? true,
+            about: a.about || 'Certified Vedic Jyotish Expert',
+          }));
+
+          // Merge without duplicate IDs
+          const existingIds = new Set(remoteList.map((r) => r.id));
+          const localOnly = ASTROLOGERS.filter((l) => !existingIds.has(l.id));
+          setAstrologersList([...remoteList, ...localOnly]);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
-    let out = ASTROLOGERS.filter((a) => {
+    let out = astrologersList.filter((a) => {
       const matchQ =
         !q ||
         a.name.toLowerCase().includes(q) ||
@@ -229,7 +259,7 @@ export default function Consult() {
       return y.consultations - x.consultations;
     });
     return out.sort((x, y) => Number(y.online) - Number(x.online));
-  }, [query, filter, sort]);
+  }, [query, filter, sort, astrologersList]);
 
   if (!isAuthenticated || !authUser) {
     return <View style={{ flex: 1, backgroundColor: colors.bg }} />;

@@ -302,6 +302,19 @@ app.post('/api/auth/expert/signup', (req, res) => {
 
   saveDb(db);
 
+  // Sync to Firebase Cloud Database
+  fetch(`https://astroguru-d3c86-default-rtdb.firebaseio.com/jyotishis/${newExpert.id}.json`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(newExpert),
+  }).catch(() => {});
+
+  fetch(`https://astroguru-d3c86-default-rtdb.firebaseio.com/astrologers/${newExpert.id}.json`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(newExpert),
+  }).catch(() => {});
+
   const { password: _, ...cleanExpert } = newExpert;
   res.json({ success: true, expert: cleanExpert, message: 'Expert registered successfully!' });
 });

@@ -35,6 +35,15 @@
       "phone": "8950512977",
       "role": "astrologer",
       "wallet": 0
+    },
+    {
+      "id": "usr_1786458873223",
+      "name": "Seeker 0133",
+      "email": "7496850133@astroguru.user",
+      "phone": "7496850133",
+      "role": "user",
+      "wallet": 50,
+      "createdAt": "2026-08-11"
     }
   ],
   "astrologers": [
@@ -176,10 +185,6 @@
     "isMandatory": false
   },
   "otpStore": {
-    "7496850133": {
-      "otp": "383214",
-      "expiresAt": 1785838376522
-    },
     "9876543210": {
       "otp": "790462",
       "expiresAt": 1785836035400
