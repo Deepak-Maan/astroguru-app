@@ -26,9 +26,42 @@
       "phone": "9999999999",
       "role": "admin",
       "wallet": 9999
+    },
+    {
+      "id": "astro_1786457216977",
+      "name": "vivek kumar",
+      "email": "vivek@gmail.com",
+      "password": "Maan@50133",
+      "phone": "8950512977",
+      "role": "astrologer",
+      "wallet": 0
     }
   ],
   "astrologers": [
+    {
+      "id": "astro_1786457216977",
+      "name": "vivek kumar",
+      "email": "vivek@gmail.com",
+      "password": "Maan@50133",
+      "phone": "8950512977",
+      "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200",
+      "rating": 5,
+      "reviews": 1,
+      "pricePerMin": 25,
+      "experienceYears": 10,
+      "specialties": [
+        "Vedic Astrology",
+        "Kundli Prashna"
+      ],
+      "languages": [
+        "Hindi",
+        "English"
+      ],
+      "consultations": 0,
+      "online": true,
+      "about": "Certified Vedic Jyotish Expert",
+      "role": "astrologer"
+    },
     {
       "id": "astro-1",
       "name": "Acharya Dev Sharma",

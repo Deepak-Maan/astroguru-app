@@ -12,6 +12,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { pushMessageToFirebase } from '../services/firebaseRealtimeService';
 
 export type MessageRole = 'seeker' | 'acharya' | 'system';
 
@@ -173,12 +174,19 @@ export const useLiveChatStore = create<LiveChatState>()(
           };
         });
 
-        // Fire-and-forget sync to backend server
+        // Fire-and-forget sync to backend server & Firebase Realtime Cloud Database
         fetch('http://localhost:5000/api/chat/send-message', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ roomId, role, senderName, text }),
         }).catch(() => {});
+
+        pushMessageToFirebase(roomId, {
+          senderId: role,
+          senderName,
+          senderRole: role,
+          text,
+        });
       },
 
       markRead: (roomId, role) =>
