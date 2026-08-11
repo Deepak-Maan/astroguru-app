@@ -80,6 +80,7 @@ export default function RootLayout() {
           <Stack.Screen name="acharya/earnings-report" />
           <Stack.Screen name="acharya/security" />
           <Stack.Screen name="acharya/support" />
+          <Stack.Screen name="consultation/[id]" options={{ presentation: 'fullScreenModal' }} />
         </Stack>
         <NotificationToast />
         <AppUpdateModal />

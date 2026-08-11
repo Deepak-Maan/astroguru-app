@@ -1,10 +1,12 @@
 import { Platform } from 'react-native';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, signInWithPopup, GoogleAuthProvider, ConfirmationResult } from 'firebase/auth';
+import { getDatabase, ref, set as dbSet, onValue, push as dbPush, serverTimestamp } from 'firebase/database';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBq9PRkAUCwdEJjDAQFfV6eFPoWFnLYrLI",
   authDomain: "astroguru-d3c86.firebaseapp.com",
+  databaseURL: "https://astroguru-d3c86-default-rtdb.firebaseio.com",
   projectId: "astroguru-d3c86",
   storageBucket: "astroguru-d3c86.firebasestorage.app",
   messagingSenderId: "539958199029",
@@ -15,6 +17,7 @@ const firebaseConfig = {
 // Initialize Firebase App
 export const firebaseApp = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 export const firebaseAuth = getAuth(firebaseApp);
+export const firebaseDb = getDatabase(firebaseApp);
 export const googleProvider = new GoogleAuthProvider();
 
 let confirmationResultStore: ConfirmationResult | null = null;

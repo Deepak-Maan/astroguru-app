@@ -21,12 +21,24 @@ import { useUserStore } from '../src/store/userStore';
 import { RASHIS } from '../src/data/rashis';
 import { NAKSHATRAS } from '../src/data/nakshatras';
 
+import { generateKundliPDFReport, buildKundliHTML } from '../src/services/pdf/kundliPdfEngine';
+import { computeKundli } from '../src/services/astrology';
+
 export default function KundliPdfScreen() {
   const profile = useUserStore((s) => s.profile);
-  const kundli = useUserStore((s) => s.kundli);
+  const kundli = useUserStore((s) => s.kundli) || computeKundli({
+    name: 'Seeker',
+    gender: 'male',
+    date: '1995-01-01',
+    time: '10:30',
+    place: { name: 'New Delhi', state: 'Delhi', lat: 28.6, lon: 77.2, tz: 5.5 },
+  });
+
+  const pdfReport = generateKundliPDFReport(profile?.name || 'Seeker', kundli);
 
   const [downloading, setDownloading] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
+  const [previewHtmlModal, setPreviewHtmlModal] = useState(false);
 
   const handleDownloadPdf = () => {
     setDownloading(true);
@@ -115,6 +127,15 @@ export default function KundliPdfScreen() {
 
     setTimeout(() => {
       setDownloading(false);
+      if (Platform.OS === 'web' && typeof window !== 'undefined') {
+        const html = buildKundliHTML(pdfReport);
+        const win = window.open('', '_blank');
+        if (win) {
+          win.document.write(html);
+          win.document.close();
+          win.print();
+        }
+      }
       setSuccessModal(true);
     }, 1200);
   };

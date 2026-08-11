@@ -170,10 +170,10 @@ export default function Wallet() {
         <ScreenHeader title="Wallet & Recharge" showBack />
 
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-          {/* Sleek Compact Balance Card */}
+          {/* Solar Warm Gold Balance Header Card */}
           <View style={styles.balanceCard}>
             <LinearGradient
-              colors={['rgba(245,158,11,0.18)', 'rgba(16,185,129,0.06)']}
+              colors={['#D97706', '#E67E22', '#F59E0B']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={StyleSheet.absoluteFill}
@@ -206,28 +206,28 @@ export default function Wallet() {
                     style={({ pressed }) => [
                       styles.pack,
                       active && styles.packActive,
-                      pressed && { opacity: 0.8 },
+                      pressed && { opacity: 0.85 },
                     ]}
                   >
-                    {active && (
+                    {active ? (
                       <LinearGradient
                         colors={[colors.saffron, colors.gold]}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 0 }}
                         style={StyleSheet.absoluteFill}
                       />
-                    )}
-                    <Text style={[styles.packAmount, active && { color: colors.white }]}>
+                    ) : null}
+                    <Text style={[styles.packAmount, active && { color: '#FFFFFF' }]}>
                       {formatCurrency(p.amount)}
                     </Text>
                     {p.bonus > 0 ? (
                       <View style={[styles.packBonusBadge, active && { backgroundColor: 'rgba(255,255,255,0.25)' }]}>
-                        <Text style={[styles.packBonus, active && { color: colors.white }]}>
+                        <Text style={[styles.packBonus, active && { color: '#FFFFFF' }]}>
                           +{formatCurrency(p.bonus)}
                         </Text>
                       </View>
                     ) : (
-                      <Text style={[styles.packNoBonus, active && { color: 'rgba(255,255,255,0.85)' }]}>
+                      <Text style={[styles.packNoBonus, active && { color: 'rgba(255,255,255,0.88)' }]}>
                         base pack
                       </Text>
                     )}
@@ -240,15 +240,15 @@ export default function Wallet() {
           {/* Payment Method & UPI App Selector */}
           {!!selected && (
             <View style={{ gap: spacing.sm }}>
-              <SectionHeader title="Select Payment App" />
-              
+              <SectionHeader title="Select Payment Method" />
+
               {/* Method Row */}
               <Card padded={false}>
                 {METHODS.map((m) => (
                   <Pressable
                     key={m.id}
                     onPress={() => setMethod(m.id)}
-                    style={({ pressed }) => [styles.method, pressed && { opacity: 0.7 }]}
+                    style={({ pressed }) => [styles.method, pressed && { opacity: 0.85 }]}
                   >
                     <View style={styles.methodIconCircle}>
                       <Text style={styles.methodIcon}>{m.icon}</Text>
@@ -277,14 +277,10 @@ export default function Wallet() {
                           onPress={() => setUpiApp(app.id as any)}
                           style={[styles.upiAppCell, active && styles.upiAppCellActive]}
                         >
-                          {active && (
-                            <LinearGradient
-                              colors={['rgba(245,158,11,0.18)', 'rgba(16,185,129,0.06)']}
-                              style={StyleSheet.absoluteFill}
-                            />
-                          )}
-                          <Text style={{ fontSize: 18 }}>{app.icon}</Text>
-                          <Text style={[styles.upiAppLabel, active && { color: colors.saffron }]}>{app.label}</Text>
+                          <Text style={{ fontSize: 20 }}>{app.icon}</Text>
+                          <Text style={[styles.upiAppLabel, active && { color: colors.saffron }]}>
+                            {app.label}
+                          </Text>
                         </Pressable>
                       );
                     })}
@@ -402,7 +398,7 @@ export default function Wallet() {
                     <View
                       style={[
                         styles.txnIcon,
-                        { backgroundColor: t.type === 'topup' ? 'rgba(16,185,129,0.14)' : 'rgba(244,63,94,0.14)' },
+                        { backgroundColor: t.type === 'topup' ? 'rgba(5,150,105,0.12)' : 'rgba(225,29,72,0.12)' },
                       ]}
                     >
                       <Text style={{ fontSize: 14 }}>{t.type === 'topup' ? '↓' : '↑'}</Text>
@@ -411,7 +407,7 @@ export default function Wallet() {
                       <Text style={styles.txnLabel}>{t.label}</Text>
                       <Text style={styles.txnTime}>{timeAgo(t.at)}</Text>
                     </View>
-                    <Text style={[styles.txnAmount, { color: t.type === 'topup' ? colors.success : colors.danger }]}>
+                    <Text style={[styles.txnAmount, { color: t.type === 'topup' ? colors.teal : colors.rose }]}>
                       {t.type === 'topup' ? '+' : '−'}{formatCurrency(t.amount)}
                     </Text>
                   </View>
@@ -427,11 +423,11 @@ export default function Wallet() {
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>Bank Receipt Verification</Text>
               <Text style={styles.modalSub}>
-                Merchant Ref: <Text style={{ color: colors.saffron }}>{activeIntent?.txnId}</Text>
+                Merchant Ref: <Text style={{ color: colors.saffron, fontWeight: '800' }}>{activeIntent?.txnId}</Text>
               </Text>
 
               <View style={styles.verifyBox}>
-                <Text style={{ fontSize: 20 }}>🏦</Text>
+                <Text style={{ fontSize: 22 }}>🏦</Text>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.verifyBoxTitle}>NPCI Bank Server Connector</Text>
                   <Text style={styles.verifyBoxSub}>
@@ -459,12 +455,12 @@ export default function Wallet() {
 
               {/* Bank Server Diagnostics Payload */}
               {verifyResult && (
-                <View style={[styles.diagBox, { borderColor: verifyResult.verified ? colors.success : colors.danger }]}>
-                  <Text style={[styles.diagTitle, { color: verifyResult.verified ? colors.success : colors.danger }]}>
+                <View style={[styles.diagBox, { borderColor: verifyResult.verified ? colors.teal : colors.rose }]}>
+                  <Text style={[styles.diagTitle, { color: verifyResult.verified ? colors.teal : colors.rose }]}>
                     {verifyResult.verified ? '✓ BANK RECEIPT CONFIRMED' : '❌ VERIFICATION FAILED'}
                   </Text>
                   <Text style={styles.diagRow}>Node: <Text style={{ color: colors.text }}>{verifyResult.bankName}</Text></Text>
-                  <Text style={styles.diagRow}>Status: <Text style={{ color: verifyResult.verified ? colors.success : colors.danger }}>{verifyResult.status}</Text></Text>
+                  <Text style={styles.diagRow}>Status: <Text style={{ color: verifyResult.verified ? colors.teal : colors.rose }}>{verifyResult.status}</Text></Text>
                   <Text style={styles.diagRow}>Gateway Ref: <Text style={{ color: colors.saffron }}>{verifyResult.gatewayRef}</Text></Text>
                 </View>
               )}
@@ -498,35 +494,32 @@ const styles = StyleSheet.create({
   scroll: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xxl, gap: spacing.md },
 
   balanceCard: {
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(245,158,11,0.40)',
-    backgroundColor: '#0E1726',
+    borderRadius: radius.xl,
     overflow: 'hidden',
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    shadowColor: 'rgba(0,0,0,0.60)',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.8,
-    shadowRadius: 8,
-    elevation: 4,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.lg,
+    shadowColor: colors.saffron,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+    elevation: 6,
   },
   balanceInner: { flex: 1, gap: 2 },
   balanceRight: { alignItems: 'center', justifyContent: 'center' },
-  balanceCoin: { fontSize: 36 },
-  balanceLabel: { ...typography.tiny, color: colors.saffron, letterSpacing: 1.2, fontWeight: '800', fontSize: 10 },
-  balanceValue: { ...typography.display, fontSize: 28, color: colors.text, fontWeight: '900' },
+  balanceCoin: { fontSize: 38 },
+  balanceLabel: { ...typography.tiny, color: 'rgba(255,255,255,0.90)', letterSpacing: 1.2, fontWeight: '900', fontSize: 11 },
+  balanceValue: { ...typography.display, fontSize: 32, color: '#FFFFFF', fontWeight: '900' },
 
   successBanner: {
-    backgroundColor: 'rgba(16,185,129,0.14)',
-    borderWidth: 1,
-    borderColor: colors.success,
+    backgroundColor: 'rgba(5,150,105,0.12)',
+    borderWidth: 1.5,
+    borderColor: colors.teal,
     borderRadius: radius.md,
     padding: spacing.sm,
   },
-  successText: { ...typography.small, color: colors.success, fontWeight: '800', textAlign: 'center' },
+  successText: { ...typography.small, color: colors.teal, fontWeight: '800', textAlign: 'center' },
 
   packGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
   pack: {
@@ -534,29 +527,29 @@ const styles = StyleSheet.create({
     flexBasis: '30%',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 10,
-    borderRadius: radius.md,
-    backgroundColor: '#0E1726',
-    borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.22)',
+    paddingVertical: 12,
+    borderRadius: radius.lg,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: 'rgba(191,219,254,0.80)',
     overflow: 'hidden',
-    gap: 2,
-    shadowColor: 'rgba(0,0,0,0.50)',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 4,
+    gap: 3,
+    shadowColor: 'rgba(191,219,254,0.60)',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.5,
+    shadowRadius: 6,
     elevation: 2,
   },
   packActive: { borderColor: colors.saffron },
-  packAmount: { ...typography.h3, color: colors.text, fontSize: 15, fontWeight: '800' },
+  packAmount: { ...typography.h3, color: colors.text, fontSize: 16, fontWeight: '900' },
   packBonusBadge: {
-    backgroundColor: 'rgba(16,185,129,0.14)',
+    backgroundColor: 'rgba(5,150,105,0.12)',
     borderRadius: radius.pill,
-    paddingHorizontal: 6,
-    paddingVertical: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
   },
-  packBonus: { ...typography.tiny, fontSize: 9.5, color: colors.teal, fontWeight: '800' },
-  packNoBonus: { ...typography.tiny, fontSize: 9.5, color: colors.textFaint, fontWeight: '600' },
+  packBonus: { ...typography.tiny, fontSize: 10, color: colors.teal, fontWeight: '900' },
+  packNoBonus: { ...typography.tiny, fontSize: 10, color: colors.textMuted, fontWeight: '600' },
 
   method: {
     flexDirection: 'row',
@@ -565,32 +558,32 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(16,185,129,0.20)',
+    borderTopColor: 'rgba(203,213,225,0.60)',
   },
   methodIconCircle: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: 'rgba(6,10,18,0.60)',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#EFF6FF',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.25)',
+    borderColor: 'rgba(191,219,254,0.80)',
   },
-  methodIcon: { fontSize: 16 },
+  methodIcon: { fontSize: 18 },
   methodLabel: { ...typography.body, color: colors.text, fontWeight: '800', fontSize: 14 },
-  methodSub: { ...typography.tiny, color: colors.textFaint, marginTop: 1, fontWeight: '600' },
+  methodSub: { ...typography.tiny, color: colors.textMuted, marginTop: 1, fontWeight: '600' },
   radio: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     borderWidth: 2,
     borderColor: colors.textFaint,
     alignItems: 'center',
     justifyContent: 'center',
   },
   radioOn: { borderColor: colors.saffron },
-  radioDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.saffron },
+  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.saffron },
 
   upiAppGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
   upiAppCell: {
@@ -598,84 +591,77 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.xs,
-    padding: spacing.sm,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.22)',
-    backgroundColor: '#0E1726',
+    gap: spacing.sm,
+    padding: spacing.md,
+    borderRadius: radius.lg,
+    borderWidth: 1.5,
+    borderColor: 'rgba(203,213,225,0.70)',
+    backgroundColor: '#FFFFFF',
     overflow: 'hidden',
   },
-  upiAppCellActive: { borderColor: colors.saffron },
-  upiAppLabel: { ...typography.small, color: colors.text, fontWeight: '800', fontSize: 12.5 },
+  upiAppCellActive: { borderColor: colors.saffron, backgroundColor: 'rgba(245,158,11,0.08)' },
+  upiAppLabel: { ...typography.small, color: colors.text, fontWeight: '800', fontSize: 13.5 },
 
-  summaryTitle: { ...typography.h3, fontSize: 13, color: colors.textMuted, marginBottom: 2, fontWeight: '800' },
+  summaryTitle: { ...typography.h3, fontSize: 13.5, color: colors.textMuted, marginBottom: 2, fontWeight: '800' },
   summaryRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  summaryLabel: { ...typography.small, color: colors.textMuted, fontSize: 12.5, fontWeight: '600' },
-  summaryValue: { ...typography.small, color: colors.text, fontWeight: '800', fontSize: 13 },
+  summaryLabel: { ...typography.small, color: colors.textMuted, fontSize: 13, fontWeight: '600' },
+  summaryValue: { ...typography.small, color: colors.text, fontWeight: '800', fontSize: 13.5 },
   summaryTotal: {
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(16,185,129,0.20)',
-    paddingTop: 6,
-    marginTop: 2,
+    borderTopColor: 'rgba(203,213,225,0.80)',
+    paddingTop: 8,
+    marginTop: 4,
   },
-  totalLabel: { ...typography.h3, fontSize: 14, color: colors.text, fontWeight: '800' },
-  totalValue: { ...typography.h2, color: colors.saffron, fontWeight: '900', fontSize: 17 },
+  totalLabel: { ...typography.h3, fontSize: 15, color: colors.text, fontWeight: '900' },
+  totalValue: { ...typography.h2, color: colors.saffron, fontWeight: '900', fontSize: 19 },
 
   couponRow: { flexDirection: 'row', gap: spacing.xs, marginTop: 4, alignItems: 'center' },
   couponInput: {
     flex: 1,
-    backgroundColor: 'rgba(6,10,18,0.60)',
-    borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.25)',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1.5,
+    borderColor: 'rgba(203,213,225,0.80)',
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
-    paddingVertical: 8,
+    paddingVertical: 10,
     color: colors.text,
-    fontSize: 13,
+    fontSize: 13.5,
     letterSpacing: 1,
     fontWeight: '800',
   },
   couponApplyBtn: { borderRadius: radius.md, overflow: 'hidden' },
-  couponApplyGrad: { paddingHorizontal: spacing.md, paddingVertical: 9, alignItems: 'center' },
-  couponApplyText: { ...typography.small, color: colors.white, fontWeight: '800', fontSize: 12.5 },
-  couponError: { ...typography.tiny, color: colors.danger, marginTop: 2, fontWeight: '600' },
+  couponApplyGrad: { paddingHorizontal: spacing.lg, paddingVertical: 11, alignItems: 'center' },
+  couponApplyText: { ...typography.small, color: '#FFFFFF', fontWeight: '900', fontSize: 13 },
+  couponError: { ...typography.tiny, color: colors.rose, marginTop: 2, fontWeight: '700' },
 
   couponApplied: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
     marginTop: 4,
-    backgroundColor: 'rgba(245,158,11,0.14)',
+    backgroundColor: 'rgba(245,158,11,0.10)',
     borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: 'rgba(245,158,11,0.40)',
+    borderWidth: 1.5,
+    borderColor: colors.saffron,
     padding: spacing.sm,
   },
-  couponAppliedIcon: { fontSize: 18 },
-  couponAppliedLabel: { ...typography.small, color: colors.saffron, fontWeight: '800' },
-  couponAppliedBonus: { ...typography.tiny, color: colors.teal, marginTop: 1, fontWeight: '700' },
-  couponRemove: { ...typography.tiny, color: colors.danger, fontWeight: '800' },
+  couponAppliedIcon: { fontSize: 20 },
+  couponAppliedLabel: { ...typography.small, color: colors.saffron, fontWeight: '900' },
+  couponAppliedBonus: { ...typography.tiny, color: colors.teal, marginTop: 1, fontWeight: '800' },
+  couponRemove: { ...typography.tiny, color: colors.rose, fontWeight: '900' },
 
   filterRow: {
     flexDirection: 'row',
     gap: spacing.xs,
     marginBottom: spacing.xs,
-    backgroundColor: '#080E1A',
+    backgroundColor: '#E2E8F0',
     borderRadius: radius.pill,
-    padding: 3,
-    borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.25)',
-    shadowColor: 'rgba(0,0,0,0.50)',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 4,
-    elevation: 2,
+    padding: 4,
   },
-  filterTab: { flex: 1, alignItems: 'center', paddingVertical: 6, borderRadius: radius.pill, overflow: 'hidden' },
+  filterTab: { flex: 1, alignItems: 'center', paddingVertical: 8, borderRadius: radius.pill, overflow: 'hidden' },
   filterTabActive: {},
-  filterTabText: { ...typography.tiny, color: colors.textMuted, fontWeight: '700', fontSize: 11.5 },
-  filterTabTextActive: { color: colors.white, fontWeight: '800' },
+  filterTabText: { ...typography.tiny, color: colors.textMuted, fontWeight: '800', fontSize: 12 },
+  filterTabTextActive: { color: '#FFFFFF', fontWeight: '900' },
 
   txn: {
     flexDirection: 'row',
@@ -684,65 +670,65 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(16,185,129,0.20)',
+    borderTopColor: 'rgba(203,213,225,0.60)',
   },
-  txnIcon: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-  txnLabel: { ...typography.small, color: colors.text, fontWeight: '800', fontSize: 13 },
-  txnTime: { ...typography.tiny, color: colors.textFaint, marginTop: 1, fontWeight: '600' },
-  txnAmount: { ...typography.small, fontWeight: '800', fontSize: 14 },
+  txnIcon: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
+  txnLabel: { ...typography.small, color: colors.text, fontWeight: '800', fontSize: 13.5 },
+  txnTime: { ...typography.tiny, color: colors.textMuted, marginTop: 1, fontWeight: '600' },
+  txnAmount: { ...typography.small, fontWeight: '900', fontSize: 14.5 },
 
   /* Modal */
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(4,7,13,0.80)', justifyContent: 'center', padding: spacing.lg },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(15,23,42,0.65)', justifyContent: 'center', padding: spacing.lg },
   modalContent: {
-    backgroundColor: '#0E1726',
+    backgroundColor: '#FFFFFF',
     borderRadius: radius.xl,
-    padding: spacing.lg,
+    padding: spacing.xl,
     borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.25)',
+    borderColor: 'rgba(191,219,254,0.80)',
     gap: spacing.sm,
-    shadowColor: 'rgba(0,0,0,0.60)',
-    shadowOffset: { width: 0, height: 8 },
+    shadowColor: 'rgba(15,23,42,0.30)',
+    shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.8,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowRadius: 20,
+    elevation: 10,
   },
-  modalTitle: { ...typography.h2, color: colors.saffron, textAlign: 'center', fontWeight: '800' },
+  modalTitle: { ...typography.h2, color: colors.saffron, textAlign: 'center', fontWeight: '900' },
   modalSub: { ...typography.tiny, color: colors.textMuted, textAlign: 'center', fontWeight: '600' },
   verifyBox: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    backgroundColor: '#080E1A',
+    backgroundColor: 'rgba(5,150,105,0.08)',
     padding: spacing.md,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.25)',
+    borderRadius: radius.lg,
+    borderWidth: 1.5,
+    borderColor: 'rgba(5,150,105,0.30)',
   },
-  verifyBoxTitle: { ...typography.small, color: colors.text, fontWeight: '800' },
+  verifyBoxTitle: { ...typography.small, color: colors.text, fontWeight: '900' },
   verifyBoxSub: { ...typography.tiny, color: colors.textMuted, marginTop: 2, fontWeight: '600' },
   utrSection: { gap: 4 },
   utrLabel: { ...typography.tiny, color: colors.textMuted, fontWeight: '800' },
   utrInput: {
-    backgroundColor: '#080E1A',
-    borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.25)',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1.5,
+    borderColor: 'rgba(203,213,225,0.80)',
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
-    paddingVertical: 8,
+    paddingVertical: 10,
     color: colors.text,
-    fontSize: 14,
+    fontSize: 14.5,
     letterSpacing: 1.5,
     fontWeight: '800',
   },
-  utrHint: { ...typography.tiny, color: colors.textFaint, fontSize: 10.5, fontWeight: '600' },
+  utrHint: { ...typography.tiny, color: colors.textMuted, fontSize: 11, fontWeight: '600' },
   diagBox: {
-    backgroundColor: '#080E1A',
-    borderWidth: 1,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1.5,
     borderRadius: radius.md,
     padding: spacing.sm,
     gap: 2,
   },
-  diagTitle: { ...typography.tiny, fontWeight: '800', fontSize: 11, marginBottom: 2 },
-  diagRow: { ...typography.tiny, color: colors.textMuted, fontSize: 11, fontWeight: '600' },
-  verifyErrorText: { ...typography.tiny, color: colors.danger, textAlign: 'center', fontWeight: '700' },
+  diagTitle: { ...typography.tiny, fontWeight: '900', fontSize: 11.5, marginBottom: 2 },
+  diagRow: { ...typography.tiny, color: colors.textMuted, fontSize: 11.5, fontWeight: '600' },
+  verifyErrorText: { ...typography.tiny, color: colors.rose, textAlign: 'center', fontWeight: '800' },
 });

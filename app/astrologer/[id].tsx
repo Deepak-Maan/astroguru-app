@@ -1,5 +1,5 @@
 import React from 'react';
-import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -10,7 +10,6 @@ import { Card } from '../../src/components/Card';
 import { Chip } from '../../src/components/Chip';
 import { EmptyState } from '../../src/components/EmptyState';
 import { ScreenHeader } from '../../src/components/ScreenHeader';
-import { SectionHeader } from '../../src/components/SectionHeader';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { astrologerById } from '../../src/data/astrologers';
 import { useWalletStore } from '../../src/store/walletStore';
@@ -53,22 +52,28 @@ export default function AstrologerProfile() {
   return (
     <GradientBackground>
       <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
-        <ScreenHeader title="Astrologer" showBack showWallet />
+        <ScreenHeader title="Astrologer Profile" showBack showWallet />
 
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-          {/* Hero identity card */}
-          <LinearGradient
-            colors={['rgba(16,185,129,0.16)', 'rgba(245,158,11,0.06)']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 0, y: 1 }}
-            style={styles.head}
-          >
+          {/* Compact Hero Identity Card — Nordic Frost Light & Emerald Teal */}
+          <View style={styles.head}>
+            <LinearGradient
+              colors={['#FFFFFF', '#F0FDF4']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 0, y: 1 }}
+              style={StyleSheet.absoluteFill}
+            />
             {/* Online glow ring */}
-            <View style={[styles.avatarRing, { borderColor: astrologer.online ? 'rgba(16,185,129,0.60)' : 'rgba(100,116,139,0.40)' }]}>
+            <View
+              style={[
+                styles.avatarRing,
+                { borderColor: astrologer.online ? colors.teal : colors.textFaint },
+              ]}
+            >
               <Avatar
                 uri={astrologer.avatar}
                 name={astrologer.name}
-                size={88}
+                size={58}
                 online={astrologer.online}
                 showStatus
               />
@@ -83,17 +88,30 @@ export default function AstrologerProfile() {
                   { backgroundColor: astrologer.online ? colors.online : colors.offline },
                 ]}
               />
-              <Text style={[styles.statusText, { color: astrologer.online ? colors.online : colors.textMuted }]}>
+              <Text
+                style={[
+                  styles.statusText,
+                  { color: astrologer.online ? colors.online : colors.textMuted },
+                ]}
+              >
                 {astrologer.online ? 'Available now' : 'Currently offline'}
               </Text>
             </View>
 
-            {/* Stats row */}
+            {/* Compact Stats Grid */}
             <View style={styles.statRow}>
               {[
-                { icon: '⭐', value: astrologer.rating.toFixed(1), label: `${(astrologer.reviews / 1000).toFixed(1)}k reviews` },
+                {
+                  icon: '⭐',
+                  value: astrologer.rating.toFixed(1),
+                  label: `${(astrologer.reviews / 1000).toFixed(1)}k reviews`,
+                },
                 { icon: '🎓', value: `${astrologer.experienceYears} yrs`, label: 'experience' },
-                { icon: '💬', value: `${(astrologer.consultations / 1000).toFixed(0)}k`, label: 'consultations' },
+                {
+                  icon: '💬',
+                  value: `${(astrologer.consultations / 1000).toFixed(0)}k`,
+                  label: 'consultations',
+                },
               ].map(({ icon, value, label }) => (
                 <View key={label} style={styles.stat}>
                   <Text style={styles.statIcon}>{icon}</Text>
@@ -102,23 +120,23 @@ export default function AstrologerProfile() {
                 </View>
               ))}
             </View>
-          </LinearGradient>
+          </View>
 
           {/* About */}
-          <Card>
-            <SectionHeader title="About" />
+          <Card padded={false} style={styles.compactCard}>
+            <Text style={styles.sectionTitle}>About</Text>
             <Text style={styles.about}>{astrologer.about}</Text>
           </Card>
 
           {/* Expertise */}
-          <Card>
-            <SectionHeader title="Expertise" />
+          <Card padded={false} style={styles.compactCard}>
+            <Text style={styles.sectionTitle}>Expertise</Text>
             <View style={styles.chips}>
               {astrologer.specialties.map((s) => (
                 <Chip key={s} label={s} tone="gold" />
               ))}
             </View>
-            <Text style={[styles.subLabel, { marginTop: spacing.lg }]}>Languages</Text>
+            <Text style={styles.subLabel}>Languages</Text>
             <View style={styles.chips}>
               {astrologer.languages.map((l) => (
                 <Chip key={l} label={l} tone="teal" />
@@ -127,72 +145,69 @@ export default function AstrologerProfile() {
           </Card>
 
           {/* Pricing */}
-          <Card>
-            <SectionHeader title="Consultation Rate" />
+          <Card padded={false} style={styles.compactCard}>
+            <Text style={styles.sectionTitle}>Consultation Rate</Text>
             <View style={styles.priceRow}>
               <LinearGradient
-                colors={['rgba(245,158,11,0.18)', 'rgba(16,185,129,0.06)']}
+                colors={['rgba(245,158,11,0.10)', 'rgba(217,119,6,0.03)']}
                 style={styles.priceBox}
               >
                 <Text style={styles.price}>
                   {formatCurrency(astrologer.pricePerMin)}
                   <Text style={styles.perMin}> / min</Text>
                 </Text>
-                <Text style={styles.priceSub}>Billed per minute from your wallet</Text>
+                <Text style={styles.priceSub}>Billed per minute from your wallet balance</Text>
               </LinearGradient>
             </View>
 
-            <View
-              style={[
-                styles.affordBox,
-                !canAfford && styles.affordBoxDanger,
-              ]}
-            >
+            <View style={[styles.affordBox, !canAfford && styles.affordBoxDanger]}>
               <Text style={[styles.affordIcon, { color: canAfford ? colors.teal : colors.danger }]}>
                 {canAfford ? '✓' : '!'}
               </Text>
               <Text style={[styles.affordText, !canAfford && { color: colors.danger }]}>
                 {canAfford
-                  ? `Your balance of ${formatCurrency(balance)} covers about ${minutesAffordable} minute${minutesAffordable === 1 ? '' : 's'}.`
+                  ? `Your balance of ${formatCurrency(balance)} covers about ${minutesAffordable} minute${
+                      minutesAffordable === 1 ? '' : 's'
+                    }.`
                   : `Your balance of ${formatCurrency(balance)} is not enough. Add money to start.`}
               </Text>
             </View>
           </Card>
-
-          <Text style={styles.mockNote}>
-            This is a demonstration profile. Starting a chat opens a simulated consultation —
-            replies are generated locally and no real astrologer is contacted.
-          </Text>
         </ScrollView>
 
-        {/* Sticky CTA with sleek medium buttons */}
+        {/* Compact Sticky Action Bar */}
         <View style={styles.actions}>
           <LinearGradient
-            colors={['rgba(6,10,18,0.0)', 'rgba(6,10,18,0.96)']}
+            colors={['rgba(239,246,255,0.0)', 'rgba(255,255,255,0.98)']}
             style={styles.actionsGradient}
           />
+          <Pressable
+            onPress={() => router.push(`/consultation/${astrologer.id}?type=audio`)}
+            style={({ pressed }) => [styles.mediaCallBtn, pressed && { opacity: 0.8 }]}
+          >
+            <Text style={{ fontSize: 15 }}>📞</Text>
+            <Text style={styles.mediaCallText}>Audio</Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => router.push(`/consultation/${astrologer.id}?type=video`)}
+            style={({ pressed }) => [
+              styles.mediaCallBtn,
+              { borderColor: colors.teal, backgroundColor: 'rgba(5,150,105,0.12)' },
+              pressed && { opacity: 0.8 },
+            ]}
+          >
+            <Text style={{ fontSize: 15 }}>📹</Text>
+            <Text style={[styles.mediaCallText, { color: colors.teal }]}>Video</Text>
+          </Pressable>
+
           <Button
-            label={canAfford ? '💬 Chat now' : 'Add money'}
+            label={canAfford ? '💬 Chat' : 'Add Money'}
             variant={canAfford ? 'gold' : 'primary'}
             size="md"
             fullWidth={false}
             style={{ flex: 1 }}
             onPress={startChat}
-          />
-          <Button
-            label="📞 Call"
-            variant="outline"
-            size="md"
-            fullWidth={false}
-            style={{ flex: 1 }}
-            disabled={!astrologer.online}
-            onPress={() => {
-              if (Platform.OS === 'web' && typeof alert === 'function') {
-                alert('Voice calls are not part of this MVP build. Use "Chat now" instead.');
-              } else {
-                router.push(`/chat/${astrologer.id}`);
-              }
-            }}
           />
         </View>
       </SafeAreaView>
@@ -201,103 +216,143 @@ export default function AstrologerProfile() {
 }
 
 const styles = StyleSheet.create({
-  scroll: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xxl, gap: spacing.lg },
+  scroll: { paddingHorizontal: spacing.md, paddingBottom: spacing.xl, gap: 8 },
 
   head: {
     alignItems: 'center',
-    borderRadius: radius.xl,
-    borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.30)',
-    backgroundColor: '#0E1726',
-    padding: spacing.xl,
-    gap: spacing.xs,
+    borderRadius: radius.lg,
+    borderWidth: 1.5,
+    borderColor: 'rgba(191,219,254,0.80)',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: spacing.md,
+    paddingVertical: 10,
+    gap: 1,
     overflow: 'hidden',
-    shadowColor: 'rgba(0,0,0,0.60)',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.8,
-    shadowRadius: 10,
-    elevation: 4,
+    shadowColor: 'rgba(15,23,42,0.08)',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 2,
   },
   avatarRing: {
-    width: 106,
-    height: 106,
-    borderRadius: 53,
-    borderWidth: 2.5,
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: spacing.sm,
+    marginBottom: 2,
+    backgroundColor: '#FFFFFF',
+    shadowColor: colors.teal,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  name: { ...typography.h1, color: colors.text, textAlign: 'center', fontWeight: '800' },
-  statusRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 },
-  statusDot: { width: 8, height: 8, borderRadius: 4 },
-  statusText: { ...typography.small, fontWeight: '700' },
+  name: {
+    ...typography.h2,
+    color: '#0F172A',
+    textAlign: 'center',
+    fontWeight: '900',
+    fontSize: 17,
+    marginTop: 1,
+  },
+  statusRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 1 },
+  statusDot: { width: 7, height: 7, borderRadius: 3.5 },
+  statusText: { ...typography.tiny, fontWeight: '800', fontSize: 11.5 },
 
-  statRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xl, alignSelf: 'stretch' },
+  statRow: { flexDirection: 'row', gap: 6, marginTop: 8, alignSelf: 'stretch' },
   stat: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: spacing.md,
+    paddingVertical: 5,
+    paddingHorizontal: 2,
     borderRadius: radius.md,
-    backgroundColor: 'rgba(6,10,18,0.60)',
+    backgroundColor: '#F8FAFC',
     borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.25)',
-    gap: 3,
+    borderColor: 'rgba(191,219,254,0.80)',
+    gap: 1,
   },
-  statIcon: { fontSize: 16 },
-  statValue: { ...typography.h3, fontSize: 14, color: colors.goldSoft, fontWeight: '800' },
-  statLabel: { ...typography.tiny, fontSize: 9.5, color: colors.textFaint, fontWeight: '600' },
+  statIcon: { fontSize: 13 },
+  statValue: { ...typography.h3, fontSize: 13, color: colors.goldSoft, fontWeight: '900' },
+  statLabel: { ...typography.tiny, fontSize: 9, color: colors.textMuted, fontWeight: '700' },
 
-  about: { ...typography.body, color: colors.textMuted, lineHeight: 22, fontWeight: '600' },
-  subLabel: { ...typography.tiny, color: colors.textFaint, marginBottom: spacing.sm, fontWeight: '700' },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
+  compactCard: { paddingHorizontal: 12, paddingVertical: 10 },
+  sectionTitle: { ...typography.h3, fontSize: 14.5, color: '#0F172A', fontWeight: '900', marginBottom: 5 },
 
-  priceRow: { marginBottom: spacing.md },
+  about: { ...typography.body, color: colors.textMuted, lineHeight: 18, fontWeight: '600', fontSize: 13 },
+  subLabel: { ...typography.tiny, color: colors.textMuted, marginTop: 8, marginBottom: 4, fontWeight: '800', fontSize: 11 },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 5 },
+
+  priceRow: { marginBottom: 6 },
   priceBox: {
-    borderRadius: radius.lg,
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(245,158,11,0.40)',
+    borderRadius: radius.md,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderWidth: 1.5,
+    borderColor: 'rgba(245,158,11,0.30)',
     overflow: 'hidden',
   },
-  price: { ...typography.display, fontSize: 30, color: colors.saffron, fontWeight: '900' },
-  perMin: { ...typography.body, color: colors.textMuted, fontWeight: '600', fontSize: 16 },
-  priceSub: { ...typography.tiny, color: colors.textFaint, marginTop: 4, fontWeight: '600' },
+  price: { ...typography.display, fontSize: 22, color: colors.saffron, fontWeight: '900' },
+  perMin: { ...typography.body, color: colors.textMuted, fontWeight: '700', fontSize: 13.5 },
+  priceSub: { ...typography.tiny, color: colors.textMuted, marginTop: 2, fontWeight: '600', fontSize: 10.5 },
 
   affordBox: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.sm,
+    alignItems: 'center',
+    gap: 6,
     borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.40)',
-    backgroundColor: 'rgba(16,185,129,0.08)',
-    padding: spacing.md,
+    borderWidth: 1.5,
+    borderColor: 'rgba(5,150,105,0.30)',
+    backgroundColor: 'rgba(5,150,105,0.08)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
   },
   affordBoxDanger: {
-    borderColor: 'rgba(244,63,94,0.40)',
-    backgroundColor: 'rgba(244,63,94,0.08)',
+    borderColor: 'rgba(225,29,72,0.30)',
+    backgroundColor: 'rgba(225,29,72,0.08)',
   },
-  affordIcon: { fontSize: 16, fontWeight: '800', marginTop: 1 },
-  affordText: { ...typography.small, color: colors.teal, lineHeight: 18, flex: 1, fontWeight: '600' },
-
-  mockNote: { ...typography.tiny, color: colors.textFaint, textAlign: 'center', lineHeight: 15 },
+  affordIcon: { fontSize: 13, fontWeight: '900' },
+  affordText: { ...typography.small, color: colors.teal, lineHeight: 15, flex: 1, fontWeight: '700', fontSize: 11.5 },
 
   actions: {
     flexDirection: 'row',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.md,
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: spacing.md,
+    paddingTop: 6,
+    paddingBottom: spacing.xs,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(16,185,129,0.25)',
-    backgroundColor: 'rgba(6,10,18,0.96)',
+    borderTopColor: 'rgba(203,213,225,0.80)',
+    backgroundColor: '#FFFFFF',
     position: 'relative',
+    shadowColor: 'rgba(15,23,42,0.10)',
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  mediaCallBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderRadius: radius.pill,
+    backgroundColor: 'rgba(245,158,11,0.12)',
+    borderWidth: 1.5,
+    borderColor: colors.gold,
+  },
+  mediaCallText: {
+    color: colors.goldSoft,
+    fontSize: 12.5,
+    fontWeight: '900',
   },
   actionsGradient: {
     position: 'absolute',
-    top: -32,
+    top: -20,
     left: 0,
     right: 0,
-    height: 32,
+    height: 20,
   },
 });

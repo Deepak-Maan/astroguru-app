@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
 
-const LATEST_RELEASE_VERSION = '2.2.0';
+const LATEST_RELEASE_VERSION = '2.5.0';
 
 export interface UpdateInfo {
   currentVersion: string;
@@ -31,16 +31,15 @@ interface UpdateState extends UpdateInfo {
 export const useUpdateStore = create<UpdateState>()(
   persist(
     (set, get) => ({
-      currentVersion: '2.1.0',
-      latestVersion: '2.2.0',
-      updateAvailable: Platform.OS !== 'web',
+      currentVersion: '2.5.0',
+      latestVersion: '2.5.0',
+      updateAvailable: false,
       isMandatory: false,
       releaseNotes: [
-        '🌟 AstroGuru Milestone Release Version 2.2.0',
-        '💬 Real Live Bidirectional Seeker ↔ Acharya Chat Engine',
-        '⚡ 1.5s Background REST Polling & Dynamic Message Streaming',
-        '📱 Native Mobile App Update Prompt & Direct APK Downloader',
-        '🌐 Silent Web Auto-Update System Active Globally',
+        '✨ Major Release v2.5.0: Ultra High-Contrast Nordic Frost Redesign',
+        '💳 Solar Warm Gold Balance Header & High-Contrast Wallet Recharge System',
+        '🧘 Compact & Space-Efficient Astrologer Hero Profile Layout',
+        '📹 Live WebRTC Consultations, Firebase Sync & 10-Page Kundli Exporter',
       ],
       downloadProgress: 100,
       isDownloading: false,
