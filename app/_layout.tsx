@@ -10,6 +10,8 @@ import { SecurityLockModal } from '../src/components/SecurityLockModal';
 import { NotificationToast } from '../src/components/NotificationToast';
 
 import { useUpdateStore } from '../src/store/updateStore';
+import { seedAllUsersAndAstrologersToFirebase } from '../src/services/firebaseRealtimeService';
+import { ASTROLOGERS } from '../src/data/astrologers';
 
 export default function RootLayout() {
   const loadSettings = useSettingsStore((s) => s.load);
@@ -18,6 +20,7 @@ export default function RootLayout() {
   useEffect(() => {
     loadSettings();
     autoCheckAndFetchOnStartup();
+    seedAllUsersAndAstrologersToFirebase(ASTROLOGERS);
   }, [loadSettings, autoCheckAndFetchOnStartup]);
 
   return (
