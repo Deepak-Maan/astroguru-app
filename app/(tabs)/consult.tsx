@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   FlatList,
@@ -21,6 +21,7 @@ import { Card } from '../../src/components/Card';
 import { SectionHeader } from '../../src/components/SectionHeader';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { ASTROLOGERS } from '../../src/data/astrologers';
+import { Astrologer } from '../../src/types';
 import { useAuthStore } from '../../src/store/authStore';
 import { useJyotishiStore } from '../../src/store/jyotishiStore';
 import { formatCurrency } from '../../src/utils';
@@ -246,11 +247,11 @@ export default function Consult() {
       const matchQ =
         !q ||
         a.name.toLowerCase().includes(q) ||
-        a.specialties.some((s) => s.toLowerCase().includes(q)) ||
-        a.languages.some((l) => l.toLowerCase().includes(q));
+        a.specialties.some((s: string) => s.toLowerCase().includes(q)) ||
+        a.languages.some((l: string) => l.toLowerCase().includes(q));
       const matchF =
         filter === 'All' ||
-        (filter === 'Online' ? a.online : a.specialties.some((s) => s === filter));
+        (filter === 'Online' ? a.online : a.specialties.some((s: string) => s === filter));
       return matchQ && matchF;
     });
     out = [...out].sort((x, y) => {
