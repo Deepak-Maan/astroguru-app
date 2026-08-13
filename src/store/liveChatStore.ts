@@ -13,6 +13,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { pushMessageToFirebase, syncRoomMetadataToFirebase } from '../services/firebaseRealtimeService';
+import { showChatNotification } from '../services/notificationService';
 
 export type MessageRole = 'seeker' | 'acharya' | 'system';
 
@@ -191,6 +192,7 @@ export const useLiveChatStore = create<LiveChatState>()(
         });
 
         pushMessageToFirebase(roomId, {
+          id: msg.id,
           senderId: role,
           senderName,
           senderRole: role,
@@ -354,17 +356,37 @@ export const useLiveChatStore = create<LiveChatState>()(
           if (!currentRoom) return s;
 
           const existingIds = new Set(currentRoom.messages.map((m) => m.id));
+          const existingSignatures = new Set(
+            currentRoom.messages.map((m) => `${m.role}__${m.text.trim()}__${Math.floor(m.at / 8000)}`)
+          );
           const newMsgs: LiveMessage[] = [];
 
           for (const m of fbMsgs) {
-            if (m && m.id && !existingIds.has(m.id)) {
+            if (!m || !m.text) continue;
+            const msgId = m.id || `msg_${m.timestamp || Date.now()}`;
+            const signature = `${m.senderRole || 'seeker'}__${m.text.trim()}__${Math.floor((m.timestamp || Date.now()) / 8000)}`;
+
+            if (!existingIds.has(msgId) && !existingSignatures.has(signature)) {
+              existingIds.add(msgId);
+              existingSignatures.add(signature);
+
               newMsgs.push({
-                id: m.id,
+                id: msgId,
                 role: m.senderRole || 'seeker',
                 senderName: m.senderName || 'User',
-                text: m.text || '',
+                text: m.text,
                 at: m.timestamp || Date.now(),
-                read: true,
+                read: false,
+              });
+
+              // Trigger notification if message is from the other person
+              const notifTitle = m.senderRole === 'acharya'
+                ? `🪔 ${m.senderName || 'Acharya'} replied`
+                : `🔔 ${m.senderName || 'Seeker'} sent a message`;
+              showChatNotification({
+                title: notifTitle,
+                body: m.text,
+                data: { roomId },
               });
             }
           }

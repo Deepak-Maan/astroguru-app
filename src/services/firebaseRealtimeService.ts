@@ -27,21 +27,21 @@ export interface FirebaseLiveRoom {
 /**
  * Sync Live Chat Message to Firebase Realtime Database
  */
-export async function pushMessageToFirebase(roomId: string, msg: Omit<FirebaseChatMessage, 'id' | 'timestamp'>) {
-  if (!roomId) return;
+export async function pushMessageToFirebase(roomId: string, msg: { id?: string; senderId?: string; senderName?: string; senderRole?: 'seeker' | 'acharya' | 'system'; text: string }) {
+  if (!roomId || !msg.text) return;
   const cleanRoomId = String(roomId).replace(/[.#$\[\]\/]/g, '_');
   try {
-    const messagesRef = ref(firebaseDb, `rooms/${cleanRoomId}/messages`);
-    const newMsgRef = push(messagesRef);
-    const cleanMsg = {
-      id: newMsgRef.key || `msg_${Date.now()}`,
+    const msgId = msg.id || push(ref(firebaseDb, `rooms/${cleanRoomId}/messages`)).key || `msg_${Date.now()}`;
+    const targetMsgRef = ref(firebaseDb, `rooms/${cleanRoomId}/messages/${msgId}`);
+    const cleanMsg: FirebaseChatMessage = {
+      id: msgId,
       senderId: msg.senderId || 'user',
       senderName: msg.senderName || 'User',
       senderRole: msg.senderRole || 'seeker',
       text: msg.text || '',
       timestamp: Date.now(),
     };
-    await set(newMsgRef, cleanMsg);
+    await set(targetMsgRef, cleanMsg);
 
     // Update room metadata
     const roomRef = ref(firebaseDb, `rooms/${cleanRoomId}/lastMessage`);

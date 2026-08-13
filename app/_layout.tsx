@@ -11,6 +11,7 @@ import { NotificationToast } from '../src/components/NotificationToast';
 
 import { useUpdateStore } from '../src/store/updateStore';
 import { seedAllUsersAndAstrologersToFirebase } from '../src/services/firebaseRealtimeService';
+import { initNotificationService } from '../src/services/notificationService';
 import { ASTROLOGERS } from '../src/data/astrologers';
 
 export default function RootLayout() {
@@ -20,6 +21,7 @@ export default function RootLayout() {
   useEffect(() => {
     loadSettings();
     autoCheckAndFetchOnStartup();
+    initNotificationService();
     seedAllUsersAndAstrologersToFirebase(ASTROLOGERS);
   }, [loadSettings, autoCheckAndFetchOnStartup]);
 

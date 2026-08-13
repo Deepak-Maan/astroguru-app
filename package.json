@@ -1,6 +1,6 @@
 {
   "name": "astrologer-app",
-  "version": "2.6.7",
+  "version": "2.6.8",
   "main": "expo-router/entry",
   "dependencies": {
     "@expo/metro-runtime": "~57.0.8",
@@ -13,6 +13,7 @@
     "expo-haptics": "~57.0.1",
     "expo-linear-gradient": "~57.0.1",
     "expo-linking": "~57.0.4",
+    "expo-notifications": "~57.0.10",
     "expo-router": "~57.0.9",
     "expo-secure-store": "~57.0.1",
     "expo-status-bar": "~57.0.1",
@@ -47,9 +48,4 @@
   },
   "private": true
 }
-
-
-
-
-
 
