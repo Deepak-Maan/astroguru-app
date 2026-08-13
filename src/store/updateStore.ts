@@ -31,26 +31,30 @@ interface UpdateState extends UpdateInfo {
 export const useUpdateStore = create<UpdateState>()(
   persist(
     (set, get) => ({
-      currentVersion: '2.5.0',
-      latestVersion: '2.5.0',
+      currentVersion: LATEST_RELEASE_VERSION,
+      latestVersion: LATEST_RELEASE_VERSION,
       updateAvailable: false,
       isMandatory: false,
       releaseNotes: [
-        '✨ Major Release v2.5.0: Ultra High-Contrast Nordic Frost Redesign',
-        '💳 Solar Warm Gold Balance Header & High-Contrast Wallet Recharge System',
-        '🧘 Compact & Space-Efficient Astrologer Hero Profile Layout',
-        '📹 Live WebRTC Consultations, Firebase Sync & 10-Page Kundli Exporter',
+        '✨ Release v2.6.9: Real-time Audio & Video Call System',
+        '🔔 Native Android & iOS Status Bar Push Notifications',
+        '🪔 Instant Acharya Ringing Modal & Live WebRTC Stream',
+        '⚡ Strict Single Message Dispatch & Duplicate Prevention',
       ],
       downloadProgress: 100,
       isDownloading: false,
-      isReadyToInstall: Platform.OS !== 'web',
+      isReadyToInstall: false,
 
       autoCheckAndFetchOnStartup: async () => {
-        // On Web, app updates automatically on bundle reload without modal prompt
+        // Automatically sync current version to latest release version
+        set({
+          currentVersion: LATEST_RELEASE_VERSION,
+          latestVersion: LATEST_RELEASE_VERSION,
+        });
+
+        // On Web, app updates automatically on bundle reload
         if (Platform.OS === 'web') {
           set({
-            currentVersion: LATEST_RELEASE_VERSION,
-            latestVersion: LATEST_RELEASE_VERSION,
             updateAvailable: false,
             isReadyToInstall: false,
             downloadProgress: 0,
