@@ -28,20 +28,26 @@ export interface FirebaseLiveRoom {
  * Sync Live Chat Message to Firebase Realtime Database
  */
 export async function pushMessageToFirebase(roomId: string, msg: Omit<FirebaseChatMessage, 'id' | 'timestamp'>) {
+  if (!roomId) return;
+  const cleanRoomId = String(roomId).replace(/[.#$\[\]\/]/g, '_');
   try {
-    const messagesRef = ref(firebaseDb, `rooms/${roomId}/messages`);
+    const messagesRef = ref(firebaseDb, `rooms/${cleanRoomId}/messages`);
     const newMsgRef = push(messagesRef);
-    await set(newMsgRef, {
-      ...msg,
-      id: newMsgRef.key,
+    const cleanMsg = {
+      id: newMsgRef.key || `msg_${Date.now()}`,
+      senderId: msg.senderId || 'user',
+      senderName: msg.senderName || 'User',
+      senderRole: msg.senderRole || 'seeker',
+      text: msg.text || '',
       timestamp: Date.now(),
-    });
+    };
+    await set(newMsgRef, cleanMsg);
 
     // Update room metadata
-    const roomRef = ref(firebaseDb, `rooms/${roomId}/lastMessage`);
-    await set(roomRef, msg.text);
-  } catch (e) {
-    console.warn('[Firebase Realtime Push Error]', e);
+    const roomRef = ref(firebaseDb, `rooms/${cleanRoomId}/lastMessage`);
+    await set(roomRef, cleanMsg.text);
+  } catch (e: any) {
+    console.warn('[Firebase Realtime Push Warning]', e?.message || e);
   }
 }
 
@@ -49,7 +55,12 @@ export async function pushMessageToFirebase(roomId: string, msg: Omit<FirebaseCh
  * Subscribe to Live Room Chat Messages in Real Time
  */
 export function subscribeToFirebaseRoomMessages(roomId: string, callback: (messages: FirebaseChatMessage[]) => void) {
-  const messagesRef = ref(firebaseDb, `rooms/${roomId}/messages`);
+  if (!roomId) {
+    callback([]);
+    return () => {};
+  }
+  const cleanRoomId = String(roomId).replace(/[.#$\[\]\/]/g, '_');
+  const messagesRef = ref(firebaseDb, `rooms/${cleanRoomId}/messages`);
   
   onValue(messagesRef, (snapshot) => {
     const data = snapshot.val();
@@ -220,24 +231,40 @@ export async function syncRoomMetadataToFirebase(room: {
   status: string;
   lastMessage?: string;
 }) {
+  if (!room || !room.roomId || !room.astrologerId) return;
+
+  const cleanRoomId = String(room.roomId).replace(/[.#$\[\]\/]/g, '_');
+  const cleanAstrologerId = String(room.astrologerId).replace(/[.#$\[\]\/]/g, '_');
+
+  const payload = {
+    roomId: cleanRoomId,
+    seekerId: room.seekerId || 'usr_seeker',
+    seekerName: room.seekerName || 'Seeker',
+    astrologerId: cleanAstrologerId,
+    astrologerName: room.astrologerName || 'Acharya',
+    topic: room.topic || 'Vedic Astrology Consultation',
+    ratePerMin: Number(room.ratePerMin) || 25,
+    status: room.status || 'waiting',
+    lastMessage: room.lastMessage || 'New consultation request',
+    updatedAt: Date.now(),
+  };
+
   try {
-    const roomInfoRef = ref(firebaseDb, `rooms/${room.roomId}/info`);
-    await set(roomInfoRef, {
-      ...room,
-      updatedAt: Date.now(),
-    });
+    const roomInfoRef = ref(firebaseDb, `rooms/${cleanRoomId}/info`);
+    await set(roomInfoRef, payload);
+
     // Index under /astrologer_rooms/{astrologerId}/{roomId}
-    const indexRef = ref(firebaseDb, `astrologer_rooms/${room.astrologerId}/${room.roomId}`);
+    const indexRef = ref(firebaseDb, `astrologer_rooms/${cleanAstrologerId}/${cleanRoomId}`);
     await set(indexRef, {
-      roomId: room.roomId,
-      seekerId: room.seekerId,
-      seekerName: room.seekerName,
-      status: room.status,
-      lastMessage: room.lastMessage || 'New consultation request',
+      roomId: cleanRoomId,
+      seekerId: payload.seekerId,
+      seekerName: payload.seekerName,
+      status: payload.status,
+      lastMessage: payload.lastMessage,
       updatedAt: Date.now(),
     });
-  } catch (e) {
-    console.warn('[Firebase Room Metadata Sync Warning]', e);
+  } catch (e: any) {
+    console.warn('[Firebase Room Metadata Sync Warning]', e?.message || e);
   }
 }
 

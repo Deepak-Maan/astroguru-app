@@ -73,13 +73,15 @@ export default function ChatScreen() {
   const createRoom = useLiveChatStore((s) => s.createRoom);
   const sendLiveMessage = useLiveChatStore((s) => s.sendMessage);
   const markRead = useLiveChatStore((s) => s.markRead);
-  const syncRoomFromBackend = useLiveChatStore((s) => s.syncRoomFromBackend);
+  const currentSeekerId = authUser?.id ? String(authUser.id) : 'usr_seeker_demo';
+  const currentSeekerName = authUser?.name ? authUser.name : 'Seeker';
+
   const liveRoom = useLiveChatStore((s) =>
-    astrologer && authUser?.id
-      ? s.getRoomByPair(authUser.id.toString(), astrologer.id)
+    astrologer
+      ? s.getRoomByPair(currentSeekerId, astrologer.id)
       : null
   );
-  const liveRoomId = liveRoom?.roomId ?? null;
+  const liveRoomId = liveRoom?.roomId ?? (astrologer ? `${currentSeekerId}__${astrologer.id}` : null);
   const liveMessages = liveRoom?.messages ?? [];
   const isLiveActive = liveRoom?.status === 'active';
   const isLiveEnded = liveRoom?.status === 'ended';
@@ -178,16 +180,14 @@ export default function ChatScreen() {
     setRanOut(false);
 
     // ── Create or open a live bidirectional room for Acharya to see ──
-    if (authUser?.id) {
-      createRoom({
-        seekerId: authUser.id.toString(),
-        seekerName: authUser.name ?? 'Seeker',
-        astrologerId: astrologer.id,
-        astrologerName: astrologer.name,
-        topic: QUICK_PROMPTS[0],
-        ratePerMin: astrologer.pricePerMin,
-      });
-    }
+    createRoom({
+      seekerId: currentSeekerId,
+      seekerName: currentSeekerName,
+      astrologerId: astrologer.id,
+      astrologerName: astrologer.name,
+      topic: QUICK_PROMPTS[0],
+      ratePerMin: astrologer.pricePerMin,
+    });
 
     if ((useChatStore.getState().sessions[astrologer.id]?.messages.length ?? 0) === 0) {
       addMessage(astrologer.id, {
@@ -197,7 +197,7 @@ export default function ChatScreen() {
         at: Date.now(),
       });
     }
-  }, [astrologer, balance, topup, debit, startSession, billMinute, addMessage, createRoom, authUser]);
+  }, [astrologer, balance, topup, debit, startSession, billMinute, addMessage, createRoom, currentSeekerId, currentSeekerName]);
 
   useEffect(() => {
     if (astrologer && !session?.startedAt && !session?.ended) begin();
@@ -241,9 +241,9 @@ export default function ChatScreen() {
     setDraft('');
     addMessage(astrologer.id, { id: nextId(), role: 'user', text, at: Date.now() });
 
-    // ── Mirror to live room so Acharya sees it in real time ──
-    if (liveRoomId && authUser?.name) {
-      sendLiveMessage(liveRoomId, 'seeker', authUser.name, text);
+    // ── Mirror to live room so Acharya (Vivek Kumar) sees it in real time ──
+    if (liveRoomId) {
+      sendLiveMessage(liveRoomId, 'seeker', currentSeekerName, text);
     }
 
     scrollToEnd();
