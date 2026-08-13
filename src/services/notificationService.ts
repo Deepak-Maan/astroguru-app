@@ -105,3 +105,48 @@ export async function showChatNotification({
     console.warn('[Notification Show Warning]', err);
   }
 }
+
+/**
+ * Show an incoming call notification in the Android/iOS notification bar
+ */
+export async function showIncomingCallNotification({
+  seekerName,
+  type,
+  callId,
+}: {
+  seekerName: string;
+  type: 'audio' | 'video';
+  callId: string;
+}) {
+  const isVideo = type === 'video';
+  const title = isVideo
+    ? `📹 Incoming HD Video Call`
+    : `📞 Incoming Audio Call`;
+  const body = `${seekerName} is calling for a live Vedic consultation. Tap to answer!`;
+
+  try {
+    if (Platform.OS === 'web') {
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+        new Notification(title, {
+          body,
+          icon: '/favicon.ico',
+        });
+      }
+      return;
+    }
+
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title,
+        body,
+        sound: 'default',
+        priority: Notifications.AndroidNotificationPriority.MAX,
+        color: '#10B981',
+        data: { callId, type, seekerName },
+      },
+      trigger: null,
+    });
+  } catch (err) {
+    console.warn('[Call Notification Warning]', err);
+  }
+}

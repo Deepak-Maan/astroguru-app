@@ -272,7 +272,8 @@ export async function syncRoomMetadataToFirebase(room: {
  * Subscribe to Acharya's Incoming Consultation Rooms in Real Time
  */
 export function subscribeToAcharyaRoomsInFirebase(astrologerId: string, callback: (rooms: any[]) => void) {
-  const acharyaRoomsRef = ref(firebaseDb, `astrologer_rooms/${astrologerId}`);
+  const cleanAstrologerId = String(astrologerId).replace(/[.#$\[\]\/]/g, '_');
+  const acharyaRoomsRef = ref(firebaseDb, `astrologer_rooms/${cleanAstrologerId}`);
   onValue(acharyaRoomsRef, (snapshot) => {
     const data = snapshot.val();
     if (!data) {
@@ -285,4 +286,99 @@ export function subscribeToAcharyaRoomsInFirebase(astrologerId: string, callback
   });
   return () => off(acharyaRoomsRef);
 }
+
+/**
+ * Initiate an Audio or Video Call in Firebase Realtime Database
+ */
+export async function initiateCallInFirebase(callData: {
+  callId: string;
+  seekerId: string;
+  seekerName: string;
+  astrologerId: string;
+  astrologerName: string;
+  type: 'audio' | 'video';
+  ratePerMin: number;
+}) {
+  if (!callData || !callData.callId || !callData.astrologerId) return;
+
+  const cleanCallId = String(callData.callId).replace(/[.#$\[\]\/]/g, '_');
+  const cleanAstrologerId = String(callData.astrologerId).replace(/[.#$\[\]\/]/g, '_');
+
+  const payload = {
+    callId: cleanCallId,
+    seekerId: callData.seekerId || 'usr_seeker',
+    seekerName: callData.seekerName || 'Seeker',
+    astrologerId: cleanAstrologerId,
+    astrologerName: callData.astrologerName || 'Acharya',
+    type: callData.type || 'audio',
+    ratePerMin: Number(callData.ratePerMin) || 25,
+    status: 'ringing',
+    startedAt: Date.now(),
+    updatedAt: Date.now(),
+  };
+
+  try {
+    const callRef = ref(firebaseDb, `calls/${cleanCallId}`);
+    await set(callRef, payload);
+
+    const astroCallRef = ref(firebaseDb, `astrologer_calls/${cleanAstrologerId}/${cleanCallId}`);
+    await set(astroCallRef, payload);
+  } catch (e: any) {
+    console.warn('[Firebase Call Initiate Warning]', e?.message || e);
+  }
+}
+
+/**
+ * Update Call Status in Firebase (e.g. 'connected', 'ended', 'declined')
+ */
+export async function updateCallStatusInFirebase(
+  callId: string,
+  astrologerId: string,
+  status: 'ringing' | 'connected' | 'ended' | 'declined'
+) {
+  if (!callId) return;
+  const cleanCallId = String(callId).replace(/[.#$\[\]\/]/g, '_');
+  const cleanAstrologerId = String(astrologerId || '').replace(/[.#$\[\]\/]/g, '_');
+
+  try {
+    const callStatusRef = ref(firebaseDb, `calls/${cleanCallId}/status`);
+    await set(callStatusRef, status);
+
+    if (cleanAstrologerId) {
+      const astroCallStatusRef = ref(firebaseDb, `astrologer_calls/${cleanAstrologerId}/${cleanCallId}/status`);
+      await set(astroCallStatusRef, status);
+    }
+  } catch (e: any) {
+    console.warn('[Firebase Call Status Update Warning]', e?.message || e);
+  }
+}
+
+/**
+ * Subscribe to Incoming Calls for an Acharya in Real Time
+ */
+export function subscribeToIncomingCallsInFirebase(
+  astrologerId: string,
+  callback: (calls: any[]) => void
+) {
+  if (!astrologerId) {
+    callback([]);
+    return () => {};
+  }
+  const cleanAstrologerId = String(astrologerId).replace(/[.#$\[\]\/]/g, '_');
+  const astroCallsRef = ref(firebaseDb, `astrologer_calls/${cleanAstrologerId}`);
+
+  onValue(astroCallsRef, (snapshot) => {
+    const data = snapshot.val();
+    if (!data) {
+      callback([]);
+      return;
+    }
+    const callsList = Object.values(data);
+    callsList.sort((a: any, b: any) => (b.startedAt || 0) - (a.startedAt || 0));
+    callback(callsList);
+  });
+
+  return () => off(astroCallsRef);
+}
+
 

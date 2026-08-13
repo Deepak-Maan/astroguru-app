@@ -23,12 +23,15 @@ import { formatCurrency } from '../../src/utils';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 import { getAstrologerByIdFromFirebase } from '../../src/services/firebaseAuthService';
+import { initiateCallInFirebase, updateCallStatusInFirebase } from '../../src/services/firebaseRealtimeService';
+import { showIncomingCallNotification } from '../../src/services/notificationService';
 import { Astrologer } from '../../src/types';
 
 export default function LiveConsultationScreen() {
   const router = useRouter();
-  const { id, type = 'video' } = useLocalSearchParams<{ id: string; type?: 'audio' | 'video' }>();
+  const { id, type = 'video', callId: paramCallId, role = 'seeker' } = useLocalSearchParams<{ id: string; type?: 'audio' | 'video'; callId?: string; role?: string }>();
   const [astrologer, setAstrologer] = useState<Astrologer>(() => ASTROLOGERS.find((a) => a.id === id) || ASTROLOGERS[0]);
+  const [activeCallId, setActiveCallId] = useState(paramCallId || `call_${Date.now()}`);
 
   useEffect(() => {
     if (id) {
@@ -56,6 +59,28 @@ export default function LiveConsultationScreen() {
   // Animation drivers
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const waveAnim = useRef(new Animated.Value(0.4)).current;
+
+  // Initiate call in Firebase & notify Acharya when seeker starts call
+  useEffect(() => {
+    if (astrologer && role !== 'expert') {
+      const seekerName = user?.name || 'Seeker';
+      initiateCallInFirebase({
+        callId: activeCallId,
+        seekerId: user?.id ? String(user.id) : 'usr_seeker_demo',
+        seekerName,
+        astrologerId: astrologer.id,
+        astrologerName: astrologer.name,
+        type: type === 'video' ? 'video' : 'audio',
+        ratePerMin: astrologer.pricePerMin,
+      });
+
+      showIncomingCallNotification({
+        seekerName,
+        type: type === 'video' ? 'video' : 'audio',
+        callId: activeCallId,
+      });
+    }
+  }, [astrologer?.id, activeCallId, role]);
 
   // Pulse animation while connecting
   useEffect(() => {
@@ -85,9 +110,12 @@ export default function LiveConsultationScreen() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setCallState('connected');
+      if (astrologer) {
+        updateCallStatusInFirebase(activeCallId, astrologer.id, 'connected');
+      }
     }, 2500);
     return () => clearTimeout(timer);
-  }, []);
+  }, [activeCallId, astrologer?.id]);
 
   // Call duration timer & billing engine
   useEffect(() => {
@@ -97,7 +125,7 @@ export default function LiveConsultationScreen() {
       setSeconds((prev) => {
         const next = prev + 1;
         // Bill every 60 seconds
-        if (next > 0 && next % 60 === 0) {
+        if (next > 0 && next % 60 === 0 && role !== 'expert') {
           setBilledMinutes((m) => m + 1);
           debit(astrologer.pricePerMin, `Live ${type.toUpperCase()} Consultation with ${astrologer.name}`);
         }
@@ -106,10 +134,13 @@ export default function LiveConsultationScreen() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [callState, astrologer, debit, type]);
+  }, [callState, astrologer, debit, type, role]);
 
   function handleEndCall() {
     setCallState('ended');
+    if (astrologer) {
+      updateCallStatusInFirebase(activeCallId, astrologer.id, 'ended');
+    }
     setTimeout(() => {
       router.back();
     }, 1200);

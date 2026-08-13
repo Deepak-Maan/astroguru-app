@@ -8,6 +8,7 @@ import { useSettingsStore } from '../src/store/settingsStore';
 import { AppUpdateModal } from '../src/components/AppUpdateModal';
 import { SecurityLockModal } from '../src/components/SecurityLockModal';
 import { NotificationToast } from '../src/components/NotificationToast';
+import { IncomingCallModal } from '../src/components/IncomingCallModal';
 
 import { useUpdateStore } from '../src/store/updateStore';
 import { seedAllUsersAndAstrologersToFirebase } from '../src/services/firebaseRealtimeService';
@@ -88,6 +89,7 @@ export default function RootLayout() {
           <Stack.Screen name="consultation/[id]" options={{ presentation: 'fullScreenModal' }} />
         </Stack>
         <NotificationToast />
+        <IncomingCallModal />
         <AppUpdateModal />
         <SecurityLockModal />
       </SafeAreaProvider>
