@@ -19,6 +19,7 @@ import { Chip } from '../../src/components/Chip';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { useAuthStore } from '../../src/store/authStore';
 import { ApiClient } from '../../src/services/apiClient';
+import { firebaseExpertSignup } from '../../src/services/firebaseAuthService';
 
 const ALL_SPECIALTIES = [
   'Vedic Astrology',
@@ -80,17 +81,65 @@ export default function ExpertSignupScreen() {
     setLoading(true);
     setError(null);
 
+    // 1️⃣ Firebase Expert Signup (works globally)
+    try {
+      const fbRes = await firebaseExpertSignup({
+        name,
+        email,
+        phone,
+        password,
+        specialties: selectedSpecialties,
+        languages: selectedLanguages,
+        experienceYears,
+        pricePerMin,
+        about,
+      });
+
+      if (fbRes.success && fbRes.expert) {
+        setUserSession({
+          id: fbRes.expert.id,
+          name: fbRes.expert.name,
+          email: fbRes.expert.email,
+          phone: fbRes.expert.phone || '',
+          role: 'astrologer',
+          createdAt: fbRes.expert.createdAt || new Date().toISOString().split('T')[0],
+        });
+        setLoading(false);
+        router.replace('/(tabs)');
+        return;
+      }
+      if (fbRes.error) {
+        setLoading(false);
+        setError(fbRes.error);
+        return;
+      }
+    } catch (e) {
+      console.warn('[Expert Signup Firebase fallback to local server]', e);
+    }
+
+    // 2️⃣ Fallback: local server signup
     const res = await ApiClient.expertSignup({
-      name,
-      email,
-      phone,
-      password,
+      name, email, phone, password,
       specialties: selectedSpecialties,
       languages: selectedLanguages,
-      experienceYears,
-      pricePerMin,
-      about,
+      experienceYears, pricePerMin, about,
     });
+    setLoading(false);
+
+    if (res && res.success && res.expert) {
+      setUserSession({
+        id: res.expert.id,
+        name: res.expert.name,
+        email: res.expert.email,
+        phone: res.expert.phone || '',
+        role: 'astrologer',
+        createdAt: new Date().toISOString().split('T')[0],
+      });
+      router.replace('/(tabs)');
+    } else {
+      setError(res?.error || 'Registration failed. Please try again.');
+    }
+  };
 
     setLoading(false);
 

@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ApiClient } from './apiClient';
+import { firebaseLogin, firebaseSignup } from './firebaseAuthService';
 
 export interface UserAccount {
   id: string;
@@ -59,20 +60,44 @@ export async function registerUserAccount({
   const cleanEmail = email.trim().toLowerCase();
   const cleanPhone = phone?.trim() || '';
 
-  const accounts = await getStoredAccounts();
+  // 1. Try Firebase Auth first (works globally)
+  if (password && password.length >= 6) {
+    try {
+      const fbRes = await firebaseSignup(name, cleanEmail, password, cleanPhone);
+      if (fbRes.success && fbRes.user) {
+        // Also save locally for offline support
+        const accounts = await getStoredAccounts();
+        const localUser: UserAccount = {
+          id: fbRes.user.id,
+          name: fbRes.user.name,
+          email: fbRes.user.email,
+          phone: fbRes.user.phone || cleanPhone,
+          password,
+          role: 'user',
+          createdAt: fbRes.user.createdAt,
+        };
+        accounts.push(localUser);
+        await saveAccounts(accounts);
+        return { success: true, user: localUser };
+      }
+      if (fbRes.error) return { success: false, error: fbRes.error };
+    } catch (e) {
+      console.warn('[Firebase Signup fallback to local]', e);
+    }
+  }
 
+  // 2. Local fallback
+  const accounts = await getStoredAccounts();
   const existingEmail = accounts.find((a) => a.email.toLowerCase() === cleanEmail);
   if (existingEmail) {
     return { success: false, error: 'An account with this email address already exists. Please Sign In.' };
   }
-
   if (cleanPhone) {
     const existingPhone = accounts.find((a) => a.phone === cleanPhone);
     if (existingPhone) {
       return { success: false, error: 'An account with this phone number already exists.' };
     }
   }
-
   const role = cleanEmail.includes('admin') ? 'admin' : 'user';
   const newUser: UserAccount = {
     id: `usr_${Date.now()}`,
@@ -83,10 +108,8 @@ export async function registerUserAccount({
     role,
     createdAt: new Date().toISOString().split('T')[0],
   };
-
   accounts.push(newUser);
   await saveAccounts(accounts);
-
   return { success: true, user: newUser };
 }
 
@@ -99,27 +122,27 @@ export async function loginWithEmailPassword(
 ): Promise<{ success: boolean; user?: UserAccount; error?: string }> {
   const cleanEmail = email.trim().toLowerCase();
 
-  // 1. Attempt regular REST API login first
+  // 1. Firebase Auth first (works globally without server)
+  if (password) {
+    try {
+      const fbRes = await firebaseLogin(cleanEmail, password);
+      if (fbRes.success && fbRes.user) {
+        return { success: true, user: fbRes.user as UserAccount };
+      }
+      // If Firebase explicitly rejects credentials, don't try further
+      if (fbRes.error && !fbRes.error.includes('network') && !fbRes.error.includes('failed')) {
+        return { success: false, error: fbRes.error };
+      }
+    } catch (e) {
+      console.warn('[Firebase Login fallback to local]', e);
+    }
+  }
+
+  // 2. Attempt local REST API login (when server is running)
   try {
     const apiRes = await ApiClient.login(cleanEmail, password || '');
     if (apiRes && apiRes.success && apiRes.user) {
       return { success: true, user: apiRes.user };
-    }
-  } catch (e) {}
-
-  // 2. Attempt expert REST API login
-  try {
-    const expertRes = await ApiClient.expertLogin(cleanEmail, password || '');
-    if (expertRes && expertRes.success && expertRes.expert) {
-      const expertUser: UserAccount = {
-        id: expertRes.expert.id,
-        name: expertRes.expert.name,
-        email: expertRes.expert.email,
-        phone: expertRes.expert.phone || '',
-        role: 'astrologer',
-        createdAt: '2026-01-01',
-      };
-      return { success: true, user: expertUser };
     }
   } catch (e) {}
 
@@ -131,18 +154,6 @@ export async function loginWithEmailPassword(
       return { success: false, error: 'Incorrect password. Please verify your password and try again.' };
     }
     return { success: true, user: account };
-  }
-
-  // 4. Seeder fallback for demo accounts (e.g. acharya@astroguru.app)
-  if (cleanEmail === 'acharya@astroguru.app' || cleanEmail.includes('astro')) {
-    const demoAstro: UserAccount = {
-      id: 'astro-1',
-      name: 'Acharya Dev Sharma',
-      email: 'acharya@astroguru.app',
-      role: 'astrologer',
-      createdAt: '2026-01-01',
-    };
-    return { success: true, user: demoAstro };
   }
 
   return { success: false, error: 'Account not found. Check your email or Sign Up for a new account.' };

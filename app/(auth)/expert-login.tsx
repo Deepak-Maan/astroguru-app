@@ -18,6 +18,7 @@ import { Card } from '../../src/components/Card';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { useAuthStore } from '../../src/store/authStore';
 import { ApiClient } from '../../src/services/apiClient';
+import { firebaseExpertLogin } from '../../src/services/firebaseAuthService';
 
 export default function ExpertLoginScreen() {
   const router = useRouter();
@@ -42,9 +43,33 @@ export default function ExpertLoginScreen() {
     setLoading(true);
     setError(null);
 
-    // 1️⃣ Try dedicated expert login endpoint
-    let res = await ApiClient.expertLogin(email.trim().toLowerCase(), password);
+    // 1️⃣ Firebase Expert Login (works worldwide, no server needed)
+    try {
+      const fbRes = await firebaseExpertLogin(email.trim().toLowerCase(), password);
+      if (fbRes.success && fbRes.expert) {
+        setUserSession({
+          id: fbRes.expert.id,
+          name: fbRes.expert.name,
+          email: fbRes.expert.email,
+          phone: fbRes.expert.phone || '',
+          role: 'astrologer',
+          createdAt: fbRes.expert.createdAt || new Date().toISOString().split('T')[0],
+        });
+        setLoading(false);
+        router.replace('/(tabs)');
+        return;
+      }
+      if (fbRes.error && !fbRes.error.toLowerCase().includes('network')) {
+        setLoading(false);
+        setError(fbRes.error);
+        return;
+      }
+    } catch (e) {
+      console.warn('[Expert Login Firebase fallback]', e);
+    }
 
+    // 2️⃣ Fallback: Local server expert login (same Wi-Fi)
+    const res = await ApiClient.expertLogin(email.trim().toLowerCase(), password);
     if (res && res.success && res.expert) {
       setUserSession({
         id: res.expert.id,
@@ -59,29 +84,8 @@ export default function ExpertLoginScreen() {
       return;
     }
 
-    // 2️⃣ Fallback: Try combined login endpoint (handles same db.astrologers table)
-    const combined = await ApiClient.login(email.trim().toLowerCase(), password);
     setLoading(false);
-
-    if (combined && combined.success && combined.user) {
-      // Force role = astrologer for this login screen
-      setUserSession({
-        id: combined.user.id,
-        name: combined.user.name,
-        email: combined.user.email,
-        phone: combined.user.phone || '',
-        role: 'astrologer',
-        createdAt: combined.user.createdAt || new Date().toISOString().split('T')[0],
-      });
-      router.replace('/(tabs)');
-      return;
-    }
-
-    setError(
-      res?.error ||
-      combined?.error ||
-      'Sign in failed. Check your email & password and make sure you are on the same Wi-Fi network as the server.'
-    );
+    setError(res?.error || 'Sign in failed. Please check your email and password.');
   };
 
   return (

@@ -25,6 +25,7 @@ import { Astrologer } from '../../src/types';
 import { useAuthStore } from '../../src/store/authStore';
 import { useJyotishiStore } from '../../src/store/jyotishiStore';
 import { formatCurrency } from '../../src/utils';
+import { fetchJyotishisFromFirebase } from '../../src/services/firebaseAuthService';
 
 const FILTERS = ['All', 'Online', 'Vedic', 'Tarot', 'Numerology', 'Love', 'Career', 'Remedies'];
 
@@ -213,32 +214,29 @@ export default function Consult() {
   const [astrologersList, setAstrologersList] = useState<Astrologer[]>(ASTROLOGERS);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/astrologers')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data && data.success && Array.isArray(data.astrologers)) {
-          const remoteList: Astrologer[] = data.astrologers.map((a: any) => ({
-            id: a.id,
-            name: a.name,
-            avatar: a.avatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200',
-            rating: a.rating || 5.0,
-            reviews: a.reviews || 1,
-            pricePerMin: a.pricePerMin || 25,
-            experienceYears: a.experienceYears || 10,
-            specialties: a.specialties || ['Vedic Astrology'],
-            languages: a.languages || ['Hindi', 'English'],
-            consultations: a.consultations || 0,
-            online: a.online ?? true,
-            about: a.about || 'Certified Vedic Jyotish Expert',
-          }));
-
-          // Merge without duplicate IDs
-          const existingIds = new Set(remoteList.map((r) => r.id));
-          const localOnly = ASTROLOGERS.filter((l) => !existingIds.has(l.id));
-          setAstrologersList([...remoteList, ...localOnly]);
-        }
-      })
-      .catch(() => {});
+    // Fetch Jyotishi directory from Firebase - works from any country, no server needed
+    fetchJyotishisFromFirebase().then((firebaseList) => {
+      if (firebaseList && firebaseList.length > 0) {
+        const remoteList: Astrologer[] = firebaseList.map((a: any) => ({
+          id: a.id,
+          name: a.name,
+          avatar: a.avatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200',
+          rating: a.rating || 5.0,
+          reviews: a.reviews || 1,
+          pricePerMin: a.pricePerMin || 25,
+          experienceYears: a.experienceYears || 10,
+          specialties: a.specialties || ['Vedic Astrology'],
+          languages: a.languages || ['Hindi', 'English'],
+          consultations: a.consultations || 0,
+          online: a.online ?? true,
+          about: a.about || 'Certified Vedic Jyotish Expert',
+        }));
+        // Merge: Firebase list first, then any local-only defaults not in Firebase
+        const existingIds = new Set(remoteList.map((r) => r.id));
+        const localOnly = ASTROLOGERS.filter((l) => !existingIds.has(l.id));
+        setAstrologersList([...remoteList, ...localOnly]);
+      }
+    }).catch(() => {});
   }, []);
 
   const list = useMemo(() => {
