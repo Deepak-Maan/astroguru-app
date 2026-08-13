@@ -141,23 +141,6 @@ export default function ExpertSignupScreen() {
     }
   };
 
-    setLoading(false);
-
-    if (res && res.success && res.expert) {
-      setUserSession({
-        id: res.expert.id,
-        name: res.expert.name,
-        email: res.expert.email,
-        phone: res.expert.phone || '',
-        role: 'astrologer',
-        createdAt: new Date().toISOString().split('T')[0],
-      });
-      router.replace('/(tabs)');
-    } else {
-      setError(res?.error || 'Expert registration failed.');
-    }
-  };
-
   return (
     <GradientBackground>
       <SafeAreaView style={{ flex: 1 }}>
