@@ -528,6 +528,7 @@ app.post('/api/chat/accept-room', (req, res) => {
   res.json({ success: true, room });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`⚡ AstroGuru Live REST API Server running on http://localhost:${PORT}`);
+  console.log(`📱 Mobile access via LAN: http://192.168.31.252:${PORT}`);
 });

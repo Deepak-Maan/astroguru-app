@@ -42,8 +42,8 @@ export default function ExpertLoginScreen() {
     setLoading(true);
     setError(null);
 
-    const res = await ApiClient.expertLogin(email, password);
-    setLoading(false);
+    // 1️⃣ Try dedicated expert login endpoint
+    let res = await ApiClient.expertLogin(email.trim().toLowerCase(), password);
 
     if (res && res.success && res.expert) {
       setUserSession({
@@ -54,10 +54,34 @@ export default function ExpertLoginScreen() {
         role: 'astrologer',
         createdAt: new Date().toISOString().split('T')[0],
       });
+      setLoading(false);
       router.replace('/(tabs)');
-    } else {
-      setError(res?.error || 'Expert sign in failed. Please check credentials.');
+      return;
     }
+
+    // 2️⃣ Fallback: Try combined login endpoint (handles same db.astrologers table)
+    const combined = await ApiClient.login(email.trim().toLowerCase(), password);
+    setLoading(false);
+
+    if (combined && combined.success && combined.user) {
+      // Force role = astrologer for this login screen
+      setUserSession({
+        id: combined.user.id,
+        name: combined.user.name,
+        email: combined.user.email,
+        phone: combined.user.phone || '',
+        role: 'astrologer',
+        createdAt: combined.user.createdAt || new Date().toISOString().split('T')[0],
+      });
+      router.replace('/(tabs)');
+      return;
+    }
+
+    setError(
+      res?.error ||
+      combined?.error ||
+      'Sign in failed. Check your email & password and make sure you are on the same Wi-Fi network as the server.'
+    );
   };
 
   return (

@@ -3,10 +3,20 @@
  * Interacts with Node.js Express REST Backend running on http://localhost:5000/api
  */
 
-const LOCAL_URL = 'http://localhost:5000/api';
-const PROD_URL = 'https://astroguru-backend-api.onrender.com/api';
+import { Platform } from 'react-native';
 
-const BASE_URL = typeof __DEV__ !== 'undefined' && __DEV__ ? LOCAL_URL : PROD_URL;
+const LOCAL_WEB_URL  = 'http://localhost:5000/api';
+// Your machine's Wi-Fi LAN IP — Android/iOS on the same network will hit this
+const LOCAL_LAN_URL  = 'http://192.168.31.252:5000/api';
+const PROD_URL       = 'https://astroguru-backend-api.onrender.com/api';
+
+// Web browser → localhost. Native app → LAN IP. Production → Render.
+const BASE_URL =
+  typeof __DEV__ !== 'undefined' && __DEV__
+    ? Platform.OS === 'web'
+      ? LOCAL_WEB_URL
+      : LOCAL_LAN_URL
+    : PROD_URL;
 
 let authToken: string | null = null;
 
