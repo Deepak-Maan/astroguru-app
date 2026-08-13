@@ -15,6 +15,7 @@
     },
     "android": {
       "package": "com.astroguru.app",
+      "versionCode": 269,
       "adaptiveIcon": {
         "backgroundColor": "#060A12",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -42,7 +43,14 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#F59E0B"
+        }
+      ]
     ],
     "extra": {
       "router": {},
