@@ -236,7 +236,7 @@ export default function Profile() {
                 </Card>
               </View>
 
-              <Text style={styles.version}>AstroGuru Acharya · v2.6.3 · {authUser?.email}</Text>
+              <Text style={styles.version}>AstroGuru Acharya · v2.6.4 · {authUser?.email}</Text>
             </ScrollView>
           </>
         ) : (
