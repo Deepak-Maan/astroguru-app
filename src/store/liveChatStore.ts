@@ -83,6 +83,9 @@ interface LiveChatState {
 
   /** Poll & sync live messages from REST backend */
   syncRoomFromBackend: (roomId: string) => Promise<void>;
+
+  /** Sync real-time Firebase messages without re-triggering push */
+  syncFirebaseMessages: (roomId: string, fbMsgs: any[]) => void;
 }
 
 let msgCounter = 0;
@@ -343,6 +346,41 @@ export const useLiveChatStore = create<LiveChatState>()(
         } catch (e) {
           // Offline fallback
         }
+      },
+      syncFirebaseMessages: (roomId: string, fbMsgs: any[]) => {
+        if (!roomId || !Array.isArray(fbMsgs) || fbMsgs.length === 0) return;
+        set((s) => {
+          const currentRoom = s.rooms[roomId];
+          if (!currentRoom) return s;
+
+          const existingIds = new Set(currentRoom.messages.map((m) => m.id));
+          const newMsgs: LiveMessage[] = [];
+
+          for (const m of fbMsgs) {
+            if (m && m.id && !existingIds.has(m.id)) {
+              newMsgs.push({
+                id: m.id,
+                role: m.senderRole || 'seeker',
+                senderName: m.senderName || 'User',
+                text: m.text || '',
+                at: m.timestamp || Date.now(),
+                read: true,
+              });
+            }
+          }
+
+          if (newMsgs.length === 0) return s;
+
+          return {
+            rooms: {
+              ...s.rooms,
+              [roomId]: {
+                ...currentRoom,
+                messages: [...currentRoom.messages, ...newMsgs],
+              },
+            },
+          };
+        });
       },
     }),
     {

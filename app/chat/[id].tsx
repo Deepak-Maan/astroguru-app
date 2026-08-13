@@ -86,14 +86,14 @@ export default function ChatScreen() {
   const isLiveActive = liveRoom?.status === 'active';
   const isLiveEnded = liveRoom?.status === 'ended';
 
+  const syncFirebaseMessages = useLiveChatStore((s) => s.syncFirebaseMessages);
+
   // Real-time Firebase Room Subscription (<100ms sync across devices)
   useEffect(() => {
     if (!liveRoomId) return;
     const unsubscribe = subscribeToFirebaseRoomMessages(liveRoomId, (fbMsgs) => {
       if (fbMsgs && fbMsgs.length > 0) {
-        fbMsgs.forEach((m) => {
-          sendLiveMessage(liveRoomId, m.senderRole, m.senderName, m.text);
-        });
+        syncFirebaseMessages(liveRoomId, fbMsgs);
       }
     });
     return () => unsubscribe();

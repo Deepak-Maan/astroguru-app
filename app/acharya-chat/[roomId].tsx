@@ -68,14 +68,14 @@ export default function AcharyaChatScreen() {
   const isWaiting = room?.status === 'waiting';
   const isEnded = room?.status === 'ended';
 
+  const syncFirebaseMessages = useLiveChatStore((s) => s.syncFirebaseMessages);
+
   // Real-time Firebase Room Subscription for Acharya
   useEffect(() => {
     if (!roomId) return;
     const unsubscribe = subscribeToFirebaseRoomMessages(roomId, (fbMsgs) => {
       if (fbMsgs && fbMsgs.length > 0) {
-        fbMsgs.forEach((m) => {
-          sendMessage(roomId, m.senderRole, m.senderName, m.text);
-        });
+        syncFirebaseMessages(roomId, fbMsgs);
       }
     });
     return () => unsubscribe();
