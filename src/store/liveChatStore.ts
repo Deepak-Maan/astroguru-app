@@ -12,7 +12,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { pushMessageToFirebase } from '../services/firebaseRealtimeService';
+import { pushMessageToFirebase, syncRoomMetadataToFirebase } from '../services/firebaseRealtimeService';
 
 export type MessageRole = 'seeker' | 'acharya' | 'system';
 
@@ -125,6 +125,19 @@ export const useLiveChatStore = create<LiveChatState>()(
         };
 
         set((s) => ({ rooms: { ...s.rooms, [roomId]: room } }));
+        
+        syncRoomMetadataToFirebase({
+          roomId,
+          seekerId,
+          seekerName,
+          astrologerId,
+          astrologerName,
+          topic,
+          ratePerMin,
+          status: 'waiting',
+          lastMessage: `Consultation request from ${seekerName}`,
+        });
+
         return roomId;
       },
 
@@ -174,19 +187,25 @@ export const useLiveChatStore = create<LiveChatState>()(
           };
         });
 
-        // Fire-and-forget sync to backend server & Firebase Realtime Cloud Database
-        fetch('http://localhost:5000/api/chat/send-message', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ roomId, role, senderName, text }),
-        }).catch(() => {});
-
         pushMessageToFirebase(roomId, {
           senderId: role,
           senderName,
           senderRole: role,
           text,
         });
+
+        const activeRoom = get().rooms[roomId];
+        if (activeRoom) {
+          syncRoomMetadataToFirebase({
+            roomId,
+            seekerId: activeRoom.seekerId,
+            seekerName: activeRoom.seekerName,
+            astrologerId: activeRoom.astrologerId,
+            astrologerName: activeRoom.astrologerName,
+            status: activeRoom.status,
+            lastMessage: text,
+          });
+        }
       },
 
       markRead: (roomId, role) =>

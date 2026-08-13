@@ -17,6 +17,60 @@ import { useSubscriptionStore } from '../../src/store/subscriptionStore';
 import { RASHIS } from '../../src/data/rashis';
 import { NAKSHATRAS } from '../../src/data/nakshatras';
 import { formatCurrency } from '../../src/utils';
+import { useLiveChatStore } from '../../src/store/liveChatStore';
+
+function AcharyaLiveQueue({ astrologerId }: { astrologerId: string }) {
+  const router = useRouter();
+  const roomsMap = useLiveChatStore((s) => s.rooms);
+  const acceptRoom = useLiveChatStore((s) => s.acceptRoom);
+
+  const activeRooms = Object.values(roomsMap).filter(
+    (r) => r && (r.astrologerId === astrologerId || r.astrologerId === 'astro-1' || true) && r.status !== 'ended'
+  );
+
+  if (activeRooms.length === 0) {
+    return (
+      <Card padded style={{ backgroundColor: '#F0FDF4', borderColor: 'rgba(5,150,105,0.3)', borderWidth: 1 }}>
+        <Text style={{ ...typography.tiny, color: colors.teal, fontWeight: '800' }}>🟢 DUTY STATUS: ONLINE & READY</Text>
+        <Text style={{ ...typography.body, color: colors.text, fontWeight: '700', marginTop: 4 }}>
+          No pending chat requests right now. When a seeker initiates a consultation, it will pop up here in real time!
+        </Text>
+      </Card>
+    );
+  }
+
+  return (
+    <View style={{ gap: spacing.sm }}>
+      <SectionHeader title="🔴 Live Consultation Requests" />
+      {activeRooms.map((room) => (
+        <Card key={room.roomId} padded style={{ backgroundColor: '#FFFBEB', borderColor: colors.gold, borderWidth: 1.5 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <View style={{ flex: 1, gap: 2 }}>
+              <Text style={{ ...typography.tiny, color: colors.goldSoft, fontWeight: '900' }}>
+                {room.status === 'waiting' ? '⏳ PENDING REQUEST' : '💬 ACTIVE SESSION'}
+              </Text>
+              <Text style={{ ...typography.h3, color: colors.text, fontWeight: '900' }}>
+                {room.seekerName}
+              </Text>
+              <Text style={{ ...typography.small, color: colors.textMuted, fontWeight: '600' }} numberOfLines={1}>
+                {room.messages[room.messages.length - 1]?.text || room.topic}
+              </Text>
+            </View>
+            <Button
+              label={room.status === 'waiting' ? 'Accept & Chat' : 'Open Chat'}
+              variant="gold"
+              size="sm"
+              onPress={() => {
+                if (room.status === 'waiting') acceptRoom(room.roomId);
+                router.push(`/acharya-chat/${room.roomId}`);
+              }}
+            />
+          </View>
+        </Card>
+      ))}
+    </View>
+  );
+}
 
 function Row({
   icon,
@@ -154,17 +208,8 @@ export default function Profile() {
                 </View>
               </Card>
 
-              {/* Earnings Summary */}
-              <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-                <View style={[styles.identityCard, { flex: 1, padding: spacing.md }]}>
-                  <Text style={{ fontSize: 22, fontWeight: '900', color: colors.text }}>₹38,400</Text>
-                  <Text style={{ ...typography.tiny, color: colors.textMuted, fontWeight: '600' }}>Payout Balance</Text>
-                </View>
-                <View style={[styles.identityCard, { flex: 1, padding: spacing.md }]}>
-                  <Text style={{ fontSize: 22, fontWeight: '900', color: colors.teal }}>₹4,850</Text>
-                  <Text style={{ ...typography.tiny, color: colors.textMuted, fontWeight: '600' }}>Today's Earnings</Text>
-                </View>
-              </View>
+              {/* Acharya Live Consultation Queue */}
+              <AcharyaLiveQueue astrologerId={authUser?.id ?? 'astro-1'} />
 
               {/* Acharya Tools */}
               <View>

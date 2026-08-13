@@ -205,3 +205,57 @@ export async function seedAllUsersAndAstrologersToFirebase(astrologersList: any[
     console.warn('[Firebase Seed Warning]', e);
   }
 }
+
+/**
+ * Sync Live Room Metadata to Firebase Realtime Database
+ */
+export async function syncRoomMetadataToFirebase(room: {
+  roomId: string;
+  seekerId: string;
+  seekerName: string;
+  astrologerId: string;
+  astrologerName: string;
+  topic?: string;
+  ratePerMin?: number;
+  status: string;
+  lastMessage?: string;
+}) {
+  try {
+    const roomInfoRef = ref(firebaseDb, `rooms/${room.roomId}/info`);
+    await set(roomInfoRef, {
+      ...room,
+      updatedAt: Date.now(),
+    });
+    // Index under /astrologer_rooms/{astrologerId}/{roomId}
+    const indexRef = ref(firebaseDb, `astrologer_rooms/${room.astrologerId}/${room.roomId}`);
+    await set(indexRef, {
+      roomId: room.roomId,
+      seekerId: room.seekerId,
+      seekerName: room.seekerName,
+      status: room.status,
+      lastMessage: room.lastMessage || 'New consultation request',
+      updatedAt: Date.now(),
+    });
+  } catch (e) {
+    console.warn('[Firebase Room Metadata Sync Warning]', e);
+  }
+}
+
+/**
+ * Subscribe to Acharya's Incoming Consultation Rooms in Real Time
+ */
+export function subscribeToAcharyaRoomsInFirebase(astrologerId: string, callback: (rooms: any[]) => void) {
+  const acharyaRoomsRef = ref(firebaseDb, `astrologer_rooms/${astrologerId}`);
+  onValue(acharyaRoomsRef, (snapshot) => {
+    const data = snapshot.val();
+    if (!data) {
+      callback([]);
+      return;
+    }
+    const roomsList = Object.values(data);
+    roomsList.sort((a: any, b: any) => (b.updatedAt || 0) - (a.updatedAt || 0));
+    callback(roomsList);
+  });
+  return () => off(acharyaRoomsRef);
+}
+

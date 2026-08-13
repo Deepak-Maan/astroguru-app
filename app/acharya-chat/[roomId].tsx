@@ -39,6 +39,8 @@ const QUICK_REPLIES = [
   '✅ Your concern is addressed. Namaste 🙏',
 ];
 
+import { subscribeToFirebaseRoomMessages } from '../../src/services/firebaseRealtimeService';
+
 export default function AcharyaChatScreen() {
   const router = useRouter();
   const { roomId } = useLocalSearchParams<{ roomId: string }>();
@@ -66,14 +68,17 @@ export default function AcharyaChatScreen() {
   const isWaiting = room?.status === 'waiting';
   const isEnded = room?.status === 'ended';
 
-  // Real-time 1.5s background polling sync
+  // Real-time Firebase Room Subscription for Acharya
   useEffect(() => {
     if (!roomId) return;
-    syncRoomFromBackend(roomId);
-    const poll = setInterval(() => {
-      syncRoomFromBackend(roomId);
-    }, 1500);
-    return () => clearInterval(poll);
+    const unsubscribe = subscribeToFirebaseRoomMessages(roomId, (fbMsgs) => {
+      if (fbMsgs && fbMsgs.length > 0) {
+        fbMsgs.forEach((m) => {
+          sendMessage(roomId, m.senderRole, m.senderName, m.text);
+        });
+      }
+    });
+    return () => unsubscribe();
   }, [roomId]);
 
   // Mark read when Acharya opens the screen

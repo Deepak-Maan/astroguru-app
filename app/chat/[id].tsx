@@ -39,8 +39,7 @@ const QUICK_PROMPTS = [
   '🔮 Lucky Gemstone Advice',
 ];
 
-import { getAstrologerByIdFromFirebase } from '../../src/services/firebaseAuthService';
-import { Astrologer } from '../../src/types';
+import { subscribeToFirebaseRoomMessages } from '../../src/services/firebaseRealtimeService';
 
 export default function ChatScreen() {
   const router = useRouter();
@@ -84,14 +83,17 @@ export default function ChatScreen() {
   const isLiveActive = liveRoom?.status === 'active';
   const isLiveEnded = liveRoom?.status === 'ended';
 
-  // 1.5s real-time background sync polling
+  // Real-time Firebase Room Subscription (<100ms sync across devices)
   useEffect(() => {
     if (!liveRoomId) return;
-    syncRoomFromBackend(liveRoomId);
-    const poll = setInterval(() => {
-      syncRoomFromBackend(liveRoomId);
-    }, 1500);
-    return () => clearInterval(poll);
+    const unsubscribe = subscribeToFirebaseRoomMessages(liveRoomId, (fbMsgs) => {
+      if (fbMsgs && fbMsgs.length > 0) {
+        fbMsgs.forEach((m) => {
+          sendLiveMessage(liveRoomId, m.senderRole, m.senderName, m.text);
+        });
+      }
+    });
+    return () => unsubscribe();
   }, [liveRoomId]);
 
   const session = astrologer ? getSession(astrologer.id) : null;
