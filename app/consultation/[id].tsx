@@ -22,10 +22,22 @@ import { formatCurrency } from '../../src/utils';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
+import { getAstrologerByIdFromFirebase } from '../../src/services/firebaseAuthService';
+import { Astrologer } from '../../src/types';
+
 export default function LiveConsultationScreen() {
   const router = useRouter();
   const { id, type = 'video' } = useLocalSearchParams<{ id: string; type?: 'audio' | 'video' }>();
-  const astrologer = ASTROLOGERS.find((a) => a.id === id) || ASTROLOGERS[0];
+  const [astrologer, setAstrologer] = useState<Astrologer>(() => ASTROLOGERS.find((a) => a.id === id) || ASTROLOGERS[0]);
+
+  useEffect(() => {
+    if (id) {
+      getAstrologerByIdFromFirebase(String(id)).then((data) => {
+        if (data) setAstrologer(data);
+      });
+    }
+  }, [id]);
+
   const user = useAuthStore((s) => s.user);
 
   const debit = useWalletStore((s) => s.debit);

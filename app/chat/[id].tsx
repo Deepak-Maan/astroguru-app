@@ -39,10 +39,22 @@ const QUICK_PROMPTS = [
   '🔮 Lucky Gemstone Advice',
 ];
 
+import { getAstrologerByIdFromFirebase } from '../../src/services/firebaseAuthService';
+import { Astrologer } from '../../src/types';
+
 export default function ChatScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const astrologer = ASTROLOGERS.find((a) => a.id === id);
+  const [astrologer, setAstrologer] = useState<Astrologer | undefined>(() => ASTROLOGERS.find((a) => a.id === id));
+
+  useEffect(() => {
+    if (id && !astrologer) {
+      getAstrologerByIdFromFirebase(String(id)).then((data) => {
+        if (data) setAstrologer(data);
+      });
+    }
+  }, [id]);
+
   const authUser = useAuthStore((s) => s.user);
 
   const kundli = useUserStore((s) => s.kundli);

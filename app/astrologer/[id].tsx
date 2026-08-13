@@ -1,5 +1,5 @@
-import React from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -14,12 +14,36 @@ import { colors, radius, spacing, typography } from '../../src/theme';
 import { astrologerById } from '../../src/data/astrologers';
 import { useWalletStore } from '../../src/store/walletStore';
 import { formatCurrency } from '../../src/utils';
+import { getAstrologerByIdFromFirebase } from '../../src/services/firebaseAuthService';
+import { Astrologer } from '../../src/types';
 
 export default function AstrologerProfile() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const balance = useWalletStore((s) => s.balance);
-  const astrologer = astrologerById(String(id));
+  const [astrologer, setAstrologer] = useState<Astrologer | null>(() => astrologerById(String(id)) || null);
+  const [loading, setLoading] = useState(!astrologer);
+
+  useEffect(() => {
+    if (id && !astrologer) {
+      getAstrologerByIdFromFirebase(String(id)).then((data) => {
+        if (data) {
+          setAstrologer(data);
+        }
+        setLoading(false);
+      });
+    }
+  }, [id]);
+
+  if (loading) {
+    return (
+      <GradientBackground>
+        <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={colors.gold} />
+        </SafeAreaView>
+      </GradientBackground>
+    );
+  }
 
   if (!astrologer) {
     return (

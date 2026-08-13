@@ -282,3 +282,33 @@ export async function migrateLocalJyotishisToFirebase(localAstrologers: any[]) {
     console.log('[Firebase Migration] Seeded Jyotishi: ' + a.name);
   }
 }
+
+export async function getAstrologerByIdFromFirebase(id: string): Promise<any | null> {
+  if (!id) return null;
+  try {
+    let snap = await get(ref(firebaseDb, 'jyotishis/' + id));
+    if (!snap.exists()) {
+      snap = await get(ref(firebaseDb, 'astrologers/' + id));
+    }
+    if (snap.exists()) {
+      const a = snap.val();
+      return {
+        id: a.id || id,
+        name: a.name || 'Jyotishi',
+        avatar: a.avatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200',
+        rating: Number(a.rating) || 5.0,
+        reviews: Number(a.reviews) || 1,
+        pricePerMin: Number(a.pricePerMin) || 25,
+        experienceYears: Number(a.experienceYears) || 10,
+        specialties: a.specialties || ['Vedic Astrology'],
+        languages: a.languages || ['Hindi', 'English'],
+        consultations: Number(a.consultations) || 0,
+        online: a.online ?? true,
+        about: a.about || 'Certified Vedic Jyotish Expert',
+      };
+    }
+  } catch (e) {
+    console.warn('[Firebase Single Jyotishi Fetch Error]', e);
+  }
+  return null;
+}
