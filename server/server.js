@@ -100,6 +100,20 @@ function saveDb(data) {
   fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
 }
 
+// ── GET ALL ASTROLOGERS (Jyotishi Directory) ──
+app.get('/api/astrologers', (req, res) => {
+  const db = loadDb();
+  const astrologers = (db.astrologers || []).map(({ password, ...rest }) => rest);
+  res.json({ success: true, astrologers });
+});
+
+// ── GET ALL USERS / SEEKERS ──
+app.get('/api/users', (req, res) => {
+  const db = loadDb();
+  const users = (db.users || []).map(({ password, ...rest }) => rest);
+  res.json({ success: true, users });
+});
+
 function generate6DigitOtp() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
