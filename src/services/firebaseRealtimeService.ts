@@ -381,4 +381,37 @@ export function subscribeToIncomingCallsInFirebase(
   return () => off(astroCallsRef);
 }
 
+/**
+ * Sync Latest Release Version Metadata to Firebase Realtime Database
+ */
+export async function syncLatestAppVersionToFirebase(version: string, notes: string[]) {
+  try {
+    const metaRef = ref(firebaseDb, 'app_meta');
+    await set(metaRef, {
+      latestVersion: version,
+      releaseNotes: notes,
+      updatedAt: Date.now(),
+    });
+  } catch (e) {
+    console.warn('[Firebase App Meta Sync Warning]', e);
+  }
+}
+
+/**
+ * Get Latest Release Version Metadata from Firebase Realtime Database
+ */
+export async function getAppVersionFromFirebase(): Promise<{ latestVersion: string; releaseNotes: string[] } | null> {
+  try {
+    const metaRef = ref(firebaseDb, 'app_meta');
+    const snap = await get(metaRef);
+    if (snap.exists()) {
+      return snap.val();
+    }
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
+
+
 

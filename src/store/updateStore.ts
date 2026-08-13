@@ -5,6 +5,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
 
+import { getAppVersionFromFirebase, syncLatestAppVersionToFirebase } from '../services/firebaseRealtimeService';
+
 const LATEST_RELEASE_VERSION = '2.6.9';
 
 export interface UpdateInfo {
@@ -46,15 +48,14 @@ export const useUpdateStore = create<UpdateState>()(
       isReadyToInstall: false,
 
       autoCheckAndFetchOnStartup: async () => {
-        // Automatically sync current version to latest release version
-        set({
-          currentVersion: LATEST_RELEASE_VERSION,
-          latestVersion: LATEST_RELEASE_VERSION,
-        });
+        // Sync latest version metadata to Firebase Realtime DB
+        syncLatestAppVersionToFirebase(LATEST_RELEASE_VERSION, get().releaseNotes);
 
         // On Web, app updates automatically on bundle reload
         if (Platform.OS === 'web') {
           set({
+            currentVersion: LATEST_RELEASE_VERSION,
+            latestVersion: LATEST_RELEASE_VERSION,
             updateAvailable: false,
             isReadyToInstall: false,
             downloadProgress: 0,
@@ -62,9 +63,8 @@ export const useUpdateStore = create<UpdateState>()(
           return;
         }
 
-        const currentVersion = get().currentVersion || '2.0.0';
-
         try {
+          // Check for Over-The-Air EAS updates
           if (Updates.isEnabled) {
             const update = await Updates.checkForUpdateAsync();
             if (update.isAvailable) {
@@ -72,9 +72,26 @@ export const useUpdateStore = create<UpdateState>()(
                 updateAvailable: true,
                 latestVersion: LATEST_RELEASE_VERSION,
                 isDownloading: true,
+                downloadProgress: 45,
               });
               await Updates.fetchUpdateAsync();
               set({ downloadProgress: 100, isDownloading: false, isReadyToInstall: true });
+              return;
+            }
+          }
+
+          // Check Firebase remote metadata
+          const remoteMeta = await getAppVersionFromFirebase();
+          if (remoteMeta && remoteMeta.latestVersion) {
+            const currentVer = get().currentVersion;
+            if (currentVer !== remoteMeta.latestVersion) {
+              set({
+                updateAvailable: true,
+                latestVersion: remoteMeta.latestVersion,
+                releaseNotes: remoteMeta.releaseNotes || get().releaseNotes,
+                isReadyToInstall: true,
+                downloadProgress: 100,
+              });
               return;
             }
           }
@@ -82,15 +99,17 @@ export const useUpdateStore = create<UpdateState>()(
           console.warn('[Auto Update Check Warning]', e);
         }
 
-        if (currentVersion !== LATEST_RELEASE_VERSION) {
-          set({ updateAvailable: true, latestVersion: LATEST_RELEASE_VERSION, isReadyToInstall: true, downloadProgress: 100 });
-        } else {
-          set({ updateAvailable: false, isReadyToInstall: false, downloadProgress: 0 });
-        }
+        set({
+          currentVersion: LATEST_RELEASE_VERSION,
+          latestVersion: LATEST_RELEASE_VERSION,
+          updateAvailable: false,
+          isReadyToInstall: false,
+          downloadProgress: 0,
+        });
       },
 
       checkForUpdates: async () => {
-        const currentVersion = get().currentVersion || '1.5.0';
+        const currentVersion = get().currentVersion || '2.6.7';
 
         try {
           if (Updates.isEnabled) {
@@ -105,28 +124,24 @@ export const useUpdateStore = create<UpdateState>()(
               return { isNewAvailable: true, currentVersion, latestVersion: LATEST_RELEASE_VERSION };
             }
           }
+
+          const remoteMeta = await getAppVersionFromFirebase();
+          const targetVer = remoteMeta?.latestVersion || LATEST_RELEASE_VERSION;
+
+          if (currentVersion !== targetVer) {
+            set({
+              updateAvailable: true,
+              latestVersion: targetVer,
+              isReadyToInstall: true,
+              downloadProgress: 100,
+            });
+            return { isNewAvailable: true, currentVersion, latestVersion: targetVer };
+          }
         } catch (e) {
           console.warn('[Expo Updates Check Warning]', e);
         }
 
-        const isNewAvailable = currentVersion !== LATEST_RELEASE_VERSION;
-        if (isNewAvailable) {
-          set({
-            updateAvailable: true,
-            latestVersion: LATEST_RELEASE_VERSION,
-            isReadyToInstall: true,
-            downloadProgress: 100,
-          });
-          return { isNewAvailable: true, currentVersion, latestVersion: LATEST_RELEASE_VERSION };
-        } else {
-          set({
-            updateAvailable: true,
-            latestVersion: LATEST_RELEASE_VERSION,
-            isReadyToInstall: true,
-            downloadProgress: 100,
-          });
-          return { isNewAvailable: true, currentVersion, latestVersion: LATEST_RELEASE_VERSION };
-        }
+        return { isNewAvailable: false, currentVersion, latestVersion: LATEST_RELEASE_VERSION };
       },
 
       triggerUpdateModal: () => {

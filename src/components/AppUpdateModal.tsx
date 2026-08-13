@@ -1,9 +1,10 @@
-import React from 'react';
-import { Linking, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { Alert, Linking, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, radius, spacing, typography } from '../theme';
 import { Button } from './Button';
 import { useUpdateStore } from '../store/updateStore';
+import { downloadAndInstallApk } from '../services/apkInstallerService';
 
 const DIRECT_APK_DOWNLOAD_URL = 'https://expo.dev/accounts/deepak00007/projects/astrologer-app/builds';
 
@@ -22,14 +23,29 @@ export function AppUpdateModal() {
     dismissUpdate,
   } = useUpdateStore();
 
+  const [isApkDownloading, setIsApkDownloading] = useState(false);
+  const [apkProgress, setApkProgress] = useState(0);
+
   // On Web platform, updates happen automatically on page reload without modal popups
   if (Platform.OS === 'web' || !updateAvailable) return null;
 
-  const handleDirectApkDownload = async () => {
+  const handleInAppApkInstall = async () => {
+    setIsApkDownloading(true);
+    setApkProgress(15);
+
     try {
-      await Linking.openURL(DIRECT_APK_DOWNLOAD_URL);
+      const res = await downloadAndInstallApk(DIRECT_APK_DOWNLOAD_URL, (pct) => {
+        setApkProgress(pct);
+      });
+
+      setIsApkDownloading(false);
+      if (!res.success && res.error) {
+        // Fallback to browser download if package installer was blocked
+        await Linking.openURL(DIRECT_APK_DOWNLOAD_URL);
+      }
     } catch (e) {
-      console.warn('Failed to open direct APK link:', e);
+      setIsApkDownloading(false);
+      await Linking.openURL(DIRECT_APK_DOWNLOAD_URL);
     }
   };
 
@@ -71,36 +87,49 @@ export function AppUpdateModal() {
             </View>
 
             {/* Download Progress Bar */}
-            {(isDownloading || isReadyToInstall) && (
+            {(isDownloading || isReadyToInstall || isApkDownloading) && (
               <View style={styles.progressBox}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Text style={styles.progressLabel}>
-                    {isReadyToInstall ? '✅ Update Package Downloaded!' : 'Downloading Update Bundle…'}
+                    {isReadyToInstall
+                      ? '✅ Update Package Ready!'
+                      : isApkDownloading
+                      ? '📥 Downloading APK Package…'
+                      : 'Downloading Update Bundle…'}
                   </Text>
-                  <Text style={styles.progressPct}>{downloadProgress}%</Text>
+                  <Text style={styles.progressPct}>
+                    {isApkDownloading ? apkProgress : downloadProgress}%
+                  </Text>
                 </View>
                 <View style={styles.track}>
-                  <View style={[styles.bar, { width: `${downloadProgress}%` }]} />
+                  <View
+                    style={[
+                      styles.bar,
+                      { width: `${isApkDownloading ? apkProgress : downloadProgress}%` },
+                    ]}
+                  />
                 </View>
               </View>
             )}
 
             {/* Actions */}
             <View style={styles.actionColumn}>
-              {!isDownloading && !isReadyToInstall && (
+              {!isDownloading && !isReadyToInstall && !isApkDownloading && (
                 <>
                   <Button
-                    label="⚡ Update App Now (Instant OTA)"
+                    label="⚡ Instant In-App Update (OTA)"
                     variant="gold"
                     size="md"
                     onPress={startDownload}
                   />
-                  <Button
-                    label="📥 Direct Download & Install APK"
-                    variant="outline"
-                    size="md"
-                    onPress={handleDirectApkDownload}
-                  />
+                  {Platform.OS === 'android' && (
+                    <Button
+                      label="📥 In-App Download & Auto-Install APK"
+                      variant="outline"
+                      size="md"
+                      onPress={handleInAppApkInstall}
+                    />
+                  )}
                   {!isMandatory && (
                     <Pressable onPress={dismissUpdate} style={{ paddingVertical: 4, alignItems: 'center' }}>
                       <Text style={{ ...typography.tiny, color: colors.textMuted, fontWeight: '700' }}>
@@ -111,12 +140,18 @@ export function AppUpdateModal() {
                 </>
               )}
 
-              {isDownloading && (
-                <Button label="Downloading Package… (Please Wait)" variant="gold" size="md" disabled loading />
+              {(isDownloading || isApkDownloading) && (
+                <Button
+                  label={isApkDownloading ? '📥 Downloading APK Package…' : 'Downloading Update…'}
+                  variant="gold"
+                  size="md"
+                  disabled
+                  loading
+                />
               )}
 
-              {isReadyToInstall && (
-                <Button label="📦 Install New Version Now" variant="gold" size="md" onPress={installUpdate} />
+              {isReadyToInstall && !isApkDownloading && (
+                <Button label="📦 Install & Restart App Now" variant="gold" size="md" onPress={installUpdate} />
               )}
             </View>
           </View>
