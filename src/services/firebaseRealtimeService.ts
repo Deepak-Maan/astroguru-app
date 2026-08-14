@@ -384,12 +384,17 @@ export function subscribeToIncomingCallsInFirebase(
 /**
  * Sync Latest Release Version Metadata to Firebase Realtime Database
  */
-export async function syncLatestAppVersionToFirebase(version: string, notes: string[]) {
+export async function syncLatestAppVersionToFirebase(
+  version: string,
+  notes: string[],
+  apkUrl?: string
+) {
   try {
     const metaRef = ref(firebaseDb, 'app_meta');
     await set(metaRef, {
       latestVersion: version,
       releaseNotes: notes,
+      apkUrl: apkUrl || 'https://expo.dev/artifacts/eas/j1bujHIWY7tt-WYtbLaWl_7QWHO-sv1bGzeVuCuVNTU.apk',
       updatedAt: Date.now(),
     });
   } catch (e) {
@@ -400,7 +405,11 @@ export async function syncLatestAppVersionToFirebase(version: string, notes: str
 /**
  * Get Latest Release Version Metadata from Firebase Realtime Database
  */
-export async function getAppVersionFromFirebase(): Promise<{ latestVersion: string; releaseNotes: string[] } | null> {
+export async function getAppVersionFromFirebase(): Promise<{
+  latestVersion: string;
+  releaseNotes: string[];
+  apkUrl?: string;
+} | null> {
   try {
     const metaRef = ref(firebaseDb, 'app_meta');
     const snap = await get(metaRef);

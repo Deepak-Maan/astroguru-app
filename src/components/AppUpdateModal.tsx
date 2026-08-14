@@ -6,7 +6,7 @@ import { Button } from './Button';
 import { useUpdateStore } from '../store/updateStore';
 import { downloadAndInstallApk } from '../services/apkInstallerService';
 
-const DIRECT_APK_DOWNLOAD_URL = 'https://expo.dev/accounts/deepak00007/projects/astrologer-app/builds';
+const DIRECT_APK_DOWNLOAD_URL = 'https://expo.dev/artifacts/eas/j1bujHIWY7tt-WYtbLaWl_7QWHO-sv1bGzeVuCuVNTU.apk';
 
 export function AppUpdateModal() {
   const {

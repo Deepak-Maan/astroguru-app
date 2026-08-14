@@ -122,6 +122,7 @@ export default function Profile() {
   const vipPlanId = useSubscriptionStore((s) => s.planId);
   const vipExpires = useSubscriptionStore((s) => s.expiresAt);
   const currentVersion = useUpdateStore((s) => s.currentVersion);
+  const triggerUpdateModal = useUpdateStore((s) => s.triggerUpdateModal);
 
   const [showLogoutOverlay, setShowLogoutOverlay] = useState(false);
 
@@ -333,6 +334,7 @@ export default function Profile() {
               <View>
                 <SectionHeader title="⚙️ Account & Settings" />
                 <Card padded={false}>
+                  <Row icon="🚀" label={`Upgrade / Update App (v${currentVersion})`} onPress={() => triggerUpdateModal()} accent={colors.teal} />
                   <Row icon="👑" label={isVip ? `AstroVIP — ${vipPlanId} (Active)` : 'Get AstroVIP Pass'} onPress={() => router.push('/vip')} accent={colors.gold} />
                   <Row icon="📄" label="10-Page Kundli PDF Export" onPress={() => router.push('/kundli-pdf')} />
                   <Row icon="⚙️" label="Settings & Security Vault" onPress={() => router.push('/settings')} />
