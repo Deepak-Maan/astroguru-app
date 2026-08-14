@@ -67,49 +67,68 @@ export function AcharyaChatCenter() {
 
   // Merge Zustand local rooms with Firebase Realtime Database rooms
   const allRooms: LiveRoom[] = useMemo(() => {
-    const localList = Object.values(roomsMap || {}).filter(
-      (r) => r && (r.astrologerId === acharyaId || r.astrologerId === 'astro_1786457216977' || true)
-    );
+    const cleanAcharyaId = String(acharyaId).toLowerCase();
+    const cleanAcharyaName = String(authUser?.name || '').toLowerCase();
 
-    const mergedMap = new Map<string, LiveRoom>();
+    // Match rooms directed to this astrologer by ID or Name
+    const isRoomForThisAstrologer = (r: any) => {
+      if (!r) return false;
+      const rId = String(r.astrologerId || '').toLowerCase();
+      const rName = String(r.astrologerName || '').toLowerCase();
+      return (
+        rId === cleanAcharyaId ||
+        (cleanAcharyaName && rName === cleanAcharyaName) ||
+        rId.includes(cleanAcharyaId)
+      );
+    };
 
-    // Add local state
-    localList.forEach((r) => {
-      if (r && r.roomId) mergedMap.set(r.roomId, r);
-    });
+    const localList = Object.values(roomsMap || {}).filter(isRoomForThisAstrologer);
 
-    // Merge Firebase rooms
+    // Use Map keyed by seekerId to ensure EXACTLY ONE CARD per seeker!
+    const seekerMap = new Map<string, LiveRoom>();
+
+    // 1. Add Firebase rooms first (authoritative real-time)
     firebaseRooms.forEach((fbR) => {
       if (!fbR || !fbR.roomId) return;
-      const existing = mergedMap.get(fbR.roomId);
+      const parts = (fbR.roomId || '').split('__');
+      const seekerId = fbR.seekerId || parts[0] || 'usr_seeker';
+
+      seekerMap.set(seekerId, {
+        roomId: fbR.roomId,
+        seekerId,
+        seekerName: fbR.seekerName || 'Seeker',
+        astrologerId: acharyaId,
+        astrologerName: authUser?.name || 'Acharya',
+        topic: fbR.topic || 'Vedic Astrology Consultation',
+        ratePerMin: ratePerMin,
+        startedAt: fbR.updatedAt || Date.now(),
+        endedAt: null,
+        minutesBilled: 0,
+        messages: [],
+        status: fbR.status || 'waiting',
+        unreadForSeeker: 0,
+        unreadForAcharya: 1,
+      });
+    });
+
+    // 2. Merge local rooms (only if no existing Firebase room for this seeker, or merge messages)
+    localList.forEach((r) => {
+      if (!r || !r.roomId) return;
+      const seekerId = r.seekerId || r.roomId.split('__')[0] || r.roomId;
+      const existing = seekerMap.get(seekerId);
       if (!existing) {
-        const parts = (fbR.roomId || '').split('__');
-        mergedMap.set(fbR.roomId, {
-          roomId: fbR.roomId,
-          seekerId: fbR.seekerId || parts[0] || 'usr_seeker',
-          seekerName: fbR.seekerName || 'Seeker',
-          astrologerId: acharyaId,
-          astrologerName: authUser?.name || 'Acharya Vivek Kumar',
-          topic: fbR.topic || 'Vedic Astrology Consultation',
-          ratePerMin: ratePerMin,
-          startedAt: fbR.updatedAt || Date.now(),
-          endedAt: null,
-          minutesBilled: 0,
-          messages: [],
-          status: fbR.status || 'waiting',
-          unreadForSeeker: 0,
-          unreadForAcharya: 1,
-        });
+        seekerMap.set(seekerId, r);
       } else {
-        mergedMap.set(fbR.roomId, {
+        // Merge messages and state
+        seekerMap.set(seekerId, {
           ...existing,
-          status: fbR.status || existing.status,
-          seekerName: fbR.seekerName || existing.seekerName,
+          messages: r.messages && r.messages.length > 0 ? r.messages : existing.messages,
+          status: r.status || existing.status,
         });
       }
     });
 
-    const result = Array.from(mergedMap.values());
+    const result = Array.from(seekerMap.values());
     result.sort((a, b) => (b.startedAt || 0) - (a.startedAt || 0));
     return result;
   }, [roomsMap, firebaseRooms, acharyaId, authUser?.name, ratePerMin]);
@@ -143,11 +162,15 @@ export function AcharyaChatCenter() {
   };
 
   function handleAcceptChat(room: LiveRoom) {
+    // Ensure room is populated in liveChatStore
+    useLiveChatStore.getState().getRoom(room.roomId);
     acceptRoom(room.roomId);
     router.push(`/acharya-chat/${room.roomId}`);
   }
 
   function handleOpenChat(room: LiveRoom) {
+    // Ensure room is populated in liveChatStore
+    useLiveChatStore.getState().getRoom(room.roomId);
     router.push(`/acharya-chat/${room.roomId}`);
   }
 

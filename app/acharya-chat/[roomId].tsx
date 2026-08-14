@@ -47,7 +47,23 @@ export default function AcharyaChatScreen() {
   const authUser = useAuthStore((s) => s.user);
   const acharyaName = authUser?.name ?? 'Acharya';
 
-  const room = useLiveChatStore((s) => s.getRoom(roomId ?? ''));
+  const roomFromStore = useLiveChatStore((s) => s.getRoom(roomId ?? ''));
+  const room = roomFromStore || {
+    roomId: String(roomId || 'room_default'),
+    seekerId: String(roomId || '').split('__')[0] || 'usr_seeker',
+    seekerName: 'Seeker',
+    astrologerId: String(roomId || '').split('__')[1] || authUser?.id || 'astro',
+    astrologerName: acharyaName,
+    topic: 'Vedic Astrology Consultation',
+    ratePerMin: 25,
+    startedAt: Date.now(),
+    endedAt: null,
+    minutesBilled: 0,
+    messages: [],
+    status: 'active' as const,
+    unreadForSeeker: 0,
+    unreadForAcharya: 0,
+  };
   const sendMessage = useLiveChatStore((s) => s.sendMessage);
   const acceptRoom = useLiveChatStore((s) => s.acceptRoom);
   const endRoom = useLiveChatStore((s) => s.endRoom);
