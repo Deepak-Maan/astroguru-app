@@ -31,7 +31,7 @@ export function AppUpdateModal() {
 
   const handleInAppApkInstall = async () => {
     setIsApkDownloading(true);
-    setApkProgress(15);
+    setApkProgress(10);
 
     try {
       const res = await downloadAndInstallApk(DIRECT_APK_DOWNLOAD_URL, (pct) => {
@@ -40,8 +40,16 @@ export function AppUpdateModal() {
 
       setIsApkDownloading(false);
       if (!res.success && res.error) {
-        // Fallback to browser download if package installer was blocked
-        await Linking.openURL(DIRECT_APK_DOWNLOAD_URL);
+        Alert.alert(
+          'APK Download Notice',
+          'Opening browser download link directly for manual installation.',
+          [
+            {
+              text: 'Download APK',
+              onPress: () => Linking.openURL(DIRECT_APK_DOWNLOAD_URL),
+            },
+          ]
+        );
       }
     } catch (e) {
       setIsApkDownloading(false);
@@ -77,7 +85,7 @@ export function AppUpdateModal() {
             {/* Release Notes */}
             <View style={styles.notesContainer}>
               <Text style={styles.notesHeader}>🎁 What's New in Version {latestVersion}:</Text>
-              <ScrollView style={{ maxHeight: 160 }} contentContainerStyle={{ gap: 8 }} showsVerticalScrollIndicator={false}>
+              <ScrollView style={{ maxHeight: 150 }} contentContainerStyle={{ gap: 8 }} showsVerticalScrollIndicator={false}>
                 {releaseNotes.map((note, index) => (
                   <View key={index} style={styles.noteItem}>
                     <Text style={styles.noteText}>{note}</Text>
@@ -87,15 +95,13 @@ export function AppUpdateModal() {
             </View>
 
             {/* Download Progress Bar */}
-            {(isDownloading || isReadyToInstall || isApkDownloading) && (
+            {(isDownloading || isApkDownloading) && (
               <View style={styles.progressBox}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Text style={styles.progressLabel}>
-                    {isReadyToInstall
-                      ? '✅ Update Package Ready!'
-                      : isApkDownloading
+                    {isApkDownloading
                       ? '📥 Downloading APK Package…'
-                      : 'Downloading Update Bundle…'}
+                      : '⚡ Fetching Update Bundle…'}
                   </Text>
                   <Text style={styles.progressPct}>
                     {isApkDownloading ? apkProgress : downloadProgress}%
@@ -114,22 +120,49 @@ export function AppUpdateModal() {
 
             {/* Actions */}
             <View style={styles.actionColumn}>
-              {!isDownloading && !isReadyToInstall && !isApkDownloading && (
+              {isApkDownloading ? (
+                <Button
+                  label={`📥 Downloading APK (${apkProgress}%)…`}
+                  variant="gold"
+                  size="md"
+                  disabled
+                  loading
+                />
+              ) : isDownloading ? (
+                <Button
+                  label={`⚡ Fetching Update (${downloadProgress}%)…`}
+                  variant="gold"
+                  size="md"
+                  disabled
+                  loading
+                />
+              ) : (
                 <>
-                  <Button
-                    label="⚡ Instant In-App Update (OTA)"
-                    variant="gold"
-                    size="md"
-                    onPress={startDownload}
-                  />
                   {Platform.OS === 'android' && (
                     <Button
                       label="📥 In-App Download & Auto-Install APK"
-                      variant="outline"
+                      variant="gold"
                       size="md"
                       onPress={handleInAppApkInstall}
                     />
                   )}
+
+                  <Button
+                    label="⚡ Instant Over-The-Air Update (OTA)"
+                    variant="outline"
+                    size="md"
+                    onPress={startDownload}
+                  />
+
+                  {isReadyToInstall && (
+                    <Button
+                      label="📦 Restart & Apply Update"
+                      variant="primary"
+                      size="md"
+                      onPress={installUpdate}
+                    />
+                  )}
+
                   {!isMandatory && (
                     <Pressable onPress={dismissUpdate} style={{ paddingVertical: 4, alignItems: 'center' }}>
                       <Text style={{ ...typography.tiny, color: colors.textMuted, fontWeight: '700' }}>
@@ -138,20 +171,6 @@ export function AppUpdateModal() {
                     </Pressable>
                   )}
                 </>
-              )}
-
-              {(isDownloading || isApkDownloading) && (
-                <Button
-                  label={isApkDownloading ? '📥 Downloading APK Package…' : 'Downloading Update…'}
-                  variant="gold"
-                  size="md"
-                  disabled
-                  loading
-                />
-              )}
-
-              {isReadyToInstall && !isApkDownloading && (
-                <Button label="📦 Install & Restart App Now" variant="gold" size="md" onPress={installUpdate} />
               )}
             </View>
           </View>
