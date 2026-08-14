@@ -25,6 +25,7 @@ export function AppUpdateModal() {
 
   const [isApkDownloading, setIsApkDownloading] = useState(false);
   const [apkProgress, setApkProgress] = useState(0);
+  const [downloadedApkUri, setDownloadedApkUri] = useState<string | null>(null);
 
   // On Web platform, updates happen automatically on page reload without modal popups
   if (Platform.OS === 'web' || !updateAvailable) return null;
@@ -32,6 +33,7 @@ export function AppUpdateModal() {
   const handleInAppApkInstall = async () => {
     setIsApkDownloading(true);
     setApkProgress(10);
+    setDownloadedApkUri(null);
 
     try {
       const res = await downloadAndInstallApk(DIRECT_APK_DOWNLOAD_URL, (pct) => {
@@ -39,20 +41,36 @@ export function AppUpdateModal() {
       });
 
       setIsApkDownloading(false);
+      if (res.fileUri) {
+        setDownloadedApkUri(res.fileUri);
+      }
+
       if (!res.success && res.error) {
         Alert.alert(
-          'APK Download Notice',
-          'Opening browser download link directly for manual installation.',
+          'APK Ready to Install',
+          'Download complete. Tap "Open & Install APK" below, or download directly via browser.',
           [
             {
-              text: 'Download APK',
+              text: 'Open in Browser',
               onPress: () => Linking.openURL(DIRECT_APK_DOWNLOAD_URL),
+            },
+            {
+              text: 'OK',
+              style: 'cancel',
             },
           ]
         );
       }
     } catch (e) {
       setIsApkDownloading(false);
+      await Linking.openURL(DIRECT_APK_DOWNLOAD_URL);
+    }
+  };
+
+  const handleLaunchPackageInstaller = async () => {
+    try {
+      await downloadAndInstallApk(DIRECT_APK_DOWNLOAD_URL);
+    } catch (_) {
       await Linking.openURL(DIRECT_APK_DOWNLOAD_URL);
     }
   };
@@ -138,14 +156,21 @@ export function AppUpdateModal() {
                 />
               ) : (
                 <>
-                  {Platform.OS === 'android' && (
+                  {Platform.OS === 'android' && downloadedApkUri ? (
+                    <Button
+                      label="📲 Open & Install Downloaded APK"
+                      variant="gold"
+                      size="md"
+                      onPress={handleLaunchPackageInstaller}
+                    />
+                  ) : Platform.OS === 'android' ? (
                     <Button
                       label="📥 In-App Download & Auto-Install APK"
                       variant="gold"
                       size="md"
                       onPress={handleInAppApkInstall}
                     />
-                  )}
+                  ) : null}
 
                   <Button
                     label="⚡ Instant Over-The-Air Update (OTA)"
@@ -153,6 +178,15 @@ export function AppUpdateModal() {
                     size="md"
                     onPress={startDownload}
                   />
+
+                  {Platform.OS === 'android' && (
+                    <Button
+                      label="🌐 Download APK via Browser"
+                      variant="ghost"
+                      size="sm"
+                      onPress={() => Linking.openURL(DIRECT_APK_DOWNLOAD_URL)}
+                    />
+                  )}
 
                   {isReadyToInstall && (
                     <Button

@@ -7,7 +7,7 @@ import * as Updates from 'expo-updates';
 
 import { getAppVersionFromFirebase, syncLatestAppVersionToFirebase } from '../services/firebaseRealtimeService';
 
-const LATEST_RELEASE_VERSION = '2.7.0';
+const LATEST_RELEASE_VERSION = '2.7.1';
 
 export interface UpdateInfo {
   currentVersion: string;
@@ -38,11 +38,10 @@ export const useUpdateStore = create<UpdateState>()(
       updateAvailable: false,
       isMandatory: false,
       releaseNotes: [
-        '✨ Release v2.7.0: Dedicated Jyotishi Live Chats tab with real-time consultation queue & unread badges',
-        '🔔 Native Android & iOS Status Bar Push Notifications for incoming chats and calls',
-        '📞 Live Audio & HD Video Consultation Calling with Acharya Ringing Modal',
-        '📥 In-App Direct APK Downloader & Native Auto-Installer',
-        '⚡ Strict Single Message Dispatch & Duplicate Prevention',
+        '✨ Release v2.7.1: Real-time Audio/Video Call Push Notifications & Ringing Modal',
+        '💬 Enhanced Astrologer Quick Chat Actions, Vedic Remedies Prescriber & Seeker Kundli Drawer',
+        '📲 Robust In-App APK Download & Package Auto-Installer with User-Gesture Prompt',
+        '⚡ Cleaned Duplicate Chat Room Cards and Streamlined Firebase Synchronization',
       ],
       downloadProgress: 100,
       isDownloading: false,

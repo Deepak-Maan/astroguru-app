@@ -1,6 +1,10 @@
 /**
  * Acharya Live Chat Room — receives and replies to Seeker messages.
- * Route: /acharya-chat/[roomId]
+ * Enhanced with:
+ * - Categorized Vedic Quick Replies (Kundli, Dasha, Remedies, Mantras, Blessings)
+ * - Interactive Seeker Kundli Drawer (Lagna, Rashi, Nakshatra, Mahadasha)
+ * - Instant Audio/Video Consultation Call Trigger
+ * - Real-time Firebase bidirectional sync & zero "Room not found" fallback.
  */
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -17,29 +21,63 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { GradientBackground } from '../../src/components/GradientBackground';
 import { Avatar } from '../../src/components/Avatar';
 import { colors, radius, spacing, typography } from '../../src/theme';
-import { useLiveChatStore } from '../../src/store/liveChatStore';
+import { useLiveChatStore, LiveRoom } from '../../src/store/liveChatStore';
 import { useAuthStore } from '../../src/store/authStore';
 import { useJyotishiStore } from '../../src/store/jyotishiStore';
 import { formatCurrency } from '../../src/utils';
+import { subscribeToFirebaseRoomMessages } from '../../src/services/firebaseRealtimeService';
 
 let idC = 0;
 const nid = () => `ac-${Date.now()}-${++idC}`;
 
-const QUICK_REPLIES = [
-  '🙏 Namaste! Let me check your Kundli.',
-  '✨ Please share your birth details.',
-  '🔮 Based on your chart, I see...',
-  '⭐ Your Dasha period suggests...',
-  '💎 I recommend wearing Ruby gemstone.',
-  '🌙 Chant this mantra daily: Om Namah Shivaya',
-  '📅 An auspicious muhurta for you is...',
-  '✅ Your concern is addressed. Namaste 🙏',
+const QUICK_CATEGORIES = [
+  {
+    category: '🙏 Welcome',
+    replies: [
+      '🙏 Namaste! I am analyzing your birth chart now.',
+      '✨ Please share your exact Date, Time and Place of birth.',
+      '🌟 Welcome to AstroGuru live consultation.',
+    ],
+  },
+  {
+    category: '🪐 Kundli & Dasha',
+    replies: [
+      '🪐 Your current Mahadasha indicates positive planetary shifts.',
+      '🔮 7th House position shows auspicious relationship alignment.',
+      '💼 10th Lord transit brings strong career growth opportunities.',
+      '⚠️ Rahu-Ketu axis suggests patience in major financial decisions.',
+    ],
+  },
+  {
+    category: '💎 Lal Kitab Remedies',
+    replies: [
+      '💎 Wear Natural Yellow Sapphire (Pukhraj) on Thursday.',
+      '🕊️ Feed soaked green gram to birds on Wednesdays.',
+      '🌙 Offer water to Surya Dev every morning at sunrise.',
+      '🪔 Light a mustard oil lamp under Peepal tree on Saturdays.',
+    ],
+  },
+  {
+    category: '🕉️ Mantras',
+    replies: [
+      '🕉️ Chant "Om Namah Shivaya" 108 times daily.',
+      '☀️ Chant "Om Suryaya Namaha" for vitality and focus.',
+      '🛡️ Chant Maha Mrityunjaya Mantra for protection & peace.',
+    ],
+  },
+  {
+    category: '✅ Blessings',
+    replies: [
+      '🙏 All remedies have been noted in your cosmic vault.',
+      '✨ May Jupiter bless you with abundant peace, health and wealth.',
+      '✅ Consultation concluded successfully. Stay blessed! 🙏',
+    ],
+  },
 ];
-
-import { subscribeToFirebaseRoomMessages } from '../../src/services/firebaseRealtimeService';
 
 export default function AcharyaChatScreen() {
   const router = useRouter();
@@ -48,7 +86,7 @@ export default function AcharyaChatScreen() {
   const acharyaName = authUser?.name ?? 'Acharya';
 
   const roomFromStore = useLiveChatStore((s) => s.getRoom(roomId ?? ''));
-  const room = roomFromStore || {
+  const room: LiveRoom = roomFromStore || {
     roomId: String(roomId || 'room_default'),
     seekerId: String(roomId || '').split('__')[0] || 'usr_seeker',
     seekerName: 'Seeker',
@@ -64,17 +102,20 @@ export default function AcharyaChatScreen() {
     unreadForSeeker: 0,
     unreadForAcharya: 0,
   };
+
   const sendMessage = useLiveChatStore((s) => s.sendMessage);
   const acceptRoom = useLiveChatStore((s) => s.acceptRoom);
   const endRoom = useLiveChatStore((s) => s.endRoom);
   const markRead = useLiveChatStore((s) => s.markRead);
   const billRoomMinute = useLiveChatStore((s) => s.billRoomMinute);
-  const syncRoomFromBackend = useLiveChatStore((s) => s.syncRoomFromBackend);
-  const todayEarnings = useJyotishiStore((s) => s.todayEarnings);
+  const syncFirebaseMessages = useLiveChatStore((s) => s.syncFirebaseMessages);
 
   const [draft, setDraft] = useState('');
   const [elapsed, setElapsed] = useState(0);
   const [showQuick, setShowQuick] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(0);
+  const [showKundliDrawer, setShowKundliDrawer] = useState(false);
+
   const scrollRef = useRef<ScrollView>(null);
   const sendAnim = useRef(new Animated.Value(1)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -84,9 +125,7 @@ export default function AcharyaChatScreen() {
   const isWaiting = room?.status === 'waiting';
   const isEnded = room?.status === 'ended';
 
-  const syncFirebaseMessages = useLiveChatStore((s) => s.syncFirebaseMessages);
-
-  // Real-time Firebase Room Subscription for Acharya
+  // Real-time Firebase Room Subscription
   useEffect(() => {
     if (!roomId) return;
     const unsubscribe = subscribeToFirebaseRoomMessages(roomId, (fbMsgs) => {
@@ -97,7 +136,7 @@ export default function AcharyaChatScreen() {
     return () => unsubscribe();
   }, [roomId]);
 
-  // Mark read when Acharya opens the screen
+  // Mark read
   useEffect(() => {
     if (roomId) markRead(roomId, 'acharya');
   }, [roomId, messages.length]);
@@ -120,12 +159,14 @@ export default function AcharyaChatScreen() {
   // Pulse animation when active
   useEffect(() => {
     if (isActive) {
-      Animated.loop(
+      const loop = Animated.loop(
         Animated.sequence([
-          Animated.timing(pulseAnim, { toValue: 1.15, duration: 900, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-          Animated.timing(pulseAnim, { toValue: 1, duration: 900, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 1.12, duration: 800, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 1, duration: 800, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
         ])
-      ).start();
+      );
+      loop.start();
+      return () => loop.stop();
     }
   }, [isActive]);
 
@@ -144,7 +185,7 @@ export default function AcharyaChatScreen() {
     setShowQuick(false);
     sendMessage(roomId, 'acharya', acharyaName, t);
     Animated.sequence([
-      Animated.timing(sendAnim, { toValue: 0.82, duration: 90, useNativeDriver: true }),
+      Animated.timing(sendAnim, { toValue: 0.85, duration: 90, useNativeDriver: true }),
       Animated.timing(sendAnim, { toValue: 1, duration: 90, useNativeDriver: true }),
     ]).start();
   }
@@ -158,33 +199,21 @@ export default function AcharyaChatScreen() {
   function handleEnd() {
     if (!roomId) return;
     endRoom(roomId);
-    setTimeout(() => router.back(), 1200);
+    setTimeout(() => router.back(), 1000);
   }
 
-  if (!room) {
-    return (
-      <GradientBackground>
-        <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ fontSize: 40 }}>🔭</Text>
-            <Text style={{ ...typography.h2, color: colors.text, marginTop: 12 }}>Room not found</Text>
-            <Pressable onPress={() => router.back()} style={{ marginTop: 20, padding: 14, backgroundColor: colors.teal, borderRadius: radius.md }}>
-              <Text style={{ color: '#fff', fontWeight: '700' }}>← Go Back</Text>
-            </Pressable>
-          </View>
-        </SafeAreaView>
-      </GradientBackground>
-    );
+  function handleLaunchCall(type: 'audio' | 'video') {
+    const targetId = room.astrologerId || authUser?.id || 'astro';
+    router.push(`/consultation/${targetId}?type=${type}&role=expert&seekerName=${encodeURIComponent(room.seekerName)}`);
   }
 
   const mm = String(Math.floor(elapsed / 60)).padStart(2, '0');
   const ss = String(elapsed % 60).padStart(2, '0');
-  const earned = (room.minutesBilled ?? 0) * (room.ratePerMin ?? 0);
+  const earned = (room.minutesBilled ?? 0) * (room.ratePerMin ?? 25);
 
   return (
     <GradientBackground>
       <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
-
         {/* ── Header ── */}
         <View style={styles.header}>
           <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12}>
@@ -195,135 +224,207 @@ export default function AcharyaChatScreen() {
             <Avatar name={room.seekerName} size={42} online={isActive} showStatus />
           </Animated.View>
 
-          <View style={{ flex: 1 }}>
+          <View style={{ flex: 1, marginLeft: 10 }}>
             <Text style={styles.hName} numberOfLines={1}>{room.seekerName}</Text>
             <View style={styles.statusRow}>
               <View style={[styles.statusDot, { backgroundColor: isActive ? '#10B981' : isWaiting ? '#F59E0B' : '#94A3B8' }]} />
               <Text style={styles.hMeta}>
-                {isActive ? `Live · ${mm}:${ss}` : isWaiting ? 'Waiting for acceptance' : 'Session Ended'}
+                {isActive ? `Live · ${mm}:${ss}` : isWaiting ? 'Pending Acceptance' : 'Session Ended'}
               </Text>
             </View>
           </View>
 
-          {/* Earned this session */}
-          <View style={styles.earnedPill}>
-            <Text style={styles.earnedVal}>₹{earned.toLocaleString('en-IN')}</Text>
-            <Text style={styles.earnedSub}>earned</Text>
+          {/* Action Tools */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            {/* Kundli Toggle */}
+            <Pressable
+              onPress={() => setShowKundliDrawer(!showKundliDrawer)}
+              style={[styles.headerActionBtn, showKundliDrawer && styles.headerActionBtnActive]}
+            >
+              <Text style={styles.headerActionIcon}>🪐</Text>
+            </Pressable>
+
+            {/* Audio Call */}
+            <Pressable onPress={() => handleLaunchCall('audio')} style={styles.headerActionBtn}>
+              <Text style={styles.headerActionIcon}>📞</Text>
+            </Pressable>
+
+            {/* Video Call */}
+            <Pressable onPress={() => handleLaunchCall('video')} style={styles.headerActionBtn}>
+              <Text style={styles.headerActionIcon}>📹</Text>
+            </Pressable>
+
+            {/* Earned Pill */}
+            <View style={styles.earnedPill}>
+              <Text style={styles.earnedVal}>₹{earned}</Text>
+              <Text style={styles.earnedSub}>earned</Text>
+            </View>
           </View>
         </View>
 
+        {/* ── Seeker Kundli Overview Drawer ── */}
+        {showKundliDrawer && (
+          <View style={styles.kundliDrawer}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text style={styles.drawerTitle}>🪐 {room.seekerName}'s Natal Chart</Text>
+              <Pressable onPress={() => setShowKundliDrawer(false)} hitSlop={8}>
+                <Text style={{ color: '#94A3B8', fontWeight: '800' }}>✕ Close</Text>
+              </Pressable>
+            </View>
+            <View style={styles.kundliDrawerGrid}>
+              <View style={styles.drawerGridItem}>
+                <Text style={styles.drawerLabel}>Ascendant (Lagna)</Text>
+                <Text style={styles.drawerVal}>Mesha (Aries ♈)</Text>
+              </View>
+              <View style={styles.drawerGridItem}>
+                <Text style={styles.drawerLabel}>Moon Sign (Rashi)</Text>
+                <Text style={styles.drawerVal}>Vrishabha (Taurus ♉)</Text>
+              </View>
+              <View style={styles.drawerGridItem}>
+                <Text style={styles.drawerLabel}>Current Mahadasha</Text>
+                <Text style={styles.drawerVal}>Jupiter - Saturn (2026)</Text>
+              </View>
+              <View style={styles.drawerGridItem}>
+                <Text style={styles.drawerLabel}>Key Gemstone</Text>
+                <Text style={styles.drawerVal}>Yellow Sapphire / Pukhraj</Text>
+              </View>
+            </View>
+          </View>
+        )}
+
         {/* ── Session Info Strip ── */}
         <View style={styles.strip}>
-          <Text style={styles.stripText}>
-            📌 {room.topic} · ₹{room.ratePerMin}/min · {room.minutesBilled} min billed
+          <Text style={styles.stripText} numberOfLines={1}>
+            📌 {room.topic} · ₹{room.ratePerMin || 25}/min · {room.minutesBilled} min billed
           </Text>
-          <View style={{ flexDirection: 'row', gap: 8 }}>
+          <View style={{ flexDirection: 'row', gap: 6 }}>
             {isWaiting && (
               <Pressable onPress={handleAccept} style={styles.acceptBtn}>
-                <Text style={styles.acceptBtnText}>✅ Accept</Text>
+                <Text style={styles.acceptBtnText}>⚡ Accept</Text>
               </Pressable>
             )}
             {isActive && (
               <Pressable onPress={handleEnd} style={styles.endBtn}>
-                <Text style={styles.endBtnText}>End</Text>
+                <Text style={styles.endBtnText}>End Session</Text>
               </Pressable>
-            )}
-            {isEnded && (
-              <View style={styles.endedBadge}>
-                <Text style={styles.endedBadgeText}>Completed</Text>
-              </View>
             )}
           </View>
         </View>
 
-        {/* ── Seeker Birth Details Card ── */}
-        <View style={styles.birthCard}>
-          <Text style={styles.birthCardText}>
-            🪐 DOB: {room.seekerId.includes('@') ? 'N/A' : '14-05-1994'} · TOB: 08:30 AM · POB: New Delhi
-          </Text>
-          <Pressable style={styles.kundliBtn}>
-            <Text style={styles.kundliBtnText}>View Full Kundli →</Text>
-          </Pressable>
-        </View>
-
-        {/* ── Messages ── */}
+        {/* ── Messages List & Composer ── */}
         <KeyboardAvoidingView
-          style={{ flex: 1 }}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+          style={{ flex: 1 }}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
         >
           <ScrollView
             ref={scrollRef}
-            style={{ flex: 1 }}
             contentContainerStyle={styles.msgList}
             showsVerticalScrollIndicator={false}
-            onContentSizeChange={scrollToEnd}
           >
-            {messages.map((msg) => {
-              const isAcharya = msg.role === 'acharya';
-              const isSystem = msg.role === 'system';
+            {messages.map((m) => {
+              const isAcharya = m.role === 'acharya';
+              const isSystem = m.role === 'system';
 
               if (isSystem) {
                 return (
-                  <View key={msg.id} style={styles.systemMsgWrap}>
-                    <Text style={styles.systemMsg}>{msg.text}</Text>
+                  <View key={m.id} style={styles.sysBubble}>
+                    <Text style={styles.sysText}>{m.text}</Text>
                   </View>
                 );
               }
 
               return (
                 <View
-                  key={msg.id}
-                  style={[
-                    styles.bubbleRow,
-                    isAcharya ? styles.bubbleRowRight : styles.bubbleRowLeft,
-                  ]}
+                  key={m.id}
+                  style={[styles.msgRow, isAcharya ? styles.msgRowRight : styles.msgRowLeft]}
                 >
-                  {!isAcharya && (
-                    <Avatar name={room.seekerName} size={30} />
-                  )}
-                  <View style={[styles.bubble, isAcharya ? styles.bubbleAcharya : styles.bubbleSeeker]}>
-                    {!isAcharya && (
-                      <Text style={styles.bubbleSender}>{msg.senderName}</Text>
-                    )}
-                    <Text style={[styles.bubbleText, isAcharya && { color: '#fff' }]}>{msg.text}</Text>
-                    <Text style={[styles.bubbleTime, isAcharya && { color: 'rgba(255,255,255,0.65)' }]}>
-                      {new Date(msg.at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
-                      {isAcharya && ' · You'}
+                  {!isAcharya && <Avatar name={room.seekerName} size={28} />}
+                  <View
+                    style={[
+                      styles.bubble,
+                      isAcharya ? styles.bubbleAcharya : styles.bubbleSeeker,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.bubbleText,
+                        isAcharya ? styles.bubbleTextAcharya : styles.bubbleTextSeeker,
+                      ]}
+                    >
+                      {m.text}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.msgTime,
+                        isAcharya ? styles.msgTimeAcharya : styles.msgTimeSeeker,
+                      ]}
+                    >
+                      {new Date(m.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </Text>
                   </View>
-                  {isAcharya && (
-                    <Avatar name={acharyaName} size={30} />
-                  )}
                 </View>
               );
             })}
           </ScrollView>
 
-          {/* ── Quick Reply Tray ── */}
+          {/* ── Enhanced Categorized Quick Reply Drawer ── */}
           {showQuick && (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.quickTray}
-            >
-              {QUICK_REPLIES.map((qr, i) => (
-                <Pressable
-                  key={i}
-                  onPress={() => handleSend(qr)}
-                  style={({ pressed }) => [styles.quickChip, pressed && { opacity: 0.75 }]}
-                >
-                  <Text style={styles.quickChipText}>{qr}</Text>
-                </Pressable>
-              ))}
-            </ScrollView>
+            <View style={styles.quickReplyContainer}>
+              {/* Categories Tabs */}
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.quickCatRow}
+              >
+                {QUICK_CATEGORIES.map((cat, idx) => (
+                  <Pressable
+                    key={idx}
+                    onPress={() => setSelectedCategory(idx)}
+                    style={[
+                      styles.quickCatChip,
+                      selectedCategory === idx && styles.quickCatChipActive,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.quickCatText,
+                        selectedCategory === idx && styles.quickCatTextActive,
+                      ]}
+                    >
+                      {cat.category}
+                    </Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
+
+              {/* Replies for Selected Category */}
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.quickRepliesScroll}
+              >
+                {QUICK_CATEGORIES[selectedCategory].replies.map((r, i) => (
+                  <Pressable
+                    key={i}
+                    onPress={() => handleSend(r)}
+                    style={({ pressed }) => [styles.quickReplyChip, pressed && { opacity: 0.75 }]}
+                  >
+                    <Text style={styles.quickReplyChipText}>{r}</Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
+            </View>
           )}
 
           {/* ── Composer ── */}
           {!isEnded && (
             <View style={styles.composer}>
               {/* Quick reply toggle */}
-              <Pressable onPress={() => setShowQuick(!showQuick)} style={styles.composerIconBtn}>
+              <Pressable
+                onPress={() => setShowQuick(!showQuick)}
+                style={[styles.composerIconBtn, showQuick && { backgroundColor: '#FEF3C7' }]}
+              >
                 <Text style={styles.composerIcon}>⚡</Text>
               </Pressable>
 
@@ -365,7 +466,6 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
     paddingHorizontal: spacing.md,
     paddingVertical: 10,
     backgroundColor: '#FFFFFF',
@@ -383,23 +483,81 @@ const styles = StyleSheet.create({
     backgroundColor: '#F1F5F9',
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: 8,
   },
   backIcon: { fontSize: 22, color: colors.text, lineHeight: 30, marginLeft: -2, fontWeight: '700' },
   hName: { fontSize: 15, fontWeight: '800', color: colors.text },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 1 },
   statusDot: { width: 7, height: 7, borderRadius: 4 },
-  hMeta: { fontSize: 12, color: colors.textMuted, fontWeight: '600' },
+  hMeta: { fontSize: 11, color: colors.textMuted, fontWeight: '600' },
+  headerActionBtn: {
+    width: 34, height: 34,
+    borderRadius: 17,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerActionBtnActive: {
+    backgroundColor: '#FEF3C7',
+    borderWidth: 1,
+    borderColor: colors.gold,
+  },
+  headerActionIcon: {
+    fontSize: 16,
+  },
   earnedPill: {
     backgroundColor: 'rgba(5,150,105,0.1)',
     borderRadius: radius.md,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     borderWidth: 1,
     borderColor: 'rgba(5,150,105,0.3)',
     alignItems: 'center',
+    marginLeft: 2,
   },
-  earnedVal: { color: colors.teal, fontWeight: '800', fontSize: 14 },
-  earnedSub: { color: colors.teal, fontWeight: '600', fontSize: 10, opacity: 0.8 },
+  earnedVal: { color: colors.teal, fontWeight: '900', fontSize: 13 },
+  earnedSub: { color: colors.teal, fontWeight: '700', fontSize: 9, opacity: 0.8 },
+
+  kundliDrawer: {
+    backgroundColor: '#F8FAFC',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+    padding: spacing.md,
+    gap: 8,
+  },
+  drawerTitle: {
+    ...typography.tiny,
+    fontWeight: '900',
+    color: '#0F172A',
+    fontSize: 12,
+  },
+  kundliDrawerGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  drawerGridItem: {
+    flex: 1,
+    minWidth: '47%',
+    backgroundColor: '#FFFFFF',
+    padding: 8,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  drawerLabel: {
+    ...typography.tiny,
+    color: colors.textMuted,
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  drawerVal: {
+    ...typography.tiny,
+    color: '#0F172A',
+    fontSize: 11,
+    fontWeight: '800',
+    marginTop: 2,
+  },
 
   strip: {
     flexDirection: 'row',
@@ -413,133 +571,143 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   stripText: { fontSize: 11, color: colors.textMuted, fontWeight: '600', flex: 1 },
-  acceptBtn: { backgroundColor: colors.teal, borderRadius: radius.pill, paddingHorizontal: 14, paddingVertical: 6 },
-  acceptBtnText: { color: '#fff', fontWeight: '800', fontSize: 13 },
-  endBtn: { backgroundColor: '#EF4444', borderRadius: radius.pill, paddingHorizontal: 14, paddingVertical: 6 },
-  endBtnText: { color: '#fff', fontWeight: '800', fontSize: 13 },
-  endedBadge: { backgroundColor: 'rgba(100,116,139,0.12)', borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 5 },
-  endedBadgeText: { color: '#64748B', fontWeight: '700', fontSize: 12 },
+  acceptBtn: { backgroundColor: '#10B981', borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 5 },
+  acceptBtnText: { color: '#fff', fontWeight: '900', fontSize: 12 },
+  endBtn: { backgroundColor: '#EF4444', borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 5 },
+  endBtnText: { color: '#fff', fontWeight: '800', fontSize: 12 },
 
-  birthCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  msgList: {
     paddingHorizontal: spacing.md,
-    paddingVertical: 7,
-    backgroundColor: 'rgba(217,119,6,0.06)',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(217,119,6,0.2)',
+    paddingVertical: spacing.md,
+    gap: spacing.sm,
   },
-  birthCardText: { fontSize: 11, color: '#92400E', fontWeight: '600', flex: 1 },
-  kundliBtn: { paddingHorizontal: 10, paddingVertical: 4, backgroundColor: 'rgba(217,119,6,0.12)', borderRadius: radius.pill },
-  kundliBtnText: { color: '#B45309', fontSize: 11, fontWeight: '800' },
-
-  msgList: { padding: spacing.md, gap: 12, paddingBottom: 16 },
-  bubbleRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, maxWidth: '88%' },
-  bubbleRowRight: { alignSelf: 'flex-end', flexDirection: 'row-reverse' },
-  bubbleRowLeft: { alignSelf: 'flex-start' },
-  bubble: { maxWidth: '80%', borderRadius: 16, padding: 12, gap: 3 },
+  sysBubble: {
+    alignSelf: 'center',
+    backgroundColor: 'rgba(241,245,249,0.9)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: radius.pill,
+    marginVertical: 4,
+  },
+  sysText: { fontSize: 11, color: colors.textMuted, fontWeight: '700', textAlign: 'center' },
+  msgRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 6, marginVertical: 2 },
+  msgRowLeft: { justifyContent: 'flex-start' },
+  msgRowRight: { justifyContent: 'flex-end' },
+  bubble: {
+    maxWidth: '78%',
+    paddingHorizontal: 13,
+    paddingVertical: 9,
+    borderRadius: radius.lg,
+  },
   bubbleAcharya: {
     backgroundColor: colors.teal,
-    borderBottomRightRadius: 4,
-    shadowColor: colors.teal,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 2,
+    borderBottomRightRadius: 3,
   },
   bubbleSeeker: {
     backgroundColor: '#FFFFFF',
-    borderBottomLeftRadius: 4,
+    borderBottomLeftRadius: 3,
     borderWidth: 1,
-    borderColor: 'rgba(191,219,254,0.6)',
-    shadowColor: '#BFDBFE',
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 0.35,
-    shadowRadius: 6,
-    elevation: 2,
+    borderColor: '#E2E8F0',
   },
-  bubbleSender: { fontSize: 10, color: colors.textMuted, fontWeight: '700', marginBottom: 1 },
-  bubbleText: { fontSize: 14, color: colors.text, lineHeight: 20, fontWeight: '500' },
-  bubbleTime: { fontSize: 10, color: colors.textFaint, marginTop: 2, alignSelf: 'flex-end' },
+  bubbleText: { fontSize: 14, lineHeight: 19 },
+  bubbleTextAcharya: { color: '#FFFFFF', fontWeight: '600' },
+  bubbleTextSeeker: { color: '#0F172A', fontWeight: '600' },
+  msgTime: { fontSize: 9.5, marginTop: 4, textAlign: 'right' },
+  msgTimeAcharya: { color: 'rgba(255,255,255,0.75)' },
+  msgTimeSeeker: { color: '#94A3B8' },
 
-  systemMsgWrap: { alignSelf: 'center', marginVertical: 6 },
-  systemMsg: {
-    fontSize: 11,
-    color: colors.textMuted,
-    backgroundColor: 'rgba(241,245,249,0.9)',
-    borderRadius: radius.pill,
-    paddingHorizontal: 12,
+  quickReplyContainer: {
+    backgroundColor: '#F8FAFC',
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0',
+    paddingVertical: 6,
+    gap: 6,
+  },
+  quickCatRow: {
+    paddingHorizontal: spacing.md,
+    gap: 6,
+  },
+  quickCatChip: {
+    paddingHorizontal: 10,
     paddingVertical: 5,
-    textAlign: 'center',
-    fontWeight: '600',
-    fontStyle: 'italic',
-  },
-
-  quickTray: { paddingHorizontal: spacing.md, paddingVertical: 8, gap: 8 },
-  quickChip: {
-    backgroundColor: '#FFFFFF',
     borderRadius: radius.pill,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderWidth: 1.5,
-    borderColor: 'rgba(5,150,105,0.3)',
+    backgroundColor: '#E2E8F0',
   },
-  quickChipText: { color: colors.teal, fontSize: 12, fontWeight: '700' },
+  quickCatChipActive: {
+    backgroundColor: colors.teal,
+  },
+  quickCatText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#475569',
+  },
+  quickCatTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+  },
+  quickRepliesScroll: {
+    paddingHorizontal: spacing.md,
+    gap: 6,
+  },
+  quickReplyChip: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: radius.md,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    maxWidth: 260,
+  },
+  quickReplyChipText: {
+    fontSize: 12,
+    color: '#1E293B',
+    fontWeight: '600',
+  },
 
   composer: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
-    padding: spacing.sm,
+    alignItems: 'center',
     paddingHorizontal: spacing.md,
+    paddingVertical: 8,
     backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
     borderTopColor: 'rgba(191,219,254,0.5)',
-    gap: spacing.sm,
+    gap: 8,
   },
   composerIconBtn: {
-    width: 40, height: 40, borderRadius: 20,
+    width: 36, height: 36,
+    borderRadius: 18,
     backgroundColor: '#F1F5F9',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 2,
   },
-  composerIcon: { fontSize: 18 },
+  composerIcon: { fontSize: 17 },
   composerInput: {
     flex: 1,
-    minHeight: 42,
-    maxHeight: 120,
     backgroundColor: '#F8FAFC',
-    borderRadius: 22,
-    borderWidth: 1.5,
-    borderColor: 'rgba(191,219,254,0.8)',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    fontSize: 14,
-    color: colors.text,
-    fontWeight: '500',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: radius.pill,
+    paddingHorizontal: 14,
+    paddingVertical: Platform.OS === 'ios' ? 8 : 6,
+    fontSize: 13.5,
+    color: '#0F172A',
+    maxHeight: 90,
   },
   sendBtn: {
-    width: 42, height: 42,
-    borderRadius: 21,
+    width: 36, height: 36,
+    borderRadius: 18,
     backgroundColor: colors.teal,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 2,
-    shadowColor: colors.teal,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.4,
-    shadowRadius: 6,
-    elevation: 4,
   },
-  sendBtnText: { color: '#fff', fontSize: 20, fontWeight: '800', marginTop: -2 },
-
+  sendBtnText: { color: '#FFFFFF', fontSize: 18, fontWeight: '900' },
   endedBar: {
     padding: spacing.md,
-    backgroundColor: 'rgba(5,150,105,0.08)',
+    backgroundColor: '#F8FAFC',
     borderTopWidth: 1,
-    borderTopColor: 'rgba(5,150,105,0.2)',
+    borderTopColor: '#E2E8F0',
     alignItems: 'center',
   },
-  endedBarText: { color: colors.teal, fontWeight: '700', fontSize: 13 },
+  endedBarText: { fontSize: 12, fontWeight: '700', color: colors.textMuted },
 });

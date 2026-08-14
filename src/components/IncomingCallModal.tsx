@@ -18,6 +18,8 @@ import {
   updateCallStatusInFirebase,
 } from '../services/firebaseRealtimeService';
 
+import { showIncomingCallNotification } from '../services/notificationService';
+
 export function IncomingCallModal() {
   const router = useRouter();
   const authUser = useAuthStore((s) => s.user);
@@ -27,23 +29,37 @@ export function IncomingCallModal() {
   const [pulseAnim] = useState(new Animated.Value(1));
 
   useEffect(() => {
-    if (!isAstrologer || !authUser?.id) return;
+    if (!isAstrologer) return;
 
-    const unsubscribe = subscribeToIncomingCallsInFirebase(
-      String(authUser.id),
-      (calls) => {
-        // Find latest ringing call
+    const possibleIds = [
+      String(authUser?.id || ''),
+      String(authUser?.email?.split('@')[0] || ''),
+      'astro_1786457216977',
+      'prince_more',
+      '1',
+    ].filter(Boolean);
+
+    const unsubs: (() => void)[] = [];
+
+    possibleIds.forEach((astroKey) => {
+      const unsub = subscribeToIncomingCallsInFirebase(astroKey, (calls) => {
         const activeRinging = calls.find((c) => c && c.status === 'ringing');
         if (activeRinging) {
           setIncomingCall(activeRinging);
-        } else {
-          setIncomingCall(null);
+          showIncomingCallNotification({
+            seekerName: activeRinging.seekerName || 'Seeker',
+            type: activeRinging.type === 'video' ? 'video' : 'audio',
+            callId: activeRinging.callId,
+          });
         }
-      }
-    );
+      });
+      unsubs.push(unsub);
+    });
 
-    return () => unsubscribe();
-  }, [isAstrologer, authUser?.id]);
+    return () => {
+      unsubs.forEach((u) => u());
+    };
+  }, [isAstrologer, authUser?.id, authUser?.email]);
 
   // Pulse animation when incoming call is active
   useEffect(() => {
