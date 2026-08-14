@@ -2,7 +2,7 @@
   "expo": {
     "name": "AstroGuru",
     "slug": "astrologer-app",
-    "version": "2.7.1",
+    "version": "2.7.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "astroguru",
@@ -15,7 +15,7 @@
     },
     "android": {
       "package": "com.astroguru.app",
-      "versionCode": 271,
+      "versionCode": 272,
       "permissions": [
         "REQUEST_INSTALL_PACKAGES",
         "READ_EXTERNAL_STORAGE",
@@ -31,12 +31,23 @@
         {
           "action": "VIEW",
           "data": [
-            { "scheme": "upi" },
-            { "scheme": "gpay" },
-            { "scheme": "phonepe" },
-            { "scheme": "paytmmp" }
+            {
+              "scheme": "upi"
+            },
+            {
+              "scheme": "gpay"
+            },
+            {
+              "scheme": "phonepe"
+            },
+            {
+              "scheme": "paytmmp"
+            }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ],
       "predictiveBackGestureEnabled": false
@@ -55,7 +66,8 @@
           "icon": "./assets/icon.png",
           "color": "#F59E0B"
         }
-      ]
+      ],
+      "expo-sharing"
     ],
     "extra": {
       "router": {},
@@ -72,11 +84,3 @@
     }
   }
 }
-
-
-
-
-
-
-
-

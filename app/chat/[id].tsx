@@ -3,6 +3,7 @@ import {
   Animated,
   Easing,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -121,6 +122,7 @@ export default function ChatScreen() {
   const [typing, setTyping] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [ranOut, setRanOut] = useState(false);
+  const [showRechargeDrawer, setShowRechargeDrawer] = useState(false);
   const [mode, setMode] = useState<'chat' | 'call'>('chat');
   const [isMuted, setIsMuted] = useState(false);
   const [isSpeaker, setIsSpeaker] = useState(false);
@@ -331,13 +333,13 @@ export default function ChatScreen() {
           </View>
 
           {/* Dynamic Real Wallet Balance Pill */}
-          <Pressable onPress={() => router.push('/wallet')} style={styles.walletPill}>
+          <Pressable onPress={() => setShowRechargeDrawer(true)} style={styles.walletPill}>
             <LinearGradient
               colors={['rgba(230,126,34,0.12)', 'rgba(212,172,13,0.06)']}
               style={StyleSheet.absoluteFill}
             />
             <Text style={styles.walletVal}>{formatCurrency(balance)}</Text>
-            <Text style={styles.walletRate}>{formatCurrency(price)}/min</Text>
+            <Text style={styles.walletRate}>{formatCurrency(price)}/min ⚡</Text>
           </Pressable>
         </View>
 
@@ -545,6 +547,77 @@ export default function ChatScreen() {
             </View>
           </KeyboardAvoidingView>
         )}
+
+        {/* ── 1-Tap In-Session Wallet Recharge Drawer ── */}
+        <Modal
+          visible={showRechargeDrawer || ranOut}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setShowRechargeDrawer(false)}
+        >
+          <View style={styles.rechargeOverlay}>
+            <Pressable
+              style={StyleSheet.absoluteFill}
+              onPress={() => !ranOut && setShowRechargeDrawer(false)}
+            />
+            <View style={styles.rechargeCard}>
+              <View style={styles.rechargeHandle} />
+              <Text style={styles.rechargeTitle}>⚡ Quick Wallet Top-Up</Text>
+              <Text style={styles.rechargeSub}>
+                Current Balance: <Text style={{ color: colors.teal, fontWeight: '900' }}>{formatCurrency(balance)}</Text> · Rate: {formatCurrency(price)}/min
+              </Text>
+
+              <View style={styles.rechargeGrid}>
+                {[
+                  { amount: 100, bonus: '₹10 Bonus', mins: `~${Math.floor(100 / (price || 25))} min` },
+                  { amount: 250, bonus: '₹35 Bonus', mins: `~${Math.floor(250 / (price || 25))} min`, popular: true },
+                  { amount: 500, bonus: '₹100 Bonus', mins: `~${Math.floor(500 / (price || 25))} min`, best: true },
+                  { amount: 1000, bonus: '₹250 Bonus', mins: `~${Math.floor(1000 / (price || 25))} min` },
+                ].map((pack) => (
+                  <Pressable
+                    key={pack.amount}
+                    onPress={() => {
+                      topup(pack.amount, `Live Session Top-Up (${pack.bonus})`);
+                      setRanOut(false);
+                      setShowRechargeDrawer(false);
+                      begin();
+                    }}
+                    style={[
+                      styles.rechargeOption,
+                      pack.popular && styles.rechargeOptionPopular,
+                      pack.best && styles.rechargeOptionBest,
+                    ]}
+                  >
+                    {pack.popular && (
+                      <View style={styles.popularTag}>
+                        <Text style={styles.popularTagText}>🌟 POPULAR</Text>
+                      </View>
+                    )}
+                    {pack.best && (
+                      <View style={[styles.popularTag, { backgroundColor: colors.gold }]}>
+                        <Text style={styles.popularTagText}>👑 BEST VALUE</Text>
+                      </View>
+                    )}
+                    <Text style={styles.rechargeAmount}>₹{pack.amount}</Text>
+                    <Text style={styles.rechargeBonus}>{pack.bonus}</Text>
+                    <Text style={styles.rechargeMins}>{pack.mins} chat</Text>
+                  </Pressable>
+                ))}
+              </View>
+
+              {!ranOut && (
+                <Pressable
+                  onPress={() => setShowRechargeDrawer(false)}
+                  style={{ marginTop: 12, padding: 8, alignItems: 'center' }}
+                >
+                  <Text style={{ ...typography.tiny, color: colors.textMuted, fontWeight: '700' }}>
+                    Cancel & Return to Chat
+                  </Text>
+                </Pressable>
+              )}
+            </View>
+          </View>
+        </Modal>
       </SafeAreaView>
     </GradientBackground>
   );
@@ -782,4 +855,102 @@ const styles = StyleSheet.create({
   },
   sendBtnOff: { opacity: 0.4 },
   sendIcon: { color: colors.white, fontSize: 16, fontWeight: '900', marginLeft: 2 },
+
+  /* In-Session Quick Recharge Drawer */
+  rechargeOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15,23,42,0.65)',
+    justifyContent: 'flex-end',
+  },
+  rechargeCard: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: spacing.lg,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  rechargeHandle: {
+    width: 44,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: '#CBD5E1',
+    alignSelf: 'center',
+    marginBottom: 12,
+  },
+  rechargeTitle: {
+    ...typography.h2,
+    fontSize: 18,
+    color: '#0F172A',
+    fontWeight: '900',
+    textAlign: 'center',
+  },
+  rechargeSub: {
+    ...typography.tiny,
+    color: colors.textMuted,
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 4,
+    marginBottom: 16,
+  },
+  rechargeGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  rechargeOption: {
+    flex: 1,
+    minWidth: '47%',
+    backgroundColor: '#F8FAFC',
+    borderRadius: radius.lg,
+    padding: 12,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  rechargeOptionPopular: {
+    borderColor: colors.saffron,
+    backgroundColor: 'rgba(245,158,11,0.05)',
+  },
+  rechargeOptionBest: {
+    borderColor: colors.gold,
+    backgroundColor: 'rgba(212,172,13,0.08)',
+  },
+  popularTag: {
+    position: 'absolute',
+    top: -8,
+    backgroundColor: colors.saffron,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: radius.pill,
+  },
+  popularTagText: {
+    color: '#FFFFFF',
+    fontSize: 9,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+  },
+  rechargeAmount: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#0F172A',
+    marginTop: 4,
+  },
+  rechargeBonus: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: colors.teal,
+    marginTop: 2,
+  },
+  rechargeMins: {
+    fontSize: 10.5,
+    fontWeight: '600',
+    color: colors.textMuted,
+    marginTop: 2,
+  },
 });

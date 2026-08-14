@@ -4,7 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { colors, radius, spacing, typography } from '../theme';
 import { Button } from './Button';
 import { useUpdateStore } from '../store/updateStore';
-import { downloadAndInstallApk } from '../services/apkInstallerService';
+import { downloadAndInstallApk, launchNativeInstaller } from '../services/apkInstallerService';
 
 const DIRECT_APK_DOWNLOAD_URL = 'https://expo.dev/artifacts/eas/j1bujHIWY7tt-WYtbLaWl_7QWHO-sv1bGzeVuCuVNTU.apk';
 
@@ -69,7 +69,11 @@ export function AppUpdateModal() {
 
   const handleLaunchPackageInstaller = async () => {
     try {
-      await downloadAndInstallApk(DIRECT_APK_DOWNLOAD_URL);
+      if (downloadedApkUri) {
+        await launchNativeInstaller(downloadedApkUri, DIRECT_APK_DOWNLOAD_URL);
+      } else {
+        await downloadAndInstallApk(DIRECT_APK_DOWNLOAD_URL);
+      }
     } catch (_) {
       await Linking.openURL(DIRECT_APK_DOWNLOAD_URL);
     }

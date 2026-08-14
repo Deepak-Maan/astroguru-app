@@ -7,7 +7,7 @@ import * as Updates from 'expo-updates';
 
 import { getAppVersionFromFirebase, syncLatestAppVersionToFirebase } from '../services/firebaseRealtimeService';
 
-const LATEST_RELEASE_VERSION = '2.7.1';
+const LATEST_RELEASE_VERSION = '2.7.2';
 
 export interface UpdateInfo {
   currentVersion: string;
@@ -38,10 +38,10 @@ export const useUpdateStore = create<UpdateState>()(
       updateAvailable: false,
       isMandatory: false,
       releaseNotes: [
-        '✨ Release v2.7.1: Real-time Audio/Video Call Push Notifications & Ringing Modal',
-        '💬 Enhanced Astrologer Quick Chat Actions, Vedic Remedies Prescriber & Seeker Kundli Drawer',
-        '📲 Robust In-App APK Download & Package Auto-Installer with User-Gesture Prompt',
-        '⚡ Cleaned Duplicate Chat Room Cards and Streamlined Firebase Synchronization',
+        '⚡ Release v2.7.2: 1-Tap In-Session Wallet Auto-Recharge Drawer (no call drops)',
+        '📦 Native Expo-Sharing Package Installer for 100% reliable In-App APK installation',
+        '🔮 Enhanced Astrologer Quick Chat Vedic Actions, Lal Kitab Totke & Seeker Kundli Drawer',
+        '🔔 Real-Time Audio & Video Call Push Alerts & Multi-Alias Ringing Modal',
       ],
       downloadProgress: 100,
       isDownloading: false,
