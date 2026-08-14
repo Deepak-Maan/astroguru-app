@@ -26,6 +26,7 @@ import { useAuthStore } from '../../src/store/authStore';
 import { useJyotishiStore } from '../../src/store/jyotishiStore';
 import { formatCurrency } from '../../src/utils';
 import { fetchJyotishisFromFirebase } from '../../src/services/firebaseAuthService';
+import { AcharyaChatCenter } from '../../src/components/workstation/AcharyaChatCenter';
 
 const FILTERS = ['All', 'Online', 'Vedic', 'Tarot', 'Numerology', 'Love', 'Career', 'Remedies'];
 
@@ -208,6 +209,11 @@ export default function Consult() {
   const authUser = useAuthStore((s) => s.user);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
+  // If logged in as Certified Astrologer / Jyotishi, render dedicated Acharya Live Chat Center
+  if (authUser?.role === 'astrologer') {
+    return <AcharyaChatCenter />;
+  }
+
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState('All');
   const [sort, setSort] = useState<Sort>('popular');
@@ -263,8 +269,6 @@ export default function Consult() {
   if (!isAuthenticated || !authUser) {
     return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
   }
-
-  if (authUser?.role === 'astrologer') return <AcharyaPayouts />;
 
   const onlineCount = ASTROLOGERS.filter((a) => a.online).length;
 

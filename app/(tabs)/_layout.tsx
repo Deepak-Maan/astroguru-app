@@ -5,6 +5,8 @@ import Svg, { Circle, Path } from 'react-native-svg';
 import { colors, typography } from '../../src/theme';
 import { useAuthStore } from '../../src/store/authStore';
 
+import { useLiveChatStore } from '../../src/store/liveChatStore';
+
 /* ── SVG Icons matching user's exact design screenshot ── */
 function HomeIcon({ focused }: { focused: boolean }) {
   const color = focused ? colors.teal : '#64748B';
@@ -36,6 +38,22 @@ function CompatibilityIcon({ focused }: { focused: boolean }) {
   );
 }
 
+function ChatTabIcon({ focused, badgeCount }: { focused: boolean; badgeCount?: number }) {
+  const color = focused ? colors.teal : '#64748B';
+  return (
+    <View style={{ position: 'relative' }}>
+      <Svg width={24} height={24} viewBox="0 0 24 24" fill={focused ? color : 'none'} stroke={color} strokeWidth={focused ? 0 : 2} strokeLinecap="round" strokeLinejoin="round">
+        <Path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+      </Svg>
+      {badgeCount && badgeCount > 0 ? (
+        <View style={styles.tabBadge}>
+          <Text style={styles.tabBadgeText}>{badgeCount > 9 ? '9+' : badgeCount}</Text>
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
 function HoroscopeIcon({ focused }: { focused: boolean }) {
   const color = focused ? colors.teal : '#64748B';
   return (
@@ -60,6 +78,10 @@ function ProfileIcon({ focused }: { focused: boolean }) {
 /* ── Custom Tab Bar Component with Top Indicator Bar ── */
 function CustomTabBar({ state, descriptors, navigation }: any) {
   const isAstrologer = useAuthStore((s) => s.user?.role === 'astrologer');
+  const roomsMap = useLiveChatStore((s) => s.rooms);
+  const pendingChatsCount = Object.values(roomsMap || {}).filter(
+    (r) => r && r.status === 'waiting'
+  ).length;
 
   return (
     <View style={styles.barContainer}>
@@ -78,7 +100,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
           if (isAstrologer) {
             if (route.name === 'index') label = 'Workstation';
             else if (route.name === 'kundli') label = 'Client Vault';
-            else if (route.name === 'consult') label = 'Payouts';
+            else if (route.name === 'consult') label = 'Live Chats';
             else if (route.name === 'horoscope') label = 'Transits';
             else if (route.name === 'profile') label = 'Acharya';
           }
@@ -112,7 +134,13 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
               <View style={styles.iconBox}>
                 {route.name === 'index' && <HomeIcon focused={isFocused} />}
                 {route.name === 'kundli' && <BirthChartIcon focused={isFocused} />}
-                {route.name === 'consult' && <CompatibilityIcon focused={isFocused} />}
+                {route.name === 'consult' && (
+                  isAstrologer ? (
+                    <ChatTabIcon focused={isFocused} badgeCount={pendingChatsCount} />
+                  ) : (
+                    <CompatibilityIcon focused={isFocused} />
+                  )
+                )}
                 {route.name === 'horoscope' && <HoroscopeIcon focused={isFocused} />}
                 {route.name === 'profile' && <ProfileIcon focused={isFocused} />}
               </View>
@@ -223,6 +251,26 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  tabBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -8,
+    backgroundColor: '#EF4444',
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 3,
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
+  },
+  tabBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 9,
+    fontWeight: '900',
+    textAlign: 'center',
+  },
   label: {
     fontSize: 10,
     letterSpacing: 0.1,
@@ -230,3 +278,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
