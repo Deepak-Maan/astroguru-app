@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AstroGuru — Complete Figma Design System & Screen Mockups</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #F3F7FC;
+      --bg-elevated: #F8FAFC;
+      --card: #FFFFFF;
+      --card-border: #FFFFFF;
+      --shadow-light: #FFFFFF;
+      --shadow-dark: #BFDBFE;
+      --gold: #D97706;
+      --gold-soft: #B45309;
+      --saffron: #E67E22;
+      --teal: #059669;
+      --teal-light: #F0FDF4;
+      --text: #0F172A;
+      --text-muted: #475569;
+      --text-faint: #94A3B8;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+      --radius-pill: 9999px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0B1120;
+      color: #F8FAFC;
+      padding: 40px 24px;
+      min-height: 100vh;
+    }
+
+    .figma-header {
+      max-width: 1600px;
+      margin: 0 auto 40px auto;
+      background: #1E293B;
+      border: 1px solid #334155;
+      border-radius: 20px;
+      padding: 32px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+    .figma-title h1 {
+      font-size: 28px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #F59E0B, #10B981);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
+    }
+    .figma-title p {
+      color: #94A3B8;
+      font-size: 14px;
+      margin-top: 6px;
+      font-weight: 600;
+    }
+    .figma-badge {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid #059669;
+      color: #34D399;
+      padding: 8px 16px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Canvas Grid */
+    .figma-canvas {
+      max-width: 1700px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 40px;
+      align-items: start;
+    }
+
+    /* Screen Artboard Frame (390 x 844) */
+    .artboard-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .artboard-label {
+      font-size: 13px;
+      font-weight: 800;
+      color: #94A3B8;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .artboard-label span {
+      background: #334155;
+      color: #F8FAFC;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+    }
+
+    .artboard {
+      width: 360px;
+      height: 740px;
+      background: var(--bg);
+      border-radius: 40px;
+      border: 8px solid #1E293B;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255,255,255,0.08);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      color: var(--text);
+    }
+
+    /* Status Bar */
+    .status-bar {
+      height: 40px;
+      padding: 0 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text);
+      z-index: 10;
+    }
+    .dynamic-island {
+      width: 100px;
+      height: 22px;
+      background: #0F172A;
+      border-radius: 20px;
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    /* Screen Content */
+    .screen-body {
+      flex: 1;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Header Component */
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 8px;
+    }
+    .app-header .title {
+      font-size: 17px;
+      font-weight: 900;
+      color: var(--text);
+    }
+    .wallet-chip {
+      background: #FFFFFF;
+      border: 1.5px solid #BFDBFE;
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--gold-soft);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 2px 6px rgba(15,23,42,0.06);
+    }
+
+    /* Card Component */
+    .card {
+      background: #FFFFFF;
+      border-radius: var(--radius-lg);
+      padding: 14px;
+      border: 1.5px solid #BFDBFE;
+      box-shadow: 0 4px 12px rgba(15,23,42,0.06);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* Buttons */
+    .btn-gold {
+      background: linear-gradient(135deg, #D97706, #E67E22);
+      color: #FFFFFF;
+      padding: 10px 16px;
+      border-radius: var(--radius-pill);
+      font-size: 13px;
+      font-weight: 800;
+      border: none;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
+      cursor: pointer;
+    }
+    .btn-teal {
+      background: linear-gradient(135deg, #059669, #10B981);
+      color: #FFFFFF;
+      padding: 10px 16px;
+      border-radius: var(--radius-pill);
+      font-size: 13px;
+      font-weight: 800;
+      border: none;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+    }
+    .btn-outline {
+      background: #FFFFFF;
+      border: 1.5px solid #CBD5E1;
+      color: var(--text);
+      padding: 8px 14px;
+      border-radius: var(--radius-pill);
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    /* Bottom Tab Bar */
+    .tab-bar {
+      height: 60px;
+      background: #FFFFFF;
+      border-top: 1.5px solid #E2E8F0;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 0 12px;
+      box-shadow: 0 -4px 12px rgba(15,23,42,0.04);
+    }
+    .tab-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      font-size: 9.5px;
+      font-weight: 700;
+      color: var(--text-faint);
+    }
+    .tab-item.active {
+      color: var(--gold-soft);
+      font-weight: 900;
+    }
+    .tab-item .icon { font-size: 17px; }
+
+    /* Vedic Kundli Diamond Canvas */
+    .kundli-diamond {
+      width: 100%;
+      height: 160px;
+      background: #FFFBEB;
+      border: 1.5px solid #F59E0B;
+      border-radius: 12px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .kundli-grid-svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Design Tokens Section */
+    .design-tokens-card {
+      grid-column: 1 / -1;
+      background: #1E293B;
+      border: 1px solid #334155;
+      border-radius: 20px;
+      padding: 32px;
+      margin-top: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .token-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+    }
+    .token-swatch {
+      background: #0F172A;
+      border-radius: 12px;
+      padding: 14px;
+      border: 1px solid #334155;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .swatch-color {
+      height: 48px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .swatch-info h4 { font-size: 13px; font-weight: 800; color: #F8FAFC; }
+    .swatch-info p { font-size: 11px; font-weight: 600; color: #94A3B8; }
+  </style>
+</head>
+<body>
+
+  <!-- Header Banner -->
+  <div class="figma-header">
+    <div class="figma-title">
+      <h1>AstroGuru Mobile UI Figma Design System</h1>
+      <p>14 Complete High-Contrast Nordic Frost & Solar Gold Screen Mockups · Mobile Canvas 360 x 740</p>
+    </div>
+    <div class="figma-badge">Version 2.7.5 Ready</div>
+  </div>
+
+  <!-- Canvas of 14 Full App Screens -->
+  <div class="figma-canvas">
+
+    <!-- Screen 1: Splash / Launch Screen -->
+    <div class="artboard-container">
+      <div class="artboard-label"><span>01</span> Splash Screen</div>
+      <div class="artboard" style="background: #060A12; justify-content: center; align-items: center; text-align: center; gap: 20px;">
+        <div class="dynamic-island"></div>
+        <div style="width: 110px; height: 110px; border-radius: 28px; background: radial-gradient(circle, rgba(5,150,105,0.3), transparent); display: flex; align-items: center; justify-content: center; border: 2px solid #D97706; box-shadow: 0 0 30px rgba(217,119,6,0.4);">
+          <div style="font-size: 54px;">✨</div>
+        </div>
+        <div>
+          <h2 style="font-size: 26px; font-weight: 900; color: #FFFFFF; letter-spacing: -0.5px;">AstroGuru</h2>
+          <p style="font-size: 12px; color: #34D399; font-weight: 800; letter-spacing: 1px; margin-top: 4px;">SACRED VEDIC JYOTISH</p>
+        </div>
+        <div style="position: absolute; bottom: 30px; font-size: 11px; color: #64748B; font-weight: 700;">v2.7.5 · Sri Yantra Luxury Edition</div>
+      </div>
+    </div>
+
+    <!-- Screen 2: Login & Authentication -->
+    <div class="artboard-container">
+      <div class="artboard-label"><span>02</span> Authentication</div>
+      <div class="artboard">
+        <div class="status-bar"><span>9:41</span><span>🔋 100%</span></div>
+        <div class="screen-body">
+          <div style="text-align: center; padding: 12px 0;">
+            <div style="width: 54px; height: 54px; border-radius: 27px; background: #FFFBEB; border: 2px solid #F59E0B; margin: 0 auto 8px auto; display: flex; align-items: center; justify-content: center; font-size: 24px;">🔮</div>
+            <h2 style="font-size: 20px; font-weight: 900; color: #0F172A;">Welcome Back</h2>
+            <p style="font-size: 12px; color: var(--text-muted); font-weight: 600;">Sign in to access your birth chart & Jyotishis</p>
+          </div>
+
+          <div class="card" style="gap: 12px;">
+            <div style="display: flex; background: #F1F5F9; border-radius: var(--radius-pill); padding: 3px;">
+              <div style="flex: 1; text-align: center; background: #FFFFFF; border-radius: var(--radius-pill); padding: 6px; font-size: 11px; font-weight: 800; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">📱 Mobile OTP</div>
+              <div style="flex: 1; text-align: center; padding: 6px; font-size: 11px; font-weight: 700; color: var(--text-muted);">📧 Email & Pass</div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <label style="font-size: 11px; font-weight: 800; color: var(--text-muted);">Mobile Number</label>
+              <input type="text" value="+91 98765 43210" style="padding: 10px 12px; border-radius: 8px; border: 1.5px solid #CBD5E1; font-size: 13px; font-weight: 700;" readonly />
+            </div>
+            <button class="btn-gold">Get Instant Verification Code ➔</button>
+          </div>
+
+          <div style="text-align: center; font-size: 11px; color: var(--text-muted); font-weight: 700; margin-top: 8px;">
+            Protected with 256-bit Vedic Data Privacy
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 3: Home Dashboard -->
+    <div class="artboard-container">
+      <div class="artboard-label"><span>03</span> Home Dashboard</div>
+      <div class="artboard">
+        <div class="status-bar"><span>9:41</span><span>🔋 100%</span></div>
+        <div class="screen-body">
+          <div class="app-header">
+            <div>
+              <div style="font-size: 11px; font-weight: 800; color: var(--text-muted);">SUNDAY, 16 AUGUST</div>
+              <div class="title">Namaste, Deepak 🙏</div>
+            </div>
+            <div class="wallet-chip">💰 ₹100</div>
+          </div>
+
+          <!-- Sky at birth card -->
+          <div class="card" style="background: linear-gradient(135deg, #FFFFFF, #F0FDF4); border-color: #A7F3D0;">
+            <div style="font-size: 10px; font-weight: 900; color: var(--teal); letter-spacing: 0.8px;">YOUR SKY AT BIRTH</div>
+            <div style="font-size: 16px; font-weight: 900; color: #0F172A;">Mesha (Aries) Rashi Chart</div>
+            <p style="font-size: 11.5px; color: var(--text-muted); line-height: 16px;">Mars in 1st house brings vibrant leadership energy today.</p>
+            <div style="font-size: 11px; font-weight: 800; color: var(--teal); margin-top: 4px;">View Full D1 & D9 Chart ➔</div>
+          </div>
+
+          <!-- Today's Horoscope -->
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 10.5px; font-weight: 900; color: var(--gold-soft);">TODAY'S READING · ARIES</span>
+              <span style="font-size: 10px; font-weight: 800; color: var(--teal); background: #DCFCE7; padding: 2px 6px; border-radius: 4px;">88% Positive</span>
+            </div>
+            <p style="font-size: 12px; color: var(--text-muted); line-height: 16px;">Venus softens the mood. Auspicious period for creative ventures and meetings.</p>
+            <div style="display: flex; gap: 6px;">
+              <span style="font-size: 10px; background: #FEF3C7; color: var(--gold-soft); font-weight: 800; padding: 3px 8px; border-radius: 999px;">Lucky No: 7</span>
+              <span style="font-size: 10px; background: #E2E8F0; color: var(--text); font-weight: 800; padding: 3px 8px; border-radius: 999px;">Color: Saffron</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-bar">
+          <div class="tab-item active"><span class="icon">🏠</span><span>Home</span></div>
+          <div class="tab-item"><span class="icon">🔭</span><span>Consult</span></div>
+          <div class="tab-item"><span class="icon">📜</span><span>Kundli</span></div>
+          <div class="tab-item"><span class="icon">⭐</span><span>Horoscope</span></div>
+          <div class="tab-item"><span class="icon">👤</span><span>Profile</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 4: Astrologer Directory -->
+    <div class="artboard-container">
+      <div class="artboard-label"><span>04</span> Consult Directory</div>
+      <div class="artboard">
+        <div class="status-bar"><span>9:41</span><span>🔋 100%</span></div>
+        <div class="screen-body">
+          <div class="app-header">
+            <div class="title">Live Acharyas & Jyotishis</div>
+            <div class="wallet-chip">💰 ₹100</div>
+          </div>
+
+          <!-- Filter Chips -->
+          <div style="display: flex; gap: 6px; overflow: hidden;">
+            <span style="background: var(--gold-soft); color: #FFFFFF; font-size: 11px; font-weight: 800; padding: 5px 12px; border-radius: 999px;">All (24)</span>
+            <span style="background: #FFFFFF; border: 1.5px solid #BFDBFE; color: var(--text); font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 999px;">Vedic</span>
+            <span style="background: #FFFFFF; border: 1.5px solid #BFDBFE; color: var(--text); font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 999px;">Tarot</span>
+            <span style="background: #FFFFFF; border: 1.5px solid #BFDBFE; color: var(--text); font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 999px;">Numerology</span>
+          </div>
+
+          <!-- Astrologer Card 1 -->
+          <div class="card" style="gap: 8px;">
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <div style="width: 48px; height: 48px; border-radius: 24px; background: #FEF3C7; border: 2px solid #059669; display: flex; align-items: center; justify-content: center; font-size: 22px;">🧙‍♂️</div>
+              <div style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div style="font-size: 14px; font-weight: 900; color: #0F172A;">Pandit Deepak Trivedi</div>
+                  <span style="font-size: 10px; color: var(--teal); font-weight: 800;">● Online</span>
+                </div>
+                <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Vedic · Kundli · Career (27 yrs)</div>
+                <div style="font-size: 12px; font-weight: 900; color: var(--saffron); margin-top: 2px;">₹25 / min</div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 6px; margin-top: 4px;">
+              <button style="flex: 1; background: #FFFBEB; border: 1.5px solid #F59E0B; color: var(--gold-soft); font-size: 11.5px; font-weight: 800; padding: 6px; border-radius: 999px;">📞 Audio</button>
+              <button style="flex: 1; background: #F0FDF4; border: 1.5px solid #10B981; color: var(--teal); font-size: 11.5px; font-weight: 800; padding: 6px; border-radius: 999px;">📹 Video</button>
+              <button style="flex: 1; background: var(--saffron); border: none; color: #FFFFFF; font-size: 11.5px; font-weight: 800; padding: 6px; border-radius: 999px;">💬 Chat</button>
+            </div>
+          </div>
+
+          <!-- Astrologer Card 2 -->
+          <div class="card" style="gap: 8px;">
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <div style="width: 48px; height: 48px; border-radius: 24px; background: #FCE7F3; border: 2px solid #059669; display: flex; align-items: center; justify-content: center; font-size: 22px;">👩‍🦰</div>
+              <div style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div style="font-size: 14px; font-weight: 900; color: #0F172A;">Tarot Isha Kapoor</div>
+                  <span style="font-size: 10px; color: var(--teal); font-weight: 800;">● Online</span>
+                </div>
+                <div style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Tarot · Love & Manifestation (6 yrs)</div>
+                <div style="font-size: 12px; font-weight: 900; color: var(--saffron); margin-top: 2px;">₹18 / min</div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 6px; margin-top: 4px;">
+              <button style="flex: 1; background: #FFFBEB; border: 1.5px solid #F59E0B; color: var(--gold-soft); font-size: 11.5px; font-weight: 800; padding: 6px; border-radius: 999px;">📞 Audio</button>
+              <button style="flex: 1; background: #F0FDF4; border: 1.5px solid #10B981; color: var(--teal); font-size: 11.5px; font-weight: 800; padding: 6px; border-radius: 999px;">📹 Video</button>
+              <button style="flex: 1; background: var(--saffron); border: none; color: #FFFFFF; font-size: 11.5px; font-weight: 800; padding: 6px; border-radius: 999px;">💬 Chat</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-bar">
+          <div class="tab-item"><span class="icon">🏠</span><span>Home</span></div>
+          <div class="tab-item active"><span class="icon">🔭</span><span>Consult</span></div>
+          <div class="tab-item"><span class="icon">📜</span><span>Kundli</span></div>
+          <div class="tab-item"><span class="icon">⭐</span><span>Horoscope</span></div>
+          <div class="tab-item"><span class="icon">👤</span><span>Profile</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 5: Compact Astrologer Profile -->
+    <div class="artboard-container">
+      <div class="artboard-label"><span>05</span> Astrologer Profile</div>
+      <div class="artboard">
+        <div class="status-bar"><span>9:41</span><span>🔋 100%</span></div>
+        <div class="screen-body">
+          <!-- Compact Hero Card -->
+          <div class="card" style="align-items: center; text-align: center; padding: 12px; background: linear-gradient(180deg, #FFFFFF, #F0FDF4);">
+            <div style="width: 58px; height: 58px; border-radius: 29px; border: 2.5px solid #059669; padding: 2px; margin-bottom: 2px;">
+              <div style="width: 100%; height: 100%; border-radius: 50%; background: #FDE68A; display: flex; align-items: center; justify-content: center; font-size: 26px;">🧙‍♂️</div>
+            </div>
+            <div style="font-size: 17px; font-weight: 900; color: #0F172A;">Pandit Deepak Trivedi</div>
+            <div style="font-size: 11px; font-weight: 800; color: var(--teal);">● Available now</div>
+
+            <!-- Stats Grid -->
+            <div style="display: flex; gap: 6px; width: 100%; margin-top: 8px;">
+              <div style="flex: 1; background: #F8FAFC; border: 1px solid #BFDBFE; border-radius: 8px; padding: 5px 2px;">
+                <div style="font-size: 12px; font-weight: 900; color: var(--gold-soft);">⭐ 5.0</div>
+                <div style="font-size: 9px; color: var(--text-muted); font-weight: 700;">21k reviews</div>
+              </div>
+              <div style="flex: 1; background: #F8FAFC; border: 1px solid #BFDBFE; border-radius: 8px; padding: 5px 2px;">
+                <div style="font-size: 12px; font-weight: 900; color: var(--gold-soft);">🎓 27 yrs</div>
+                <div style="font-size: 9px; color: var(--text-muted); font-weight: 700;">experience</div>
+              </div>
+              <div style="flex: 1; background: #F8FAFC; border: 1px solid #BFDBFE; border-radius: 8px; padding: 5px 2px;">
+                <div style="font-size: 12px; font-weight: 900; color: var(--gold-soft);">💬 99k</div>
+                <div style="font-size: 9px; color: var(--text-muted); font-weight: 700;">consults</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- About -->
+          <div class="card" style="padding: 10px 12px; gap: 4px;">
+            <div style="font-size: 13.5px; font-weight: 900; color: #0F172A;">About</div>
+            <p style="font-size: 12px; color: var(--text-muted); line-height: 16px; font-weight: 600;">Gold medalist Vedic astrologer specializing in marriage matching, career hurdles, and Kundli remedies.</p>
+          </div>
+
+          <!-- Rate Box -->
+          <div class="card" style="padding: 10px 12px; gap: 6px;">
+            <div style="font-size: 13.5px; font-weight: 900; color: #0F172A;">Consultation Rate</div>
+            <div style="background: #FFFBEB; border: 1.5px solid rgba(245,158,11,0.3); border-radius: 8px; padding: 8px 12px;">
+              <div style="font-size: 20px; font-weight: 900; color: var(--saffron);">₹25 <span style="font-size: 12px; color: var(--text-muted); font-weight: 700;">/ min</span></div>
+              <div style="font-size: 10px; color: var(--text-muted); font-weight: 600;">Billed per minute from wallet</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sticky Bottom CTA Bar -->
+        <div style="background: #FFFFFF; border-top: 1.5px solid #CBD5E1; padding: 8px 12px; display: flex; gap: 6px; align-items: center;">
+          <button style="padding: 8px 14px; border-radius: 999px; background: #FFFBEB; border: 1.5px solid #F59E0B; color: var(--gold-soft); font-size: 12px; font-weight: 800;">📞 Audio</button>
+          <button style="padding: 8px 14px; border-radius: 999px; background: #F0FDF4; border: 1.5px solid #059669; color: var(--teal); font-size: 12px; font-weight: 800;">📹 Video</button>
+          <button style="flex: 1; padding: 8px 14px; border-radius: 999px; background: var(--saffron); border: none; color: #FFFFFF; font-size: 12.5px; font-weight: 900;">💬 Start Chat</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 6: Live WebRTC Video Call -->
+    <div class="artboard-container">
+      <div class="artboard-label"><span>06</span> Live WebRTC Video</div>
+      <div class="artboard" style="background: #060A12; position: relative;">
+        <div class="status-bar" style="color: #FFFFFF;"><span>9:41</span><span>🔋 100%</span></div>
+        <div class="screen-body" style="justify-content: space-between; padding: 12px;">
+          <!-- Top Bar -->
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="background: rgba(0,0,0,0.6); padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.2); font-size: 11px; color: #34D399; font-weight: 800;">
+              🔴 LIVE · 04:18
+            </div>
+            <div style="background: rgba(0,0,0,0.6); padding: 4px 10px; border-radius: 999px; border: 1px solid #F59E0B; font-size: 11px; color: #F59E0B; font-weight: 800;">
+              ₹25/min · ₹100 Left
+            </div>
+          </div>
+
+          <!-- Astrologer Avatar Placeholder on Video -->
+          <div style="align-self: center; text-align: center;">
+            <div style="width: 90px; height: 90px; border-radius: 45px; border: 3px solid #059669; margin: 0 auto 10px auto; background: #1E293B; display: flex; align-items: center; justify-content: center; font-size: 44px; box-shadow: 0 0 20px rgba(5,150,105,0.5);">🧙‍♂️</div>
+            <div style="color: #FFFFFF; font-size: 16px; font-weight: 900;">Pandit Deepak Trivedi</div>
+            <div style="color: #94A3B8; font-size: 11px; font-weight: 700;">Live Vedic Video Room</div>
+          </div>
+
+          <!-- PIP Self Camera Preview -->
+          <div style="position: absolute; right: 16px; top: 60px; width: 70px; height: 100px; background: #1E293B; border-radius: 12px; border: 2px solid #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
+            🤳
+          </div>
+
+          <!-- Call Action Controls -->
+          <div style="display: flex; justify-content: center; gap: 14px; background: rgba(15,23,42,0.85); padding: 12px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.15);">
+            <div style="width: 44px; height: 44px; border-radius: 22px; background: #334155; display: flex; align-items: center; justify-content: center; font-size: 18px;">🎙️</div>
+            <div style="width: 44px; height: 44px; border-radius: 22px; background: #334155; display: flex; align-items: center; justify-content: center; font-size: 18px;">📹</div>
+            <div style="width: 44px; height: 44px; border-radius: 22px; background: #334155; display: flex; align-items: center; justify-content: center; font-size: 18px;">📜</div>
+            <div style="width: 44px; height: 44px; border-radius: 22px; background: #E11D48; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 0 15px rgba(225,29,72,0.5);">📞</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 7: Live Seeker Chat Room -->
+    <div class="artboard-container">
+      <div class="artboard-label"><span>07</span> Live Jyotishi Chat</div>
+      <div class="artboard">
+        <div class="status-bar"><span>9:41</span><span>🔋 100%</span></div>
+        <div class="screen-body" style="padding: 10px; gap: 8px;">
+          <!-- Top Bar -->
+          <div style="display: flex; justify-content: space-between; align-items: center; background: #FFFFFF; padding: 8px 12px; border-radius: 12px; border: 1.5px solid #BFDBFE;">
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <div style="font-size: 20px;">🧙‍♂️</div>
+              <div>
+                <div style="font-size: 13px; font-weight: 900; color: #0F172A;">Pandit Deepak</div>
+                <div style="font-size: 10px; color: var(--teal); font-weight: 800;">● Connected</div>
+              </div>
+            </div>
+            <div style="font-size: 11px; font-weight: 900; color: var(--gold-soft); background: #FEF3C7; padding: 3px 8px; border-radius: 999px;">08:24 min</div>
+          </div>
+
+          <!-- Chat messages area -->
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 8px; justify-content: flex-end;">
+            <div style="align-self: flex-start; max-width: 80%; background: #FFFFFF; border: 1.5px solid #CBD5E1; padding: 8px 12px; border-radius: 12px 12px 12px 2px; font-size: 12px; color: #0F172A; font-weight: 600;">
+              Namaste Deepak ji! I am examining your 10th house of career in your D1 chart.
+            </div>
+            <div style="align-self: flex-end; max-width: 80%; background: #059669; color: #FFFFFF; padding: 8px 12px; border-radius: 12px 12px 2px 12px; font-size: 12px; font-weight: 600;">
+              Guruji, should I switch jobs in this Jupiter transit?
+            </div>
+            <div style="align-self: flex-start; max-width: 80%; background: #FFFFFF; border: 1.5px solid #CBD5E1; padding: 8px 12px; border-radius: 12px 12px 12px 2px; font-size: 12px; color: #0F172A; font-weight: 600;">
+              Yes! September brings a favorable Mahadasha shift.
+            </div>
+          </div>
+
+          <!-- Input bar -->
+          <div style="display: flex; gap: 6px; background: #FFFFFF; padding: 6px 10px; border-radius: 999px; border: 1.5px solid #CBD5E1; align-items: center;">
+            <input type="text" placeholder="Type your question…" style="flex: 1; border: none; font-size: 12px; outline: none; font-family: inherit;" readonly />
+            <button style="width: 32px; height: 32px; border-radius: 16px; background: var(--saffron); border: none; color: #FFFFFF; font-weight: 900; font-size: 14px;">➔</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 8: High-Contrast Wallet -->
+    <div class="artboard-container">
+      <div class="artboard-label"><span>08</span> Wallet & Recharge</div>
+      <div class="artboard">
+        <div class="status-bar"><span>9:41</span><span>🔋 100%</span></div>
+        <div class="screen-body">
+          <div class="app-header">
+            <div class="title">Wallet & Recharge</div>
+          </div>
+
+          <!-- Saffron/Gold Balance Card -->
+          <div style="background: linear-gradient(135deg, #D97706, #E67E22); border-radius: 18px; padding: 18px; color: #FFFFFF; box-shadow: 0 8px 20px rgba(217,119,6,0.35);">
+            <div style="font-size: 11px; font-weight: 900; letter-spacing: 0.8px; opacity: 0.9;">AVAILABLE BALANCE</div>
+            <div style="font-size: 34px; font-weight: 900; margin: 4px 0;">₹100</div>
+            <div style="font-size: 11px; opacity: 0.85; font-weight: 600;">Valid for all Live Audio, Video & Chat Consultations</div>
+          </div>
+
+          <!-- Recharge Packs -->
+          <div class="card" style="gap: 8px;">
+            <div style="font-size: 13.5px; font-weight: 900; color: #0F172A;">Select Recharge Pack</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <div style="background: #FFFBEB; border: 1.5px solid #F59E0B; border-radius: 10px; padding: 10px; text-align: center;">
+                <div style="font-size: 16px; font-weight: 900; color: var(--gold-soft);">₹250</div>
+                <div style="font-size: 10px; color: var(--teal); font-weight: 800;">+₹25 Free Bonus</div>
+              </div>
+              <div style="background: #F8FAFC; border: 1.5px solid #BFDBFE; border-radius: 10px; padding: 10px; text-align: center;">
+                <div style="font-size: 16px; font-weight: 900; color: #0F172A;">₹500</div>
+                <div style="font-size: 10px; color: var(--teal); font-weight: 800;">+₹60 Free Bonus</div>
+              </div>
+            </div>
+            <button class="btn-gold" style="margin-top: 4px;">Proceed with UPI / GPay ➔</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 9: 10-Page Kundli PDF Exporter -->
+    <div class="artboard-container">
+      <div class="artboard-label"><span>09</span> 10-Page Kundli PDF</div>
+      <div class="artboard">
+        <div class="status-bar"><span>9:41</span><span>🔋 100%</span></div>
+        <div class="screen-body">
+          <div class="app-header">
+            <div class="title">Vedic Kundli PDF Exporter</div>
+          </div>
+
+          <div class="kundli-diamond">
+            <!-- Vedic North Indian Square & Diamond Line Geometry -->
+            <svg class="kundli-grid-svg" viewBox="0 0 200 160">
+              <rect x="10" y="10" width="180" height="140" fill="none" stroke="#D97706" stroke-width="2" />
+              <line x1="10" y1="10" x2="190" y2="150" stroke="#D97706" stroke-width="1.5" />
+              <line x1="190" y1="10" x2="10" y2="150" stroke="#D97706" stroke-width="1.5" />
+              <polygon points="100,10 190,80 100,150 10,80" fill="none" stroke="#D97706" stroke-width="2" />
+              <text x="100" y="45" font-size="10" font-weight="900" fill="#B45309" text-anchor="middle">Lagna (1)</text>
+              <text x="100" y="85" font-size="9" font-weight="700" fill="#059669" text-anchor="middle">Su, Mo, Ma</text>
+            </svg>
+          </div>
+
+          <div class="card" style="gap: 6px;">
+            <div style="font-size: 13.5px; font-weight: 900; color: #0F172A;">10-Page Comprehensive Report</div>
+            <div style="font-size: 11px; color: var(--text-muted); line-height: 15px;">Includes D1 Lagna, D9 Navamsha, Vimshottari Dasha, Ashtakvarga, Sade Sati & Gemstone Recommendations.</div>
+            <button class="btn-teal" style="margin-top: 4px;">📥 Export & Print PDF Report</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 10: In-App Package Downloader & System Installer -->
+    <div class="artboard-container">
+      <div class="artboard-label"><span>10</span> In-App Installer</div>
+      <div class="artboard" style="background: rgba(15, 23, 42, 0.7); justify-content: center; align-items: center; padding: 16px;">
+        <!-- Modal Card -->
+        <div style="background: #FFFFFF; border-radius: 20px; width: 100%; border: 1.5px solid #BFDBFE; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+          <div style="background: linear-gradient(135deg, #D97706, #E67E22); padding: 16px; text-align: center; color: #FFFFFF;">
+            <div style="font-size: 28px;">🚀</div>
+            <div style="font-size: 16px; font-weight: 900;">In-App App Installer</div>
+            <div style="font-size: 11px; opacity: 0.9; font-weight: 700;">Current: v2.6.9 ➔ New: v2.7.5</div>
+          </div>
+          <div style="padding: 14px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="background: #F0FDF4; border: 1px solid #10B981; border-radius: 8px; padding: 8px 10px;">
+              <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 900; color: var(--teal);">
+                <span>📥 Downloading Package…</span>
+                <span>78%</span>
+              </div>
+              <div style="height: 6px; background: #E2E8F0; border-radius: 3px; margin: 6px 0; overflow: hidden;">
+                <div style="height: 100%; width: 78%; background: var(--saffron); border-radius: 3px;"></div>
+              </div>
+              <div style="font-size: 10px; color: var(--text-muted); font-weight: 700;">10.9 MB / 14.0 MB · ⚡ 2.1 MB/s</div>
+            </div>
+            <button class="btn-gold" style="font-size: 12px;">📦 Install New Version Now</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Design Tokens Blueprint Section -->
+  <div class="design-tokens-card">
+    <h2 style="font-size: 20px; font-weight: 900; color: #F8FAFC;">🎨 AstroGuru Design Tokens (Figma Global Styles)</h2>
+    <div class="token-grid">
+      <div class="token-swatch">
+        <div class="swatch-color" style="background: #F3F7FC;"></div>
+        <div class="swatch-info"><h4>Nordic Frost Ice</h4><p>#F3F7FC · Background</p></div>
+      </div>
+      <div class="token-swatch">
+        <div class="swatch-color" style="background: #FFFFFF;"></div>
+        <div class="swatch-info"><h4>Pure Elevated Card</h4><p>#FFFFFF · Surface</p></div>
+      </div>
+      <div class="token-swatch">
+        <div class="swatch-color" style="background: #D97706;"></div>
+        <div class="swatch-info"><h4>Solar Gold</h4><p>#D97706 · Primary Brand</p></div>
+      </div>
+      <div class="token-swatch">
+        <div class="swatch-color" style="background: #E67E22;"></div>
+        <div class="swatch-info"><h4>Sacred Saffron</h4><p>#E67E22 · CTA & Action</p></div>
+      </div>
+      <div class="token-swatch">
+        <div class="swatch-color" style="background: #059669;"></div>
+        <div class="swatch-info"><h4>Sacred Emerald Teal</h4><p>#059669 · Accent & Status</p></div>
+      </div>
+      <div class="token-swatch">
+        <div class="swatch-color" style="background: #0F172A;"></div>
+        <div class="swatch-info"><h4>Deep Slate Charcoal</h4><p>#0F172A · High Contrast Text</p></div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
