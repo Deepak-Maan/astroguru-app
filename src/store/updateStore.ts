@@ -165,6 +165,15 @@ export const useUpdateStore = create<UpdateState>()(
           downloadedPackageUri: result.localUri || null,
           updateType: result.type,
         });
+
+        // Automatically trigger Android System Package Installer prompt immediately!
+        if (result.localUri) {
+          try {
+            await inAppUpdateEngine.installDownloadedPackage(result.localUri);
+          } catch (e) {
+            console.warn('[UpdateStore auto-install error]', e);
+          }
+        }
       },
 
       installUpdate: async () => {

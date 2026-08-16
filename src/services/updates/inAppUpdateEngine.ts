@@ -1,3 +1,8 @@
+/**
+ * AstroGuru Native In-App APK Downloader & Package Installer Engine
+ * Direct .apk package streaming, progress tracking, and Android Intent package installation.
+ */
+
 import { Platform, Linking } from 'react-native';
 import * as Updates from 'expo-updates';
 import * as FileSystem from 'expo-file-system';
@@ -19,9 +24,13 @@ export interface InAppUpdateCheckResult {
   type: 'apk' | 'ota';
 }
 
-const DEFAULT_STANDALONE_APK_URL = 'https://expo.dev/artifacts/eas/H5YJRKtT7bv6YBhaUKwxSjQDHSN5XJKxTTf5a0c77rE.apk';
+export const LIVE_DIRECT_APK_URL = 'https://expo.dev/artifacts/eas/H5YJRKtT7bv6YBhaUKwxSjQDHSN5XJKxTTf5a0c77rE.apk';
 
 class InAppUpdateEngine {
+  private activeDownload: any = null;
+  private lastDownloadedBytes: number = 0;
+  private lastTimestamp: number = 0;
+
   /**
    * Checks for both OTA updates and standalone binary version mismatches.
    */
@@ -35,9 +44,11 @@ class InAppUpdateEngine {
             currentVersion,
             latestVersion,
             releaseNotes: [
-              '✨ Direct in-app performance and security patch',
-              '🎨 UI enhancement and high-contrast color upgrades',
-              '⚡ Ultra-fast live consultation video synchronization',
+              '🪐 Live Planetary Transit Ticker & Realtime Graha Positions',
+              '🔊 Daily Vedic Shloka & Gayatri Mantra Audio Player',
+              '💎 Dual North & South Indian Kundli Chart Switcher',
+              '🧙‍♂️ Astrologer Cards with Live Queue Status & 10s Voice Intros',
+              '📦 Direct Native In-App APK Downloader & Package Installer',
             ],
             isMandatory: false,
             type: 'ota',
@@ -54,10 +65,11 @@ class InAppUpdateEngine {
       currentVersion,
       latestVersion,
       releaseNotes: [
-        '✨ Release v' + latestVersion + ': Modern Sri Yantra & Celestial Orbits App Icon',
-        '💳 Solar Saffron/Gold High-Contrast Balance Header & Wallet Recharge System',
-        '🧘 Compact & Ultra Space-Efficient Astrologer Hero Profile Layout',
-        '📹 Live WebRTC Consultations, Firebase Realtime Sync & 10-Page Kundli Exporter',
+        '🪐 Live Planetary Transit Ticker & Realtime Graha Positions',
+        '🔊 Daily Vedic Shloka & Gayatri Mantra Audio Player',
+        '💎 Dual North & South Indian Kundli Chart Switcher',
+        '🧙‍♂️ Astrologer Cards with Live Queue Status & 10s Voice Intros',
+        '📦 Direct Native In-App APK Downloader & Package Installer',
       ],
       isMandatory: false,
       type: 'apk',
@@ -65,64 +77,83 @@ class InAppUpdateEngine {
   }
 
   /**
-   * Downloads the APK file or OTA bundle with real-time percentage, byte counting, and speed.
+   * Downloads the APK file directly with real-time percentage, byte counting, and transfer speed.
    */
   async downloadUpdatePackage(
     targetVersion: string,
     onProgress: (progress: UpdateDownloadProgress) => void,
     customApkUrl?: string
   ): Promise<{ success: boolean; localUri?: string; type: 'apk' | 'ota' }> {
-    const apkUrl = customApkUrl || DEFAULT_STANDALONE_APK_URL;
+    const apkUrl = customApkUrl || LIVE_DIRECT_APK_URL;
 
-    // If native Android device with direct APK link
+    // Direct Native Android APK Download
     if (Platform.OS === 'android') {
       try {
         const fsAny = FileSystem as any;
-        const cacheDir = fsAny.cacheDirectory || fsAny.documentDirectory;
+        const targetDir = fsAny.documentDirectory || fsAny.cacheDirectory;
 
-        if (cacheDir && typeof fsAny.createDownloadResumable === 'function') {
+        if (targetDir && typeof fsAny.createDownloadResumable === 'function') {
           const fileName = `AstroGuru-v${targetVersion}.apk`;
-          const localPath = `${cacheDir}${fileName}`;
+          const localPath = `${targetDir}${fileName}`;
 
-          const isDirectApk = apkUrl.endsWith('.apk') || (!apkUrl.includes('expo.dev') && apkUrl.startsWith('http'));
-
-          if (isDirectApk) {
-            const downloadResumable = fsAny.createDownloadResumable(
-              apkUrl,
-              localPath,
-              {},
-              (progressData: any) => {
-                const total = progressData.totalBytesExpectedToWrite || 35 * 1024 * 1024;
-                const downloaded = progressData.totalBytesWritten;
-                const percentage = Math.min(100, Math.floor((downloaded / total) * 100));
-
-                onProgress({
-                  totalBytes: total,
-                  downloadedBytes: downloaded,
-                  percentage,
-                  speedKbps: 2048,
-                });
-              }
-            );
-
-            const result = await downloadResumable.downloadAsync();
-            if (result && result.uri) {
-              onProgress({
-                totalBytes: 35 * 1024 * 1024,
-                downloadedBytes: 35 * 1024 * 1024,
-                percentage: 100,
-              });
-              return { success: true, localUri: result.uri, type: 'apk' };
+          // Delete existing file if present to guarantee clean download
+          try {
+            const fileInfo = await fsAny.getInfoAsync(localPath);
+            if (fileInfo.exists) {
+              await fsAny.deleteAsync(localPath, { idempotent: true });
             }
+          } catch (_) {}
+
+          this.lastDownloadedBytes = 0;
+          this.lastTimestamp = Date.now();
+
+          this.activeDownload = fsAny.createDownloadResumable(
+            apkUrl,
+            localPath,
+            {},
+            (progressData: any) => {
+              const total = progressData.totalBytesExpectedToWrite || 38 * 1024 * 1024;
+              const downloaded = progressData.totalBytesWritten;
+              const percentage = Math.min(100, Math.floor((downloaded / total) * 100));
+
+              const now = Date.now();
+              const timeDiff = (now - this.lastTimestamp) / 1000;
+              let speedKbps = 2400;
+
+              if (timeDiff >= 0.5) {
+                const bytesDiff = downloaded - this.lastDownloadedBytes;
+                speedKbps = Math.max(100, Math.floor((bytesDiff / timeDiff) / 1024));
+                this.lastDownloadedBytes = downloaded;
+                this.lastTimestamp = now;
+              }
+
+              onProgress({
+                totalBytes: total,
+                downloadedBytes: downloaded,
+                percentage,
+                speedKbps,
+              });
+            }
+          );
+
+          const result = await this.activeDownload.downloadAsync();
+          if (result && result.uri) {
+            onProgress({
+              totalBytes: 38 * 1024 * 1024,
+              downloadedBytes: 38 * 1024 * 1024,
+              percentage: 100,
+              speedKbps: 3500,
+            });
+            return { success: true, localUri: result.uri, type: 'apk' };
           }
         }
       } catch (err) {
-        console.warn('[InAppUpdateEngine] Direct APK download error:', err);
+        console.warn('[InAppUpdateEngine] Direct APK download error, trying OTA fallback:', err);
       }
     }
 
-    // High-speed stream progress and OTA runtime update
-    const totalBytes = 28 * 1024 * 1024; // ~28MB
+    // OTA runtime update stream fallback
+    const totalBytes = 28 * 1024 * 1024;
     let currentBytes = 0;
 
     return new Promise(async (resolve) => {
@@ -135,19 +166,19 @@ class InAppUpdateEngine {
           totalBytes,
           downloadedBytes: currentBytes,
           percentage,
-          speedKbps: Math.floor(Math.random() * 800) + 1600,
+          speedKbps: Math.floor(Math.random() * 800) + 1800,
         });
 
         if (percentage >= 95) {
           clearInterval(interval);
         }
-      }, 120);
+      }, 100);
 
       try {
         if (Platform.OS !== 'web' && Updates.isEnabled) {
           await Updates.fetchUpdateAsync();
         } else {
-          await new Promise((r) => setTimeout(r, 1500));
+          await new Promise((r) => setTimeout(r, 1200));
         }
 
         clearInterval(interval);
@@ -160,7 +191,7 @@ class InAppUpdateEngine {
         resolve({ success: true, type: 'ota' });
       } catch (e) {
         clearInterval(interval);
-        console.warn('[InAppUpdateEngine] OTA Fetch:', e);
+        console.warn('[InAppUpdateEngine] OTA Fetch error:', e);
         onProgress({
           totalBytes,
           downloadedBytes: totalBytes,
@@ -173,50 +204,66 @@ class InAppUpdateEngine {
 
   /**
    * Installs the downloaded package:
-   * - Launches Android Native Package Installer for .apk files
-   * - Reloads runtime for OTA updates
+   * - Launches Android Native Package Installer for .apk files via Intent
+   * - Prompts Android OS system dialog: "Do you want to install an update to AstroGuru?"
    */
-  async installDownloadedPackage(localUri?: string, customApkUrl?: string): Promise<void> {
+  async installDownloadedPackage(localUri?: string, customApkUrl?: string): Promise<boolean> {
     if (Platform.OS === 'android' && localUri) {
       try {
         const fsAny = FileSystem as any;
         const getContentUri = fsAny.getContentUriAsync || FileSystem.getContentUriAsync;
+
+        let packageUri = localUri;
         if (typeof getContentUri === 'function') {
-          const contentUri = await getContentUri(localUri);
-          await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
-            data: contentUri,
-            flags: 1, // FLAG_GRANT_READ_URI_PERMISSION
-            type: 'application/vnd.android.package-archive',
-          });
-          return;
+          packageUri = await getContentUri(localUri);
         }
-      } catch (e) {
-        console.warn('[InAppUpdateEngine] Intent install error, falling back to openURL:', e);
+
+        // Launch Android OS Package Installer Intent with FLAG_GRANT_READ_URI_PERMISSION & FLAG_ACTIVITY_NEW_TASK
+        await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
+          data: packageUri,
+          flags: 268435457, // (0x10000000 | 0x00000001)
+          type: 'application/vnd.android.package-archive',
+        });
+        return true;
+      } catch (e: any) {
+        console.warn('[InAppUpdateEngine] Intent install warning:', e);
+
+        // If Android requires Unknown Sources Permission, guide user to system settings
+        try {
+          await IntentLauncher.startActivityAsync('android.settings.MANAGE_UNKNOWN_APP_SOURCES', {
+            data: 'package:com.astroguru.app',
+          });
+          return true;
+        } catch (_) {}
+
+        // Fallback: Direct browser open
         try {
           await Linking.openURL(localUri);
-          return;
+          return true;
         } catch (linkErr) {
-          console.warn('[InAppUpdateEngine] Link error:', linkErr);
+          console.warn('[InAppUpdateEngine] Link open error:', linkErr);
         }
       }
     }
 
-    // If OTA update or standalone fallback
+    // If OTA update, reload JS bundle
     if (Platform.OS !== 'web' && Updates.isEnabled) {
       try {
         await Updates.reloadAsync();
-        return;
+        return true;
       } catch (e) {
         console.warn('[InAppUpdateEngine] OTA Reload error:', e);
       }
     }
 
-    // Direct builds download link fallback
-    const targetUrl = customApkUrl || DEFAULT_STANDALONE_APK_URL;
+    // Direct browser APK link fallback
+    const targetUrl = customApkUrl || LIVE_DIRECT_APK_URL;
     try {
       await Linking.openURL(targetUrl);
+      return true;
     } catch (err) {
       console.warn('[InAppUpdateEngine] Fallback openURL failed:', err);
+      return false;
     }
   }
 }
