@@ -4,7 +4,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { inAppUpdateEngine, UpdateDownloadProgress } from '../services/updates/inAppUpdateEngine';
 
-export const LATEST_RELEASE_VERSION = '2.7.7';
+export const LATEST_RELEASE_VERSION = '2.7.9';
 
 export interface UpdateInfo {
   currentVersion: string;
@@ -38,16 +38,16 @@ interface UpdateState extends UpdateInfo {
 export const useUpdateStore = create<UpdateState>()(
   persist(
     (set, get) => ({
-      currentVersion: '2.7.7',
-      latestVersion: '2.7.7',
+      currentVersion: '2.7.9',
+      latestVersion: '2.7.9',
       updateAvailable: false,
       isMandatory: false,
       releaseNotes: [
-        '🚀 Release v2.7.7: Automated Direct In-App APK Package Downloader & Installer',
+        '📍 Release v2.7.9: 1-Tap GPS & High-Precision City Auto-Detect for Birth Place',
+        '⚡ Quick-Select Popular Indian City Chips (Delhi, Mumbai, Bengaluru, Jaipur, Varanasi)',
         '🪐 Live Planetary Transit Ticker & Realtime Graha Positions Ribbon',
         '🔊 Daily Vedic Gayatri Mantra & Shloka Audio Player Pill',
-        '💎 Interactive North (Diamond) & South (Square) Kundli Chart Switcher',
-        '🧙‍♂️ Enhanced Astrologer Cards with Live Queue Status & 10s Voice Intros',
+        '💎 Interactive North & South Indian Kundli Chart Switcher',
       ],
       downloadProgress: 0,
       downloadedBytes: 0,

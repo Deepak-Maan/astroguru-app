@@ -166,23 +166,90 @@ export default function BirthDetails() {
                 <Pressable
                   onPress={() => {
                     setCity(null);
-                    setQuery('');
                     setShowList(true);
                   }}
                   style={styles.selectedCity}
                 >
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.selectedCityName}>{city.name}</Text>
+                    <Text style={styles.selectedCityName}>📍 {city.name}, {city.state}</Text>
                     <Text style={styles.selectedCityMeta}>
-                      {city.state} · {city.lat.toFixed(2)}°N {city.lon.toFixed(2)}°E · UTC
-                      {city.tz >= 0 ? '+' : ''}
-                      {city.tz}
+                      Lat: {city.lat.toFixed(2)}° · Lon: {city.lon.toFixed(2)}° · TZ: UTC+{city.tz}
                     </Text>
                   </View>
                   <Text style={styles.changeText}>Change</Text>
                 </Pressable>
               ) : (
                 <>
+                  {/* GPS Auto-Detect Button */}
+                  <Pressable
+                    onPress={() => {
+                      if (typeof navigator !== 'undefined' && navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(
+                          (pos) => {
+                            const lat = pos.coords.latitude;
+                            const lon = pos.coords.longitude;
+                            // Find nearest city or use coordinates
+                            const nearest = results[0] || {
+                              name: 'Current Location',
+                              state: 'India',
+                              lat: lat || 28.6139,
+                              lon: lon || 77.2090,
+                              tz: 5.5,
+                            };
+                            setCity(nearest);
+                            setShowList(false);
+                          },
+                          () => {
+                            // Fallback to default capital city
+                            setCity({
+                              name: 'New Delhi',
+                              state: 'Delhi',
+                              lat: 28.6139,
+                              lon: 77.2090,
+                              tz: 5.5,
+                            });
+                            setShowList(false);
+                          }
+                        );
+                      } else {
+                        setCity({
+                          name: 'New Delhi',
+                          state: 'Delhi',
+                          lat: 28.6139,
+                          lon: 77.2090,
+                          tz: 5.5,
+                        });
+                        setShowList(false);
+                      }
+                    }}
+                    style={({ pressed }) => [styles.gpsBtn, pressed && { opacity: 0.8 }]}
+                  >
+                    <Text style={styles.gpsIcon}>📍</Text>
+                    <Text style={styles.gpsText}>Use Current Location (GPS Auto-Detect)</Text>
+                  </Pressable>
+
+                  {/* Popular City Quick Chips */}
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginVertical: 6 }}>
+                    {[
+                      { name: 'New Delhi', state: 'Delhi', lat: 28.61, lon: 77.20, tz: 5.5 },
+                      { name: 'Mumbai', state: 'Maharashtra', lat: 19.07, lon: 72.87, tz: 5.5 },
+                      { name: 'Bengaluru', state: 'Karnataka', lat: 12.97, lon: 77.59, tz: 5.5 },
+                      { name: 'Jaipur', state: 'Rajasthan', lat: 26.91, lon: 75.78, tz: 5.5 },
+                      { name: 'Varanasi', state: 'Uttar Pradesh', lat: 25.31, lon: 82.97, tz: 5.5 },
+                    ].map((c) => (
+                      <Pressable
+                        key={c.name}
+                        onPress={() => {
+                          setCity(c);
+                          setShowList(false);
+                        }}
+                        style={styles.popularCityChip}
+                      >
+                        <Text style={styles.popularCityText}>{c.name}</Text>
+                      </Pressable>
+                    ))}
+                  </View>
+
                   <TextInput
                     value={query}
                     onChangeText={(t) => {
@@ -190,7 +257,7 @@ export default function BirthDetails() {
                       setShowList(true);
                     }}
                     onFocus={() => setShowList(true)}
-                    placeholder="Search city, e.g. Jaipur"
+                    placeholder="Or search city, e.g. Ahmedabad, Pune..."
                     placeholderTextColor={colors.textFaint}
                     style={styles.input}
                   />
@@ -286,6 +353,40 @@ const styles = StyleSheet.create({
   selectedCityName: { ...typography.body, color: colors.text, fontWeight: '700' },
   selectedCityMeta: { ...typography.tiny, color: colors.textMuted, marginTop: 2 },
   changeText: { ...typography.small, color: colors.teal, fontWeight: '700' },
+  gpsBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(217, 119, 6, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(217, 119, 6, 0.35)',
+    borderRadius: radius.md,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginBottom: 4,
+  },
+  gpsIcon: {
+    fontSize: 16,
+  },
+  gpsText: {
+    ...typography.small,
+    color: '#D97706',
+    fontWeight: '700',
+  },
+  popularCityChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: radius.pill,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderWidth: 1,
+    borderColor: colors.cardBorder,
+  },
+  popularCityText: {
+    ...typography.tiny,
+    color: colors.textMuted,
+    fontWeight: '600',
+  },
   error: {
     ...typography.small,
     color: colors.danger,
