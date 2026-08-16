@@ -19,7 +19,7 @@ export interface InAppUpdateCheckResult {
   type: 'apk' | 'ota';
 }
 
-const DEFAULT_STANDALONE_APK_URL = 'https://expo.dev/accounts/deepak00007/projects/astrologer-app/builds';
+const DEFAULT_STANDALONE_APK_URL = 'https://expo.dev/artifacts/eas/H5YJRKtT7bv6YBhaUKwxSjQDHSN5XJKxTTf5a0c77rE.apk';
 
 class InAppUpdateEngine {
   /**
