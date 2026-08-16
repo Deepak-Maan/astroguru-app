@@ -15,6 +15,7 @@
     },
     "android": {
       "package": "com.astroguru.app",
+      "versionCode": 275,
       "adaptiveIcon": {
         "backgroundColor": "#060A12",
         "foregroundImage": "./assets/icon.png",
