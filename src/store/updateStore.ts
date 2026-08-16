@@ -4,7 +4,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { inAppUpdateEngine, UpdateDownloadProgress } from '../services/updates/inAppUpdateEngine';
 
-export const LATEST_RELEASE_VERSION = '2.7.6';
+export const LATEST_RELEASE_VERSION = '2.7.7';
 
 export interface UpdateInfo {
   currentVersion: string;
@@ -38,16 +38,16 @@ interface UpdateState extends UpdateInfo {
 export const useUpdateStore = create<UpdateState>()(
   persist(
     (set, get) => ({
-      currentVersion: '2.7.6',
-      latestVersion: '2.7.6',
+      currentVersion: '2.7.7',
+      latestVersion: '2.7.7',
       updateAvailable: false,
       isMandatory: false,
       releaseNotes: [
-        '✨ Release v2.7.6: Live Planetary Transit Ticker & Daily Vedic Shloka Audio',
-        '💎 Interactive North & South Indian Kundli Chart Style Switcher',
+        '🚀 Release v2.7.7: Automated Direct In-App APK Package Downloader & Installer',
+        '🪐 Live Planetary Transit Ticker & Realtime Graha Positions Ribbon',
+        '🔊 Daily Vedic Gayatri Mantra & Shloka Audio Player Pill',
+        '💎 Interactive North (Diamond) & South (Square) Kundli Chart Switcher',
         '🧙‍♂️ Enhanced Astrologer Cards with Live Queue Status & 10s Voice Intros',
-        '📦 Direct Native In-App APK Downloader & System Package Installer',
-        '💳 Solar Saffron/Gold High-Contrast Balance Header & Wallet Suite',
       ],
       downloadProgress: 0,
       downloadedBytes: 0,
