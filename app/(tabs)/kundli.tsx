@@ -43,6 +43,7 @@ export default function KundliScreen() {
   const profile = useUserStore((s) => s.profile);
   const kundli = useUserStore((s) => s.kundli);
   const [tab, setTab] = useState<TabId>('chart');
+  const [chartFormat, setChartFormat] = useState<'north' | 'south'>('north');
   const [matchingResult, setMatchingResult] = useState<any | null>(null);
 
   if (!isAuthenticated || !authUser) {
@@ -171,10 +172,31 @@ export default function KundliScreen() {
           {tab === 'chart' && (
             <>
               <Card>
-                <Text style={styles.chartTitle}>Lagna Chart (North Indian)</Text>
-                <Text style={styles.chartSub}>
-                  Numbers are Rashi signs · letters are planets
-                </Text>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.chartTitle}>
+                      {chartFormat === 'north' ? 'Lagna Chart (North Indian)' : 'Lagna Chart (South Indian)'}
+                    </Text>
+                    <Text style={styles.chartSub}>
+                      {chartFormat === 'north' ? 'Diamond geometry · 1st house top' : 'Fixed Zodiac clockwise boxes'}
+                    </Text>
+                  </View>
+                  <View style={{ flexDirection: 'row', backgroundColor: '#F1F5F9', borderRadius: radius.pill, padding: 3 }}>
+                    <Pressable
+                      onPress={() => setChartFormat('north')}
+                      style={[{ paddingVertical: 4, paddingHorizontal: 8, borderRadius: radius.pill }, chartFormat === 'north' && { backgroundColor: '#FFFFFF', shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 2, elevation: 1 }]}
+                    >
+                      <Text style={{ fontSize: 10.5, fontWeight: '800', color: chartFormat === 'north' ? colors.goldSoft : colors.textMuted }}>💎 North</Text>
+                    </Pressable>
+                    <Pressable
+                      onPress={() => setChartFormat('south')}
+                      style={[{ paddingVertical: 4, paddingHorizontal: 8, borderRadius: radius.pill }, chartFormat === 'south' && { backgroundColor: '#FFFFFF', shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 2, elevation: 1 }]}
+                    >
+                      <Text style={{ fontSize: 10.5, fontWeight: '800', color: chartFormat === 'south' ? colors.goldSoft : colors.textMuted }}>🔲 South</Text>
+                    </Pressable>
+                  </View>
+                </View>
+
                 <View style={{ marginTop: spacing.lg, alignItems: 'center' }}>
                   <KundliChart kundli={kundli} size={300} />
                 </View>

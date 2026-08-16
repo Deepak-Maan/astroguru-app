@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import * as Haptics from 'expo-haptics';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GradientBackground } from '../../src/components/GradientBackground';
@@ -94,10 +95,46 @@ export default function Home() {
         />
 
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+          {/* Live Planetary Transit Ticker Ribbon */}
+          <View style={styles.transitRibbon}>
+            <LinearGradient
+              colors={['#FFFBEB', '#F0FDF4']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={StyleSheet.absoluteFill}
+            />
+            <Text style={styles.transitIcon}>🪐</Text>
+            <Text style={styles.transitText} numberOfLines={1}>
+              <Text style={{ fontWeight: '800', color: colors.goldSoft }}>LIVE TRANSIT:</Text> Guru in Taurus · Surya in Simha · Chandra in {rashi.sanskrit} · Shubh Muhurta active
+            </Text>
+          </View>
+
+          {/* Daily Vedic Shloka Mantra Pill */}
+          <Pressable
+            onPress={() => {
+              if (Platform.OS !== 'web') {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              }
+            }}
+            style={({ pressed }) => [styles.shlokaPill, pressed && { opacity: 0.8, transform: [{ scale: 0.98 }] }]}
+          >
+            <View style={styles.shlokaLeft}>
+              <Text style={styles.shlokaSoundIcon}>🔊</Text>
+              <View>
+                <Text style={styles.shlokaTitle}>Daily Vedic Shloka · Gayatri Mantra</Text>
+                <Text style={styles.shlokaSub}>ॐ भूर्भुवः स्वः तत्सवितुर्वरेण्यं भर्गो देवस्य धीमहि...</Text>
+              </View>
+            </View>
+            <View style={styles.shlokaPlayBtn}>
+              <Text style={styles.shlokaPlayText}>▶ Play</Text>
+            </View>
+          </Pressable>
+
           {/* YOUR SKY AT BIRTH Hero Card matching screenshot */}
           <Pressable onPress={() => router.push(kundli ? '/(tabs)/kundli' : '/(onboarding)/birth-details')}>
             <View style={styles.skyCard}>
-              <Text style={styles.skyEyebrow}>YOUR SKY AT BIRTH</Text>
+              <View style={styles.constellationGlow} />
+              <Text style={styles.skyEyebrow}>✨ YOUR SKY AT BIRTH</Text>
               <Text style={styles.skyTitle}>
                 {kundli ? `${rashi.english} Rashi Chart` : 'Add your birth details'}
               </Text>
@@ -316,6 +353,62 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#059669',
   },
+  constellationGlow: {
+    position: 'absolute',
+    top: -20,
+    right: -20,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'rgba(217, 119, 6, 0.08)',
+  },
+
+  /* Live Planetary Transit Ticker Ribbon */
+  transitRibbon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.3)',
+    overflow: 'hidden',
+    gap: 8,
+  },
+  transitIcon: { fontSize: 14 },
+  transitText: { fontSize: 11.5, color: '#334155', fontWeight: '600', flex: 1 },
+
+  /* Daily Vedic Shloka Mantra Pill */
+  shlokaPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderWidth: 1.5,
+    borderColor: 'rgba(5, 150, 105, 0.25)',
+    shadowColor: '#BFDBFE',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 2,
+    gap: 10,
+  },
+  shlokaLeft: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
+  shlokaSoundIcon: { fontSize: 18 },
+  shlokaTitle: { fontSize: 12.5, fontWeight: '800', color: '#1E1B4B' },
+  shlokaSub: { fontSize: 10.5, color: '#475569', fontWeight: '500', marginTop: 1 },
+  shlokaPlayBtn: {
+    backgroundColor: '#ECFDF5',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: '#10B981',
+  },
+  shlokaPlayText: { fontSize: 11, fontWeight: '800', color: '#059669' },
 
   /* Today's Reading Card */
   todayCard: {

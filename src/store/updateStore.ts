@@ -4,7 +4,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { inAppUpdateEngine, UpdateDownloadProgress } from '../services/updates/inAppUpdateEngine';
 
-export const LATEST_RELEASE_VERSION = '2.7.5';
+export const LATEST_RELEASE_VERSION = '2.7.6';
 
 export interface UpdateInfo {
   currentVersion: string;
@@ -38,16 +38,16 @@ interface UpdateState extends UpdateInfo {
 export const useUpdateStore = create<UpdateState>()(
   persist(
     (set, get) => ({
-      currentVersion: '2.7.5',
-      latestVersion: '2.7.5',
+      currentVersion: '2.7.6',
+      latestVersion: '2.7.6',
       updateAvailable: false,
       isMandatory: false,
       releaseNotes: [
-        '✨ Release v2.7.5: Modern Sri Yantra & Celestial Orbits App Icon System',
-        '📦 Direct Native In-App APK Package Downloader & System Installer',
-        '💳 Solar Saffron/Gold High-Contrast Balance Header & Wallet Recharge Suite',
-        '🧘 Compact & Ultra Space-Efficient Astrologer Hero Profile Layout',
-        '📹 Live WebRTC Consultations, Firebase Realtime Sync & 10-Page Kundli Exporter',
+        '✨ Release v2.7.6: Live Planetary Transit Ticker & Daily Vedic Shloka Audio',
+        '💎 Interactive North & South Indian Kundli Chart Style Switcher',
+        '🧙‍♂️ Enhanced Astrologer Cards with Live Queue Status & 10s Voice Intros',
+        '📦 Direct Native In-App APK Downloader & System Package Installer',
+        '💳 Solar Saffron/Gold High-Contrast Balance Header & Wallet Suite',
       ],
       downloadProgress: 0,
       downloadedBytes: 0,
