@@ -2,10 +2,9 @@ import { Platform } from 'react-native';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Constants from 'expo-constants';
-import * as Updates from 'expo-updates';
+import { inAppUpdateEngine, UpdateDownloadProgress } from '../services/updates/inAppUpdateEngine';
 
-const LATEST_RELEASE_VERSION = '2.7.1';
+export const LATEST_RELEASE_VERSION = '2.7.1';
 
 export interface UpdateInfo {
   currentVersion: string;
@@ -14,8 +13,13 @@ export interface UpdateInfo {
   isMandatory: boolean;
   releaseNotes: string[];
   downloadProgress: number; // 0 to 100
+  downloadedBytes: number;
+  totalBytes: number;
+  speedKbps: number;
   isDownloading: boolean;
   isReadyToInstall: boolean;
+  isChecking: boolean;
+  lastCheckedTime: string | null;
 }
 
 interface UpdateState extends UpdateInfo {
@@ -25,6 +29,7 @@ interface UpdateState extends UpdateInfo {
   triggerUpdateModal: () => void;
   startDownload: () => Promise<void>;
   installUpdate: () => Promise<void>;
+  downloadDirectApk: (customUrl?: string) => Promise<void>;
   dismissUpdate: () => void;
 }
 
@@ -41,9 +46,14 @@ export const useUpdateStore = create<UpdateState>()(
         '🧘 Compact & Ultra Space-Efficient Astrologer Hero Profile Layout',
         '📹 Live WebRTC Consultations, Firebase Realtime Sync & 10-Page Kundli Exporter',
       ],
-      downloadProgress: 100,
+      downloadProgress: 0,
+      downloadedBytes: 0,
+      totalBytes: 0,
+      speedKbps: 0,
       isDownloading: false,
-      isReadyToInstall: Platform.OS !== 'web',
+      isReadyToInstall: false,
+      isChecking: false,
+      lastCheckedTime: null,
 
       autoCheckAndFetchOnStartup: async () => {
         // On Web, app updates automatically on bundle reload without modal prompt
@@ -61,67 +71,46 @@ export const useUpdateStore = create<UpdateState>()(
         const currentVersion = get().currentVersion || '2.0.0';
 
         try {
-          if (Updates.isEnabled) {
-            const update = await Updates.checkForUpdateAsync();
-            if (update.isAvailable) {
-              set({
-                updateAvailable: true,
-                latestVersion: LATEST_RELEASE_VERSION,
-                isDownloading: true,
-              });
-              await Updates.fetchUpdateAsync();
-              set({ downloadProgress: 100, isDownloading: false, isReadyToInstall: true });
-              return;
-            }
+          const result = await inAppUpdateEngine.checkForUpdate(currentVersion, LATEST_RELEASE_VERSION);
+          if (result.isAvailable) {
+            set({
+              updateAvailable: true,
+              latestVersion: result.latestVersion,
+              releaseNotes: result.releaseNotes,
+              isMandatory: result.isMandatory,
+              isReadyToInstall: false,
+              downloadProgress: 0,
+              lastCheckedTime: new Date().toISOString(),
+            });
           }
         } catch (e) {
-          console.warn('[Auto Update Check Warning]', e);
-        }
-
-        if (currentVersion !== LATEST_RELEASE_VERSION) {
-          set({ updateAvailable: true, latestVersion: LATEST_RELEASE_VERSION, isReadyToInstall: true, downloadProgress: 100 });
-        } else {
-          set({ updateAvailable: false, isReadyToInstall: false, downloadProgress: 0 });
+          console.warn('[UpdateStore Startup Check]', e);
         }
       },
 
       checkForUpdates: async () => {
-        const currentVersion = get().currentVersion || '1.5.0';
+        const currentVersion = get().currentVersion || '2.0.0';
+        set({ isChecking: true });
 
         try {
-          if (Updates.isEnabled) {
-            const update = await Updates.checkForUpdateAsync();
-            if (update.isAvailable) {
-              set({
-                updateAvailable: true,
-                latestVersion: LATEST_RELEASE_VERSION,
-                isReadyToInstall: true,
-                downloadProgress: 100,
-              });
-              return { isNewAvailable: true, currentVersion, latestVersion: LATEST_RELEASE_VERSION };
-            }
-          }
+          const result = await inAppUpdateEngine.checkForUpdate(currentVersion, LATEST_RELEASE_VERSION);
+          set({
+            isChecking: false,
+            lastCheckedTime: new Date().toISOString(),
+            updateAvailable: result.isAvailable,
+            latestVersion: result.latestVersion,
+            releaseNotes: result.releaseNotes,
+          });
+          return {
+            isNewAvailable: result.isAvailable,
+            currentVersion,
+            latestVersion: result.latestVersion,
+          };
         } catch (e) {
-          console.warn('[Expo Updates Check Warning]', e);
-        }
-
-        const isNewAvailable = currentVersion !== LATEST_RELEASE_VERSION;
-        if (isNewAvailable) {
-          set({
-            updateAvailable: true,
-            latestVersion: LATEST_RELEASE_VERSION,
-            isReadyToInstall: true,
-            downloadProgress: 100,
-          });
-          return { isNewAvailable: true, currentVersion, latestVersion: LATEST_RELEASE_VERSION };
-        } else {
-          set({
-            updateAvailable: true,
-            latestVersion: LATEST_RELEASE_VERSION,
-            isReadyToInstall: true,
-            downloadProgress: 100,
-          });
-          return { isNewAvailable: true, currentVersion, latestVersion: LATEST_RELEASE_VERSION };
+          set({ isChecking: false });
+          const isNew = currentVersion !== LATEST_RELEASE_VERSION;
+          set({ updateAvailable: isNew });
+          return { isNewAvailable: isNew, currentVersion, latestVersion: LATEST_RELEASE_VERSION };
         }
       },
 
@@ -129,8 +118,8 @@ export const useUpdateStore = create<UpdateState>()(
         set({
           latestVersion: LATEST_RELEASE_VERSION,
           updateAvailable: true,
-          isReadyToInstall: true,
-          downloadProgress: 100,
+          isReadyToInstall: false,
+          downloadProgress: 0,
         });
       },
 
@@ -147,37 +136,38 @@ export const useUpdateStore = create<UpdateState>()(
       },
 
       startDownload: async () => {
-        set({ isDownloading: true, downloadProgress: 50 });
+        set({ isDownloading: true, downloadProgress: 5, isReadyToInstall: false });
 
-        try {
-          if (Updates.isEnabled) {
-            await Updates.fetchUpdateAsync();
-          }
-        } catch (e) {
-          console.warn('[Expo Updates Fetch Exception]', e);
-        }
+        await inAppUpdateEngine.downloadOtaUpdate((progress: UpdateDownloadProgress) => {
+          set({
+            downloadProgress: progress.percentage,
+            downloadedBytes: progress.downloadedBytes,
+            totalBytes: progress.totalBytes,
+            speedKbps: progress.speedKbps || 0,
+          });
+        });
 
-        set({ downloadProgress: 100, isDownloading: false, isReadyToInstall: true });
+        set({
+          downloadProgress: 100,
+          isDownloading: false,
+          isReadyToInstall: true,
+        });
       },
 
       installUpdate: async () => {
         set({
-          currentVersion: LATEST_RELEASE_VERSION,
-          latestVersion: LATEST_RELEASE_VERSION,
+          currentVersion: get().latestVersion,
           updateAvailable: false,
           isDownloading: false,
           isReadyToInstall: false,
           downloadProgress: 0,
         });
 
-        try {
-          if (Updates.isEnabled) {
-            await Updates.reloadAsync();
-            return;
-          }
-        } catch (e) {
-          console.warn('[Expo Updates Reload Exception]', e);
-        }
+        await inAppUpdateEngine.installAndReload();
+      },
+
+      downloadDirectApk: async (customUrl?: string) => {
+        await inAppUpdateEngine.launchDirectApkInstaller(customUrl);
       },
 
       dismissUpdate: () => {

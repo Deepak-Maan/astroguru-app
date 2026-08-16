@@ -14,6 +14,7 @@ import { useUserStore } from '../../src/store/userStore';
 import { useAuthStore } from '../../src/store/authStore';
 import { useWalletStore } from '../../src/store/walletStore';
 import { useSubscriptionStore } from '../../src/store/subscriptionStore';
+import { useUpdateStore } from '../../src/store/updateStore';
 import { RASHIS } from '../../src/data/rashis';
 import { NAKSHATRAS } from '../../src/data/nakshatras';
 import { formatCurrency } from '../../src/utils';
@@ -66,6 +67,8 @@ export default function Profile() {
   const isVip = useSubscriptionStore((s) => s.isVip);
   const vipPlanId = useSubscriptionStore((s) => s.planId);
   const vipExpires = useSubscriptionStore((s) => s.expiresAt);
+  const triggerUpdateModal = useUpdateStore((s) => s.triggerUpdateModal);
+  const latestVersion = useUpdateStore((s) => s.latestVersion);
 
   const [showLogoutOverlay, setShowLogoutOverlay] = useState(false);
 
@@ -186,6 +189,7 @@ export default function Profile() {
                   <Row icon="🏦" label="Bank Account & UPI Settings" onPress={() => router.push('/acharya/bank-settings')} />
                   <Row icon="📊" label="Monthly Earnings Report" onPress={() => router.push('/acharya/earnings-report')} />
                   <Row icon="🔒" label="Security & Privacy Vault" onPress={() => router.push('/acharya/security')} />
+                  <Row icon="🔄" label={`Check for In-App Updates · v${latestVersion}`} onPress={triggerUpdateModal} accent={colors.teal} />
                   <Row icon="📞" label="Support & Help Center" onPress={() => router.push('/acharya/support')} />
                   <Row icon="🚪" label="Sign Out" onPress={handleSignOut} accent={colors.danger} />
                 </Card>
@@ -288,6 +292,7 @@ export default function Profile() {
                 <Card padded={false}>
                   <Row icon="👑" label={isVip ? `AstroVIP — ${vipPlanId} (Active)` : 'Get AstroVIP Pass'} onPress={() => router.push('/vip')} accent={colors.gold} />
                   <Row icon="📄" label="10-Page Kundli PDF Export" onPress={() => router.push('/kundli-pdf')} />
+                  <Row icon="🔄" label={`Check for In-App Updates · v${latestVersion}`} onPress={triggerUpdateModal} accent={colors.teal} />
                   <Row icon="⚙️" label="Settings & Security Vault" onPress={() => router.push('/settings')} />
                   <Row icon="🚪" label="Sign Out" onPress={handleSignOut} accent={colors.danger} />
                 </Card>
