@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -262,7 +263,11 @@ export default function LoginScreen() {
                     style={StyleSheet.absoluteFill}
                   />
                   <View style={styles.logoInnerCircle}>
-                    <Text style={styles.logoIcon}>🔮</Text>
+                    <Image
+                      source={require('../../assets/icon.png')}
+                      style={{ width: 62, height: 62, borderRadius: 31 }}
+                      resizeMode="cover"
+                    />
                   </View>
                 </Animated.View>
                 <View style={styles.badgePill}>

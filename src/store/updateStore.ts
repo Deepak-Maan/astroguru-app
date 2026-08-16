@@ -4,7 +4,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { inAppUpdateEngine, UpdateDownloadProgress } from '../services/updates/inAppUpdateEngine';
 
-export const LATEST_RELEASE_VERSION = '2.7.1';
+export const LATEST_RELEASE_VERSION = '2.7.5';
 
 export interface UpdateInfo {
   currentVersion: string;
@@ -38,12 +38,13 @@ interface UpdateState extends UpdateInfo {
 export const useUpdateStore = create<UpdateState>()(
   persist(
     (set, get) => ({
-      currentVersion: '2.7.1',
-      latestVersion: '2.7.1',
+      currentVersion: '2.7.5',
+      latestVersion: '2.7.5',
       updateAvailable: false,
       isMandatory: false,
       releaseNotes: [
-        '✨ Release v2.7.1: Modern Sri Yantra & Celestial Orbits Luxury App Icon',
+        '✨ Release v2.7.5: Modern Sri Yantra & Celestial Orbits App Icon System',
+        '📦 Direct Native In-App APK Package Downloader & System Installer',
         '💳 Solar Saffron/Gold High-Contrast Balance Header & Wallet Recharge Suite',
         '🧘 Compact & Ultra Space-Efficient Astrologer Hero Profile Layout',
         '📹 Live WebRTC Consultations, Firebase Realtime Sync & 10-Page Kundli Exporter',

@@ -195,7 +195,7 @@ export default function Profile() {
                 </Card>
               </View>
 
-              <Text style={styles.version}>AstroGuru Acharya · v2.7.1 · {authUser?.email}</Text>
+              <Text style={styles.version}>AstroGuru Acharya · v2.7.5 · {authUser?.email}</Text>
             </ScrollView>
           </>
         ) : (
