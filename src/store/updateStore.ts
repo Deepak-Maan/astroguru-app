@@ -20,6 +20,8 @@ export interface UpdateInfo {
   isReadyToInstall: boolean;
   isChecking: boolean;
   lastCheckedTime: string | null;
+  downloadedPackageUri: string | null;
+  updateType: 'apk' | 'ota';
 }
 
 interface UpdateState extends UpdateInfo {
@@ -27,7 +29,7 @@ interface UpdateState extends UpdateInfo {
   autoCheckAndFetchOnStartup: () => Promise<void>;
   broadcastUpdate: (newVer: string, notes: string[], mandatory?: boolean) => void;
   triggerUpdateModal: () => void;
-  startDownload: () => Promise<void>;
+  startDownload: (customApkUrl?: string) => Promise<void>;
   installUpdate: () => Promise<void>;
   downloadDirectApk: (customUrl?: string) => Promise<void>;
   dismissUpdate: () => void;
@@ -54,6 +56,8 @@ export const useUpdateStore = create<UpdateState>()(
       isReadyToInstall: false,
       isChecking: false,
       lastCheckedTime: null,
+      downloadedPackageUri: null,
+      updateType: 'apk',
 
       autoCheckAndFetchOnStartup: async () => {
         // On Web, app updates automatically on bundle reload without modal prompt
@@ -80,6 +84,7 @@ export const useUpdateStore = create<UpdateState>()(
               isMandatory: result.isMandatory,
               isReadyToInstall: false,
               downloadProgress: 0,
+              updateType: result.type,
               lastCheckedTime: new Date().toISOString(),
             });
           }
@@ -100,6 +105,7 @@ export const useUpdateStore = create<UpdateState>()(
             updateAvailable: result.isAvailable,
             latestVersion: result.latestVersion,
             releaseNotes: result.releaseNotes,
+            updateType: result.type,
           });
           return {
             isNewAvailable: result.isAvailable,
@@ -135,39 +141,47 @@ export const useUpdateStore = create<UpdateState>()(
         });
       },
 
-      startDownload: async () => {
-        set({ isDownloading: true, downloadProgress: 5, isReadyToInstall: false });
+      startDownload: async (customApkUrl?: string) => {
+        set({ isDownloading: true, downloadProgress: 5, isReadyToInstall: false, downloadedPackageUri: null });
 
-        await inAppUpdateEngine.downloadOtaUpdate((progress: UpdateDownloadProgress) => {
-          set({
-            downloadProgress: progress.percentage,
-            downloadedBytes: progress.downloadedBytes,
-            totalBytes: progress.totalBytes,
-            speedKbps: progress.speedKbps || 0,
-          });
-        });
+        const result = await inAppUpdateEngine.downloadUpdatePackage(
+          get().latestVersion,
+          (progress: UpdateDownloadProgress) => {
+            set({
+              downloadProgress: progress.percentage,
+              downloadedBytes: progress.downloadedBytes,
+              totalBytes: progress.totalBytes,
+              speedKbps: progress.speedKbps || 0,
+            });
+          },
+          customApkUrl
+        );
 
         set({
           downloadProgress: 100,
           isDownloading: false,
           isReadyToInstall: true,
+          downloadedPackageUri: result.localUri || null,
+          updateType: result.type,
         });
       },
 
       installUpdate: async () => {
+        const { downloadedPackageUri, latestVersion } = get();
+
+        await inAppUpdateEngine.installDownloadedPackage(downloadedPackageUri || undefined);
+
         set({
-          currentVersion: get().latestVersion,
+          currentVersion: latestVersion,
           updateAvailable: false,
           isDownloading: false,
           isReadyToInstall: false,
           downloadProgress: 0,
         });
-
-        await inAppUpdateEngine.installAndReload();
       },
 
       downloadDirectApk: async (customUrl?: string) => {
-        await inAppUpdateEngine.launchDirectApkInstaller(customUrl);
+        await inAppUpdateEngine.installDownloadedPackage(undefined, customUrl);
       },
 
       dismissUpdate: () => {

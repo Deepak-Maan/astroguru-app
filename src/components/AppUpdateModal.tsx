@@ -18,6 +18,7 @@ export function AppUpdateModal() {
     speedKbps,
     isDownloading,
     isReadyToInstall,
+    updateType,
     startDownload,
     installUpdate,
     downloadDirectApk,
@@ -45,13 +46,13 @@ export function AppUpdateModal() {
                 style={StyleSheet.absoluteFill}
               />
               <View style={styles.badgePill}>
-                <Text style={styles.badgeText}>✨ NEW ASTROGURU VERSION READY</Text>
+                <Text style={styles.badgeText}>✨ NEW VERSION v{latestVersion} READY</Text>
               </View>
               <Text style={{ fontSize: 36, marginVertical: 2 }}>🚀</Text>
-              <Text style={styles.headerTitle}>Update Available!</Text>
+              <Text style={styles.headerTitle}>In-App App Installer</Text>
               <View style={styles.versionBadge}>
                 <Text style={styles.versionText}>
-                  v{currentVersion} ➔ <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>v{latestVersion}</Text>
+                  Current: v{currentVersion} ➔ <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>New: v{latestVersion}</Text>
                 </Text>
               </View>
             </View>
@@ -77,7 +78,7 @@ export function AppUpdateModal() {
               <View style={styles.progressBox}>
                 <View style={styles.progressHeaderRow}>
                   <Text style={styles.progressLabel}>
-                    {isReadyToInstall ? '✅ Download Complete! Ready to Install' : '📥 Downloading In-App Update…'}
+                    {isReadyToInstall ? '✅ Package Downloaded! Ready to Install' : '📥 Downloading In-App Package…'}
                   </Text>
                   <Text style={styles.progressPct}>{downloadProgress}%</Text>
                 </View>
@@ -113,13 +114,13 @@ export function AppUpdateModal() {
               {!isDownloading && !isReadyToInstall && (
                 <>
                   <Button
-                    label="⚡ Instant In-App Download & Install"
+                    label="📥 Download & Install New Version"
                     variant="gold"
                     size="md"
-                    onPress={startDownload}
+                    onPress={() => startDownload()}
                   />
                   <Button
-                    label="📦 Direct APK Package Installer"
+                    label="🌐 Direct APK Package Downloader"
                     variant="outline"
                     size="md"
                     onPress={() => downloadDirectApk()}
@@ -142,7 +143,7 @@ export function AppUpdateModal() {
 
               {isDownloading && (
                 <Button
-                  label={`Downloading (${downloadProgress}%)… Please Wait`}
+                  label={`Downloading Package (${downloadProgress}%)… Please Wait`}
                   variant="gold"
                   size="md"
                   disabled
@@ -152,7 +153,7 @@ export function AppUpdateModal() {
 
               {isReadyToInstall && (
                 <Button
-                  label="🎉 Restart & Apply Update Now"
+                  label="📦 Install New Version Now"
                   variant="gold"
                   size="md"
                   onPress={installUpdate}
