@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
 
-const LATEST_RELEASE_VERSION = '2.6.9';
+const LATEST_RELEASE_VERSION = '2.7.1';
 
 export interface UpdateInfo {
   currentVersion: string;
@@ -31,15 +31,15 @@ interface UpdateState extends UpdateInfo {
 export const useUpdateStore = create<UpdateState>()(
   persist(
     (set, get) => ({
-      currentVersion: '2.6.9',
-      latestVersion: '2.6.9',
+      currentVersion: '2.7.1',
+      latestVersion: '2.7.1',
       updateAvailable: false,
       isMandatory: false,
       releaseNotes: [
-        '🚀 Release v2.6.9: Universal Rollout Without Fingerprint Restriction',
-        '💳 Solar Warm Gold Balance Header & High-Contrast Wallet Recharge System',
-        '🧘 Compact & Space-Efficient Astrologer Hero Profile Layout',
-        '📹 Live WebRTC Consultations, Firebase Sync & 10-Page Kundli Exporter',
+        '✨ Release v2.7.1: Modern Sri Yantra & Celestial Orbits Luxury App Icon',
+        '💳 Solar Saffron/Gold High-Contrast Balance Header & Wallet Recharge Suite',
+        '🧘 Compact & Ultra Space-Efficient Astrologer Hero Profile Layout',
+        '📹 Live WebRTC Consultations, Firebase Realtime Sync & 10-Page Kundli Exporter',
       ],
       downloadProgress: 100,
       isDownloading: false,
