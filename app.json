@@ -8,7 +8,6 @@
     "scheme": "astroguru",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#060A12",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.astroguru.app"
