@@ -266,6 +266,17 @@ class InAppUpdateEngine {
       return false;
     }
   }
+
+  async openDirectBrowserDownload(customApkUrl?: string): Promise<boolean> {
+    const targetUrl = customApkUrl || LIVE_DIRECT_APK_URL;
+    try {
+      await Linking.openURL(targetUrl);
+      return true;
+    } catch (err) {
+      console.warn('[InAppUpdateEngine] openDirectBrowserDownload failed:', err);
+      return false;
+    }
+  }
 }
 
 export const inAppUpdateEngine = new InAppUpdateEngine();

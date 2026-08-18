@@ -121,13 +121,9 @@ export default function Profile() {
   const isVip = useSubscriptionStore((s) => s.isVip);
   const vipPlanId = useSubscriptionStore((s) => s.planId);
   const vipExpires = useSubscriptionStore((s) => s.expiresAt);
-<<<<<<< HEAD
   const currentVersion = useUpdateStore((s) => s.currentVersion);
-  const triggerUpdateModal = useUpdateStore((s) => s.triggerUpdateModal);
-=======
-  const triggerUpdateModal = useUpdateStore((s) => s.triggerUpdateModal);
   const latestVersion = useUpdateStore((s) => s.latestVersion);
->>>>>>> 99bd92f82ca33ebfd7ec054ebb0983a96f5731ad
+  const triggerUpdateModal = useUpdateStore((s) => s.triggerUpdateModal);
 
   const [showLogoutOverlay, setShowLogoutOverlay] = useState(false);
 
@@ -245,11 +241,7 @@ export default function Profile() {
                 </Card>
               </View>
 
-<<<<<<< HEAD
               <Text style={styles.version}>AstroGuru Acharya · v{currentVersion} · {authUser?.email}</Text>
-=======
-              <Text style={styles.version}>AstroGuru Acharya · v2.7.9 · {authUser?.email}</Text>
->>>>>>> 99bd92f82ca33ebfd7ec054ebb0983a96f5731ad
             </ScrollView>
           </>
         ) : (

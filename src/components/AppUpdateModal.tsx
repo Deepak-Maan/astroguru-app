@@ -1,10 +1,12 @@
-import React from 'react';
-import { Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { Alert, Linking, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, radius, spacing, typography } from '../theme';
 import { Button } from './Button';
 import { useUpdateStore } from '../store/updateStore';
 import { downloadAndInstallApk, launchNativeInstaller } from '../services/apkInstallerService';
+
+const DIRECT_APK_DOWNLOAD_URL = 'https://expo.dev/artifacts/eas/j1bujHIWY7tt-WYtbLaWl_7QWHO-sv1bGzeVuCuVNTU.apk';
 
 export function AppUpdateModal() {
   const {
@@ -30,12 +32,56 @@ export function AppUpdateModal() {
   const [apkProgress, setApkProgress] = useState(0);
   const [downloadedApkUri, setDownloadedApkUri] = useState<string | null>(null);
 
-  // On Web platform, updates happen automatically on page reload without modal popups
   if (Platform.OS === 'web' || !updateAvailable) return null;
 
-  const formattedDownloadedMb = (downloadedBytes / (1024 * 1024)).toFixed(1);
-  const formattedTotalMb = (totalBytes / (1024 * 1024)).toFixed(1);
-  const formattedSpeedMb = (speedKbps / 1024).toFixed(1);
+  const handleInAppApkInstall = async () => {
+    setIsApkDownloading(true);
+    setApkProgress(10);
+    setDownloadedApkUri(null);
+
+    try {
+      const res = await downloadAndInstallApk(DIRECT_APK_DOWNLOAD_URL, (pct) => {
+        setApkProgress(pct);
+      });
+
+      setIsApkDownloading(false);
+      if (res.fileUri) {
+        setDownloadedApkUri(res.fileUri);
+      }
+
+      if (!res.success && res.error) {
+        Alert.alert(
+          'APK Ready to Install',
+          'Download complete. Tap "Open & Install APK" below, or download directly via browser.',
+          [
+            {
+              text: 'Open in Browser',
+              onPress: () => Linking.openURL(DIRECT_APK_DOWNLOAD_URL),
+            },
+            {
+              text: 'OK',
+              style: 'cancel',
+            },
+          ]
+        );
+      }
+    } catch (e) {
+      setIsApkDownloading(false);
+      await Linking.openURL(DIRECT_APK_DOWNLOAD_URL);
+    }
+  };
+
+  const handleLaunchPackageInstaller = async () => {
+    try {
+      if (downloadedApkUri) {
+        await launchNativeInstaller(downloadedApkUri, DIRECT_APK_DOWNLOAD_URL);
+      } else {
+        await downloadAndInstallApk(DIRECT_APK_DOWNLOAD_URL);
+      }
+    } catch (_) {
+      await Linking.openURL(DIRECT_APK_DOWNLOAD_URL);
+    }
+  };
 
   return (
     <Modal visible={updateAvailable} animationType="fade" transparent statusBarTranslucent>
@@ -65,11 +111,7 @@ export function AppUpdateModal() {
             {/* Release Notes */}
             <View style={styles.notesContainer}>
               <Text style={styles.notesHeader}>🎁 What's New in Version {latestVersion}:</Text>
-              <ScrollView
-                style={{ maxHeight: 150 }}
-                contentContainerStyle={{ gap: 6 }}
-                showsVerticalScrollIndicator={false}
-              >
+              <ScrollView style={{ maxHeight: 150 }} contentContainerStyle={{ gap: 8 }} showsVerticalScrollIndicator={false}>
                 {releaseNotes.map((note, index) => (
                   <View key={index} style={styles.noteItem}>
                     <Text style={styles.noteText}>{note}</Text>
@@ -78,42 +120,31 @@ export function AppUpdateModal() {
               </ScrollView>
             </View>
 
-            {/* Live In-App Download Progress Box */}
-            {(isDownloading || isReadyToInstall) && (
+            {/* Download Progress Bar */}
+            {(isDownloading || isApkDownloading) && (
               <View style={styles.progressBox}>
-                <View style={styles.progressHeaderRow}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Text style={styles.progressLabel}>
-                    {isReadyToInstall ? '✅ Package Downloaded! Ready to Install' : '📥 Downloading In-App Package…'}
+                    {isApkDownloading
+                      ? '📥 Downloading APK Package…'
+                      : '⚡ Fetching Update Bundle…'}
+                  </Text>
+                  <Text style={styles.progressPct}>
+                    {isApkDownloading ? apkProgress : downloadProgress}%
                   </Text>
                 </View>
-
-                {/* Progress Track */}
                 <View style={styles.track}>
-                  <LinearGradient
-                    colors={['#F59E0B', '#E67E22']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={[styles.bar, { width: `${Math.max(5, downloadProgress)}%` }]}
+                  <View
+                    style={[
+                      styles.bar,
+                      { width: `${isApkDownloading ? apkProgress : downloadProgress}%` },
+                    ]}
                   />
                 </View>
-
-                {/* Download Meta stats */}
-                {isDownloading && totalBytes > 0 && (
-                  <View style={styles.statsRow}>
-                    <Text style={styles.statsText}>
-                      {formattedDownloadedMb} MB / {formattedTotalMb} MB
-                    </Text>
-                    {speedKbps > 0 && (
-                      <Text style={[styles.statsText, { color: colors.teal }]}>
-                        ⚡ {formattedSpeedMb} MB/s
-                      </Text>
-                    )}
-                  </View>
-                )}
               </View>
             )}
 
-            {/* In-App Action Buttons */}
+            {/* Actions */}
             <View style={styles.actionColumn}>
               {isApkDownloading ? (
                 <Button
@@ -176,25 +207,6 @@ export function AppUpdateModal() {
                   )}
                 </>
               )}
-
-              {isDownloading && (
-                <Button
-                  label={`Downloading Package (${downloadProgress}%)… Please Wait`}
-                  variant="gold"
-                  size="md"
-                  disabled
-                  loading
-                />
-              )}
-
-              {isReadyToInstall && (
-                <Button
-                  label="📦 Install New Version Now"
-                  variant="gold"
-                  size="md"
-                  onPress={installUpdate}
-                />
-              )}
             </View>
           </View>
         </View>
@@ -206,88 +218,114 @@ export function AppUpdateModal() {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    backgroundColor: 'rgba(6, 10, 18, 0.85)',
     justifyContent: 'center',
+    alignItems: 'center',
     padding: spacing.md,
   },
   webWrapper: {
     width: '100%',
-    maxWidth: 420,
-    alignSelf: 'center',
+    maxWidth: 440,
   },
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: radius.xl,
+    borderRadius: 24,
     overflow: 'hidden',
-    borderWidth: 1.5,
-    borderColor: 'rgba(191,219,254,0.90)',
-    gap: spacing.sm,
-    shadowColor: 'rgba(15,23,42,0.25)',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.5,
-    shadowRadius: 16,
-    elevation: 12,
+    shadowOpacity: 0.35,
+    shadowRadius: 20,
+    elevation: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   header: {
-    alignItems: 'center',
     paddingVertical: spacing.lg,
-    paddingHorizontal: spacing.lg,
-    gap: 3,
+    paddingHorizontal: spacing.md,
+    alignItems: 'center',
+    position: 'relative',
   },
   badgePill: {
-    backgroundColor: 'rgba(0,0,0,0.22)',
-    borderRadius: radius.pill,
+    backgroundColor: 'rgba(0, 0, 0, 0.25)',
     paddingHorizontal: 12,
-    paddingVertical: 3,
-    marginBottom: 2,
-  },
-  badgeText: { ...typography.tiny, color: '#FFFFFF', fontWeight: '900', letterSpacing: 0.8, fontSize: 10 },
-  headerTitle: { ...typography.h1, color: '#FFFFFF', fontSize: 22, fontWeight: '900' },
-  versionBadge: {
-    backgroundColor: 'rgba(0,0,0,0.28)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.4)',
-    paddingHorizontal: 14,
     paddingVertical: 4,
     borderRadius: radius.pill,
+    marginBottom: spacing.xs,
+  },
+  badgeText: {
+    ...typography.tiny,
+    color: '#FFFFFF',
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  headerTitle: {
+    ...typography.h2,
+    color: '#FFFFFF',
+    fontWeight: '900',
     marginTop: 4,
   },
-  versionText: { ...typography.tiny, color: '#FFFFFF', fontWeight: '800', fontSize: 12.5 },
-
-  notesContainer: { paddingHorizontal: spacing.lg, gap: 5 },
-  notesHeader: { ...typography.h3, color: '#0F172A', fontSize: 14, fontWeight: '900' },
-  noteItem: {
+  versionBadge: {
+    marginTop: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 3,
+    borderRadius: radius.sm,
+  },
+  versionText: {
+    ...typography.small,
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
+  notesContainer: {
+    padding: spacing.md,
     backgroundColor: '#F8FAFC',
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 7,
-    borderWidth: 1,
-    borderColor: 'rgba(203,213,225,0.70)',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(226, 232, 240, 0.8)',
   },
-  noteText: { ...typography.small, color: '#334155', lineHeight: 17, fontWeight: '600', fontSize: 12 },
-
+  notesHeader: {
+    ...typography.tiny,
+    color: colors.textMuted,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    marginBottom: spacing.xs,
+  },
+  noteItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  noteText: {
+    ...typography.small,
+    color: colors.text,
+    lineHeight: 18,
+  },
   progressBox: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.xs,
-    gap: 5,
-    backgroundColor: '#F0FDF4',
-    marginHorizontal: spacing.lg,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: 'rgba(16,185,129,0.30)',
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.md,
   },
-  progressHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  progressLabel: { ...typography.tiny, color: colors.teal, fontWeight: '800', fontSize: 11 },
-  progressPct: { ...typography.tiny, color: colors.goldSoft, fontWeight: '900', fontSize: 12 },
+  progressLabel: {
+    ...typography.tiny,
+    color: colors.textMuted,
+    fontWeight: '700',
+  },
+  progressPct: {
+    ...typography.tiny,
+    color: colors.gold,
+    fontWeight: '900',
+  },
   track: {
-    height: 9,
+    height: 8,
     backgroundColor: '#E2E8F0',
-    borderRadius: 4.5,
+    borderRadius: 4,
+    marginTop: 6,
     overflow: 'hidden',
   },
-  bar: { height: '100%', borderRadius: 4.5 },
-  statsRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 1 },
-  statsText: { ...typography.tiny, color: colors.textMuted, fontSize: 10, fontWeight: '700' },
-
-  actionColumn: { gap: 8, padding: spacing.lg, paddingTop: spacing.xs },
+  bar: {
+    height: '100%',
+    backgroundColor: colors.gold,
+    borderRadius: 4,
+  },
+  actionColumn: {
+    padding: spacing.md,
+    gap: spacing.sm,
+  },
 });

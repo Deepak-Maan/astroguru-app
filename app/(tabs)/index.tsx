@@ -15,6 +15,7 @@ import { useUserStore } from '../../src/store/userStore';
 import { useAuthStore } from '../../src/store/authStore';
 import { useSubscriptionStore } from '../../src/store/subscriptionStore';
 import { useLanguageStore } from '../../src/store/languageStore';
+import { useRewardsStore } from '../../src/store/rewardsStore';
 import { TranslationKey } from '../../src/i18n/translations';
 import { ASTROLOGERS } from '../../src/data/astrologers';
 import { RASHIS } from '../../src/data/rashis';
@@ -31,6 +32,7 @@ export default function Home() {
   const kundli = useUserStore((s) => s.kundli);
   const isVip = useSubscriptionStore((s) => s.isVip);
   const t = useLanguageStore((s) => s.t);
+  const { streakCount, astroCoins } = useRewardsStore();
 
   const signIndex = kundli?.moonRashiIndex ?? 0;
   const rashi = RASHIS[signIndex];
@@ -69,12 +71,12 @@ export default function Home() {
   }
 
   const quickActions = [
+    { icon: '🎡', label: 'Rewards', href: '/daily-rewards', bg: '#FEF3C7' },
     { icon: '🪐', label: 'Kundli', href: '/(tabs)/kundli', bg: '#FFEDD5' },
     { icon: '🔢', label: 'Numerology', href: '/numerology', bg: '#E0F2FE' },
-    { icon: '🪄', label: 'Vedic Spells', href: '/spells', bg: '#F3E8FF' },
-    { icon: '🔮', label: 'Crystal Ball', href: '/soulmate-ai', bg: '#EEF2FF' },
+    { icon: '🔮', label: 'Daily Tarot', href: '/daily-rewards', bg: '#F3E8FF' },
     { icon: '💬', label: 'Chat', href: '/instant-consult', bg: '#F5F3FF' },
-    { icon: '💰', label: 'Wallet', href: '/wallet', bg: '#FEF3C7' },
+    { icon: '💰', label: 'Wallet', href: '/wallet', bg: '#DCFCE7' },
   ];
 
   const today = new Date().toLocaleDateString('en-GB', {
@@ -127,6 +129,39 @@ export default function Home() {
             </View>
             <View style={styles.shlokaPlayBtn}>
               <Text style={styles.shlokaPlayText}>▶ Play</Text>
+            </View>
+          </Pressable>
+
+          {/* Daily Cosmic Rewards & Spin Wheel Banner */}
+          <Pressable
+            onPress={() => router.push('/daily-rewards')}
+            style={({ pressed }) => [pressed && { opacity: 0.88, transform: [{ scale: 0.98 }] }]}
+          >
+            <View style={styles.rewardsBanner}>
+              <LinearGradient
+                colors={['#1E1B4B', '#312E81']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={StyleSheet.absoluteFill}
+              />
+              <View style={styles.rewardsFlameBox}>
+                <Text style={{ fontSize: 24 }}>🔥</Text>
+              </View>
+              <View style={{ flex: 1, gap: 1 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Text style={styles.rewardsBannerTag}>COSMIC STREAK</Text>
+                  <View style={styles.rewardsStreakPill}>
+                    <Text style={styles.rewardsStreakPillText}>{streakCount} Days</Text>
+                  </View>
+                </View>
+                <Text style={styles.rewardsBannerTitle}>Daily Rewards & Navagraha Spin 🎡</Text>
+                <Text style={styles.rewardsBannerSub}>
+                  Spin wheel for wallet cash · Draw daily Tarot · {astroCoins} 🪙 Coins
+                </Text>
+              </View>
+              <View style={styles.rewardsActionBtn}>
+                <Text style={styles.rewardsActionText}>Play ›</Text>
+              </View>
             </View>
           </Pressable>
 
@@ -576,4 +611,67 @@ const styles = StyleSheet.create({
   aiTitle: { ...typography.h3, color: colors.white, fontWeight: '800', fontSize: 15 },
   aiSub: { ...typography.small, fontSize: 11.5, color: 'rgba(255,255,255,0.9)', marginTop: 1 },
   aiArrow: { fontSize: 22, color: colors.white, fontWeight: '700' },
+
+  /* Daily Cosmic Rewards Banner */
+  rewardsBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: radius.xl,
+    padding: spacing.md,
+    overflow: 'hidden',
+    shadowColor: '#312E81',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 4,
+    gap: 10,
+  },
+  rewardsFlameBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rewardsBannerTag: {
+    fontSize: 9.5,
+    fontWeight: '900',
+    color: '#FDE68A',
+    letterSpacing: 1,
+  },
+  rewardsStreakPill: {
+    backgroundColor: 'rgba(245,158,11,0.25)',
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: radius.pill,
+  },
+  rewardsStreakPillText: {
+    color: '#F59E0B',
+    fontSize: 9.5,
+    fontWeight: '900',
+  },
+  rewardsBannerTitle: {
+    ...typography.h3,
+    color: '#FFFFFF',
+    fontSize: 13.5,
+    fontWeight: '900',
+  },
+  rewardsBannerSub: {
+    ...typography.tiny,
+    color: '#CBD5E1',
+    fontSize: 10.5,
+    fontWeight: '600',
+  },
+  rewardsActionBtn: {
+    backgroundColor: '#F59E0B',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: radius.pill,
+  },
+  rewardsActionText: {
+    color: '#FFFFFF',
+    fontWeight: '900',
+    fontSize: 12,
+  },
 });
