@@ -6,16 +6,22 @@
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 
-// Configure how notifications are handled when the app is foregrounded
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+// Configure how notifications are handled safely
+try {
+  if (Platform.OS !== 'web') {
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: true,
+        shouldShowBanner: true,
+        shouldShowList: true,
+      }),
+    });
+  }
+} catch (e) {
+  console.log('[NotificationHandler Init Note]', e);
+}
 
 let isInitialized = false;
 
@@ -28,35 +34,42 @@ export async function initNotificationService() {
 
   try {
     if (Platform.OS === 'android') {
-      await Notifications.setNotificationChannelAsync('astroguru_chat', {
-        name: 'AstroGuru Chat Messages',
-        importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
-        lightColor: '#F59E0B',
-        sound: 'default',
-        enableLights: true,
-        enableVibrate: true,
-      });
+      try {
+        await Notifications.setNotificationChannelAsync('astroguru_chat', {
+          name: 'AstroGuru Chat Messages',
+          importance: Notifications.AndroidImportance.MAX,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: '#F59E0B',
+          sound: 'default',
+          enableLights: true,
+          enableVibrate: true,
+        });
 
-      await Notifications.setNotificationChannelAsync('astroguru_consultation', {
-        name: 'Consultation Alerts',
-        importance: Notifications.AndroidImportance.HIGH,
-        vibrationPattern: [0, 500, 250, 500],
-        lightColor: '#10B981',
-        sound: 'default',
-        enableLights: true,
-        enableVibrate: true,
-      });
+        await Notifications.setNotificationChannelAsync('astroguru_consultation', {
+          name: 'Consultation Alerts',
+          importance: Notifications.AndroidImportance.HIGH,
+          vibrationPattern: [0, 500, 250, 500],
+          lightColor: '#10B981',
+          sound: 'default',
+          enableLights: true,
+          enableVibrate: true,
+        });
+      } catch (channelErr) {
+        console.log('[Notification Channel Setup Note]', channelErr);
+      }
     }
 
     if (Platform.OS !== 'web') {
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
-      if (existingStatus !== 'granted') {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
+      try {
+        const { status: existingStatus } = await Notifications.getPermissionsAsync();
+        let finalStatus = existingStatus;
+        if (existingStatus !== 'granted') {
+          const { status } = await Notifications.requestPermissionsAsync();
+          finalStatus = status;
+        }
+      } catch (permErr) {
+        console.log('[Notification Permission Request Note]', permErr);
       }
-      console.log('[NotificationService] Permission status:', finalStatus);
     } else if (typeof window !== 'undefined' && 'Notification' in window) {
       if (Notification.permission === 'default') {
         Notification.requestPermission().catch(() => {});
@@ -99,36 +112,28 @@ export async function showChatNotification({
         color: '#F59E0B',
         data: data || {},
       },
-      trigger: null, // trigger immediately
+      trigger: null,
     });
   } catch (err) {
-    console.warn('[Notification Show Warning]', err);
+    console.warn('[ShowChatNotification Error]', err);
   }
 }
 
 /**
- * Show an incoming call notification in the Android/iOS notification bar
+ * Show incoming consultation call alert in Android/iOS notification bar
  */
-export async function showIncomingCallNotification({
-  seekerName,
-  type,
-  callId,
-}: {
-  seekerName: string;
-  type: 'audio' | 'video';
-  callId: string;
-}) {
-  const isVideo = type === 'video';
-  const title = isVideo
-    ? `📹 Incoming HD Video Call`
-    : `📞 Incoming Audio Call`;
-  const body = `${seekerName} is calling for a live Vedic consultation. Tap to answer!`;
+export async function showIncomingCallNotification(
+  param: { seekerName: string; type?: 'audio' | 'video'; callId?: string } | string,
+  callTypeFallback: 'audio' | 'video' = 'audio'
+) {
+  const seekerName = typeof param === 'string' ? param : (param?.seekerName || 'Seeker');
+  const callType = typeof param === 'object' && param?.type ? param.type : callTypeFallback;
 
   try {
     if (Platform.OS === 'web') {
       if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-        new Notification(title, {
-          body,
+        new Notification(`Incoming ${callType === 'video' ? 'Video' : 'Audio'} Call`, {
+          body: `${callerNameOrSeeker(seekerName)} is calling for Vedic Consultation...`,
           icon: '/favicon.ico',
         });
       }
@@ -137,16 +142,20 @@ export async function showIncomingCallNotification({
 
     await Notifications.scheduleNotificationAsync({
       content: {
-        title,
-        body,
+        title: `📞 Incoming ${callType === 'video' ? 'Video' : 'Audio'} Call`,
+        body: `${seekerName} is calling for astrological consultation...`,
         sound: 'default',
         priority: Notifications.AndroidNotificationPriority.MAX,
         color: '#10B981',
-        data: { callId, type, seekerName },
+        data: typeof param === 'object' ? param : {},
       },
       trigger: null,
     });
   } catch (err) {
-    console.warn('[Call Notification Warning]', err);
+    console.warn('[ShowIncomingCallNotification Error]', err);
   }
-}
+}
+
+function callerNameOrSeeker(name: string) {
+  return name || 'Seeker';
+}
