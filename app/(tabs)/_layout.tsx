@@ -78,10 +78,15 @@ function ProfileIcon({ focused }: { focused: boolean }) {
 /* ── Custom Tab Bar Component with Top Indicator Bar ── */
 function CustomTabBar({ state, descriptors, navigation }: any) {
   const isAstrologer = useAuthStore((s) => s.user?.role === 'astrologer');
-  const roomsMap = useLiveChatStore((s) => s.rooms);
-  const pendingChatsCount = Object.values(roomsMap || {}).filter(
-    (r) => r && r.status === 'waiting'
-  ).length;
+  const pendingChatsCount = useLiveChatStore((s) => {
+    const rooms = s.rooms;
+    if (!rooms) return 0;
+    let count = 0;
+    for (const key in rooms) {
+      if (rooms[key]?.status === 'waiting') count++;
+    }
+    return count;
+  });
 
   return (
     <View style={styles.barContainer}>

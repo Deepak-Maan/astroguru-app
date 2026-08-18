@@ -94,7 +94,9 @@ export default function ChatScreen() {
     if (!liveRoomId) return;
     const unsubscribe = subscribeToFirebaseRoomMessages(liveRoomId, (fbMsgs) => {
       if (fbMsgs && fbMsgs.length > 0) {
-        syncFirebaseMessages(liveRoomId, fbMsgs);
+        setTimeout(() => {
+          syncFirebaseMessages(liveRoomId, fbMsgs);
+        }, 0);
       }
     });
     return () => unsubscribe();
@@ -182,27 +184,34 @@ export default function ChatScreen() {
     setRanOut(false);
 
     // ── Create or open a live bidirectional room for Acharya to see ──
-    createRoom({
-      seekerId: currentSeekerId,
-      seekerName: currentSeekerName,
-      astrologerId: astrologer.id,
-      astrologerName: astrologer.name,
-      topic: QUICK_PROMPTS[0],
-      ratePerMin: astrologer.pricePerMin,
-    });
-
-    if ((useChatStore.getState().sessions[astrologer.id]?.messages.length ?? 0) === 0) {
-      addMessage(astrologer.id, {
-        id: nextId(),
-        role: 'assistant',
-        text: greetingFor(astrologer),
-        at: Date.now(),
+    setTimeout(() => {
+      createRoom({
+        seekerId: currentSeekerId,
+        seekerName: currentSeekerName,
+        astrologerId: astrologer.id,
+        astrologerName: astrologer.name,
+        topic: QUICK_PROMPTS[0],
+        ratePerMin: astrologer.pricePerMin,
       });
-    }
+
+      if ((useChatStore.getState().sessions[astrologer.id]?.messages.length ?? 0) === 0) {
+        addMessage(astrologer.id, {
+          id: nextId(),
+          role: 'assistant',
+          text: greetingFor(astrologer),
+          at: Date.now(),
+        });
+      }
+    }, 0);
   }, [astrologer, balance, topup, debit, startSession, billMinute, addMessage, createRoom, currentSeekerId, currentSeekerName]);
 
   useEffect(() => {
-    if (astrologer && !session?.startedAt && !session?.ended) begin();
+    if (astrologer && !session?.startedAt && !session?.ended) {
+      const timer = setTimeout(() => {
+        begin();
+      }, 50);
+      return () => clearTimeout(timer);
+    }
   }, [astrologer?.id]);
 
   useEffect(() => {
