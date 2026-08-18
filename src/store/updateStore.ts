@@ -6,7 +6,7 @@ import * as Updates from 'expo-updates';
 import { inAppUpdateEngine, UpdateDownloadProgress, LIVE_DIRECT_APK_URL } from '../services/updates/inAppUpdateEngine';
 import { getAppVersionFromFirebase, syncLatestAppVersionToFirebase } from '../services/firebaseRealtimeService';
 
-export const LATEST_RELEASE_VERSION = '2.8.2';
+export const LATEST_RELEASE_VERSION = '2.8.3';
 
 export interface UpdateInfo {
   currentVersion: string;
@@ -14,7 +14,7 @@ export interface UpdateInfo {
   updateAvailable: boolean;
   isMandatory: boolean;
   releaseNotes: string[];
-  downloadProgress: number;
+  downloadProgress: number; // 0 to 100
   downloadedBytes: number;
   totalBytes: number;
   speedKbps: number;
@@ -45,14 +45,12 @@ export const useUpdateStore = create<UpdateState>()(
       updateAvailable: false,
       isMandatory: false,
       releaseNotes: [
-        '🚀 Release v2.8.2: Major AstroGuru Upgrade',
-        '💳 AstroGold Luxury Metal Card & 1-Tap UPI Wallet Recharge',
-        '🔥 Cosmic Retention Streak & 7-Day Astro-Coin Check-in Track',
-        '🎡 6-Segment Navagraha Spin & Win Chakra (Instant Cash & Vouchers)',
-        '🃏 Daily Mystical Tarot Guidance with 3D Flip Card & Affirmations',
-        '🪔 Sacred Sadhana & Remedy Diary with Real-Time Streak Tracker',
+        '🚀 Release v2.8.3: Standalone Android APK Build',
+        '🛡️ Crash-Proof RashiChakra with Dynamic OpenGL Engine & 2D Celestial Fallback',
+        '🎮 Navagraha Chakra (Spin & Win Wheel) with Real Cash & Voucher Rewards',
+        '🃏 Daily 3D Tarot Guidance with Card Flip & Affirmations',
+        '💳 AstroGold Luxury Metal Card & 1-Tap UPI Recharge Suite',
         '⚡ Zero-Drop Live Consultation Auto-Recharge Drawer',
-        '📦 Direct Native In-App APK Downloader & Package Installer',
       ],
       downloadProgress: 0,
       downloadedBytes: 0,
