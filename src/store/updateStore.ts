@@ -2,12 +2,9 @@ import { Platform } from 'react-native';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Constants from 'expo-constants';
-import * as Updates from 'expo-updates';
+import { inAppUpdateEngine, UpdateDownloadProgress } from '../services/updates/inAppUpdateEngine';
 
-import { getAppVersionFromFirebase, syncLatestAppVersionToFirebase } from '../services/firebaseRealtimeService';
-
-const LATEST_RELEASE_VERSION = '2.7.2';
+export const LATEST_RELEASE_VERSION = '2.7.9';
 
 export interface UpdateInfo {
   currentVersion: string;
@@ -16,8 +13,15 @@ export interface UpdateInfo {
   isMandatory: boolean;
   releaseNotes: string[];
   downloadProgress: number; // 0 to 100
+  downloadedBytes: number;
+  totalBytes: number;
+  speedKbps: number;
   isDownloading: boolean;
   isReadyToInstall: boolean;
+  isChecking: boolean;
+  lastCheckedTime: string | null;
+  downloadedPackageUri: string | null;
+  updateType: 'apk' | 'ota';
 }
 
 interface UpdateState extends UpdateInfo {
@@ -25,27 +29,36 @@ interface UpdateState extends UpdateInfo {
   autoCheckAndFetchOnStartup: () => Promise<void>;
   broadcastUpdate: (newVer: string, notes: string[], mandatory?: boolean) => void;
   triggerUpdateModal: () => void;
-  startDownload: () => Promise<void>;
+  startDownload: (customApkUrl?: string) => Promise<void>;
   installUpdate: () => Promise<void>;
+  downloadDirectApk: (customUrl?: string) => Promise<void>;
   dismissUpdate: () => void;
 }
 
 export const useUpdateStore = create<UpdateState>()(
   persist(
     (set, get) => ({
-      currentVersion: LATEST_RELEASE_VERSION,
-      latestVersion: LATEST_RELEASE_VERSION,
+      currentVersion: '2.7.9',
+      latestVersion: '2.7.9',
       updateAvailable: false,
       isMandatory: false,
       releaseNotes: [
-        '⚡ Release v2.7.2: 1-Tap In-Session Wallet Auto-Recharge Drawer (no call drops)',
-        '📦 Native Expo-Sharing Package Installer for 100% reliable In-App APK installation',
-        '🔮 Enhanced Astrologer Quick Chat Vedic Actions, Lal Kitab Totke & Seeker Kundli Drawer',
-        '🔔 Real-Time Audio & Video Call Push Alerts & Multi-Alias Ringing Modal',
+        '📍 Release v2.7.9: 1-Tap GPS & High-Precision City Auto-Detect for Birth Place',
+        '⚡ Quick-Select Popular Indian City Chips (Delhi, Mumbai, Bengaluru, Jaipur, Varanasi)',
+        '🪐 Live Planetary Transit Ticker & Realtime Graha Positions Ribbon',
+        '🔊 Daily Vedic Gayatri Mantra & Shloka Audio Player Pill',
+        '💎 Interactive North & South Indian Kundli Chart Switcher',
       ],
-      downloadProgress: 100,
+      downloadProgress: 0,
+      downloadedBytes: 0,
+      totalBytes: 0,
+      speedKbps: 0,
       isDownloading: false,
       isReadyToInstall: false,
+      isChecking: false,
+      lastCheckedTime: null,
+      downloadedPackageUri: null,
+      updateType: 'apk',
 
       autoCheckAndFetchOnStartup: async () => {
         // Sync latest version metadata to Firebase Realtime DB
@@ -64,20 +77,18 @@ export const useUpdateStore = create<UpdateState>()(
         }
 
         try {
-          // Check for Over-The-Air EAS updates
-          if (Updates.isEnabled) {
-            const update = await Updates.checkForUpdateAsync();
-            if (update.isAvailable) {
-              set({
-                updateAvailable: true,
-                latestVersion: LATEST_RELEASE_VERSION,
-                isDownloading: true,
-                downloadProgress: 45,
-              });
-              await Updates.fetchUpdateAsync();
-              set({ downloadProgress: 100, isDownloading: false, isReadyToInstall: true });
-              return;
-            }
+          const result = await inAppUpdateEngine.checkForUpdate(currentVersion, LATEST_RELEASE_VERSION);
+          if (result.isAvailable) {
+            set({
+              updateAvailable: true,
+              latestVersion: result.latestVersion,
+              releaseNotes: result.releaseNotes,
+              isMandatory: result.isMandatory,
+              isReadyToInstall: false,
+              downloadProgress: 0,
+              updateType: result.type,
+              lastCheckedTime: new Date().toISOString(),
+            });
           }
 
           // Check Firebase remote metadata
@@ -96,60 +107,43 @@ export const useUpdateStore = create<UpdateState>()(
             }
           }
         } catch (e) {
-          console.warn('[Auto Update Check Warning]', e);
+          console.warn('[UpdateStore Startup Check]', e);
         }
-
-        set({
-          currentVersion: LATEST_RELEASE_VERSION,
-          latestVersion: LATEST_RELEASE_VERSION,
-          updateAvailable: false,
-          isReadyToInstall: false,
-          downloadProgress: 0,
-        });
       },
 
       checkForUpdates: async () => {
-        const currentVersion = get().currentVersion || '2.6.7';
+        const currentVersion = get().currentVersion || '2.0.0';
+        set({ isChecking: true });
 
         try {
-          if (Updates.isEnabled) {
-            const update = await Updates.checkForUpdateAsync();
-            if (update.isAvailable) {
-              set({
-                updateAvailable: true,
-                latestVersion: LATEST_RELEASE_VERSION,
-                isReadyToInstall: true,
-                downloadProgress: 100,
-              });
-              return { isNewAvailable: true, currentVersion, latestVersion: LATEST_RELEASE_VERSION };
-            }
-          }
-
-          const remoteMeta = await getAppVersionFromFirebase();
-          const targetVer = remoteMeta?.latestVersion || LATEST_RELEASE_VERSION;
-
-          if (currentVersion !== targetVer) {
-            set({
-              updateAvailable: true,
-              latestVersion: targetVer,
-              isReadyToInstall: true,
-              downloadProgress: 100,
-            });
-            return { isNewAvailable: true, currentVersion, latestVersion: targetVer };
-          }
+          const result = await inAppUpdateEngine.checkForUpdate(currentVersion, LATEST_RELEASE_VERSION);
+          set({
+            isChecking: false,
+            lastCheckedTime: new Date().toISOString(),
+            updateAvailable: result.isAvailable,
+            latestVersion: result.latestVersion,
+            releaseNotes: result.releaseNotes,
+            updateType: result.type,
+          });
+          return {
+            isNewAvailable: result.isAvailable,
+            currentVersion,
+            latestVersion: result.latestVersion,
+          };
         } catch (e) {
-          console.warn('[Expo Updates Check Warning]', e);
+          set({ isChecking: false });
+          const isNew = currentVersion !== LATEST_RELEASE_VERSION;
+          set({ updateAvailable: isNew });
+          return { isNewAvailable: isNew, currentVersion, latestVersion: LATEST_RELEASE_VERSION };
         }
-
-        return { isNewAvailable: false, currentVersion, latestVersion: LATEST_RELEASE_VERSION };
       },
 
       triggerUpdateModal: () => {
         set({
           latestVersion: LATEST_RELEASE_VERSION,
           updateAvailable: true,
-          isReadyToInstall: true,
-          downloadProgress: 100,
+          isReadyToInstall: false,
+          downloadProgress: 0,
         });
       },
 
@@ -165,38 +159,56 @@ export const useUpdateStore = create<UpdateState>()(
         });
       },
 
-      startDownload: async () => {
-        set({ isDownloading: true, downloadProgress: 50 });
+      startDownload: async (customApkUrl?: string) => {
+        set({ isDownloading: true, downloadProgress: 5, isReadyToInstall: false, downloadedPackageUri: null });
 
-        try {
-          if (Updates.isEnabled) {
-            await Updates.fetchUpdateAsync();
+        const result = await inAppUpdateEngine.downloadUpdatePackage(
+          get().latestVersion,
+          (progress: UpdateDownloadProgress) => {
+            set({
+              downloadProgress: progress.percentage,
+              downloadedBytes: progress.downloadedBytes,
+              totalBytes: progress.totalBytes,
+              speedKbps: progress.speedKbps || 0,
+            });
+          },
+          customApkUrl
+        );
+
+        set({
+          downloadProgress: 100,
+          isDownloading: false,
+          isReadyToInstall: true,
+          downloadedPackageUri: result.localUri || null,
+          updateType: result.type,
+        });
+
+        // Automatically trigger Android System Package Installer prompt immediately!
+        if (result.localUri) {
+          try {
+            await inAppUpdateEngine.installDownloadedPackage(result.localUri);
+          } catch (e) {
+            console.warn('[UpdateStore auto-install error]', e);
           }
-        } catch (e) {
-          console.warn('[Expo Updates Fetch Exception]', e);
         }
-
-        set({ downloadProgress: 100, isDownloading: false, isReadyToInstall: true });
       },
 
       installUpdate: async () => {
+        const { downloadedPackageUri, latestVersion } = get();
+
+        await inAppUpdateEngine.installDownloadedPackage(downloadedPackageUri || undefined);
+
         set({
-          currentVersion: LATEST_RELEASE_VERSION,
-          latestVersion: LATEST_RELEASE_VERSION,
+          currentVersion: latestVersion,
           updateAvailable: false,
           isDownloading: false,
           isReadyToInstall: false,
           downloadProgress: 0,
         });
+      },
 
-        try {
-          if (Updates.isEnabled) {
-            await Updates.reloadAsync();
-            return;
-          }
-        } catch (e) {
-          console.warn('[Expo Updates Reload Exception]', e);
-        }
+      downloadDirectApk: async (customUrl?: string) => {
+        await inAppUpdateEngine.installDownloadedPackage(undefined, customUrl);
       },
 
       dismissUpdate: () => {

@@ -44,9 +44,11 @@ export function AstrologerCard({ astrologer: a, onPress, compact = false }: Prop
         pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] },
       ]}
     >
-      {/* Left: Avatar */}
+      {/* Left: Avatar with Glowing Halo */}
       <View style={styles.avatarCol}>
-        <Avatar uri={a.avatar} name={a.name} size={54} online={a.online} showStatus />
+        <View style={[styles.avatarRing, a.online && styles.avatarRingOnline]}>
+          <Avatar uri={a.avatar} name={a.name} size={52} online={a.online} showStatus />
+        </View>
       </View>
 
       {/* Right: Details */}
@@ -59,22 +61,40 @@ export function AstrologerCard({ astrologer: a, onPress, compact = false }: Prop
           </View>
         </View>
 
-        {/* Verified Badge */}
-        {a.rating >= 4.8 && (
-          <View style={styles.verifiedTag}>
-            <Text style={styles.verifiedTagText}>👑 VERIFIED JYOTISHI</Text>
+        {/* Verified Badge + Queue Time Row */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginVertical: 2 }}>
+          {a.rating >= 4.8 && (
+            <View style={styles.verifiedTag}>
+              <Text style={styles.verifiedTagText}>👑 VERIFIED</Text>
+            </View>
+          )}
+          <View style={styles.queueTag}>
+            <Text style={styles.queueTagText}>
+              {a.online ? '⚡ Available Now' : '⏱️ ~3m wait'}
+            </Text>
           </View>
-        )}
+        </View>
 
         {/* Specialties */}
         <Text style={styles.specialties} numberOfLines={1}>
           {a.specialties.slice(0, 3).join(' · ')}
         </Text>
 
-        {/* Meta */}
-        <Text style={styles.meta} numberOfLines={1}>
-          🗣️ {a.languages.slice(0, 2).join(', ')} · 📜 {a.experienceYears} yrs exp
-        </Text>
+        {/* Meta & Audio Intro Row */}
+        <View style={styles.metaRow}>
+          <Text style={styles.meta} numberOfLines={1}>
+            🗣️ {a.languages.slice(0, 2).join(', ')} · 📜 {a.experienceYears} yrs
+          </Text>
+          <Pressable
+            onPress={(e) => {
+              e.stopPropagation();
+              // trigger haptic feedback
+            }}
+            style={styles.audioIntroPill}
+          >
+            <Text style={styles.audioIntroText}>▶ 0:10 Intro</Text>
+          </Pressable>
+        </View>
 
         {/* Footer: price + status */}
         <View style={styles.footer}>
@@ -133,6 +153,17 @@ const styles = StyleSheet.create({
   },
   name: { ...typography.h3, color: colors.text, flex: 1, fontSize: 15, fontWeight: '800' },
 
+  avatarRing: {
+    borderRadius: 30,
+    padding: 2,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+  },
+  avatarRingOnline: {
+    borderColor: '#059669',
+    backgroundColor: 'rgba(5, 150, 105, 0.08)',
+  },
+
   ratingPill: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -146,16 +177,40 @@ const styles = StyleSheet.create({
   ratingText: { ...typography.tiny, color: colors.gold, fontWeight: '800', fontSize: 10.5 },
 
   verifiedTag: {
-    alignSelf: 'flex-start',
     backgroundColor: 'rgba(217,119,6,0.12)',
     borderRadius: radius.pill,
-    paddingHorizontal: 7,
+    paddingHorizontal: 6,
     paddingVertical: 1,
     borderWidth: 1,
     borderColor: 'rgba(217,119,6,0.30)',
-    marginVertical: 1,
   },
-  verifiedTagText: { ...typography.tiny, color: colors.gold, fontWeight: '800', fontSize: 9 },
+  verifiedTagText: { ...typography.tiny, color: colors.gold, fontWeight: '800', fontSize: 8.5 },
+
+  queueTag: {
+    backgroundColor: '#ECFDF5',
+    borderRadius: radius.pill,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderWidth: 1,
+    borderColor: 'rgba(5, 150, 105, 0.3)',
+  },
+  queueTagText: { ...typography.tiny, color: '#059669', fontWeight: '800', fontSize: 8.5 },
+
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 4,
+  },
+  audioIntroPill: {
+    backgroundColor: '#FFFBEB',
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: '#F59E0B',
+  },
+  audioIntroText: { fontSize: 9.5, fontWeight: '800', color: '#D97706' },
 
   specialties: {
     ...typography.small,

@@ -2,30 +2,23 @@
   "expo": {
     "name": "AstroGuru",
     "slug": "astrologer-app",
-    "version": "2.7.2",
+    "version": "2.7.9",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "astroguru",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#060A12",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.astroguru.app"
     },
     "android": {
       "package": "com.astroguru.app",
-      "versionCode": 272,
-      "permissions": [
-        "REQUEST_INSTALL_PACKAGES",
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
-      ],
+      "versionCode": 279,
       "adaptiveIcon": {
         "backgroundColor": "#060A12",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "foregroundImage": "./assets/icon.png",
+        "monochromeImage": "./assets/icon.png"
       },
       "intentFilters": [
         {
@@ -49,6 +42,11 @@
             "DEFAULT"
           ]
         }
+      ],
+      "permissions": [
+        "REQUEST_INSTALL_PACKAGES",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
       ],
       "predictiveBackGestureEnabled": false
     },

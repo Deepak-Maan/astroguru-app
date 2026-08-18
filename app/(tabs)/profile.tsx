@@ -121,8 +121,13 @@ export default function Profile() {
   const isVip = useSubscriptionStore((s) => s.isVip);
   const vipPlanId = useSubscriptionStore((s) => s.planId);
   const vipExpires = useSubscriptionStore((s) => s.expiresAt);
+<<<<<<< HEAD
   const currentVersion = useUpdateStore((s) => s.currentVersion);
   const triggerUpdateModal = useUpdateStore((s) => s.triggerUpdateModal);
+=======
+  const triggerUpdateModal = useUpdateStore((s) => s.triggerUpdateModal);
+  const latestVersion = useUpdateStore((s) => s.latestVersion);
+>>>>>>> 99bd92f82ca33ebfd7ec054ebb0983a96f5731ad
 
   const [showLogoutOverlay, setShowLogoutOverlay] = useState(false);
 
@@ -234,12 +239,17 @@ export default function Profile() {
                   <Row icon="🏦" label="Bank Account & UPI Settings" onPress={() => router.push('/acharya/bank-settings')} />
                   <Row icon="📊" label="Monthly Earnings Report" onPress={() => router.push('/acharya/earnings-report')} />
                   <Row icon="🔒" label="Security & Privacy Vault" onPress={() => router.push('/acharya/security')} />
+                  <Row icon="🔄" label={`Check for In-App Updates · v${latestVersion}`} onPress={triggerUpdateModal} accent={colors.teal} />
                   <Row icon="📞" label="Support & Help Center" onPress={() => router.push('/acharya/support')} />
                   <Row icon="🚪" label="Sign Out" onPress={handleSignOut} accent={colors.danger} />
                 </Card>
               </View>
 
+<<<<<<< HEAD
               <Text style={styles.version}>AstroGuru Acharya · v{currentVersion} · {authUser?.email}</Text>
+=======
+              <Text style={styles.version}>AstroGuru Acharya · v2.7.9 · {authUser?.email}</Text>
+>>>>>>> 99bd92f82ca33ebfd7ec054ebb0983a96f5731ad
             </ScrollView>
           </>
         ) : (
@@ -337,6 +347,7 @@ export default function Profile() {
                   <Row icon="🚀" label={`Upgrade / Update App (v${currentVersion})`} onPress={() => triggerUpdateModal()} accent={colors.teal} />
                   <Row icon="👑" label={isVip ? `AstroVIP — ${vipPlanId} (Active)` : 'Get AstroVIP Pass'} onPress={() => router.push('/vip')} accent={colors.gold} />
                   <Row icon="📄" label="10-Page Kundli PDF Export" onPress={() => router.push('/kundli-pdf')} />
+                  <Row icon="🔄" label={`Check for In-App Updates · v${latestVersion}`} onPress={triggerUpdateModal} accent={colors.teal} />
                   <Row icon="⚙️" label="Settings & Security Vault" onPress={() => router.push('/settings')} />
                   <Row icon="🚪" label="Sign Out" onPress={handleSignOut} accent={colors.danger} />
                 </Card>
