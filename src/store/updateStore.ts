@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { inAppUpdateEngine, UpdateDownloadProgress } from '../services/updates/inAppUpdateEngine';
 import { getAppVersionFromFirebase, syncLatestAppVersionToFirebase } from '../services/firebaseRealtimeService';
 
-export const LATEST_RELEASE_VERSION = '2.7.9';
+export const LATEST_RELEASE_VERSION = '2.8.0';
 
 export interface UpdateInfo {
   currentVersion: string;
@@ -44,11 +44,14 @@ export const useUpdateStore = create<UpdateState>()(
       updateAvailable: false,
       isMandatory: false,
       releaseNotes: [
-        '✨ Release v2.7.9: Real-time Audio/Video Call Notifications & Ringing Modal',
-        '⚡ 1-Tap In-Session Wallet Auto-Recharge Drawer (no call drops)',
-        '🎡 Daily Cosmic Rewards, Navagraha Spin & Win Wheel, & Tarot of the Day',
-        '🪔 Cosmic Remedy & Sadhana Diary with Streak Tracker',
-        '📦 Native Expo-Sharing Package Installer for reliable In-App APK installation',
+        '🚀 Release v2.8.0: Major AstroGuru Platform Upgrade',
+        '🔥 Cosmic Streak & 7-Day Progressive Astro-Coin Check-in Pathway',
+        '🎡 Interactive Navagraha Spin & Win Chakra (Instant Cash, Vouchers & Coins)',
+        '🃏 Daily Mystical Tarot Guidance with 3D Flip Card & Affirmations',
+        '🪔 Cosmic Remedy & Sadhana Diary with Real-Time Streak Tracker',
+        '⚡ 1-Tap In-Session Wallet Auto-Recharge Drawer (No Call Drops)',
+        '📦 Native Expo-Sharing Package Installer for Reliable In-App APK Installs',
+        '📞 Enhanced Real-Time Consultation Ringing Modal with Multi-Alias Sync',
       ],
       downloadProgress: 0,
       downloadedBytes: 0,
