@@ -120,6 +120,8 @@ export default function RootLayout() {
             <Stack.Screen name="face-reading" />
             <Stack.Screen name="admin/index" options={{ presentation: 'card' }} />
             <Stack.Screen name="wallet" options={{ presentation: 'card' }} />
+            <Stack.Screen name="daily-rewards" />
+            <Stack.Screen name="privacy" />
             <Stack.Screen name="panchang" />
             <Stack.Screen name="tarot" />
             <Stack.Screen name="palmistry" />
