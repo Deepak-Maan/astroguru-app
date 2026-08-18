@@ -16,6 +16,7 @@ import {
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 import { GradientBackground } from '../src/components/GradientBackground';
 import { colors, radius, spacing, typography } from '../src/theme';
 import { useRewardsStore, RemedyItem, TarotCard } from '../src/store/rewardsStore';
@@ -23,14 +24,23 @@ import { useWalletStore } from '../src/store/walletStore';
 import { formatCurrency } from '../src/utils';
 
 const { width } = Dimensions.get('window');
+const WHEEL_SIZE = Math.min(width - 80, 260);
 
-const WHEEL_PRIZES = [
-  { label: '₹25 Cash', color: '#F59E0B' },
-  { label: '50 Coins', color: '#10B981' },
-  { label: '₹50 Off', color: '#8B5CF6' },
-  { label: '100 Coins', color: '#EC4899' },
-  { label: '₹10 Cash', color: '#3B82F6' },
-  { label: 'Free Milan', color: '#F97316' },
+const WHEEL_SEGMENTS = [
+  { label: '₹25 Cash', icon: '💰', color: '#D97706', bg: ['#F59E0B', '#B45309'] },
+  { label: '50 Coins', icon: '🪙', color: '#059669', bg: ['#10B981', '#047857'] },
+  { label: '₹50 Off', icon: '🎟️', color: '#7C3AED', bg: ['#8B5CF6', '#6D28D9'] },
+  { label: '100 Coins', icon: '💎', color: '#DB2777', bg: ['#EC4899', '#BE185D'] },
+  { label: '₹10 Cash', icon: '💵', color: '#2563EB', bg: ['#3B82F6', '#1D4ED8'] },
+  { label: 'Free Milan', icon: '📜', color: '#EA580C', bg: ['#F97316', '#C2410C'] },
+];
+
+const CATEGORY_FILTERS = [
+  { id: 'all', label: 'All Remedies', icon: '✨' },
+  { id: 'mantra', label: 'Mantras', icon: '🕉️' },
+  { id: 'routine', label: 'Rituals', icon: '🪔' },
+  { id: 'gemstone', label: 'Gems', icon: '💎' },
+  { id: 'charity', label: 'Seva', icon: '🙏' },
 ];
 
 export default function DailyRewardsScreen() {
@@ -62,72 +72,96 @@ export default function DailyRewardsScreen() {
   const flipValue = useRef(new Animated.Value(tarotFlipped ? 180 : 0)).current;
   const [isFlipped, setIsFlipped] = useState(tarotFlipped);
 
+  // Category Filter
+  const [activeCategory, setActiveCategory] = useState('all');
+
   // Add Remedy Modal
   const [showAddModal, setShowAddModal] = useState(false);
   const [newRemTitle, setNewRemTitle] = useState('');
   const [newRemCategory, setNewRemCategory] = useState<RemedyItem['category']>('mantra');
-  const [newRemTiming, setNewRemTiming] = useState('Daily Morning');
+  const [newRemTiming, setNewRemTiming] = useState('Daily Morning (Sunrise)');
 
-  // Pulse animation for streak flame
+  // Flame Pulse
   const pulseAnim = useRef(new Animated.Value(1)).current;
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
-        Animated.timing(pulseAnim, { toValue: 1.15, duration: 800, useNativeDriver: true }),
-        Animated.timing(pulseAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1.18, duration: 900, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1, duration: 900, useNativeDriver: true }),
       ])
     ).start();
   }, []);
 
+  function triggerHaptic(type: 'light' | 'medium' | 'heavy' = 'light') {
+    if (Platform.OS !== 'web') {
+      if (type === 'light') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      else if (type === 'medium') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      else Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+  }
+
   function handleCheckIn() {
+    triggerHaptic('medium');
     const res = checkInToday();
     if (res.success) {
+      triggerHaptic('heavy');
       Alert.alert(
-        '🔥 Cosmic Streak Claimed!',
-        `Day ${res.newStreak} Check-in Complete!\n+${res.coinsAwarded} Astro-Coins added to your vault.`,
+        '🔥 Cosmic Energy Claimed!',
+        `Day ${res.newStreak} Check-in Complete!\n\n✨ +${res.coinsAwarded} Astro-Coins added to your cosmic vault.\nKeep the streak alive tomorrow!`,
         [{ text: 'Namaste 🙏' }]
       );
     } else {
-      Alert.alert('Already Claimed', 'You have already collected today’s cosmic streak! Return tomorrow for Day ' + (streakCount + 1));
+      Alert.alert(
+        'Already Claimed Today',
+        `You have already drawn today’s cosmic power! Return tomorrow at sunrise for Day ${streakCount + 1}.`,
+        [{ text: 'OK' }]
+      );
     }
   }
 
   function handleSpinWheel() {
     if (hasSpunToday) {
-      Alert.alert('Chakra Resetting', 'You have already spun the Navagraha Chakra today! Come back tomorrow at sunrise.');
+      Alert.alert(
+        'Chakra In Alignment',
+        'You have already spun the Navagraha Chakra today! Return tomorrow at sunrise for your next free spin.'
+      );
       return;
     }
 
     if (isSpinning) return;
     setIsSpinning(true);
+    triggerHaptic('medium');
 
-    const randomRotations = 5 + Math.floor(Math.random() * 4);
+    const randomRotations = 6 + Math.floor(Math.random() * 4);
     const randomAngle = Math.floor(Math.random() * 360);
     const totalDeg = randomRotations * 360 + randomAngle;
 
     spinValue.setValue(0);
     Animated.timing(spinValue, {
       toValue: totalDeg,
-      duration: 3500,
+      duration: 3800,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: true,
     }).start(() => {
       setIsSpinning(false);
+      triggerHaptic('heavy');
       const res = spinChakra();
       setSpinPrizeModal(res.prize);
     });
   }
 
   function handleTarotFlip() {
+    triggerHaptic('light');
     const card = drawDailyTarot();
     if (!isFlipped) {
       Animated.spring(flipValue, {
         toValue: 180,
-        friction: 8,
-        tension: 10,
+        friction: 7,
+        tension: 12,
         useNativeDriver: true,
       }).start(() => {
         setIsFlipped(true);
+        triggerHaptic('medium');
       });
     }
   }
@@ -146,146 +180,257 @@ export default function DailyRewardsScreen() {
     outputRange: ['0deg', '360deg'],
   });
 
+  const filteredRemedies = remedies.filter((r) => {
+    if (activeCategory === 'all') return true;
+    return r.category === activeCategory;
+  });
+
   return (
     <GradientBackground>
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-        {/* ── Header ── */}
-        <View style={styles.header}>
-          <Pressable onPress={() => router.back()} style={styles.backBtn}>
-            <Text style={styles.backIcon}>‹</Text>
+        {/* ── Top Header Bar ── */}
+        <View style={styles.topNavBar}>
+          <Pressable onPress={() => router.back()} style={styles.navBackBtn}>
+            <Text style={styles.navBackIcon}>‹</Text>
           </Pressable>
           <View style={{ flex: 1 }}>
-            <Text style={styles.title}>Cosmic Rewards & Daily Tarot</Text>
-            <Text style={styles.subTitle}>Streaks, Navagraha Chakra & Remedy Vault</Text>
+            <Text style={styles.navTitle}>Cosmic Rewards & Daily Tarot</Text>
+            <Text style={styles.navSubtitle}>Streaks · Navagraha Chakra · Sadhana Vault</Text>
           </View>
-          <View style={styles.coinsBadge}>
-            <Text style={styles.coinsIcon}>🪙</Text>
-            <Text style={styles.coinsText}>{astroCoins}</Text>
+          <View style={styles.coinsHeaderPill}>
+            <Text style={{ fontSize: 14 }}>🪙</Text>
+            <Text style={styles.coinsHeaderText}>{astroCoins}</Text>
           </View>
         </View>
 
-        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-          {/* ── Section 1: Cosmic Streak & Daily Check-in ── */}
-          <View style={styles.card}>
+        <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+          {/* ── Section 1: Cosmic Streak Hero Journey ── */}
+          <View style={styles.heroStreakCard}>
             <LinearGradient
               colors={['#1E1B4B', '#0F172A']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={StyleSheet.absoluteFill}
             />
-            <View style={styles.streakTop}>
-              <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
-                <Text style={{ fontSize: 36 }}>🔥</Text>
+
+            {/* Glowing Accent Orb */}
+            <View style={styles.glowOrb} />
+
+            <View style={styles.streakHeaderRow}>
+              <Animated.View style={[styles.flameCircle, { transform: [{ scale: pulseAnim }] }]}>
+                <LinearGradient colors={['#F59E0B', '#EA580C']} style={StyleSheet.absoluteFill} />
+                <Text style={{ fontSize: 26 }}>🔥</Text>
               </Animated.View>
+
               <View style={{ flex: 1, marginLeft: 12 }}>
-                <Text style={styles.streakCount}>{streakCount} Day Cosmic Streak!</Text>
-                <Text style={styles.streakSub}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Text style={styles.streakEyebrow}>DAILY SACRED HABIT</Text>
+                  <View style={styles.streakStatusBadge}>
+                    <Text style={styles.streakStatusText}>
+                      {hasCheckedInToday ? '✅ Claimed' : '⚡ Available'}
+                    </Text>
+                  </View>
+                </View>
+                <Text style={styles.streakMainTitle}>{streakCount} Day Cosmic Streak!</Text>
+                <Text style={styles.streakDescription}>
                   {hasCheckedInToday
-                    ? '✨ Today’s cosmic energy claimed'
-                    : 'Claim your daily divine energy & Astro-Coins'}
+                    ? 'Divine grace activated! Return tomorrow for Day ' + (streakCount + 1)
+                    : 'Check in now to claim +25 Astro-Coins & energize your chart'}
                 </Text>
               </View>
-              <Pressable
-                onPress={handleCheckIn}
-                disabled={hasCheckedInToday}
-                style={[styles.claimBtn, hasCheckedInToday && styles.claimBtnDisabled]}
-              >
-                <LinearGradient
-                  colors={hasCheckedInToday ? ['#64748B', '#475569'] : [colors.saffron, colors.gold]}
-                  style={StyleSheet.absoluteFill}
-                />
-                <Text style={styles.claimBtnText}>{hasCheckedInToday ? '✅ Claimed' : '⚡ Claim'}</Text>
-              </Pressable>
             </View>
 
-            {/* 7-Day Trail */}
-            <View style={styles.trailRow}>
+            {/* 7-Day Visual Milestones Track */}
+            <View style={styles.milestoneTrack}>
+              {/* Connecting line */}
+              <View style={styles.trackLineBg} />
+
               {[1, 2, 3, 4, 5, 6, 7].map((day) => {
-                const isPassed = day <= streakCount;
-                const isCurrent = day === streakCount;
+                const isPassed = day < streakCount || (day === streakCount && hasCheckedInToday);
+                const isCurrent = day === streakCount && !hasCheckedInToday;
+                const isJackpot = day === 7;
+
                 return (
-                  <View key={day} style={[styles.trailNode, isPassed && styles.trailNodePassed]}>
-                    <Text style={[styles.trailDay, isPassed && { color: '#FDE68A' }]}>D{day}</Text>
-                    <Text style={{ fontSize: 13, marginTop: 2 }}>{day === 7 ? '👑' : isPassed ? '⭐' : '🪙'}</Text>
-                    <Text style={styles.trailCoins}>+{20 + day * 5}</Text>
+                  <View key={day} style={styles.dayNodeWrapper}>
+                    <View
+                      style={[
+                        styles.dayNodeCircle,
+                        isPassed && styles.dayNodePassed,
+                        isCurrent && styles.dayNodeCurrent,
+                        isJackpot && styles.dayNodeJackpot,
+                      ]}
+                    >
+                      {isPassed ? (
+                        <Text style={{ fontSize: 13, color: '#10B981', fontWeight: '900' }}>✓</Text>
+                      ) : isJackpot ? (
+                        <Text style={{ fontSize: 14 }}>👑</Text>
+                      ) : isCurrent ? (
+                        <Text style={{ fontSize: 13 }}>🔥</Text>
+                      ) : (
+                        <Text style={styles.dayNodeText}>D{day}</Text>
+                      )}
+                    </View>
+                    <Text style={[styles.dayNodeLabel, isPassed && { color: '#FDE68A' }]}>
+                      +{20 + day * 5}
+                    </Text>
                   </View>
                 );
               })}
             </View>
-          </View>
 
-          {/* ── Section 2: Navagraha Spin & Win Chakra ── */}
-          <View style={styles.card}>
-            <View style={styles.cardHeaderRow}>
-              <Text style={styles.cardSectionTitle}>🎡 Navagraha Spin & Win Chakra</Text>
-              <Text style={styles.badgeFree}>{hasSpunToday ? 'Used Today' : '1 Free Spin'}</Text>
-            </View>
-            <Text style={styles.cardDesc}>
-              Spin the celestial wheel once daily to win instant wallet cash, consultation discount vouchers, and bonus Astro-Coins!
-            </Text>
-
-            <View style={styles.wheelWrapper}>
-              <Animated.View style={[styles.wheelCircle, { transform: [{ rotate: spinInterpolate }] }]}>
-                <LinearGradient
-                  colors={['#7C3AED', '#4F46E5', '#2563EB', '#059669', '#D97706', '#DC2626']}
-                  style={StyleSheet.absoluteFill}
-                />
-                {WHEEL_PRIZES.map((item, idx) => {
-                  const angle = idx * 60;
-                  return (
-                    <View
-                      key={idx}
-                      style={[
-                        styles.wheelSliceText,
-                        { transform: [{ rotate: `${angle}deg` }, { translateY: -46 }] },
-                      ]}
-                    >
-                      <Text style={styles.wheelText}>{item.label}</Text>
-                    </View>
-                  );
-                })}
-                <View style={styles.wheelHub}>
-                  <Text style={{ fontSize: 18 }}>☸️</Text>
-                </View>
-              </Animated.View>
-
-              {/* Center Pointer */}
-              <View style={styles.wheelPointer}>
-                <Text style={{ fontSize: 24 }}>▼</Text>
-              </View>
-            </View>
-
+            {/* Claim CTA Button */}
             <Pressable
-              onPress={handleSpinWheel}
-              disabled={isSpinning || hasSpunToday}
-              style={[styles.spinBtn, (isSpinning || hasSpunToday) && styles.spinBtnDisabled]}
+              onPress={handleCheckIn}
+              disabled={hasCheckedInToday}
+              style={({ pressed }) => [
+                styles.claimStreakBtn,
+                hasCheckedInToday && styles.claimStreakBtnDone,
+                pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] },
+              ]}
             >
               <LinearGradient
-                colors={hasSpunToday ? ['#64748B', '#475569'] : [colors.teal, '#059669']}
+                colors={
+                  hasCheckedInToday
+                    ? ['#334155', '#1E293B']
+                    : [colors.saffron, colors.gold]
+                }
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
                 style={StyleSheet.absoluteFill}
               />
-              <Text style={styles.spinBtnText}>
-                {isSpinning ? '☸️ Aligning Planetary Chakra…' : hasSpunToday ? '✅ Spun Today (Resets 6 AM)' : '✨ Spin the Chakra Now'}
+              <Text style={styles.claimStreakBtnText}>
+                {hasCheckedInToday
+                  ? '✨ Today’s Energy Claimed (Come back tomorrow)'
+                  : `⚡ Claim Day ${streakCount} Energy (+${20 + streakCount * 5} Coins)`}
               </Text>
             </Pressable>
           </View>
 
-          {/* ── Section 3: Mystical Tarot Card of the Day ── */}
-          <View style={styles.card}>
-            <View style={styles.cardHeaderRow}>
-              <Text style={styles.cardSectionTitle}>🃏 Daily Mystical Tarot Guidance</Text>
-              <Text style={styles.badgeFree}>Tap to Reveal</Text>
+          {/* ── Section 2: Interactive Navagraha Spin Chakra ── */}
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionHeaderRow}>
+              <View style={styles.sectionIconBadge}>
+                <Text style={{ fontSize: 18 }}>🎡</Text>
+              </View>
+              <View style={{ flex: 1, marginLeft: 10 }}>
+                <Text style={styles.sectionHeading}>Navagraha Spin & Win Chakra</Text>
+                <Text style={styles.sectionSubHeading}>Spin daily for wallet cash & consultation vouchers</Text>
+              </View>
+              <View style={[styles.freeTag, hasSpunToday && styles.freeTagUsed]}>
+                <Text style={[styles.freeTagText, hasSpunToday && { color: '#64748B' }]}>
+                  {hasSpunToday ? 'Used Today' : '1 Free Spin'}
+                </Text>
+              </View>
             </View>
-            <Text style={styles.cardDesc}>
-              Draw your personalized celestial archetype for today. Discover your ruling planet, lucky stone, and cosmic affirmation.
-            </Text>
 
-            <Pressable onPress={handleTarotFlip} style={styles.tarotCardContainer}>
-              {/* Card Back */}
+            {/* Wheel Canvas & Pointer */}
+            <View style={styles.wheelOuterFrame}>
+              {/* Outer Golden Cosmic Ring */}
+              <View style={styles.wheelGoldRing}>
+                <Animated.View
+                  style={[
+                    styles.wheelDisc,
+                    {
+                      width: WHEEL_SIZE,
+                      height: WHEEL_SIZE,
+                      borderRadius: WHEEL_SIZE / 2,
+                      transform: [{ rotate: spinInterpolate }],
+                    },
+                  ]}
+                >
+                  <LinearGradient
+                    colors={['#4338CA', '#3730A3', '#1E1B4B']}
+                    style={StyleSheet.absoluteFill}
+                  />
+
+                  {/* 6 Wheel Wedges */}
+                  {WHEEL_SEGMENTS.map((seg, idx) => {
+                    const angle = idx * 60;
+                    return (
+                      <View
+                        key={idx}
+                        style={[
+                          styles.wedgeContainer,
+                          { transform: [{ rotate: `${angle}deg` }] },
+                        ]}
+                      >
+                        <View style={styles.wedgeContent}>
+                          <Text style={{ fontSize: 15, marginBottom: 2 }}>{seg.icon}</Text>
+                          <Text style={styles.wedgeLabel}>{seg.label}</Text>
+                        </View>
+                      </View>
+                    );
+                  })}
+
+                  {/* Center Sacred OM Hub */}
+                  <View style={styles.centerOmHub}>
+                    <LinearGradient
+                      colors={[colors.gold, colors.saffron]}
+                      style={StyleSheet.absoluteFill}
+                    />
+                    <Text style={styles.omText}>🕉️</Text>
+                  </View>
+                </Animated.View>
+
+                {/* Top Arrow Pointer */}
+                <View style={styles.wheelArrowPointer}>
+                  <Text style={{ fontSize: 24, color: '#F59E0B' }}>▼</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Spin CTA Button */}
+            <Pressable
+              onPress={handleSpinWheel}
+              disabled={isSpinning || hasSpunToday}
+              style={({ pressed }) => [
+                styles.spinActionBtn,
+                (isSpinning || hasSpunToday) && styles.spinActionBtnDisabled,
+                pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] },
+              ]}
+            >
+              <LinearGradient
+                colors={
+                  hasSpunToday
+                    ? ['#475569', '#334155']
+                    : [colors.teal, '#047857']
+                }
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={StyleSheet.absoluteFill}
+              />
+              <Text style={styles.spinActionBtnText}>
+                {isSpinning
+                  ? '☸️ Aligning Graha Coordinates…'
+                  : hasSpunToday
+                  ? '✅ Chakra Spun (Resets at Sunrise)'
+                  : '✨ Spin Navagraha Chakra Now'}
+              </Text>
+            </Pressable>
+          </View>
+
+          {/* ── Section 3: Mystical Tarot Guidance of the Day ── */}
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionHeaderRow}>
+              <View style={[styles.sectionIconBadge, { backgroundColor: '#F3E8FF' }]}>
+                <Text style={{ fontSize: 18 }}>🃏</Text>
+              </View>
+              <View style={{ flex: 1, marginLeft: 10 }}>
+                <Text style={styles.sectionHeading}>Daily Mystical Tarot Guidance</Text>
+                <Text style={styles.sectionSubHeading}>Celestial archetype & planetary alignment for today</Text>
+              </View>
+              <View style={styles.tapToRevealPill}>
+                <Text style={styles.tapToRevealText}>{isFlipped ? 'Revealed' : 'Tap Card'}</Text>
+              </View>
+            </View>
+
+            {/* 3D Animated Tarot Card Container */}
+            <Pressable onPress={handleTarotFlip} style={styles.tarotFlipArea}>
+              {/* Back Face */}
               <Animated.View
                 style={[
-                  styles.tarotCard,
-                  styles.tarotCardBack,
+                  styles.tarotCardSide,
+                  styles.tarotCardBackStyle,
                   { transform: [{ rotateY: frontInterpolate }] },
                 ]}
               >
@@ -293,16 +438,21 @@ export default function DailyRewardsScreen() {
                   colors={['#312E81', '#1E1B4B', '#0F172A']}
                   style={StyleSheet.absoluteFill}
                 />
-                <Text style={{ fontSize: 50 }}>🔮</Text>
-                <Text style={styles.tarotBackText}>ASTROGURU TAROT</Text>
-                <Text style={styles.tarotBackSub}>Tap to Flip & Reveal</Text>
+                <View style={styles.tarotFiligreeBorder}>
+                  <Text style={{ fontSize: 44, marginBottom: 8 }}>🔮</Text>
+                  <Text style={styles.tarotBackTitle}>ASTROGURU TAROT</Text>
+                  <Text style={styles.tarotBackMantra}>SACRED CELESTIAL DECK</Text>
+                  <View style={styles.tarotTapPrompt}>
+                    <Text style={styles.tarotTapPromptText}>✨ Tap to Flip & Receive Insight</Text>
+                  </View>
+                </View>
               </Animated.View>
 
-              {/* Card Front */}
+              {/* Front Face */}
               <Animated.View
                 style={[
-                  styles.tarotCard,
-                  styles.tarotCardFront,
+                  styles.tarotCardSide,
+                  styles.tarotCardFrontStyle,
                   { transform: [{ rotateY: backInterpolate }] },
                 ]}
               >
@@ -310,61 +460,159 @@ export default function DailyRewardsScreen() {
                   colors={['#1E293B', '#0F172A']}
                   style={StyleSheet.absoluteFill}
                 />
-                <Text style={{ fontSize: 44, marginBottom: 4 }}>{dailyTarotCard?.imageEmoji}</Text>
-                <Text style={styles.tarotFrontName}>{dailyTarotCard?.name}</Text>
-                <Text style={styles.tarotFrontArcana}>{dailyTarotCard?.arcana} · {dailyTarotCard?.rulingPlanet}</Text>
-                <View style={styles.tarotPill}>
-                  <Text style={styles.tarotPillText}>✨ {dailyTarotCard?.keyword}</Text>
+                <View style={styles.tarotFrontHeader}>
+                  <Text style={{ fontSize: 38 }}>{dailyTarotCard?.imageEmoji}</Text>
+                  <View style={{ marginLeft: 10, flex: 1 }}>
+                    <Text style={styles.tarotCardTitleText}>{dailyTarotCard?.name}</Text>
+                    <Text style={styles.tarotCardSubText}>
+                      {dailyTarotCard?.arcana} · {dailyTarotCard?.rulingPlanet}
+                    </Text>
+                  </View>
                 </View>
-                <Text style={styles.tarotMeaning}>{dailyTarotCard?.meaning}</Text>
-                <View style={styles.tarotAffirmBox}>
-                  <Text style={styles.tarotAffirmTitle}>🌟 Daily Cosmic Affirmation:</Text>
-                  <Text style={styles.tarotAffirmText}>"{dailyTarotCard?.affirmation}"</Text>
+
+                {/* Keyword Pill */}
+                <View style={styles.tarotKeywordBadge}>
+                  <Text style={styles.tarotKeywordText}>✨ {dailyTarotCard?.keyword}</Text>
                 </View>
-                <View style={styles.tarotMetaRow}>
-                  <Text style={styles.tarotMetaItem}>💎 Stone: {dailyTarotCard?.luckyStone}</Text>
-                  <Text style={styles.tarotMetaItem}>🎨 Lucky No: {dailyTarotCard?.luckyNumber}</Text>
+
+                {/* Meaning */}
+                <Text style={styles.tarotMeaningText}>{dailyTarotCard?.meaning}</Text>
+
+                {/* Affirmation Box */}
+                <View style={styles.tarotAffirmationCard}>
+                  <Text style={styles.tarotAffirmationHeader}>🌟 Daily Cosmic Affirmation:</Text>
+                  <Text style={styles.tarotAffirmationQuote}>"{dailyTarotCard?.affirmation}"</Text>
+                </View>
+
+                {/* Meta Indicator Pills */}
+                <View style={styles.tarotIndicatorRow}>
+                  <View style={styles.indicatorPill}>
+                    <Text style={styles.indicatorLabel}>💎 Stone</Text>
+                    <Text style={styles.indicatorValue}>{dailyTarotCard?.luckyStone}</Text>
+                  </View>
+                  <View style={styles.indicatorPill}>
+                    <Text style={styles.indicatorLabel}>🎨 Lucky Color</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      <View
+                        style={[
+                          styles.colorDot,
+                          { backgroundColor: dailyTarotCard?.luckyColor || '#F59E0B' },
+                        ]}
+                      />
+                      <Text style={styles.indicatorValue}>{dailyTarotCard?.rulingPlanet}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.indicatorPill}>
+                    <Text style={styles.indicatorLabel}>🔢 Lucky No.</Text>
+                    <Text style={styles.indicatorValue}>{dailyTarotCard?.luckyNumber}</Text>
+                  </View>
                 </View>
               </Animated.View>
             </Pressable>
           </View>
 
-          {/* ── Section 4: Daily Remedy & Sadhana Diary ── */}
-          <View style={styles.card}>
-            <View style={styles.cardHeaderRow}>
-              <Text style={styles.cardSectionTitle}>🪔 Cosmic Remedy & Sadhana Diary</Text>
-              <Pressable onPress={() => setShowAddModal(true)} style={styles.addRemedyBtn}>
-                <Text style={styles.addRemedyBtnText}>+ Add Remedy</Text>
+          {/* ── Section 4: Sacred Sadhana & Remedy Habit Vault ── */}
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionHeaderRow}>
+              <View style={[styles.sectionIconBadge, { backgroundColor: '#ECFDF5' }]}>
+                <Text style={{ fontSize: 18 }}>🪔</Text>
+              </View>
+              <View style={{ flex: 1, marginLeft: 10 }}>
+                <Text style={styles.sectionHeading}>Sacred Sadhana & Remedy Diary</Text>
+                <Text style={styles.sectionSubHeading}>Complete daily rituals & earn +15 Astro-Coins</Text>
+              </View>
+              <Pressable
+                onPress={() => setShowAddModal(true)}
+                style={styles.addRemedyHeaderBtn}
+              >
+                <Text style={styles.addRemedyHeaderBtnText}>+ Add</Text>
               </Pressable>
             </View>
-            <Text style={styles.cardDesc}>
-              Track your daily mantras, gemstone routines, and astrologer-prescribed Lal Kitab remedies. Earn +15 Astro-Coins per checkmark!
-            </Text>
 
-            <View style={{ gap: 8, marginTop: 8 }}>
-              {remedies.map((rem) => (
+            {/* Filter Pills */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.categoryFilterRow}
+            >
+              {CATEGORY_FILTERS.map((cat) => (
+                <Pressable
+                  key={cat.id}
+                  onPress={() => {
+                    triggerHaptic('light');
+                    setActiveCategory(cat.id);
+                  }}
+                  style={[
+                    styles.categoryFilterPill,
+                    activeCategory === cat.id && styles.categoryFilterPillActive,
+                  ]}
+                >
+                  <Text style={styles.categoryFilterIcon}>{cat.icon}</Text>
+                  <Text
+                    style={[
+                      styles.categoryFilterText,
+                      activeCategory === cat.id && styles.categoryFilterTextActive,
+                    ]}
+                  >
+                    {cat.label}
+                  </Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+
+            {/* Remedy Items List */}
+            <View style={{ gap: 10, marginTop: 10 }}>
+              {filteredRemedies.map((rem) => (
                 <Pressable
                   key={rem.id}
-                  onPress={() => toggleRemedy(rem.id)}
-                  style={[styles.remedyItem, rem.completed && styles.remedyItemCompleted]}
+                  onPress={() => {
+                    triggerHaptic('medium');
+                    toggleRemedy(rem.id);
+                  }}
+                  style={({ pressed }) => [
+                    styles.remedyTaskCard,
+                    rem.completed && styles.remedyTaskCardDone,
+                    pressed && { opacity: 0.9 },
+                  ]}
                 >
-                  <View style={[styles.checkbox, rem.completed && styles.checkboxActive]}>
-                    <Text style={styles.checkboxTick}>{rem.completed ? '✓' : ''}</Text>
+                  {/* Custom Checkbox */}
+                  <View
+                    style={[
+                      styles.customCheckbox,
+                      rem.completed && styles.customCheckboxChecked,
+                    ]}
+                  >
+                    <Text style={styles.customCheckboxIcon}>
+                      {rem.completed ? '✓' : ''}
+                    </Text>
                   </View>
+
                   <View style={{ flex: 1 }}>
-                    <Text style={[styles.remedyTitle, rem.completed && styles.remedyTitleDone]}>
+                    <Text
+                      style={[
+                        styles.remedyTaskTitle,
+                        rem.completed && styles.remedyTaskTitleDone,
+                      ]}
+                    >
                       {rem.title}
                     </Text>
-                    <Text style={styles.remedyTiming}>
-                      🕒 {rem.timing} · 🔥 {rem.streak} day streak
-                    </Text>
+                    <View style={styles.remedyMetaRow}>
+                      <Text style={styles.remedyTimingText}>🕒 {rem.timing}</Text>
+                      <View style={styles.remedyStreakPill}>
+                        <Text style={styles.remedyStreakText}>🔥 {rem.streak}d streak</Text>
+                      </View>
+                    </View>
                   </View>
+
                   <Pressable
-                    onPress={() => deleteRemedy(rem.id)}
-                    hitSlop={8}
-                    style={{ padding: 4 }}
+                    onPress={() => {
+                      triggerHaptic('light');
+                      deleteRemedy(rem.id);
+                    }}
+                    hitSlop={12}
+                    style={styles.deleteRemedyBtn}
                   >
-                    <Text style={{ color: '#94A3B8', fontSize: 13 }}>✕</Text>
+                    <Text style={styles.deleteRemedyIcon}>✕</Text>
                   </Pressable>
                 </Pressable>
               ))}
@@ -372,60 +620,88 @@ export default function DailyRewardsScreen() {
           </View>
         </ScrollView>
 
-        {/* ── Prize Modal ── */}
+        {/* ── Prize Celebration Modal ── */}
         <Modal visible={Boolean(spinPrizeModal)} transparent animationType="fade">
-          <View style={styles.modalOverlay}>
-            <View style={styles.prizeCard}>
-              <Text style={{ fontSize: 50, textAlign: 'center' }}>🎉</Text>
-              <Text style={styles.prizeTitle}>Cosmic Fortune Won!</Text>
-              <Text style={styles.prizeSub}>The Navagraha Chakra has bestowed:</Text>
-              <View style={styles.prizeBadge}>
-                <Text style={styles.prizeBadgeText}>{spinPrizeModal}</Text>
+          <View style={styles.modalBackdrop}>
+            <View style={styles.celebrationCard}>
+              <LinearGradient
+                colors={['#1E1B4B', '#0F172A']}
+                style={StyleSheet.absoluteFill}
+              />
+              <Text style={{ fontSize: 56, textAlign: 'center', marginVertical: 4 }}>🎉</Text>
+              <Text style={styles.celebrationTitle}>Cosmic Grace Bestowed!</Text>
+              <Text style={styles.celebrationSubtitle}>
+                The Navagraha Chakra has granted your fortune:
+              </Text>
+              <View style={styles.celebrationPrizePill}>
+                <Text style={styles.celebrationPrizeText}>{spinPrizeModal}</Text>
               </View>
-              <Text style={styles.prizeNote}>Prize added to your account instantly.</Text>
-              <Pressable onPress={() => setSpinPrizeModal(null)} style={styles.prizeCloseBtn}>
-                <LinearGradient colors={[colors.saffron, colors.gold]} style={StyleSheet.absoluteFill} />
-                <Text style={styles.prizeCloseText}>Namaste 🙏</Text>
+              <Text style={styles.celebrationNote}>
+                Prize credited to your wallet & profile vault instantly.
+              </Text>
+              <Pressable
+                onPress={() => {
+                  triggerHaptic('medium');
+                  setSpinPrizeModal(null);
+                }}
+                style={styles.celebrationCloseBtn}
+              >
+                <LinearGradient
+                  colors={[colors.saffron, colors.gold]}
+                  style={StyleSheet.absoluteFill}
+                />
+                <Text style={styles.celebrationCloseBtnText}>Namaste 🙏 Collect</Text>
               </Pressable>
             </View>
           </View>
         </Modal>
 
-        {/* ── Add Remedy Modal ── */}
+        {/* ── Add Sadhana / Remedy Modal ── */}
         <Modal visible={showAddModal} transparent animationType="slide">
-          <View style={styles.modalOverlay}>
-            <View style={styles.addModalCard}>
-              <Text style={styles.addModalTitle}>+ Add Cosmic Remedy</Text>
+          <View style={styles.modalBackdrop}>
+            <View style={styles.addRemedyCard}>
+              <Text style={styles.addRemedyTitle}>+ Prescribe New Sadhana</Text>
+              <Text style={styles.addRemedySub}>
+                Add daily mantras, astrological routines, or prescribed Lal Kitab remedies.
+              </Text>
+
               <TextInput
                 value={newRemTitle}
                 onChangeText={setNewRemTitle}
-                placeholder="e.g. Chant Gayatri Mantra 21 times"
+                placeholder="e.g. Chant Maha Mrityunjaya Mantra (108x)"
                 placeholderTextColor={colors.textFaint}
-                style={styles.addInput}
+                style={styles.addTextInput}
               />
               <TextInput
                 value={newRemTiming}
                 onChangeText={setNewRemTiming}
-                placeholder="Timing (e.g. Sunrise / Thursday evening)"
+                placeholder="Timing (e.g. Sunrise / Thursday Evening)"
                 placeholderTextColor={colors.textFaint}
-                style={styles.addInput}
+                style={styles.addTextInput}
               />
 
-              <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
-                <Pressable onPress={() => setShowAddModal(false)} style={styles.cancelModalBtn}>
+              <View style={{ flexDirection: 'row', gap: 10, marginTop: 16 }}>
+                <Pressable
+                  onPress={() => setShowAddModal(false)}
+                  style={styles.cancelActionBtn}
+                >
                   <Text style={{ color: colors.textMuted, fontWeight: '700' }}>Cancel</Text>
                 </Pressable>
                 <Pressable
                   onPress={() => {
                     if (!newRemTitle.trim()) return;
+                    triggerHaptic('medium');
                     addRemedy(newRemTitle.trim(), newRemCategory, newRemTiming.trim());
                     setNewRemTitle('');
                     setShowAddModal(false);
                   }}
-                  style={styles.saveModalBtn}
+                  style={styles.saveActionBtn}
                 >
-                  <LinearGradient colors={[colors.teal, '#059669']} style={StyleSheet.absoluteFill} />
-                  <Text style={{ color: '#fff', fontWeight: '900' }}>Save Remedy</Text>
+                  <LinearGradient
+                    colors={[colors.teal, '#047857']}
+                    style={StyleSheet.absoluteFill}
+                  />
+                  <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>Save Sadhana</Text>
                 </Pressable>
               </View>
             </View>
@@ -437,370 +713,570 @@ export default function DailyRewardsScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: {
+  topNavBar: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: spacing.md,
-    paddingVertical: 10,
+    paddingVertical: 12,
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#E2E8F0',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  backBtn: {
-    width: 36, height: 36,
+  navBackBtn: {
+    width: 36,
+    height: 36,
     borderRadius: 18,
     backgroundColor: '#F1F5F9',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 10,
+    marginRight: 12,
   },
-  backIcon: { fontSize: 22, color: colors.text, fontWeight: '700', marginLeft: -2 },
-  title: { ...typography.h3, fontSize: 16, fontWeight: '900', color: '#0F172A' },
-  subTitle: { ...typography.tiny, color: colors.textMuted, fontSize: 10.5, fontWeight: '600' },
-  coinsBadge: {
+  navBackIcon: { fontSize: 24, color: '#0F172A', fontWeight: '800', marginTop: -2 },
+  navTitle: { ...typography.h3, fontSize: 16, fontWeight: '900', color: '#0F172A' },
+  navSubtitle: { ...typography.tiny, color: colors.textMuted, fontSize: 10.5, fontWeight: '600' },
+  coinsHeaderPill: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FEF3C7',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: radius.pill,
     borderWidth: 1,
     borderColor: '#FDE68A',
-    gap: 4,
+    gap: 5,
   },
-  coinsIcon: { fontSize: 14 },
-  coinsText: { ...typography.tiny, fontWeight: '900', color: '#B45309' },
+  coinsHeaderText: { ...typography.tiny, fontWeight: '900', color: '#B45309', fontSize: 12 },
 
-  scroll: {
+  scrollContainer: {
     padding: spacing.md,
     gap: spacing.md,
-    paddingBottom: 40,
+    paddingBottom: 50,
   },
-  card: {
+
+  /* Hero Streak Card */
+  heroStreakCard: {
+    borderRadius: 24,
+    padding: spacing.md + 2,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    shadowColor: '#312E81',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  glowOrb: {
+    position: 'absolute',
+    top: -40,
+    right: -40,
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: 'rgba(245, 158, 11, 0.12)',
+  },
+  streakHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  flameCircle: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    shadowColor: '#F59E0B',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  streakEyebrow: {
+    fontSize: 9.5,
+    fontWeight: '900',
+    color: '#FDE68A',
+    letterSpacing: 1.2,
+  },
+  streakStatusBadge: {
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: radius.pill,
+  },
+  streakStatusText: { fontSize: 9.5, color: '#FFFFFF', fontWeight: '800' },
+  streakMainTitle: {
+    ...typography.h2,
+    fontSize: 19,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    marginTop: 2,
+  },
+  streakDescription: {
+    ...typography.tiny,
+    color: '#CBD5E1',
+    fontSize: 11,
+    lineHeight: 15,
+    marginTop: 2,
+  },
+
+  milestoneTrack: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 18,
+    paddingTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    position: 'relative',
+  },
+  trackLineBg: {
+    position: 'absolute',
+    top: 28,
+    left: 15,
+    right: 15,
+    height: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+  },
+  dayNodeWrapper: {
+    alignItems: 'center',
+    gap: 4,
+  },
+  dayNodeCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  dayNodePassed: {
+    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+    borderColor: '#10B981',
+  },
+  dayNodeCurrent: {
+    backgroundColor: 'rgba(245, 158, 11, 0.25)',
+    borderColor: '#F59E0B',
+  },
+  dayNodeJackpot: {
+    backgroundColor: 'rgba(236, 72, 153, 0.25)',
+    borderColor: '#EC4899',
+  },
+  dayNodeText: { fontSize: 10, color: '#94A3B8', fontWeight: '800' },
+  dayNodeLabel: { fontSize: 9.5, color: '#CBD5E1', fontWeight: '700' },
+
+  claimStreakBtn: {
+    borderRadius: radius.pill,
+    paddingVertical: 12,
+    alignItems: 'center',
+    overflow: 'hidden',
+    marginTop: 16,
+  },
+  claimStreakBtnDone: { opacity: 0.75 },
+  claimStreakBtnText: { color: '#FFFFFF', fontWeight: '900', fontSize: 13 },
+
+  /* Generic Section Card */
+  sectionCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: radius.xl,
-    padding: spacing.md,
+    borderRadius: 24,
+    padding: spacing.md + 2,
     borderWidth: 1,
     borderColor: '#E2E8F0',
     shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 3 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-    overflow: 'hidden',
+    shadowRadius: 10,
+    elevation: 3,
   },
-  streakTop: {
+  sectionHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  streakCount: { ...typography.h3, fontSize: 16, fontWeight: '900', color: '#FFFFFF' },
-  streakSub: { ...typography.tiny, color: '#CBD5E1', fontSize: 11, marginTop: 2 },
-  claimBtn: {
-    borderRadius: radius.pill,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    overflow: 'hidden',
-  },
-  claimBtnDisabled: { opacity: 0.6 },
-  claimBtnText: { color: '#FFFFFF', fontWeight: '900', fontSize: 12 },
-
-  trailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 14,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.1)',
-  },
-  trailNode: {
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    borderRadius: radius.md,
-    paddingVertical: 6,
-    paddingHorizontal: 8,
-    minWidth: 38,
-  },
-  trailNodePassed: {
-    backgroundColor: 'rgba(245,158,11,0.2)',
-    borderWidth: 1,
-    borderColor: '#F59E0B',
-  },
-  trailDay: { fontSize: 10, fontWeight: '800', color: '#94A3B8' },
-  trailCoins: { fontSize: 9, color: '#CBD5E1', fontWeight: '700', marginTop: 2 },
-
-  cardHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  cardSectionTitle: {
-    ...typography.h3,
-    fontSize: 15,
-    fontWeight: '900',
-    color: '#0F172A',
-  },
-  badgeFree: {
-    ...typography.tiny,
-    fontSize: 10,
-    fontWeight: '800',
-    backgroundColor: '#ECFDF5',
-    color: '#059669',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: radius.pill,
-  },
-  cardDesc: {
-    ...typography.tiny,
-    color: colors.textMuted,
-    fontSize: 11.5,
-    lineHeight: 16,
-    marginTop: 4,
     marginBottom: 12,
   },
+  sectionIconBadge: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: '#FEF3C7',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sectionHeading: { ...typography.h3, fontSize: 15, fontWeight: '900', color: '#0F172A' },
+  sectionSubHeading: { ...typography.tiny, color: colors.textMuted, fontSize: 10.5, fontWeight: '600' },
+  freeTag: {
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: radius.pill,
+  },
+  freeTagUsed: { backgroundColor: '#F1F5F9' },
+  freeTagText: { fontSize: 10, fontWeight: '900', color: '#059669' },
 
-  wheelWrapper: {
+  /* Wheel Styles */
+  wheelOuterFrame: {
     alignItems: 'center',
     justifyContent: 'center',
     marginVertical: 10,
-    height: 170,
   },
-  wheelCircle: {
-    width: 150,
-    height: 150,
-    borderRadius: 75,
+  wheelGoldRing: {
+    padding: 6,
+    borderRadius: 140,
+    backgroundColor: '#FDE68A',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 5,
+  },
+  wheelDisc: {
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
     borderWidth: 3,
-    borderColor: '#FDE68A',
+    borderColor: '#F59E0B',
   },
-  wheelSliceText: {
+  wedgeContainer: {
     position: 'absolute',
+    width: '100%',
+    height: '100%',
     alignItems: 'center',
   },
-  wheelText: {
+  wedgeContent: {
+    alignItems: 'center',
+    marginTop: 14,
+  },
+  wedgeLabel: {
     fontSize: 9.5,
     fontWeight: '900',
     color: '#FFFFFF',
-    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowColor: 'rgba(0,0,0,0.6)',
     textShadowRadius: 3,
   },
-  wheelHub: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: '#FFFFFF',
+  centerOmHub: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
     shadowColor: '#000',
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.3,
     shadowRadius: 4,
-    elevation: 3,
+    elevation: 4,
   },
-  wheelPointer: {
+  omText: { fontSize: 20 },
+  wheelArrowPointer: {
     position: 'absolute',
-    top: 0,
-    alignItems: 'center',
+    top: -8,
+    alignSelf: 'center',
   },
-  spinBtn: {
-    borderRadius: radius.lg,
-    paddingVertical: 12,
+  spinActionBtn: {
+    borderRadius: radius.pill,
+    paddingVertical: 13,
     alignItems: 'center',
     overflow: 'hidden',
-    marginTop: 6,
+    marginTop: 8,
   },
-  spinBtnDisabled: { opacity: 0.65 },
-  spinBtnText: { color: '#FFFFFF', fontWeight: '900', fontSize: 13.5 },
+  spinActionBtnDisabled: { opacity: 0.65 },
+  spinActionBtnText: { color: '#FFFFFF', fontWeight: '900', fontSize: 13.5 },
 
-  tarotCardContainer: {
-    height: 290,
+  /* Tarot 3D Card */
+  tapToRevealPill: {
+    backgroundColor: '#F3E8FF',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: radius.pill,
+  },
+  tapToRevealText: { fontSize: 10, fontWeight: '800', color: '#7C3AED' },
+  tarotFlipArea: {
+    height: 310,
     marginVertical: 6,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  tarotCard: {
+  tarotCardSide: {
     position: 'absolute',
     width: width - 56,
-    height: 280,
-    borderRadius: radius.xl,
+    height: 300,
+    borderRadius: 20,
     padding: spacing.md,
-    alignItems: 'center',
-    justifyContent: 'center',
     backfaceVisibility: 'hidden',
     overflow: 'hidden',
     borderWidth: 2,
     borderColor: '#F59E0B',
   },
-  tarotCardBack: {
-    gap: 8,
+  tarotCardBackStyle: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  tarotBackText: {
-    fontSize: 16,
+  tarotFiligreeBorder: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(253, 230, 138, 0.4)',
+    borderStyle: 'dashed',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.md,
+  },
+  tarotBackTitle: {
+    fontSize: 17,
     fontWeight: '900',
     color: '#FDE68A',
-    letterSpacing: 1.5,
+    letterSpacing: 2,
   },
-  tarotBackSub: {
-    fontSize: 11,
+  tarotBackMantra: {
+    fontSize: 10,
+    fontWeight: '800',
     color: '#94A3B8',
-    fontWeight: '600',
+    letterSpacing: 1.5,
+    marginTop: 2,
   },
-  tarotCardFront: {
+  tarotTapPrompt: {
+    marginTop: 20,
+    backgroundColor: 'rgba(245, 158, 11, 0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: radius.pill,
+  },
+  tarotTapPromptText: { fontSize: 11, fontWeight: '800', color: '#F59E0B' },
+
+  tarotCardFrontStyle: {
     padding: spacing.md,
+  },
+  tarotFrontHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
-  tarotFrontName: {
+  tarotCardTitleText: {
     fontSize: 16,
     fontWeight: '900',
     color: '#FDE68A',
   },
-  tarotFrontArcana: {
-    fontSize: 10.5,
-    color: '#94A3B8',
+  tarotCardSubText: {
+    fontSize: 11,
+    color: '#CBD5E1',
     fontWeight: '600',
     marginTop: 1,
   },
-  tarotPill: {
-    backgroundColor: 'rgba(245,158,11,0.15)',
+  tarotKeywordBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(245, 158, 11, 0.2)',
     paddingHorizontal: 10,
     paddingVertical: 3,
     borderRadius: radius.pill,
     marginVertical: 6,
   },
-  tarotPillText: { fontSize: 11, fontWeight: '800', color: '#F59E0B' },
-  tarotMeaning: {
-    fontSize: 11,
+  tarotKeywordText: { fontSize: 11, fontWeight: '800', color: '#F59E0B' },
+  tarotMeaningText: {
+    fontSize: 11.5,
     color: '#E2E8F0',
-    textAlign: 'center',
-    lineHeight: 15,
+    lineHeight: 16,
   },
-  tarotAffirmBox: {
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderRadius: radius.md,
+  tarotAffirmationCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 12,
     padding: 8,
-    marginTop: 6,
-    width: '100%',
-    alignItems: 'center',
+    marginVertical: 8,
   },
-  tarotAffirmTitle: { fontSize: 9.5, fontWeight: '800', color: '#FDE68A' },
-  tarotAffirmText: { fontSize: 10.5, color: '#FFFFFF', fontStyle: 'italic', textAlign: 'center', marginTop: 2 },
-  tarotMetaRow: {
+  tarotAffirmationHeader: { fontSize: 10, fontWeight: '800', color: '#FDE68A' },
+  tarotAffirmationQuote: {
+    fontSize: 11,
+    color: '#FFFFFF',
+    fontStyle: 'italic',
+    marginTop: 2,
+  },
+  tarotIndicatorRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    width: '100%',
-    marginTop: 6,
-    paddingHorizontal: 6,
+    gap: 6,
   },
-  tarotMetaItem: { fontSize: 10, fontWeight: '700', color: '#94A3B8' },
+  indicatorPill: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 8,
+    padding: 6,
+    alignItems: 'center',
+  },
+  indicatorLabel: { fontSize: 9, color: '#94A3B8', fontWeight: '700' },
+  indicatorValue: { fontSize: 10, color: '#FFFFFF', fontWeight: '800', marginTop: 1 },
+  colorDot: { width: 8, height: 8, borderRadius: 4 },
 
-  addRemedyBtn: {
+  /* Sadhana Habit Section */
+  addRemedyHeaderBtn: {
     backgroundColor: '#EFF6FF',
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: radius.pill,
   },
-  addRemedyBtnText: { color: colors.teal, fontSize: 11, fontWeight: '800' },
-  remedyItem: {
+  addRemedyHeaderBtnText: { color: colors.teal, fontSize: 11.5, fontWeight: '900' },
+
+  categoryFilterRow: {
+    gap: 8,
+    paddingVertical: 4,
+  },
+  categoryFilterPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: radius.pill,
+    gap: 4,
+  },
+  categoryFilterPillActive: {
+    backgroundColor: '#0F172A',
+  },
+  categoryFilterIcon: { fontSize: 12 },
+  categoryFilterText: { fontSize: 11, fontWeight: '700', color: '#64748B' },
+  categoryFilterTextActive: { color: '#FFFFFF' },
+
+  remedyTaskCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F8FAFC',
-    padding: 10,
-    borderRadius: radius.md,
+    padding: 12,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    gap: 10,
+    gap: 12,
   },
-  remedyItemCompleted: {
+  remedyTaskCardDone: {
     backgroundColor: '#F0FDF4',
     borderColor: '#BBF7D0',
   },
-  checkbox: {
-    width: 22,
-    height: 22,
-    borderRadius: 6,
-    borderWidth: 1.5,
+  customCheckbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 8,
+    borderWidth: 2,
     borderColor: '#CBD5E1',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FFFFFF',
   },
-  checkboxActive: {
+  customCheckboxChecked: {
     backgroundColor: '#10B981',
     borderColor: '#10B981',
   },
-  checkboxTick: { color: '#FFFFFF', fontWeight: '900', fontSize: 13 },
-  remedyTitle: { fontSize: 12.5, fontWeight: '700', color: '#0F172A' },
-  remedyTitleDone: { textDecorationLine: 'line-through', color: '#94A3B8' },
-  remedyTiming: { fontSize: 10, color: colors.textMuted, marginTop: 2, fontWeight: '600' },
+  customCheckboxIcon: { color: '#FFFFFF', fontWeight: '900', fontSize: 14 },
+  remedyTaskTitle: { fontSize: 13, fontWeight: '800', color: '#0F172A' },
+  remedyTaskTitleDone: { textDecorationLine: 'line-through', color: '#94A3B8' },
+  remedyMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 3,
+  },
+  remedyTimingText: { fontSize: 10.5, color: colors.textMuted, fontWeight: '600' },
+  remedyStreakPill: {
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: radius.pill,
+  },
+  remedyStreakText: { fontSize: 9.5, fontWeight: '800', color: '#B45309' },
+  deleteRemedyBtn: { padding: 4 },
+  deleteRemedyIcon: { color: '#94A3B8', fontSize: 13, fontWeight: '700' },
 
-  modalOverlay: {
+  /* Modal Backdrop & Cards */
+  modalBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(15,23,42,0.65)',
+    backgroundColor: 'rgba(15, 23, 42, 0.75)',
     alignItems: 'center',
     justifyContent: 'center',
     padding: spacing.lg,
   },
-  prizeCard: {
+  celebrationCard: {
     width: '100%',
-    maxWidth: 320,
-    backgroundColor: '#FFFFFF',
-    borderRadius: radius.xl,
+    maxWidth: 340,
+    borderRadius: 24,
     padding: spacing.lg,
     alignItems: 'center',
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
   },
-  prizeTitle: { ...typography.h2, fontSize: 20, fontWeight: '900', color: '#0F172A', marginTop: 8 },
-  prizeSub: { fontSize: 12, color: colors.textMuted, marginTop: 4 },
-  prizeBadge: {
+  celebrationTitle: {
+    ...typography.h2,
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    textAlign: 'center',
+  },
+  celebrationSubtitle: {
+    fontSize: 12,
+    color: '#CBD5E1',
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  celebrationPrizePill: {
     backgroundColor: '#FEF3C7',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
     borderRadius: radius.pill,
-    marginVertical: 14,
+    marginVertical: 16,
     borderWidth: 1,
     borderColor: '#FDE68A',
   },
-  prizeBadgeText: { fontSize: 16, fontWeight: '900', color: '#B45309' },
-  prizeNote: { fontSize: 11, color: colors.textMuted, marginBottom: 16 },
-  prizeCloseBtn: {
+  celebrationPrizeText: { fontSize: 17, fontWeight: '900', color: '#B45309' },
+  celebrationNote: {
+    fontSize: 11,
+    color: '#94A3B8',
+    textAlign: 'center',
+    marginBottom: 18,
+  },
+  celebrationCloseBtn: {
     width: '100%',
-    paddingVertical: 12,
+    paddingVertical: 13,
     borderRadius: radius.pill,
     alignItems: 'center',
     overflow: 'hidden',
   },
-  prizeCloseText: { color: '#FFFFFF', fontWeight: '900', fontSize: 14 },
+  celebrationCloseBtnText: { color: '#FFFFFF', fontWeight: '900', fontSize: 14 },
 
-  addModalCard: {
+  addRemedyCard: {
     width: '100%',
-    maxWidth: 340,
+    maxWidth: 350,
     backgroundColor: '#FFFFFF',
-    borderRadius: radius.xl,
+    borderRadius: 24,
     padding: spacing.lg,
   },
-  addModalTitle: { ...typography.h3, fontSize: 16, fontWeight: '900', color: '#0F172A', marginBottom: 12 },
-  addInput: {
+  addRemedyTitle: { ...typography.h3, fontSize: 17, fontWeight: '900', color: '#0F172A' },
+  addRemedySub: { fontSize: 11.5, color: colors.textMuted, marginVertical: 6, lineHeight: 16 },
+  addTextInput: {
     backgroundColor: '#F8FAFC',
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    borderRadius: radius.md,
+    borderRadius: 12,
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 10,
     fontSize: 13,
     color: '#0F172A',
-    marginBottom: 8,
+    marginTop: 8,
   },
-  cancelModalBtn: {
+  cancelActionBtn: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: 12,
     alignItems: 'center',
     backgroundColor: '#F1F5F9',
-    borderRadius: radius.md,
+    borderRadius: radius.pill,
   },
-  saveModalBtn: {
+  saveActionBtn: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: 12,
     alignItems: 'center',
-    borderRadius: radius.md,
+    borderRadius: radius.pill,
     overflow: 'hidden',
   },
 });

@@ -139,27 +139,39 @@ export default function Home() {
           >
             <View style={styles.rewardsBanner}>
               <LinearGradient
-                colors={['#1E1B4B', '#312E81']}
+                colors={['#1E1B4B', '#2E1065', '#0F172A']}
                 start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
+                end={{ x: 1, y: 1 }}
                 style={StyleSheet.absoluteFill}
               />
               <View style={styles.rewardsFlameBox}>
+                <LinearGradient
+                  colors={['#F59E0B', '#EA580C']}
+                  style={StyleSheet.absoluteFill}
+                />
                 <Text style={{ fontSize: 24 }}>🔥</Text>
               </View>
-              <View style={{ flex: 1, gap: 1 }}>
+              <View style={{ flex: 1, gap: 2 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <Text style={styles.rewardsBannerTag}>COSMIC STREAK</Text>
+                  <Text style={styles.rewardsBannerTag}>COSMIC REWARDS</Text>
                   <View style={styles.rewardsStreakPill}>
-                    <Text style={styles.rewardsStreakPillText}>{streakCount} Days</Text>
+                    <Text style={styles.rewardsStreakPillText}>{streakCount}D Streak</Text>
+                  </View>
+                  <View style={styles.rewardsCoinsHeaderPill}>
+                    <Text style={{ fontSize: 10 }}>🪙</Text>
+                    <Text style={styles.rewardsCoinsText}>{astroCoins}</Text>
                   </View>
                 </View>
                 <Text style={styles.rewardsBannerTitle}>Daily Rewards & Navagraha Spin 🎡</Text>
                 <Text style={styles.rewardsBannerSub}>
-                  Spin wheel for wallet cash · Draw daily Tarot · {astroCoins} 🪙 Coins
+                  Spin wheel for wallet cash · Draw daily 3D Tarot · Prescribe Sadhana
                 </Text>
               </View>
               <View style={styles.rewardsActionBtn}>
+                <LinearGradient
+                  colors={[colors.saffron, colors.gold]}
+                  style={StyleSheet.absoluteFill}
+                />
                 <Text style={styles.rewardsActionText}>Play ›</Text>
               </View>
             </View>
@@ -616,45 +628,68 @@ const styles = StyleSheet.create({
   rewardsBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: radius.xl,
+    borderRadius: 22,
     padding: spacing.md,
     overflow: 'hidden',
-    shadowColor: '#312E81',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    elevation: 4,
-    gap: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    shadowColor: '#2E1065',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+    elevation: 5,
+    gap: 12,
   },
   rewardsFlameBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
+    shadowColor: '#F59E0B',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 3,
   },
   rewardsBannerTag: {
     fontSize: 9.5,
     fontWeight: '900',
     color: '#FDE68A',
-    letterSpacing: 1,
+    letterSpacing: 1.1,
   },
   rewardsStreakPill: {
     backgroundColor: 'rgba(245,158,11,0.25)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: 'rgba(245,158,11,0.4)',
+  },
+  rewardsStreakPillText: {
+    color: '#FDE68A',
+    fontSize: 9.5,
+    fontWeight: '900',
+  },
+  rewardsCoinsHeaderPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.12)',
     paddingHorizontal: 7,
     paddingVertical: 2,
     borderRadius: radius.pill,
+    gap: 3,
   },
-  rewardsStreakPillText: {
-    color: '#F59E0B',
+  rewardsCoinsText: {
+    color: '#FFFFFF',
     fontSize: 9.5,
-    fontWeight: '900',
+    fontWeight: '800',
   },
   rewardsBannerTitle: {
     ...typography.h3,
     color: '#FFFFFF',
-    fontSize: 13.5,
+    fontSize: 14,
     fontWeight: '900',
   },
   rewardsBannerSub: {
@@ -662,16 +697,19 @@ const styles = StyleSheet.create({
     color: '#CBD5E1',
     fontSize: 10.5,
     fontWeight: '600',
+    lineHeight: 14,
   },
   rewardsActionBtn: {
-    backgroundColor: '#F59E0B',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderRadius: radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
   },
   rewardsActionText: {
     color: '#FFFFFF',
     fontWeight: '900',
-    fontSize: 12,
+    fontSize: 12.5,
   },
 });
