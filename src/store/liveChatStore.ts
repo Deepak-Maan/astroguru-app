@@ -308,43 +308,15 @@ export const useLiveChatStore = create<LiveChatState>()(
       },
 
       getRoom: (roomId) => {
-        if (!roomId) return null;
         const roomsMap = get()?.rooms || {};
         if (roomsMap[roomId]) return roomsMap[roomId];
-
-        // Auto-hydrate room so it never fails with "Room not found"
-        const parts = String(roomId).split('__');
-        const autoRoom: LiveRoom = {
-          roomId,
-          seekerId: parts[0] || 'usr_seeker',
-          seekerName: 'Seeker',
-          astrologerId: parts[1] || 'astro-1',
-          astrologerName: 'Acharya',
-          topic: 'Vedic Astrology Consultation',
-          ratePerMin: 25,
-          startedAt: Date.now(),
-          endedAt: null,
-          minutesBilled: 0,
-          messages: [],
-          status: 'active',
-          unreadForSeeker: 0,
-          unreadForAcharya: 0,
-        };
-
-        set((s) => ({
-          rooms: {
-            ...s.rooms,
-            [roomId]: autoRoom,
-          },
-        }));
-
-        return autoRoom;
+        return null;
       },
 
       getRoomByPair: (seekerId, astrologerId) => {
         const roomId = `${seekerId}__${astrologerId}`;
         const roomsMap = get()?.rooms || {};
-        return roomsMap[roomId] ?? get().getRoom(roomId);
+        return roomsMap[roomId] || null;
       },
 
       syncRoomFromBackend: async (roomId: string) => {
