@@ -6,7 +6,7 @@ import * as Updates from 'expo-updates';
 import { inAppUpdateEngine, UpdateDownloadProgress, LIVE_DIRECT_APK_URL } from '../services/updates/inAppUpdateEngine';
 import { getAppVersionFromFirebase, syncLatestAppVersionToFirebase } from '../services/firebaseRealtimeService';
 
-export const LATEST_RELEASE_VERSION = '2.8.1';
+export const LATEST_RELEASE_VERSION = '2.8.2';
 
 export interface UpdateInfo {
   currentVersion: string;
@@ -40,19 +40,19 @@ interface UpdateState extends UpdateInfo {
 export const useUpdateStore = create<UpdateState>()(
   persist(
     (set, get) => ({
-      currentVersion: '2.7.0',
+      currentVersion: LATEST_RELEASE_VERSION,
       latestVersion: LATEST_RELEASE_VERSION,
       updateAvailable: false,
       isMandatory: false,
       releaseNotes: [
-        '🚀 Release v2.8.0: Major AstroGuru Platform Upgrade',
-        '🔥 Cosmic Streak & 7-Day Progressive Astro-Coin Check-in Pathway',
-        '🎡 Interactive Navagraha Spin & Win Chakra (Instant Cash, Vouchers & Coins)',
+        '🚀 Release v2.8.2: Major AstroGuru Upgrade',
+        '💳 AstroGold Luxury Metal Card & 1-Tap UPI Wallet Recharge',
+        '🔥 Cosmic Retention Streak & 7-Day Astro-Coin Check-in Track',
+        '🎡 6-Segment Navagraha Spin & Win Chakra (Instant Cash & Vouchers)',
         '🃏 Daily Mystical Tarot Guidance with 3D Flip Card & Affirmations',
-        '🪔 Cosmic Remedy & Sadhana Diary with Real-Time Streak Tracker',
-        '⚡ 1-Tap In-Session Wallet Auto-Recharge Drawer (No Call Drops)',
-        '📦 Native Expo-Sharing Package Installer for Reliable In-App APK Installs',
-        '📞 Enhanced Real-Time Consultation Ringing Modal with Multi-Alias Sync',
+        '🪔 Sacred Sadhana & Remedy Diary with Real-Time Streak Tracker',
+        '⚡ Zero-Drop Live Consultation Auto-Recharge Drawer',
+        '📦 Direct Native In-App APK Downloader & Package Installer',
       ],
       downloadProgress: 0,
       downloadedBytes: 0,
@@ -70,19 +70,22 @@ export const useUpdateStore = create<UpdateState>()(
           syncLatestAppVersionToFirebase(LATEST_RELEASE_VERSION, get().releaseNotes, LIVE_DIRECT_APK_URL);
         } catch (_) {}
 
-        // Instant OTA check and fetch on launch
+        // Pre-fetch OTA update in background safely (No abrupt restart on launch)
         if (Platform.OS !== 'web' && Updates.isEnabled) {
           try {
             const check = await Updates.checkForUpdateAsync();
             if (check.isAvailable) {
-              const fetch = await Updates.fetchUpdateAsync();
-              if (fetch.isNew) {
-                await Updates.reloadAsync();
-                return;
-              }
+              await Updates.fetchUpdateAsync();
+              set({
+                updateAvailable: true,
+                latestVersion: LATEST_RELEASE_VERSION,
+                isReadyToInstall: true,
+                updateType: 'ota',
+              });
+              return;
             }
           } catch (otaErr) {
-            console.log('[OTA Startup Check]', otaErr);
+            console.log('[OTA Startup Note]', otaErr);
           }
         }
 
@@ -97,32 +100,12 @@ export const useUpdateStore = create<UpdateState>()(
         }
 
         try {
-          const currentVer = get().currentVersion;
-          const result = await inAppUpdateEngine.checkForUpdate(currentVer, LATEST_RELEASE_VERSION);
-          if (result.isAvailable) {
-            set({
-              updateAvailable: true,
-              latestVersion: result.latestVersion,
-              releaseNotes: result.releaseNotes,
-              isMandatory: result.isMandatory,
-              isReadyToInstall: false,
-              downloadProgress: 0,
-              updateType: result.type,
-              lastCheckedTime: new Date().toISOString(),
-            });
-          }
-
           const remoteMeta = await getAppVersionFromFirebase();
           if (remoteMeta && remoteMeta.latestVersion) {
-            if (currentVer !== remoteMeta.latestVersion) {
-              set({
-                updateAvailable: true,
-                latestVersion: remoteMeta.latestVersion,
-                releaseNotes: remoteMeta.releaseNotes || get().releaseNotes,
-                isReadyToInstall: true,
-                downloadProgress: 100,
-              });
-            }
+            set({
+              latestVersion: remoteMeta.latestVersion || LATEST_RELEASE_VERSION,
+              releaseNotes: remoteMeta.releaseNotes || get().releaseNotes,
+            });
           }
         } catch (e) {
           console.warn('[UpdateStore Startup Check]', e);
@@ -137,11 +120,16 @@ export const useUpdateStore = create<UpdateState>()(
           try {
             const check = await Updates.checkForUpdateAsync();
             if (check.isAvailable) {
-              const fetch = await Updates.fetchUpdateAsync();
-              if (fetch.isNew) {
-                await Updates.reloadAsync();
-                return { isNewAvailable: true, currentVersion: get().currentVersion, latestVersion: LATEST_RELEASE_VERSION };
-              }
+              await Updates.fetchUpdateAsync();
+              set({
+                isChecking: false,
+                updateAvailable: true,
+                latestVersion: LATEST_RELEASE_VERSION,
+                isReadyToInstall: true,
+                updateType: 'ota',
+                lastCheckedTime: new Date().toISOString(),
+              });
+              return { isNewAvailable: true, currentVersion: get().currentVersion, latestVersion: LATEST_RELEASE_VERSION };
             }
           } catch (e) {}
         }
@@ -184,7 +172,7 @@ export const useUpdateStore = create<UpdateState>()(
       },
 
       triggerUpdateModal: () => {
-        set({ updateAvailable: true });
+        set({ updateAvailable: true, latestVersion: LATEST_RELEASE_VERSION });
       },
 
       startDownload: async () => {

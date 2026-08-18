@@ -34,21 +34,19 @@ class InAppUpdateEngine {
 
   /**
    * Checks for both OTA updates and standalone binary version mismatches.
+   * NOTE: Does NOT abruptly reload the app on launch to prevent auto-close.
    */
   async checkForUpdate(currentVersion: string, latestVersion: string): Promise<InAppUpdateCheckResult> {
-    // 1. Check EAS OTA Channel First
+    // 1. Check EAS OTA Channel
     try {
       if (Platform.OS !== 'web' && Updates.isEnabled) {
         const otaCheck = await Updates.checkForUpdateAsync();
         if (otaCheck.isAvailable) {
-          // Immediately fetch and reload if available
+          // Pre-fetch update in background safely
           try {
-            const fetchResult = await Updates.fetchUpdateAsync();
-            if (fetchResult.isNew) {
-              await Updates.reloadAsync();
-            }
+            await Updates.fetchUpdateAsync();
           } catch (fetchErr) {
-            console.log('[InAppUpdateEngine] OTA auto-fetch failed:', fetchErr);
+            console.log('[InAppUpdateEngine] OTA background pre-fetch note:', fetchErr);
           }
 
           return {
@@ -56,13 +54,14 @@ class InAppUpdateEngine {
             currentVersion,
             latestVersion,
             releaseNotes: [
-              '🚀 Release v2.8.0: Major AstroGuru Platform Upgrade',
-              '🔥 Cosmic Streak & 7-Day Progressive Check-in Pathway',
-              '🎡 Interactive Navagraha Spin & Win Chakra',
-              '🃏 Daily Mystical Tarot Guidance with 3D Flip Card',
-              '🪔 Cosmic Remedy & Sadhana Diary with Streak Tracker',
-              '⚡ 1-Tap In-Session Wallet Auto-Recharge Drawer',
-              '📦 Native Expo-Sharing Package Installer for Reliable In-App Installs',
+              '🚀 Release v2.8.2: Ultra-Premium AstroGuru Experience',
+              '💳 AstroGold Luxury Metal Card & Instant 1-Tap UPI Wallet Recharge',
+              '🔥 7-Day Cosmic Retention Streak with Progressive Astro-Coins',
+              '🎡 6-Segment Navagraha Spin & Win Chakra (Direct Cash & Vouchers)',
+              '🃏 Mystical 3D Tarot Guidance Card of the Day with Sacred Affirmations',
+              '🪔 Sacred Sadhana & Remedy Diary with Real-Time Streak Tracker',
+              '⚡ Zero-Drop Live Consultation Auto-Recharge Drawer',
+              '🛡️ Enhanced Bank UTR Verification & Real-Time Ledger Passbook',
             ],
             isMandatory: false,
             type: 'ota',
@@ -73,20 +72,21 @@ class InAppUpdateEngine {
       console.log('[InAppUpdateEngine] OTA check:', err);
     }
 
-    // 2. Binary Version Comparison
+    // 2. Version comparison
     const isVersionNewer = currentVersion !== latestVersion;
     return {
       isAvailable: isVersionNewer,
       currentVersion,
       latestVersion,
       releaseNotes: [
-        '🚀 Release v2.8.0: Major AstroGuru Platform Upgrade',
-        '🔥 Cosmic Streak & 7-Day Progressive Check-in Pathway',
-        '🎡 Interactive Navagraha Spin & Win Chakra',
-        '🃏 Daily Mystical Tarot Guidance with 3D Flip Card',
-        '🪔 Cosmic Remedy & Sadhana Diary with Streak Tracker',
-        '⚡ 1-Tap In-Session Wallet Auto-Recharge Drawer',
-        '📦 Native Expo-Sharing Package Installer for Reliable In-App Installs',
+        '🚀 Release v2.8.2: Ultra-Premium AstroGuru Experience',
+        '💳 AstroGold Luxury Metal Card & Instant 1-Tap UPI Wallet Recharge',
+        '🔥 7-Day Cosmic Retention Streak with Progressive Astro-Coins',
+        '🎡 6-Segment Navagraha Spin & Win Chakra (Direct Cash & Vouchers)',
+        '🃏 Mystical 3D Tarot Guidance Card of the Day with Sacred Affirmations',
+        '🪔 Sacred Sadhana & Remedy Diary with Real-Time Streak Tracker',
+        '⚡ Zero-Drop Live Consultation Auto-Recharge Drawer',
+        '🛡️ Enhanced Bank UTR Verification & Real-Time Ledger Passbook',
       ],
       isMandatory: false,
       type: 'apk',
@@ -230,7 +230,7 @@ class InAppUpdateEngine {
         if (isAvailable) {
           await Sharing.shareAsync(localUri, {
             mimeType: 'application/vnd.android.package-archive',
-            dialogTitle: 'Install AstroGuru Update',
+            dialogTitle: 'Install AstroGuru v2.8.2 Update',
             UTI: 'com.android.package-archive',
           });
           return true;
@@ -260,7 +260,7 @@ class InAppUpdateEngine {
       }
     }
 
-    // 3. If OTA update, reload JS bundle
+    // 3. If OTA update, reload JS bundle safely when requested by user
     if (Platform.OS !== 'web' && Updates.isEnabled) {
       try {
         await Updates.reloadAsync();
