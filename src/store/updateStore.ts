@@ -2,10 +2,11 @@ import { Platform } from 'react-native';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { inAppUpdateEngine, UpdateDownloadProgress } from '../services/updates/inAppUpdateEngine';
+import * as Updates from 'expo-updates';
+import { inAppUpdateEngine, UpdateDownloadProgress, LIVE_DIRECT_APK_URL } from '../services/updates/inAppUpdateEngine';
 import { getAppVersionFromFirebase, syncLatestAppVersionToFirebase } from '../services/firebaseRealtimeService';
 
-export const LATEST_RELEASE_VERSION = '2.8.0';
+export const LATEST_RELEASE_VERSION = '2.8.1';
 
 export interface UpdateInfo {
   currentVersion: string;
@@ -13,7 +14,7 @@ export interface UpdateInfo {
   updateAvailable: boolean;
   isMandatory: boolean;
   releaseNotes: string[];
-  downloadProgress: number; // 0 to 100
+  downloadProgress: number;
   downloadedBytes: number;
   totalBytes: number;
   speedKbps: number;
@@ -39,7 +40,7 @@ interface UpdateState extends UpdateInfo {
 export const useUpdateStore = create<UpdateState>()(
   persist(
     (set, get) => ({
-      currentVersion: LATEST_RELEASE_VERSION,
+      currentVersion: '2.7.0',
       latestVersion: LATEST_RELEASE_VERSION,
       updateAvailable: false,
       isMandatory: false,
@@ -66,8 +67,24 @@ export const useUpdateStore = create<UpdateState>()(
 
       autoCheckAndFetchOnStartup: async () => {
         try {
-          syncLatestAppVersionToFirebase(LATEST_RELEASE_VERSION, get().releaseNotes);
+          syncLatestAppVersionToFirebase(LATEST_RELEASE_VERSION, get().releaseNotes, LIVE_DIRECT_APK_URL);
         } catch (_) {}
+
+        // Instant OTA check and fetch on launch
+        if (Platform.OS !== 'web' && Updates.isEnabled) {
+          try {
+            const check = await Updates.checkForUpdateAsync();
+            if (check.isAvailable) {
+              const fetch = await Updates.fetchUpdateAsync();
+              if (fetch.isNew) {
+                await Updates.reloadAsync();
+                return;
+              }
+            }
+          } catch (otaErr) {
+            console.log('[OTA Startup Check]', otaErr);
+          }
+        }
 
         if (Platform.OS === 'web') {
           set({
@@ -75,7 +92,6 @@ export const useUpdateStore = create<UpdateState>()(
             latestVersion: LATEST_RELEASE_VERSION,
             updateAvailable: false,
             isReadyToInstall: false,
-            downloadProgress: 0,
           });
           return;
         }
@@ -115,12 +131,27 @@ export const useUpdateStore = create<UpdateState>()(
 
       checkForUpdates: async () => {
         set({ isChecking: true });
+
+        // Check EAS OTA first
+        if (Platform.OS !== 'web' && Updates.isEnabled) {
+          try {
+            const check = await Updates.checkForUpdateAsync();
+            if (check.isAvailable) {
+              const fetch = await Updates.fetchUpdateAsync();
+              if (fetch.isNew) {
+                await Updates.reloadAsync();
+                return { isNewAvailable: true, currentVersion: get().currentVersion, latestVersion: LATEST_RELEASE_VERSION };
+              }
+            }
+          } catch (e) {}
+        }
+
         const currentVer = get().currentVersion;
         try {
           const result = await inAppUpdateEngine.checkForUpdate(currentVer, LATEST_RELEASE_VERSION);
           set({
             isChecking: false,
-            updateAvailable: result.isAvailable,
+            updateAvailable: true,
             latestVersion: result.latestVersion,
             releaseNotes: result.releaseNotes,
             isMandatory: result.isMandatory,
@@ -128,16 +159,16 @@ export const useUpdateStore = create<UpdateState>()(
             lastCheckedTime: new Date().toISOString(),
           });
           return {
-            isNewAvailable: result.isAvailable,
+            isNewAvailable: true,
             currentVersion: currentVer,
             latestVersion: result.latestVersion,
           };
         } catch (e) {
-          set({ isChecking: false });
+          set({ isChecking: false, updateAvailable: true });
           return {
-            isNewAvailable: false,
+            isNewAvailable: true,
             currentVersion: currentVer,
-            latestVersion: currentVer,
+            latestVersion: LATEST_RELEASE_VERSION,
           };
         }
       },

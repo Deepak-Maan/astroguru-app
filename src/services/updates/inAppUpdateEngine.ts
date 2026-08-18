@@ -7,6 +7,7 @@ import { Platform, Linking } from 'react-native';
 import * as Updates from 'expo-updates';
 import * as FileSystem from 'expo-file-system';
 import * as IntentLauncher from 'expo-intent-launcher';
+import * as Sharing from 'expo-sharing';
 
 export interface UpdateDownloadProgress {
   totalBytes: number;
@@ -24,7 +25,7 @@ export interface InAppUpdateCheckResult {
   type: 'apk' | 'ota';
 }
 
-export const LIVE_DIRECT_APK_URL = 'https://expo.dev/artifacts/eas/H5YJRKtT7bv6YBhaUKwxSjQDHSN5XJKxTTf5a0c77rE.apk';
+export const LIVE_DIRECT_APK_URL = 'https://expo.dev/artifacts/eas/j1bujHIWY7tt-WYtbLaWl_7QWHO-sv1bGzeVuCuVNTU.apk';
 
 class InAppUpdateEngine {
   private activeDownload: any = null;
@@ -35,20 +36,33 @@ class InAppUpdateEngine {
    * Checks for both OTA updates and standalone binary version mismatches.
    */
   async checkForUpdate(currentVersion: string, latestVersion: string): Promise<InAppUpdateCheckResult> {
+    // 1. Check EAS OTA Channel First
     try {
       if (Platform.OS !== 'web' && Updates.isEnabled) {
         const otaCheck = await Updates.checkForUpdateAsync();
         if (otaCheck.isAvailable) {
+          // Immediately fetch and reload if available
+          try {
+            const fetchResult = await Updates.fetchUpdateAsync();
+            if (fetchResult.isNew) {
+              await Updates.reloadAsync();
+            }
+          } catch (fetchErr) {
+            console.log('[InAppUpdateEngine] OTA auto-fetch failed:', fetchErr);
+          }
+
           return {
             isAvailable: true,
             currentVersion,
             latestVersion,
             releaseNotes: [
-              '🪐 Live Planetary Transit Ticker & Realtime Graha Positions',
-              '🔊 Daily Vedic Shloka & Gayatri Mantra Audio Player',
-              '💎 Dual North & South Indian Kundli Chart Switcher',
-              '🧙‍♂️ Astrologer Cards with Live Queue Status & 10s Voice Intros',
-              '📦 Direct Native In-App APK Downloader & Package Installer',
+              '🚀 Release v2.8.0: Major AstroGuru Platform Upgrade',
+              '🔥 Cosmic Streak & 7-Day Progressive Check-in Pathway',
+              '🎡 Interactive Navagraha Spin & Win Chakra',
+              '🃏 Daily Mystical Tarot Guidance with 3D Flip Card',
+              '🪔 Cosmic Remedy & Sadhana Diary with Streak Tracker',
+              '⚡ 1-Tap In-Session Wallet Auto-Recharge Drawer',
+              '📦 Native Expo-Sharing Package Installer for Reliable In-App Installs',
             ],
             isMandatory: false,
             type: 'ota',
@@ -59,17 +73,20 @@ class InAppUpdateEngine {
       console.log('[InAppUpdateEngine] OTA check:', err);
     }
 
+    // 2. Binary Version Comparison
     const isVersionNewer = currentVersion !== latestVersion;
     return {
       isAvailable: isVersionNewer,
       currentVersion,
       latestVersion,
       releaseNotes: [
-        '🪐 Live Planetary Transit Ticker & Realtime Graha Positions',
-        '🔊 Daily Vedic Shloka & Gayatri Mantra Audio Player',
-        '💎 Dual North & South Indian Kundli Chart Switcher',
-        '🧙‍♂️ Astrologer Cards with Live Queue Status & 10s Voice Intros',
-        '📦 Direct Native In-App APK Downloader & Package Installer',
+        '🚀 Release v2.8.0: Major AstroGuru Platform Upgrade',
+        '🔥 Cosmic Streak & 7-Day Progressive Check-in Pathway',
+        '🎡 Interactive Navagraha Spin & Win Chakra',
+        '🃏 Daily Mystical Tarot Guidance with 3D Flip Card',
+        '🪔 Cosmic Remedy & Sadhana Diary with Streak Tracker',
+        '⚡ 1-Tap In-Session Wallet Auto-Recharge Drawer',
+        '📦 Native Expo-Sharing Package Installer for Reliable In-App Installs',
       ],
       isMandatory: false,
       type: 'apk',
@@ -96,10 +113,9 @@ class InAppUpdateEngine {
           const fileName = `AstroGuru-v${targetVersion}.apk`;
           const localPath = `${targetDir}${fileName}`;
 
-          // Delete existing file if present to guarantee clean download
           try {
-            const fileInfo = await fsAny.getInfoAsync(localPath);
-            if (fileInfo.exists) {
+            const info = await fsAny.getInfoAsync(localPath);
+            if (info.exists) {
               await fsAny.deleteAsync(localPath, { idempotent: true });
             }
           } catch (_) {}
@@ -111,9 +127,9 @@ class InAppUpdateEngine {
             apkUrl,
             localPath,
             {},
-            (progressData: any) => {
-              const total = progressData.totalBytesExpectedToWrite || 38 * 1024 * 1024;
-              const downloaded = progressData.totalBytesWritten;
+            (downloadProgress: any) => {
+              const total = downloadProgress.totalBytesExpectedToWrite || 38 * 1024 * 1024;
+              const downloaded = downloadProgress.totalBytesWritten;
               const percentage = Math.min(100, Math.floor((downloaded / total) * 100));
 
               const now = Date.now();
@@ -204,11 +220,26 @@ class InAppUpdateEngine {
 
   /**
    * Installs the downloaded package:
-   * - Launches Android Native Package Installer for .apk files via Intent
-   * - Prompts Android OS system dialog: "Do you want to install an update to AstroGuru?"
+   * Uses expo-sharing / IntentLauncher for seamless Android package installer launch.
    */
   async installDownloadedPackage(localUri?: string, customApkUrl?: string): Promise<boolean> {
     if (Platform.OS === 'android' && localUri) {
+      // 1. Try expo-sharing first
+      try {
+        const isAvailable = await Sharing.isAvailableAsync();
+        if (isAvailable) {
+          await Sharing.shareAsync(localUri, {
+            mimeType: 'application/vnd.android.package-archive',
+            dialogTitle: 'Install AstroGuru Update',
+            UTI: 'com.android.package-archive',
+          });
+          return true;
+        }
+      } catch (shareErr) {
+        console.warn('[InAppUpdateEngine] expo-sharing fallback to intent:', shareErr);
+      }
+
+      // 2. IntentLauncher fallback
       try {
         const fsAny = FileSystem as any;
         const getContentUri = fsAny.getContentUriAsync || FileSystem.getContentUriAsync;
@@ -218,35 +249,18 @@ class InAppUpdateEngine {
           packageUri = await getContentUri(localUri);
         }
 
-        // Launch Android OS Package Installer Intent with FLAG_GRANT_READ_URI_PERMISSION & FLAG_ACTIVITY_NEW_TASK
         await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
           data: packageUri,
-          flags: 268435457, // (0x10000000 | 0x00000001)
+          flags: 268435457,
           type: 'application/vnd.android.package-archive',
         });
         return true;
       } catch (e: any) {
         console.warn('[InAppUpdateEngine] Intent install warning:', e);
-
-        // If Android requires Unknown Sources Permission, guide user to system settings
-        try {
-          await IntentLauncher.startActivityAsync('android.settings.MANAGE_UNKNOWN_APP_SOURCES', {
-            data: 'package:com.astroguru.app',
-          });
-          return true;
-        } catch (_) {}
-
-        // Fallback: Direct browser open
-        try {
-          await Linking.openURL(localUri);
-          return true;
-        } catch (linkErr) {
-          console.warn('[InAppUpdateEngine] Link open error:', linkErr);
-        }
       }
     }
 
-    // If OTA update, reload JS bundle
+    // 3. If OTA update, reload JS bundle
     if (Platform.OS !== 'web' && Updates.isEnabled) {
       try {
         await Updates.reloadAsync();
@@ -256,7 +270,7 @@ class InAppUpdateEngine {
       }
     }
 
-    // Direct browser APK link fallback
+    // 4. Direct browser APK link fallback
     const targetUrl = customApkUrl || LIVE_DIRECT_APK_URL;
     try {
       await Linking.openURL(targetUrl);
