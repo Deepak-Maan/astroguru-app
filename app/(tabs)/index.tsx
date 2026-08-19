@@ -1,5 +1,20 @@
+/**
+ * AstroGuru — Ultra-Premium Vedic Astrological Super App Home Experience
+ * Rebuilt with Nordic Frost luxury aesthetics, glassmorphic sheen, live transit ribbons,
+ * interactive 432Hz Vedic audio player, and comprehensive Jyotish widgets.
+ */
+
 import React, { useMemo, useState } from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Animated,
+  Dimensions,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -20,6 +35,8 @@ import { RASHIS } from '../../src/data/rashis';
 import { getHoroscope } from '../../src/services/horoscope';
 import { computeNumerologyDetails } from '../../src/services/numerologyPrediction';
 import { JyotishiWorkstation } from '../../src/components/workstation/JyotishiWorkstation';
+
+const { width } = Dimensions.get('window');
 
 export default function Home() {
   const router = useRouter();
@@ -70,14 +87,14 @@ export default function Home() {
   }
 
   const quickActions = [
-    { icon: '🎡', label: 'Spin & Win', href: '/daily-rewards', bg: '#FEF3C7', border: '#FDE68A' },
-    { icon: '🪐', label: 'Kundli', href: '/(tabs)/kundli', bg: '#FFEDD5', border: '#FED7AA' },
+    { icon: '🎡', label: 'Spin & Win', href: '/daily-rewards', bg: '#FEF3C7', border: '#FDE68A', badge: 'FREE' },
+    { icon: '🪐', label: 'Kundli', href: '/(tabs)/kundli', bg: '#FFEDD5', border: '#FED7AA', badge: '10-Pg' },
     { icon: '🔮', label: '3D Tarot', href: '/daily-rewards', bg: '#F3E8FF', border: '#E9D5FF' },
-    { icon: '📿', label: '108 Japa', href: '/japa', bg: '#DCFCE7', border: '#BBF7D0' },
+    { icon: '📿', label: '108 Japa', href: '/japa', bg: '#DCFCE7', border: '#BBF7D0', badge: 'Mala' },
     { icon: '🔢', label: 'Numerology', href: '/numerology', bg: '#E0F2FE', border: '#BAE6FD' },
     { icon: '💎', label: 'Gemstones', href: '/gemstone-finder', bg: '#FCE7F3', border: '#FBCFE8' },
-    { icon: '💬', label: 'Live Chat', href: '/instant-consult', bg: '#EEF2FF', border: '#E0E7FF' },
-    { icon: '💰', label: 'Wallet', href: '/wallet', bg: '#ECFDF5', border: '#A7F3D0' },
+    { icon: '🏛️', label: 'Live Darshan', href: '/live-darshan', bg: '#FFF1F2', border: '#FFE4E6', badge: 'LIVE' },
+    { icon: '💬', label: 'Instant Chat', href: '/instant-consult', bg: '#EEF2FF', border: '#E0E7FF' },
   ];
 
   const today = new Date().toLocaleDateString('en-GB', {
@@ -132,10 +149,14 @@ export default function Home() {
               </View>
               <View style={{ flex: 1 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <Text style={styles.shlokaTitle}>Daily Vedic Mantra</Text>
-                  {isPlayingMantra && (
+                  <Text style={styles.shlokaTitle}>Daily Vedic Shloka · 432Hz</Text>
+                  {isPlayingMantra ? (
                     <View style={styles.playingBadge}>
-                      <Text style={styles.playingBadgeText}>PLAYING</Text>
+                      <Text style={styles.playingBadgeText}>PLAYING ▂▃▅</Text>
+                    </View>
+                  ) : (
+                    <View style={styles.tapToPlayBadge}>
+                      <Text style={styles.tapToPlayBadgeText}>TAP TO LISTEN</Text>
                     </View>
                   )}
                 </View>
@@ -145,7 +166,7 @@ export default function Home() {
               </View>
             </View>
             <View style={[styles.shlokaPlayBtn, isPlayingMantra && styles.shlokaPauseBtn]}>
-              <Text style={styles.shlokaPlayText}>{isPlayingMantra ? '❚❚ Pause' : '▶ 432Hz'}</Text>
+              <Text style={styles.shlokaPlayText}>{isPlayingMantra ? '❚❚ Pause' : '▶ Gayatri'}</Text>
             </View>
           </Pressable>
 
@@ -236,9 +257,9 @@ export default function Home() {
 
           {/* 8-Grid Super App Quick Actions */}
           <View>
-            <SectionHeader title="✨ Vedic Astro Services" subtitle="Instant guidance & rituals" />
+            <SectionHeader title="✨ Vedic Astro Services" subtitle="Instant consultations & spiritual tools" />
             <View style={styles.quickGrid}>
-              {quickActions.map(({ icon, label, href, bg, border }) => (
+              {quickActions.map(({ icon, label, href, bg, border, badge }) => (
                 <Pressable
                   key={label}
                   onPress={() => router.push(href as never)}
@@ -248,12 +269,44 @@ export default function Home() {
                     pressed && { opacity: 0.75, transform: [{ scale: 0.95 }] },
                   ]}
                 >
+                  {badge && (
+                    <View style={styles.quickBadge}>
+                      <Text style={styles.quickBadgeText}>{badge}</Text>
+                    </View>
+                  )}
                   <Text style={styles.quickIcon}>{icon}</Text>
                   <Text style={styles.quickLabel}>{label}</Text>
                 </Pressable>
               ))}
             </View>
           </View>
+
+          {/* Today's Daily Panchang & Muhurta Radar Card */}
+          <Pressable onPress={() => router.push('/panchang')} style={({ pressed }) => [pressed && { opacity: 0.88 }]}>
+            <View style={styles.panchangCard}>
+              <View style={styles.panchangTopRow}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Text style={{ fontSize: 16 }}>🌅</Text>
+                  <Text style={styles.panchangTitle}>Daily Panchang & Muhurta</Text>
+                </View>
+                <Text style={styles.panchangLink}>View Calendar →</Text>
+              </View>
+              <View style={styles.panchangGrid}>
+                <View style={styles.panchangCol}>
+                  <Text style={styles.panchangLabel}>TITHI</Text>
+                  <Text style={styles.panchangVal}>Shukla Dashami</Text>
+                </View>
+                <View style={styles.panchangCol}>
+                  <Text style={styles.panchangLabel}>NAKSHATRA</Text>
+                  <Text style={styles.panchangVal}>Pushya Nakshatra</Text>
+                </View>
+                <View style={styles.panchangCol}>
+                  <Text style={styles.panchangLabel}>RAHU KAAL</Text>
+                  <Text style={[styles.panchangVal, { color: '#E11D48' }]}>4:30 PM - 6:00 PM</Text>
+                </View>
+              </View>
+            </View>
+          </Pressable>
 
           {/* Dedicated Numerology Grid */}
           <Pressable onPress={() => router.push('/numerology')} style={({ pressed }) => [pressed && { opacity: 0.88 }]}>
@@ -409,6 +462,17 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     color: '#059669',
     letterSpacing: 0.5,
+  },
+  tapToPlayBadge: {
+    backgroundColor: 'rgba(217, 119, 6, 0.10)',
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
+    borderRadius: radius.pill,
+  },
+  tapToPlayBadgeText: {
+    fontSize: 8,
+    fontWeight: '800',
+    color: '#D97706',
   },
   shlokaSub: {
     fontSize: 11,
@@ -626,6 +690,20 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 1,
   },
+  quickBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    backgroundColor: '#EA580C',
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    borderRadius: 4,
+  },
+  quickBadgeText: {
+    fontSize: 7.5,
+    fontWeight: '900',
+    color: '#FFFFFF',
+  },
   quickIcon: {
     fontSize: 22,
   },
@@ -634,6 +712,58 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#1E293B',
     textAlign: 'center',
+  },
+
+  /* Panchang Card */
+  panchangCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: spacing.md,
+    borderWidth: 1.5,
+    borderColor: 'rgba(245, 158, 11, 0.25)',
+    shadowColor: '#BFDBFE',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 3,
+    gap: 10,
+  },
+  panchangTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  panchangTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#1E1B4B',
+  },
+  panchangLink: {
+    fontSize: 11.5,
+    fontWeight: '800',
+    color: '#059669',
+  },
+  panchangGrid: {
+    flexDirection: 'row',
+    gap: 8,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
+    padding: 10,
+  },
+  panchangCol: {
+    flex: 1,
+    gap: 2,
+  },
+  panchangLabel: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#94A3B8',
+    letterSpacing: 0.5,
+  },
+  panchangVal: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#1E293B',
   },
 
   /* Numerology Banner */
