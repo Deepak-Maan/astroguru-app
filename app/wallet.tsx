@@ -29,12 +29,12 @@ const { width } = Dimensions.get('window');
 
 /** Recharge Packs with Smart Value Analysis */
 const RECHARGE_PACKS = [
-  { amount: 100, bonus: 0, tag: 'Starter', estMins: '5-8 mins' },
-  { amount: 250, bonus: 25, tag: 'Popular', estMins: '12-18 mins' },
-  { amount: 500, bonus: 75, tag: '★ Most Popular', estMins: '25-35 mins', popular: true },
-  { amount: 1000, bonus: 200, tag: '👑 Best Value', estMins: '55-75 mins', bestValue: true },
-  { amount: 2000, bonus: 500, tag: 'Mega Saver', estMins: '120+ mins' },
-  { amount: 5000, bonus: 1500, tag: 'VIP Elite', estMins: '300+ mins' },
+  { amount: 100, bonus: 0, tag: 'Starter', estMins: '5-8 mins', icon: '🌱', desc: 'Quick Question Pack' },
+  { amount: 250, bonus: 25, tag: 'Popular', estMins: '12-18 mins', icon: '⚡', desc: 'Single Consultation' },
+  { amount: 500, bonus: 75, tag: '★ Most Popular', estMins: '25-35 mins', popular: true, icon: '🔥', desc: 'Kundli & Dasha Remedies' },
+  { amount: 1000, bonus: 200, tag: '👑 Best Value', estMins: '55-75 mins', bestValue: true, icon: '👑', desc: 'Extended Audio/Video Session' },
+  { amount: 2000, bonus: 500, tag: 'Mega Saver', estMins: '120+ mins', icon: '💎', desc: 'Full Family Kundli Analysis' },
+  { amount: 5000, bonus: 1500, tag: 'VIP Elite', estMins: '300+ mins', icon: '🏆', desc: 'VIP Priority Queue Pass' },
 ];
 
 const UPI_APPS = [
@@ -294,7 +294,7 @@ export default function WalletScreen() {
               </View>
             </View>
 
-            <View style={styles.packGrid}>
+            <View style={styles.packList}>
               {RECHARGE_PACKS.map((p) => {
                 const isSelected = selectedPackAmount === p.amount && !customAmountInput;
                 return (
@@ -306,45 +306,70 @@ export default function WalletScreen() {
                       setSelectedPackAmount(p.amount);
                     }}
                     style={({ pressed }) => [
-                      styles.packCard,
-                      isSelected && styles.packCardActive,
-                      pressed && { opacity: 0.88, transform: [{ scale: 0.98 }] },
+                      styles.packRowCard,
+                      isSelected && styles.packRowCardActive,
+                      pressed && { opacity: 0.88, transform: [{ scale: 0.985 }] },
                     ]}
                   >
-                    {/* Badge */}
+                    {/* Left Icon */}
                     <View
                       style={[
-                        styles.packTagBadge,
-                        isSelected && { backgroundColor: '#FDE68A' },
-                        p.popular && { backgroundColor: '#FEF3C7' },
-                        p.bestValue && { backgroundColor: '#FCE7F3' },
+                        styles.packIconBox,
+                        isSelected && { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' },
                       ]}
                     >
-                      <Text
-                        style={[
-                          styles.packTagText,
-                          isSelected && { color: '#B45309' },
-                          p.popular && { color: '#B45309' },
-                          p.bestValue && { color: '#BE185D' },
-                        ]}
-                      >
-                        {p.tag}
-                      </Text>
+                      <Text style={{ fontSize: 22 }}>{p.icon}</Text>
                     </View>
 
-                    <Text style={[styles.packPriceText, isSelected && { color: colors.teal }]}>
-                      {formatCurrency(p.amount)}
-                    </Text>
-
-                    {p.bonus > 0 ? (
-                      <View style={styles.extraCashPill}>
-                        <Text style={styles.extraCashText}>+{formatCurrency(p.bonus)} Extra</Text>
+                    {/* Center Details */}
+                    <View style={{ flex: 1, gap: 2 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Text style={[styles.packNameText, isSelected && { color: '#059669' }]}>
+                          ₹{p.amount} Recharge Pack
+                        </Text>
+                        <View
+                          style={[
+                            styles.packTagPill,
+                            p.popular && { backgroundColor: '#FEF3C7', borderColor: '#FDE68A' },
+                            p.bestValue && { backgroundColor: '#FCE7F3', borderColor: '#FBCFE8' },
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.packTagPillText,
+                              p.popular && { color: '#B45309' },
+                              p.bestValue && { color: '#BE185D' },
+                            ]}
+                          >
+                            {p.tag}
+                          </Text>
+                        </View>
                       </View>
-                    ) : (
-                      <Text style={styles.basePackText}>Base Pack</Text>
-                    )}
 
-                    <Text style={styles.estMinsText}>🕒 {p.estMins}</Text>
+                      <Text style={styles.packDescText}>
+                        {p.desc} · ⏱️ {p.estMins}
+                      </Text>
+
+                      {p.bonus > 0 ? (
+                        <View style={styles.extraCashTag}>
+                          <Text style={styles.extraCashTagText}>
+                            🎉 +{formatCurrency(p.bonus)} Extra Free Cash
+                          </Text>
+                        </View>
+                      ) : (
+                        <Text style={styles.basePackTag}>Standard Base Credit</Text>
+                      )}
+                    </View>
+
+                    {/* Right Amount & Radio Indicator */}
+                    <View style={styles.packRightCol}>
+                      <Text style={[styles.packPriceValue, isSelected && { color: '#059669' }]}>
+                        {formatCurrency(p.amount)}
+                      </Text>
+                      <View style={[styles.radioCircle, isSelected && styles.radioCircleActive]}>
+                        {isSelected && <View style={styles.radioDot} />}
+                      </View>
+                    </View>
                   </Pressable>
                 );
               })}
@@ -353,6 +378,7 @@ export default function WalletScreen() {
             {/* Custom Amount Field */}
             <View style={styles.customAmountBox}>
               <Text style={styles.customAmountLabel}>Or Enter Custom Amount (₹):</Text>
+              
               <View style={styles.customInputRow}>
                 <Text style={styles.currencySymbol}>₹</Text>
                 <TextInput
@@ -362,27 +388,41 @@ export default function WalletScreen() {
                     if (val) setSelectedPackAmount(null);
                   }}
                   placeholder="e.g. 750"
-                  placeholderTextColor={colors.textFaint}
+                  placeholderTextColor="#94A3B8"
                   keyboardType="numeric"
                   style={styles.customTextInput}
                 />
-                <View style={{ flexDirection: 'row', gap: 6 }}>
-                  {['+100', '+500', '+1000'].map((btn) => (
-                    <Pressable
-                      key={btn}
-                      onPress={() => {
-                        triggerHaptic('light');
-                        const addVal = parseInt(btn.replace('+', ''), 10);
-                        const curr = parseInt(customAmountInput || '0', 10);
-                        setCustomAmountInput(String(curr + addVal));
-                        setSelectedPackAmount(null);
-                      }}
-                      style={styles.incrementPill}
-                    >
-                      <Text style={styles.incrementPillText}>{btn}</Text>
-                    </Pressable>
-                  ))}
-                </View>
+                {!!customAmountInput && (
+                  <Pressable
+                    onPress={() => {
+                      triggerHaptic('light');
+                      setCustomAmountInput('');
+                      setSelectedPackAmount(500);
+                    }}
+                    style={styles.clearCustomBtn}
+                  >
+                    <Text style={styles.clearCustomBtnText}>✕</Text>
+                  </Pressable>
+                )}
+              </View>
+
+              {/* Quick Add Chips Row */}
+              <View style={styles.quickAddRow}>
+                {['+100', '+250', '+500', '+1000'].map((btn) => (
+                  <Pressable
+                    key={btn}
+                    onPress={() => {
+                      triggerHaptic('light');
+                      const addVal = parseInt(btn.replace('+', ''), 10);
+                      const curr = parseInt(customAmountInput || '0', 10);
+                      setCustomAmountInput(String(curr + addVal));
+                      setSelectedPackAmount(null);
+                    }}
+                    style={styles.incrementChip}
+                  >
+                    <Text style={styles.incrementChipText}>{btn}</Text>
+                  </Pressable>
+                ))}
               </View>
             </View>
           </View>
@@ -893,82 +933,178 @@ const styles = StyleSheet.create({
   sectionTitle: { ...typography.h3, fontSize: 15, fontWeight: '900', color: '#0F172A' },
   sectionDesc: { ...typography.tiny, color: colors.textMuted, fontSize: 10.5, fontWeight: '600' },
 
-  /* Pack Grid */
-  packGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  /* Pack List */
+  packList: {
     gap: 10,
   },
-  packCard: {
-    width: (width - 64) / 3,
-    backgroundColor: '#F8FAFC',
-    borderRadius: 16,
-    padding: 10,
+  packRowCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 12,
     borderWidth: 1.5,
     borderColor: '#E2E8F0',
-    alignItems: 'center',
-  },
-  packCardActive: {
-    backgroundColor: '#F0FDF4',
-    borderColor: colors.teal,
-    shadowColor: colors.teal,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
+    gap: 12,
+    shadowColor: '#CBD5E1',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.35,
     shadowRadius: 6,
+    elevation: 2,
+  },
+  packRowCardActive: {
+    backgroundColor: '#F0FDF4',
+    borderColor: '#059669',
+    shadowColor: '#059669',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
     elevation: 3,
   },
-  packTagBadge: {
-    backgroundColor: '#E2E8F0',
+  packIconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  packNameText: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#1E1B4B',
+  },
+  packTagPill: {
+    backgroundColor: '#F1F5F9',
     paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: radius.pill,
-    marginBottom: 4,
+    paddingVertical: 1.5,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
-  packTagText: { fontSize: 8.5, fontWeight: '900', color: '#475569' },
-  packPriceText: { fontSize: 15, fontWeight: '900', color: '#0F172A' },
-  extraCashPill: {
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
-    paddingHorizontal: 5,
-    paddingVertical: 1,
-    borderRadius: radius.pill,
-    marginVertical: 3,
+  packTagPillText: {
+    fontSize: 8.5,
+    fontWeight: '900',
+    color: '#64748B',
   },
-  extraCashText: { fontSize: 9.5, fontWeight: '900', color: '#059669' },
-  basePackText: { fontSize: 9, color: '#94A3B8', marginVertical: 3, fontWeight: '600' },
-  estMinsText: { fontSize: 9, color: colors.textMuted, fontWeight: '600' },
+  packDescText: {
+    fontSize: 11,
+    color: '#64748B',
+    fontWeight: '500',
+  },
+  extraCashTag: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 7,
+    paddingVertical: 1.5,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+    marginTop: 2,
+  },
+  extraCashTagText: {
+    fontSize: 9.5,
+    fontWeight: '900',
+    color: '#047857',
+  },
+  basePackTag: {
+    fontSize: 10,
+    color: '#94A3B8',
+    fontWeight: '600',
+    marginTop: 2,
+  },
+  packRightCol: {
+    alignItems: 'flex-end',
+    gap: 4,
+  },
+  packPriceValue: {
+    fontSize: 17,
+    fontWeight: '900',
+    color: '#1E1B4B',
+  },
+  radioCircle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#CBD5E1',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+  },
+  radioCircleActive: {
+    borderColor: '#059669',
+    backgroundColor: '#059669',
+  },
+  radioDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#FFFFFF',
+  },
 
   customAmountBox: {
     marginTop: 14,
     paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: '#F1F5F9',
+    gap: 8,
   },
-  customAmountLabel: { fontSize: 11, fontWeight: '800', color: colors.textMuted, marginBottom: 6 },
+  customAmountLabel: { fontSize: 12, fontWeight: '800', color: '#1E1B4B' },
   customInputRow: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F8FAFC',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: '#E2E8F0',
-    borderRadius: 14,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
     gap: 8,
   },
-  currencySymbol: { fontSize: 16, fontWeight: '900', color: '#0F172A' },
+  currencySymbol: { fontSize: 18, fontWeight: '900', color: '#D97706' },
   customTextInput: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '800',
-    color: '#0F172A',
+    color: '#1E1B4B',
+    padding: 0,
   },
-  incrementPill: {
-    backgroundColor: '#EFF6FF',
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-    borderRadius: radius.pill,
+  clearCustomBtn: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#E2E8F0',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  incrementPillText: { fontSize: 10.5, fontWeight: '800', color: colors.teal },
+  clearCustomBtnText: {
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#64748B',
+  },
+  quickAddRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 2,
+  },
+  incrementChip: {
+    flex: 1,
+    backgroundColor: '#F0FDF4',
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+    paddingVertical: 7,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  incrementChipText: {
+    fontSize: 11.5,
+    fontWeight: '800',
+    color: '#059669',
+  },
 
   /* Coupon Section */
   couponInputWrapper: {
