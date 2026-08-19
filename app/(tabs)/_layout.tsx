@@ -28,12 +28,11 @@ function BirthChartIcon({ focused }: { focused: boolean }) {
   );
 }
 
-function CompatibilityIcon({ focused }: { focused: boolean }) {
-  const color = focused ? colors.teal : '#64748B';
+function ConsultTabIcon({ focused }: { focused: boolean }) {
+  const color = focused ? '#059669' : '#64748B';
   return (
-    <Svg width={26} height={24} viewBox="0 0 26 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <Path d="M7.5 4.5A4.5 4.5 0 0 0 3 9c0 4.5 6 9.5 9 11 1.25-.63 3.5-2.07 5.5-4.5" />
-      <Path d="M18.5 4.5A4.5 4.5 0 0 1 23 9c0 4.5-6 9.5-9 11" />
+    <Svg width={24} height={24} viewBox="0 0 24 24" fill={focused ? color : 'none'} stroke={color} strokeWidth={focused ? 0 : 2} strokeLinecap="round" strokeLinejoin="round">
+      <Path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
     </Svg>
   );
 }
@@ -143,7 +142,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
                   isAstrologer ? (
                     <ChatTabIcon focused={isFocused} badgeCount={pendingChatsCount} />
                   ) : (
-                    <CompatibilityIcon focused={isFocused} />
+                    <ConsultTabIcon focused={isFocused} />
                   )
                 )}
                 {route.name === 'horoscope' && <HoroscopeIcon focused={isFocused} />}
@@ -191,7 +190,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="consult"
         options={{
-          title: 'Compatibility',
+          title: 'Consult',
         }}
       />
       <Tabs.Screen

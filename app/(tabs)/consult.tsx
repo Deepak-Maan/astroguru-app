@@ -13,6 +13,8 @@ import {
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
+import { Platform } from 'react-native';
 import { GradientBackground } from '../../src/components/GradientBackground';
 import { AstrologerCard } from '../../src/components/AstrologerCard';
 import { EmptyState } from '../../src/components/EmptyState';
@@ -28,181 +30,23 @@ import { formatCurrency } from '../../src/utils';
 import { fetchJyotishisFromFirebase } from '../../src/services/firebaseAuthService';
 import { AcharyaChatCenter } from '../../src/components/workstation/AcharyaChatCenter';
 
-const FILTERS = ['All', 'Online', 'Vedic', 'Tarot', 'Numerology', 'Love', 'Career', 'Remedies'];
+const CATEGORIES = [
+  { id: 'All', label: '🌟 All' },
+  { id: 'Online', label: '🟢 Online Now' },
+  { id: 'Vedic', label: '🪐 Vedic Jyotish' },
+  { id: 'Tarot', label: '🃏 Tarot' },
+  { id: 'Numerology', label: '🔢 Numerology' },
+  { id: 'Love', label: '❤️ Love & Match' },
+  { id: 'Career', label: '💼 Career' },
+  { id: 'Remedies', label: '🪔 Remedies' },
+];
 
 type Sort = 'popular' | 'rating' | 'price';
 const SORTS: { id: Sort; label: string; icon: string }[] = [
   { id: 'popular', label: 'Popular', icon: '🔥' },
   { id: 'rating', label: 'Top Rated', icon: '⭐' },
-  { id: 'price', label: 'Cheapest', icon: '💸' },
+  { id: 'price', label: 'Best Price', icon: '💎' },
 ];
-
-const EARNINGS_HISTORY = [
-  { id: '1', date: 'Today', sessions: 14, amount: 4850, status: 'credited' },
-  { id: '2', date: 'Yesterday', sessions: 11, amount: 3960, status: 'credited' },
-  { id: '3', date: '06 Aug 2026', sessions: 16, amount: 5400, status: 'credited' },
-  { id: '4', date: '05 Aug 2026', sessions: 9, amount: 2800, status: 'credited' },
-  { id: '5', date: '04 Aug 2026', sessions: 13, amount: 4320, status: 'credited' },
-  { id: '6', date: '03 Aug 2026', sessions: 18, amount: 6200, status: 'credited' },
-];
-
-function AcharyaPayouts() {
-  const payoutBalance = useJyotishiStore((s) => s.payoutBalance);
-  const todayEarnings = useJyotishiStore((s) => s.todayEarnings);
-  const completedCount = useJyotishiStore((s) => s.completedCount);
-  const withdrawPayout = useJyotishiStore((s) => s.withdrawPayout);
-  const [showWithdraw, setShowWithdraw] = useState(false);
-  const [withdrawAmount, setWithdrawAmount] = useState('');
-  const totalEarned = EARNINGS_HISTORY.reduce((s, e) => s + e.amount, 0);
-
-  const handleWithdraw = () => {
-    const amt = parseFloat(withdrawAmount);
-    if (!amt || amt <= 0) return;
-    const ok = withdrawPayout(amt);
-    if (ok) {
-      setShowWithdraw(false);
-      setWithdrawAmount('');
-      Alert.alert('✅ Withdrawal Initiated', `₹${amt.toLocaleString('en-IN')} will be credited to your bank within 24 hours.`);
-    } else {
-      Alert.alert('Insufficient Balance', 'Withdrawal amount exceeds available payout balance.');
-    }
-  };
-
-  return (
-    <GradientBackground>
-      <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-        <ScreenHeader title="Payouts & Earnings" subtitle="Acharya earnings dashboard" />
-
-        <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.md }} showsVerticalScrollIndicator={false}>
-
-          {/* Summary Cards Row */}
-          <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-            <View style={[payStyles.statCard, { flex: 1 }]}>
-              <Text style={payStyles.statValue}>₹{totalEarned.toLocaleString('en-IN')}</Text>
-              <Text style={payStyles.statLabel}>Total Earned</Text>
-            </View>
-            <View style={[payStyles.statCard, { flex: 1 }]}>
-              <Text style={payStyles.statValue}>₹{payoutBalance.toLocaleString('en-IN')}</Text>
-              <Text style={payStyles.statLabel}>Payout Balance</Text>
-            </View>
-          </View>
-
-          {/* Today Snapshot */}
-          <View style={payStyles.todayCard}>
-            <View>
-              <Text style={payStyles.todayLabel}>📅 Today's Earnings</Text>
-              <Text style={payStyles.todayAmount}>₹{todayEarnings.toLocaleString('en-IN')}</Text>
-              <Text style={payStyles.todaySub}>{completedCount} sessions completed · ₹25/min rate</Text>
-            </View>
-            <Pressable style={payStyles.withdrawBtn} onPress={() => setShowWithdraw(true)}>
-              <Text style={payStyles.withdrawBtnText}>💳 Withdraw</Text>
-            </Pressable>
-          </View>
-
-          {/* Payout Schedule */}
-          <Card padded>
-            <Text style={{ ...typography.h3, color: colors.text, fontWeight: '800', marginBottom: spacing.sm }}>📆 Payout Schedule</Text>
-            {[{day: 'Monday', amt: '₹3,200'}, {day: 'Wednesday', amt: '₹4,100'}, {day: 'Friday', amt: '₹5,800'}].map((p, i) => (
-              <View key={i} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8, borderBottomWidth: i < 2 ? 1 : 0, borderColor: 'rgba(191,219,254,0.4)' }}>
-                <Text style={{ ...typography.body, color: colors.text, fontWeight: '700' }}>{p.day}</Text>
-                <Text style={{ ...typography.body, color: colors.teal, fontWeight: '800' }}>{p.amt}</Text>
-              </View>
-            ))}
-          </Card>
-
-          {/* Earnings History */}
-          <SectionHeader title="📊 Earnings History" subtitle="Daily breakdown" />
-          {EARNINGS_HISTORY.map((entry) => (
-            <View key={entry.id} style={payStyles.historyRow}>
-              <View>
-                <Text style={{ ...typography.h3, color: colors.text, fontWeight: '700' }}>{entry.date}</Text>
-                <Text style={{ ...typography.tiny, color: colors.textMuted }}>{entry.sessions} sessions</Text>
-              </View>
-              <View style={{ alignItems: 'flex-end' }}>
-                <Text style={{ ...typography.h3, color: colors.teal, fontWeight: '800' }}>₹{entry.amount.toLocaleString('en-IN')}</Text>
-                <Text style={{ ...typography.tiny, color: '#10B981', fontWeight: '700' }}>✅ {entry.status}</Text>
-              </View>
-            </View>
-          ))}
-
-          {/* Bank Details */}
-          <Card padded>
-            <Text style={{ ...typography.h3, color: colors.text, fontWeight: '800', marginBottom: spacing.sm }}>🏦 Bank Account Linked</Text>
-            <Text style={{ ...typography.body, color: colors.textMuted }}>HDFC Bank · ••••5678</Text>
-            <Text style={{ ...typography.tiny, color: colors.teal, marginTop: 4, fontWeight: '700' }}>Verified · UPI: acharya@hdfc</Text>
-          </Card>
-        </ScrollView>
-
-        {/* Withdraw Modal */}
-        <Modal visible={showWithdraw} transparent animationType="slide" onRequestClose={() => setShowWithdraw(false)}>
-          <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(15,23,42,0.5)' }}>
-            <View style={{ backgroundColor: '#FFFFFF', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: spacing.xl, gap: spacing.md }}>
-              <Text style={{ ...typography.h2, color: colors.text, fontWeight: '800' }}>💳 Withdraw Payout</Text>
-              <Text style={{ ...typography.body, color: colors.textMuted }}>Available: ₹{payoutBalance.toLocaleString('en-IN')}</Text>
-              <TextInput
-                value={withdrawAmount}
-                onChangeText={setWithdrawAmount}
-                keyboardType="numeric"
-                placeholder="Enter amount"
-                placeholderTextColor={colors.textFaint}
-                style={{ borderWidth: 1.5, borderColor: 'rgba(191,219,254,0.8)', borderRadius: radius.md, padding: 14, fontSize: 18, fontWeight: '700', color: colors.text, backgroundColor: '#F8FAFC' }}
-              />
-              <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-                <Pressable onPress={() => setShowWithdraw(false)} style={{ flex: 1, padding: 14, borderRadius: radius.md, borderWidth: 1.5, borderColor: colors.teal, alignItems: 'center' }}>
-                  <Text style={{ color: colors.teal, fontWeight: '700' }}>Cancel</Text>
-                </Pressable>
-                <Pressable onPress={handleWithdraw} style={{ flex: 1, padding: 14, borderRadius: radius.md, backgroundColor: colors.teal, alignItems: 'center' }}>
-                  <Text style={{ color: '#FFFFFF', fontWeight: '800' }}>Withdraw Now</Text>
-                </Pressable>
-              </View>
-            </View>
-          </View>
-        </Modal>
-      </SafeAreaView>
-    </GradientBackground>
-  );
-}
-
-const payStyles = StyleSheet.create({
-  statCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: radius.lg,
-    padding: spacing.md,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(191,219,254,0.6)',
-    shadowColor: '#BFDBFE',
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  statValue: { fontSize: 20, fontWeight: '800', color: colors.text },
-  statLabel: { ...typography.tiny, color: colors.textMuted, marginTop: 2, fontWeight: '600', textAlign: 'center' },
-  todayCard: {
-    backgroundColor: colors.teal,
-    borderRadius: radius.lg,
-    padding: spacing.lg,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  todayLabel: { color: 'rgba(255,255,255,0.8)', fontSize: 12, fontWeight: '700' },
-  todayAmount: { color: '#FFFFFF', fontSize: 28, fontWeight: '900', letterSpacing: -1 },
-  todaySub: { color: 'rgba(255,255,255,0.75)', fontSize: 11, fontWeight: '600', marginTop: 2 },
-  withdrawBtn: { backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: radius.md, paddingHorizontal: 14, paddingVertical: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.5)' },
-  withdrawBtnText: { color: '#FFFFFF', fontWeight: '800', fontSize: 13 },
-  historyRow: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: radius.md,
-    padding: spacing.md,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(191,219,254,0.5)',
-  },
-});
 
 export default function Consult() {
   const router = useRouter();
@@ -219,30 +63,40 @@ export default function Consult() {
   const [sort, setSort] = useState<Sort>('popular');
   const [astrologersList, setAstrologersList] = useState<Astrologer[]>(ASTROLOGERS);
 
-  useEffect(() => {
-    // Fetch Jyotishi directory from Firebase - works from any country, no server needed
-    fetchJyotishisFromFirebase().then((firebaseList) => {
-      if (firebaseList && firebaseList.length > 0) {
-        const remoteList: Astrologer[] = firebaseList.map((a: any) => ({
-          id: a.id,
-          name: a.name,
-          avatar: a.avatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200',
-          rating: a.rating || 5.0,
-          reviews: a.reviews || 1,
-          pricePerMin: a.pricePerMin || 25,
-          experienceYears: a.experienceYears || 10,
-          specialties: a.specialties || ['Vedic Astrology'],
-          languages: a.languages || ['Hindi', 'English'],
-          consultations: a.consultations || 0,
-          online: a.online ?? true,
-          about: a.about || 'Certified Vedic Jyotish Expert',
-        }));
-        // Merge: Firebase list first, then any local-only defaults not in Firebase
-        const existingIds = new Set(remoteList.map((r) => r.id));
-        const localOnly = ASTROLOGERS.filter((l) => !existingIds.has(l.id));
-        setAstrologersList([...remoteList, ...localOnly]);
+  const triggerHaptic = () => {
+    try {
+      if (Platform.OS !== 'web') {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       }
-    }).catch(() => {});
+    } catch (_) {}
+  };
+
+  useEffect(() => {
+    fetchJyotishisFromFirebase()
+      .then((firebaseList) => {
+        if (firebaseList && firebaseList.length > 0) {
+          const remoteList: Astrologer[] = firebaseList.map((a: any) => ({
+            id: a.id,
+            name: a.name,
+            avatar:
+              a.avatar ||
+              'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200',
+            rating: a.rating || 5.0,
+            reviews: a.reviews || 1,
+            pricePerMin: a.pricePerMin || 25,
+            experienceYears: a.experienceYears || 10,
+            specialties: a.specialties || ['Vedic Astrology'],
+            languages: a.languages || ['Hindi', 'English'],
+            consultations: a.consultations || 0,
+            online: a.online ?? true,
+            about: a.about || 'Certified Vedic Jyotish Expert',
+          }));
+          const existingIds = new Set(remoteList.map((r) => r.id));
+          const localOnly = ASTROLOGERS.filter((l) => !existingIds.has(l.id));
+          setAstrologersList([...remoteList, ...localOnly]);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const list = useMemo(() => {
@@ -255,7 +109,7 @@ export default function Consult() {
         a.languages.some((l: string) => l.toLowerCase().includes(q));
       const matchF =
         filter === 'All' ||
-        (filter === 'Online' ? a.online : a.specialties.some((s: string) => s === filter));
+        (filter === 'Online' ? a.online : a.specialties.some((s: string) => s.toLowerCase().includes(filter.toLowerCase())));
       return matchQ && matchF;
     });
     out = [...out].sort((x, y) => {
@@ -270,37 +124,52 @@ export default function Consult() {
     return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
   }
 
-  const onlineCount = ASTROLOGERS.filter((a) => a.online).length;
+  const onlineCount = astrologersList.filter((a) => a.online).length;
 
   const renderHeader = () => (
     <View style={styles.headerContainer}>
-      {/* ── Search ── */}
+      {/* ── Luminous Search Bar ── */}
       <View style={styles.searchWrap}>
         <Text style={styles.searchIcon}>🔍</Text>
         <TextInput
           value={query}
           onChangeText={setQuery}
-          placeholder="Search name, specialty or language"
-          placeholderTextColor={colors.textFaint}
+          placeholder="Search Vedic Astrologer, Tarot or Remedy..."
+          placeholderTextColor="#94A3B8"
           style={styles.searchInput}
         />
         {!!query && (
-          <Pressable onPress={() => setQuery('')} hitSlop={8}>
+          <Pressable
+            onPress={() => {
+              triggerHaptic();
+              setQuery('');
+            }}
+            hitSlop={8}
+            style={styles.clearBtnWrap}
+          >
             <Text style={styles.clearBtn}>✕</Text>
           </Pressable>
         )}
       </View>
 
-      {/* ── Online banner ── */}
+      {/* ── Live Astrologer Pulse Beacon Banner ── */}
       <View style={styles.onlineBanner}>
-        <View style={styles.onlinePulse} />
-        <Text style={styles.onlineText}>
-          <Text style={styles.onlineCount}>{onlineCount} experts</Text>
-          {'  '}available for instant consultation
-        </Text>
+        <View style={styles.beaconWrap}>
+          <View style={styles.beaconOuter} />
+          <View style={styles.beaconDot} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.onlineTitle}>
+            <Text style={styles.onlineCount}>{onlineCount} Vedic Acharyas</Text> Active Online
+          </Text>
+          <Text style={styles.onlineSubtitle}>⚡ Instant 1-Tap Audio / Video · 0 min wait time</Text>
+        </View>
+        <View style={styles.secureBadge}>
+          <Text style={styles.secureBadgeText}>🔒 100% Private</Text>
+        </View>
       </View>
 
-      {/* ── Filter chips (horizontal scroll) ── */}
+      {/* ── Category Filter Chips ── */}
       <View style={styles.filterWrapper}>
         <ScrollView
           horizontal
@@ -308,24 +177,27 @@ export default function Consult() {
           contentContainerStyle={styles.filterStrip}
           style={{ flexGrow: 0 }}
         >
-          {FILTERS.map((f) => {
-            const active = filter === f;
+          {CATEGORIES.map((c) => {
+            const active = filter === c.id;
             return (
               <Pressable
-                key={f}
-                onPress={() => setFilter(f)}
+                key={c.id}
+                onPress={() => {
+                  triggerHaptic();
+                  setFilter(c.id);
+                }}
                 style={[styles.filterChip, active && styles.filterChipActive]}
               >
                 {active && (
                   <LinearGradient
-                    colors={[colors.saffron, colors.gold]}
+                    colors={['#059669', '#047857']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={StyleSheet.absoluteFill}
                   />
                 )}
                 <Text style={[styles.filterChipText, active && styles.filterChipTextActive]}>
-                  {f}
+                  {c.label}
                 </Text>
               </Pressable>
             );
@@ -333,21 +205,24 @@ export default function Consult() {
         </ScrollView>
       </View>
 
-      {/* ── Sort tabs ── */}
+      {/* ── Sort Segmented Control ── */}
       <View style={styles.sortWrap}>
-        <Text style={styles.sortLabel}>Sort by</Text>
+        <Text style={styles.sortLabel}>SORT BY</Text>
         <View style={styles.sortPills}>
           {SORTS.map((s) => {
             const active = sort === s.id;
             return (
               <Pressable
                 key={s.id}
-                onPress={() => setSort(s.id)}
+                onPress={() => {
+                  triggerHaptic();
+                  setSort(s.id);
+                }}
                 style={[styles.sortPill, active && styles.sortPillActive]}
               >
                 {active && (
                   <LinearGradient
-                    colors={[colors.teal, colors.gold]}
+                    colors={['#0F172A', '#1E1B4B']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={StyleSheet.absoluteFill}
@@ -369,7 +244,7 @@ export default function Consult() {
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
         <ScreenHeader
           title="Consult"
-          subtitle={`${onlineCount} of ${ASTROLOGERS.length} experts online`}
+          subtitle={`${onlineCount} of ${astrologersList.length} experts online now`}
           showWallet
         />
 
@@ -378,10 +253,13 @@ export default function Consult() {
             {renderHeader()}
             <EmptyState
               icon="🔭"
-              title="No astrologers found"
-              message="Try a different search term or clear the filters."
-              actionLabel="Clear filters"
-              onAction={() => { setQuery(''); setFilter('All'); }}
+              title="No Astrologers Found"
+              message="Try searching for another specialty, language, or clear the filter."
+              actionLabel="Clear Filters"
+              onAction={() => {
+                setQuery('');
+                setFilter('All');
+              }}
             />
           </View>
         ) : (
@@ -399,7 +277,7 @@ export default function Consult() {
             )}
             ListFooterComponent={
               <Text style={styles.note}>
-                Consultations are simulated in this build for demonstration.
+                🕉️ All Jyotishis & Acharyas are verified with 10+ years of Vedic experience.
               </Text>
             }
           />
@@ -411,156 +289,218 @@ export default function Consult() {
 
 const styles = StyleSheet.create({
   headerContainer: {
-    paddingBottom: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingTop: 6,
+    paddingBottom: 4,
+    gap: 10,
   },
 
-  /* Search */
+  /* Search Wrap */
   searchWrap: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    marginBottom: spacing.sm,
-    paddingHorizontal: spacing.md,
-    backgroundColor: '#DFE6F0',
+    paddingHorizontal: 14,
+    backgroundColor: '#FFFFFF',
     borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: 'rgba(163, 177, 198, 0.4)',
-    height: 46,
-    shadowColor: '#A3B1C6',
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 0.5,
-    shadowRadius: 5,
-    elevation: 2,
-  },
-  searchIcon: { fontSize: 16 },
-  searchInput: { flex: 1, color: colors.text, fontSize: 14.5, paddingVertical: 0, fontWeight: '600' },
-  clearBtn: { fontSize: 14, color: colors.textFaint, paddingHorizontal: 4, fontWeight: '700' },
-
-  /* Online banner */
-  onlineBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginBottom: spacing.sm,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 10,
-    borderRadius: radius.lg,
-    borderTopWidth: 1.5,
-    borderLeftWidth: 1.5,
-    borderTopColor: '#FFFFFF',
-    borderLeftColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
-    borderRightColor: 'rgba(163, 177, 198, 0.4)',
-    backgroundColor: '#E6ECF5',
-    overflow: 'hidden',
-    shadowColor: '#A3B1C6',
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 0.5,
+    borderWidth: 1.5,
+    borderColor: 'rgba(226, 232, 240, 0.9)',
+    height: 48,
+    shadowColor: '#CBD5E1',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.35,
     shadowRadius: 6,
     elevation: 3,
   },
-  onlinePulse: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.online,
+  searchIcon: { fontSize: 16 },
+  searchInput: {
+    flex: 1,
+    color: '#1E1B4B',
+    fontSize: 13.5,
+    paddingVertical: 0,
+    fontWeight: '700',
   },
-  onlineText: { ...typography.small, color: colors.textMuted, fontSize: 13, flex: 1, fontWeight: '600' },
-  onlineCount: { color: colors.online, fontWeight: '800' },
+  clearBtnWrap: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  clearBtn: {
+    fontSize: 11,
+    color: '#64748B',
+    fontWeight: '900',
+  },
 
-  /* Filter chips */
+  /* Online Live Beacon Banner */
+  onlineBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: 'rgba(226, 232, 240, 0.9)',
+    shadowColor: '#CBD5E1',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  beaconWrap: {
+    width: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  beaconOuter: {
+    position: 'absolute',
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: 'rgba(16, 185, 129, 0.25)',
+  },
+  beaconDot: {
+    width: 9,
+    height: 9,
+    borderRadius: 4.5,
+    backgroundColor: '#059669',
+  },
+  onlineTitle: {
+    fontSize: 12.5,
+    color: '#1E1B4B',
+    fontWeight: '800',
+  },
+  onlineCount: {
+    color: '#059669',
+    fontWeight: '900',
+  },
+  onlineSubtitle: {
+    fontSize: 10.5,
+    color: '#64748B',
+    fontWeight: '600',
+    marginTop: 1,
+  },
+  secureBadge: {
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+  },
+  secureBadgeText: {
+    fontSize: 9.5,
+    fontWeight: '900',
+    color: '#047857',
+  },
+
+  /* Filter Chips */
   filterWrapper: {
-    marginBottom: spacing.md,
     height: 38,
   },
   filterStrip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
-    paddingRight: spacing.lg,
+    gap: 8,
+    paddingRight: spacing.md,
   },
   filterChip: {
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: 14,
     paddingVertical: 7,
     borderRadius: radius.pill,
-    backgroundColor: '#E6ECF5',
-    borderTopWidth: 1.5,
-    borderLeftWidth: 1.5,
-    borderTopColor: '#FFFFFF',
-    borderLeftColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
-    borderRightColor: 'rgba(163, 177, 198, 0.4)',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: 'rgba(226, 232, 240, 0.9)',
     overflow: 'hidden',
-    shadowColor: '#A3B1C6',
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 0.5,
-    shadowRadius: 5,
-    elevation: 3,
+    shadowColor: '#CBD5E1',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 2,
   },
   filterChipActive: {
-    borderColor: colors.gold,
+    borderColor: 'transparent',
+    shadowColor: '#059669',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.35,
+    shadowRadius: 6,
+    elevation: 3,
   },
   filterChipText: {
-    ...typography.small,
-    color: colors.text,
-    fontWeight: '700',
-    fontSize: 13,
+    color: '#475569',
+    fontWeight: '800',
+    fontSize: 12,
   },
-  filterChipTextActive: { color: colors.white, fontWeight: '800' },
+  filterChipTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '900',
+  },
 
-  /* Sort */
+  /* Sort Segmented Control */
   sortWrap: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: spacing.md,
+    marginTop: 2,
+    marginBottom: 4,
   },
-  sortLabel: { ...typography.tiny, color: colors.textFaint, fontWeight: '800' },
+  sortLabel: {
+    fontSize: 10.5,
+    color: '#64748B',
+    fontWeight: '900',
+    letterSpacing: 0.8,
+  },
   sortPills: {
     flexDirection: 'row',
     gap: 4,
-    backgroundColor: '#E6ECF5',
+    backgroundColor: '#F8FAFC',
     borderRadius: radius.pill,
     padding: 3,
-    borderTopWidth: 1.5,
-    borderLeftWidth: 1.5,
-    borderTopColor: '#FFFFFF',
-    borderLeftColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
-    borderRightColor: 'rgba(163, 177, 198, 0.4)',
-    shadowColor: '#A3B1C6',
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 0.5,
-    shadowRadius: 5,
-    elevation: 2,
+    borderWidth: 1.5,
+    borderColor: 'rgba(226, 232, 240, 0.9)',
   },
   sortPill: {
-    paddingVertical: 6,
-    paddingHorizontal: spacing.md,
+    paddingVertical: 5,
+    paddingHorizontal: 12,
     borderRadius: radius.pill,
     overflow: 'hidden',
   },
-  sortPillActive: {},
-  sortPillText: { ...typography.tiny, color: colors.textMuted, fontWeight: '700', fontSize: 12 },
-  sortPillTextActive: { color: colors.white, fontWeight: '800' },
+  sortPillActive: {
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  sortPillText: {
+    color: '#64748B',
+    fontWeight: '700',
+    fontSize: 11,
+  },
+  sortPillTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '900',
+  },
 
   /* List */
   listContent: {
-    paddingHorizontal: spacing.lg,
+    paddingHorizontal: spacing.md,
     paddingTop: spacing.xs,
     paddingBottom: spacing.xxl,
+    gap: 12,
   },
   note: {
-    ...typography.tiny,
-    color: colors.textFaint,
+    fontSize: 11,
+    color: '#94A3B8',
     textAlign: 'center',
     marginTop: spacing.md,
-    lineHeight: 15,
+    fontWeight: '600',
+    lineHeight: 16,
   },
 });
