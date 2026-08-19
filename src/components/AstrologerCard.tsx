@@ -1,6 +1,8 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
+import { Platform } from 'react-native';
 import { Astrologer } from '../types';
 import { Avatar } from './Avatar';
 import { colors, radius, spacing, typography } from '../theme';
@@ -13,100 +15,155 @@ interface Props {
 }
 
 export function AstrologerCard({ astrologer: a, onPress, compact = false }: Props) {
-  /* ── Compact (horizontal scroll) ── */
+  const triggerAudioPreview = (e: any) => {
+    e.stopPropagation();
+    try {
+      if (Platform.OS !== 'web') {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+    } catch (_) {}
+  };
+
+  /* ── Compact (Horizontal Top Carousel) ── */
   if (compact) {
+    const formattedTitle = a.name.startsWith('Dr.')
+      ? `Dr. ${a.name.split(' ').slice(-1)[0]}`
+      : a.name.startsWith('Acharya')
+      ? `Acharya ${a.name.split(' ').slice(-1)[0]}`
+      : a.name.startsWith('Pandit')
+      ? `Pt. ${a.name.split(' ').slice(-1)[0]}`
+      : a.name.split(' ').slice(-1)[0];
+
+    const mainSpecialty = a.specialties[0] || 'Vedic';
+
     return (
       <Pressable
         onPress={onPress}
         accessibilityRole="button"
-        style={({ pressed }) => [styles.compact, pressed && { opacity: 0.75, transform: [{ scale: 0.96 }] }]}
+        style={({ pressed }) => [
+          styles.compact,
+          pressed && { opacity: 0.82, transform: [{ scale: 0.96 }] },
+        ]}
       >
-        <Avatar uri={a.avatar} name={a.name} size={50} online={a.online} showStatus />
-        <Text style={styles.compactName} numberOfLines={1}>
-          {a.name.split(' ').slice(-1)[0]}
-        </Text>
-        <View style={styles.compactRating}>
-          <Text style={styles.compactRatingText}>⭐ {a.rating.toFixed(1)}</Text>
+        <View style={styles.compactAvatarWrap}>
+          <Avatar uri={a.avatar} name={a.name} size={54} online={a.online} showStatus />
         </View>
-        <Text style={styles.compactPrice}>{formatCurrency(a.pricePerMin)}/min</Text>
+
+        <Text style={styles.compactName} numberOfLines={1}>
+          {formattedTitle}
+        </Text>
+
+        <View style={styles.compactSpecialtyPill}>
+          <Text style={styles.compactSpecialtyText} numberOfLines={1}>
+            {mainSpecialty}
+          </Text>
+        </View>
+
+        <View style={styles.compactRatingRow}>
+          <Text style={styles.compactRatingStar}>★</Text>
+          <Text style={styles.compactRatingText}>{a.rating.toFixed(1)}</Text>
+        </View>
+
+        <View style={styles.compactPriceBadge}>
+          <Text style={styles.compactPriceText}>{formatCurrency(a.pricePerMin)}/m</Text>
+        </View>
       </Pressable>
     );
   }
 
-  /* ── Full card ── */
+  /* ── Full Premium Card ── */
+  const originalPrice = Math.round(a.pricePerMin * 1.35);
+
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
       style={({ pressed }) => [
         styles.card,
-        a.rating >= 4.8 && styles.cardVerifiedBorder,
-        pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] },
+        pressed && { opacity: 0.90, transform: [{ scale: 0.985 }] },
       ]}
     >
-      {/* Left: Avatar with Glowing Halo */}
-      <View style={styles.avatarCol}>
-        <View style={[styles.avatarRing, a.online && styles.avatarRingOnline]}>
-          <Avatar uri={a.avatar} name={a.name} size={52} online={a.online} showStatus />
+      {/* Top Row: Avatar + Name + Rating */}
+      <View style={styles.cardHeader}>
+        <View style={styles.avatarWrap}>
+          <Avatar uri={a.avatar} name={a.name} size={56} online={a.online} showStatus />
         </View>
-      </View>
 
-      {/* Right: Details */}
-      <View style={styles.body}>
-        {/* Name + rating */}
-        <View style={styles.nameRow}>
-          <Text style={styles.name} numberOfLines={1}>{a.name}</Text>
-          <View style={styles.ratingPill}>
-            <Text style={styles.ratingText}>⭐ {a.rating.toFixed(1)}</Text>
+        <View style={styles.headerInfo}>
+          <View style={styles.nameRow}>
+            <Text style={styles.name} numberOfLines={1}>
+              {a.name}
+            </Text>
+            <View style={styles.ratingPill}>
+              <Text style={styles.ratingStar}>★</Text>
+              <Text style={styles.ratingText}>{a.rating.toFixed(1)}</Text>
+              <Text style={styles.reviewCount}>({a.reviews > 999 ? `${(a.reviews / 1000).toFixed(1)}k` : a.reviews})</Text>
+            </View>
           </View>
-        </View>
 
-        {/* Verified Badge + Queue Time Row */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginVertical: 2 }}>
-          {a.rating >= 4.8 && (
+          {/* Badges Row */}
+          <View style={styles.badgeRow}>
             <View style={styles.verifiedTag}>
               <Text style={styles.verifiedTagText}>👑 VERIFIED</Text>
             </View>
-          )}
-          <View style={styles.queueTag}>
-            <Text style={styles.queueTagText}>
-              {a.online ? '⚡ Available Now' : '⏱️ ~3m wait'}
-            </Text>
+            <View style={[styles.queueTag, !a.online && styles.queueTagBusy]}>
+              <Text style={[styles.queueTagText, !a.online && styles.queueTagTextBusy]}>
+                {a.online ? '⚡ Available Now' : '⏱️ ~2m wait'}
+              </Text>
+            </View>
+            <View style={styles.experienceTag}>
+              <Text style={styles.experienceTagText}>📜 {a.experienceYears}y exp</Text>
+            </View>
           </View>
         </View>
+      </View>
 
-        {/* Specialties */}
-        <Text style={styles.specialties} numberOfLines={1}>
-          {a.specialties.slice(0, 3).join(' · ')}
+      {/* Specialties Chips Row */}
+      <View style={styles.specialtiesWrap}>
+        {a.specialties.slice(0, 3).map((spec) => (
+          <View key={spec} style={styles.specChip}>
+            <Text style={styles.specChipText}>{spec}</Text>
+          </View>
+        ))}
+      </View>
+
+      {/* Languages & Consultations Meta */}
+      <View style={styles.metaRow}>
+        <Text style={styles.metaText} numberOfLines={1}>
+          🗣️ {a.languages.slice(0, 2).join(', ')} · 🔮 {(a.consultations || 4200).toLocaleString()}+ Consultations
         </Text>
 
-        {/* Meta & Audio Intro Row */}
-        <View style={styles.metaRow}>
-          <Text style={styles.meta} numberOfLines={1}>
-            🗣️ {a.languages.slice(0, 2).join(', ')} · 📜 {a.experienceYears} yrs
-          </Text>
-          <Pressable
-            onPress={(e) => {
-              e.stopPropagation();
-              // trigger haptic feedback
-            }}
-            style={styles.audioIntroPill}
-          >
-            <Text style={styles.audioIntroText}>▶ 0:10 Intro</Text>
-          </Pressable>
-        </View>
+        <Pressable onPress={triggerAudioPreview} style={styles.audioIntroPill}>
+          <Text style={styles.audioIntroText}>▶ 0:10 Intro</Text>
+        </Pressable>
+      </View>
 
-        {/* Footer: price + status */}
-        <View style={styles.footer}>
-          <View style={styles.priceBadge}>
-            <Text style={styles.priceValue}>{formatCurrency(a.pricePerMin)}</Text>
+      {/* Divider */}
+      <View style={styles.cardDivider} />
+
+      {/* Footer: Price + Instant Consult Action Button */}
+      <View style={styles.cardFooter}>
+        <View style={styles.priceContainer}>
+          <View style={styles.priceRow}>
+            <Text style={styles.priceCurrent}>{formatCurrency(a.pricePerMin)}</Text>
+            <Text style={styles.priceOriginal}>{formatCurrency(originalPrice)}</Text>
             <Text style={styles.perMin}>/min</Text>
           </View>
+          <View style={styles.offerBadge}>
+            <Text style={styles.offerBadgeText}>⚡ SAVE 25%</Text>
+          </View>
+        </View>
 
-          <View style={[styles.statusBadge, a.online ? styles.statusOnline : styles.statusOffline]}>
-            <View style={[styles.statusDot, { backgroundColor: a.online ? colors.online : colors.offline }]} />
-            <Text style={[styles.statusText, { color: a.online ? colors.online : colors.offline }]}>
-              {a.online ? 'Online' : 'Offline'}
+        <View style={styles.actionButtonsRow}>
+          <View style={styles.consultBtn}>
+            <LinearGradient
+              colors={a.online ? ['#059669', '#047857'] : ['#D97706', '#B45309']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={StyleSheet.absoluteFill}
+            />
+            <Text style={styles.consultBtnText}>
+              {a.online ? '💬 Consult Now' : '📞 Join Queue'}
             </Text>
           </View>
         </View>
@@ -116,186 +173,308 @@ export function AstrologerCard({ astrologer: a, onPress, compact = false }: Prop
 }
 
 const styles = StyleSheet.create({
-  /* ── Full card ── */
-  card: {
-    flexDirection: 'row',
-    gap: spacing.md,
-    padding: spacing.md,
-    backgroundColor: '#E6ECF5',
-    borderRadius: radius.lg,
-    borderTopWidth: 1.5,
-    borderLeftWidth: 1.5,
-    borderTopColor: '#FFFFFF',
-    borderLeftColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
-    borderRightColor: 'rgba(163, 177, 198, 0.4)',
-    marginBottom: spacing.sm + 2,
-    overflow: 'hidden',
+  /* ── Compact Carousel Card ── */
+  compact: {
+    width: 112,
     alignItems: 'center',
-    shadowColor: '#A3B1C6',
-    shadowOffset: { width: 6, height: 6 },
-    shadowOpacity: 0.65,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: 'rgba(226, 232, 240, 0.9)',
+    shadowColor: '#93C5FD',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
     shadowRadius: 10,
+    elevation: 3,
+    gap: 4,
+  },
+  compactAvatarWrap: {
+    marginBottom: 2,
+  },
+  compactName: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#1E1B4B',
+    textAlign: 'center',
+  },
+  compactSpecialtyPill: {
+    backgroundColor: 'rgba(5, 150, 105, 0.08)',
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
+    borderRadius: 6,
+  },
+  compactSpecialtyText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: '#059669',
+  },
+  compactRatingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
+    borderRadius: 6,
+  },
+  compactRatingStar: {
+    fontSize: 10,
+    color: '#D97706',
+    fontWeight: '900',
+  },
+  compactRatingText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#B45309',
+  },
+  compactPriceBadge: {
+    backgroundColor: '#F8FAFC',
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginTop: 2,
+  },
+  compactPriceText: {
+    fontSize: 10,
+    fontWeight: '900',
+    color: '#D97706',
+  },
+
+  /* ── Full Astrologer Card ── */
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 16,
+    borderWidth: 1.5,
+    borderColor: 'rgba(226, 232, 240, 0.9)',
+    shadowColor: '#CBD5E1',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.45,
+    shadowRadius: 14,
     elevation: 4,
+    gap: 10,
   },
-  cardVerifiedBorder: {
-    borderBottomColor: 'rgba(217,119,6,0.4)',
-    borderRightColor: 'rgba(217,119,6,0.4)',
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
-  avatarCol: {},
-  body: { flex: 1, gap: 2 },
+  avatarWrap: {
+    borderRadius: 32,
+  },
+  headerInfo: {
+    flex: 1,
+    gap: 4,
+  },
   nameRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
+    justifyContent: 'space-between',
   },
-  name: { ...typography.h3, color: colors.text, flex: 1, fontSize: 15, fontWeight: '800' },
-
-  avatarRing: {
-    borderRadius: 30,
-    padding: 2,
-    borderWidth: 1.5,
-    borderColor: 'transparent',
+  name: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#1E1B4B',
+    flex: 1,
   },
-  avatarRingOnline: {
-    borderColor: '#059669',
-    backgroundColor: 'rgba(5, 150, 105, 0.08)',
-  },
-
   ratingPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(217,119,6,0.12)',
-    borderRadius: radius.pill,
+    gap: 3,
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 8,
+    paddingVertical: 2.5,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+  },
+  ratingStar: {
+    fontSize: 11,
+    color: '#D97706',
+    fontWeight: '900',
+  },
+  ratingText: {
+    fontSize: 11.5,
+    fontWeight: '900',
+    color: '#B45309',
+  },
+  reviewCount: {
+    fontSize: 9.5,
+    fontWeight: '700',
+    color: '#92400E',
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flexWrap: 'wrap',
+  },
+  verifiedTag: {
+    backgroundColor: 'rgba(217, 119, 6, 0.12)',
     paddingHorizontal: 7,
     paddingVertical: 2,
+    borderRadius: 6,
     borderWidth: 1,
-    borderColor: 'rgba(217,119,6,0.30)',
+    borderColor: 'rgba(217, 119, 6, 0.25)',
   },
-  ratingText: { ...typography.tiny, color: colors.gold, fontWeight: '800', fontSize: 10.5 },
-
-  verifiedTag: {
-    backgroundColor: 'rgba(217,119,6,0.12)',
-    borderRadius: radius.pill,
-    paddingHorizontal: 6,
-    paddingVertical: 1,
-    borderWidth: 1,
-    borderColor: 'rgba(217,119,6,0.30)',
+  verifiedTagText: {
+    fontSize: 9,
+    fontWeight: '900',
+    color: '#D97706',
+    letterSpacing: 0.4,
   },
-  verifiedTagText: { ...typography.tiny, color: colors.gold, fontWeight: '800', fontSize: 8.5 },
-
   queueTag: {
     backgroundColor: '#ECFDF5',
-    borderRadius: radius.pill,
-    paddingHorizontal: 6,
-    paddingVertical: 1,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 6,
     borderWidth: 1,
     borderColor: 'rgba(5, 150, 105, 0.3)',
   },
-  queueTagText: { ...typography.tiny, color: '#059669', fontWeight: '800', fontSize: 8.5 },
+  queueTagBusy: {
+    backgroundColor: '#FFFBEB',
+    borderColor: 'rgba(245, 158, 11, 0.3)',
+  },
+  queueTagText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#059669',
+  },
+  queueTagTextBusy: {
+    color: '#D97706',
+  },
+  experienceTag: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  experienceTagText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: '#475569',
+  },
 
+  /* Specialties */
+  specialtiesWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  specChip: {
+    backgroundColor: 'rgba(5, 150, 105, 0.08)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(5, 150, 105, 0.2)',
+  },
+  specChipText: {
+    fontSize: 10.5,
+    fontWeight: '700',
+    color: '#059669',
+  },
+
+  /* Meta */
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 4,
+    gap: 8,
+  },
+  metaText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#64748B',
+    flex: 1,
   },
   audioIntroPill: {
     backgroundColor: '#FFFBEB',
-    paddingVertical: 2,
-    paddingHorizontal: 6,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
     borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: '#F59E0B',
+    borderColor: '#FDE68A',
   },
-  audioIntroText: { fontSize: 9.5, fontWeight: '800', color: '#D97706' },
-
-  specialties: {
-    ...typography.small,
-    color: colors.teal,
-    fontWeight: '700',
-    fontSize: 11.5,
-  },
-  meta: {
-    ...typography.small,
-    color: colors.textMuted,
-    fontSize: 11,
-    fontWeight: '600',
+  audioIntroText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#D97706',
   },
 
-  footer: {
+  /* Divider */
+  cardDivider: {
+    height: 1,
+    backgroundColor: '#F1F5F9',
+    marginVertical: 2,
+  },
+
+  /* Footer */
+  cardFooter: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 2,
   },
-  priceBadge: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
+  priceContainer: {
     gap: 2,
   },
-  priceValue: { ...typography.h3, color: colors.gold, fontSize: 15.5, fontWeight: '900' },
-  perMin: { ...typography.tiny, color: colors.textMuted, fontSize: 10.5, fontWeight: '600' },
-
-  statusBadge: {
+  priceRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 4,
+  },
+  priceCurrent: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#D97706',
+  },
+  priceOriginal: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#94A3B8',
+    textDecorationLine: 'line-through',
+  },
+  perMin: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#64748B',
+  },
+  offerBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(234, 88, 12, 0.12)',
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: 4,
+  },
+  offerBadgeText: {
+    fontSize: 8.5,
+    fontWeight: '900',
+    color: '#EA580C',
+    letterSpacing: 0.4,
+  },
+  actionButtonsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: radius.pill,
-    borderWidth: 1,
+    gap: 8,
   },
-  statusOnline: {
-    backgroundColor: 'rgba(5,150,105,0.12)',
-    borderColor: 'rgba(5,150,105,0.35)',
-  },
-  statusOffline: {
-    backgroundColor: 'rgba(148,163,184,0.15)',
-    borderColor: 'rgba(148,163,184,0.35)',
-  },
-  statusDot: { width: 5, height: 5, borderRadius: 2.5 },
-  statusText: { ...typography.tiny, fontWeight: '800', fontSize: 10 },
-
-  /* ── Compact card ── */
-  compact: {
-    width: 100,
-    alignItems: 'center',
-    padding: spacing.sm + 2,
-    backgroundColor: '#E6ECF5',
-    borderRadius: radius.lg,
-    borderTopWidth: 1.5,
-    borderLeftWidth: 1.5,
-    borderTopColor: '#FFFFFF',
-    borderLeftColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
-    borderRightColor: 'rgba(163, 177, 198, 0.4)',
-    marginRight: spacing.sm + 2,
+  consultBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+    borderRadius: 14,
     overflow: 'hidden',
-    gap: 3,
-    shadowColor: '#A3B1C6',
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 0.5,
+    shadowColor: '#059669',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 3,
   },
-  compactName: {
-    ...typography.small,
-    color: colors.text,
-    fontWeight: '800',
-    marginTop: 2,
-    fontSize: 11.5,
+  consultBtnText: {
+    fontSize: 12.5,
+    fontWeight: '900',
+    color: '#FFFFFF',
   },
-  compactRating: {
-    backgroundColor: 'rgba(217,119,6,0.12)',
-    borderRadius: radius.pill,
-    paddingHorizontal: 6,
-    paddingVertical: 1,
-  },
-  compactRatingText: { ...typography.tiny, color: colors.gold, fontWeight: '800', fontSize: 9.5 },
-  compactPrice: { ...typography.tiny, color: colors.textMuted, fontSize: 9.5, fontWeight: '600' },
 });
