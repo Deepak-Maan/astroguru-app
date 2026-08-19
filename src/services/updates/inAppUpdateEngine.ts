@@ -25,7 +25,7 @@ export interface InAppUpdateCheckResult {
   type: 'apk' | 'ota';
 }
 
-export const LIVE_DIRECT_APK_URL = 'https://expo.dev/artifacts/eas/j1bujHIWY7tt-WYtbLaWl_7QWHO-sv1bGzeVuCuVNTU.apk';
+export const LIVE_DIRECT_APK_URL = 'https://expo.dev/artifacts/eas/XpNZmdH73j-HnhPEIjZ16YCDxdRfPjVA4dYLL2Y6oe8.apk';
 
 class InAppUpdateEngine {
   private activeDownload: any = null;
