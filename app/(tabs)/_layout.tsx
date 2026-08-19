@@ -37,6 +37,8 @@ function ConsultTabIcon({ focused }: { focused: boolean }) {
   );
 }
 
+const CompatibilityIcon = ConsultTabIcon;
+
 function ChatTabIcon({ focused, badgeCount }: { focused: boolean; badgeCount?: number }) {
   const color = focused ? colors.teal : '#64748B';
   return (
