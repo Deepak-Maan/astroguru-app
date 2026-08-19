@@ -2,6 +2,8 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
+import { Platform } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { colors, radius, spacing, typography } from '../theme';
 import { useWalletStore } from '../store/walletStore';
@@ -22,7 +24,16 @@ interface Props {
 
 function BackArrowIcon() {
   return (
-    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke={colors.text} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+    <Svg
+      width={20}
+      height={20}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="#1E1B4B"
+      strokeWidth={2.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <Path d="M19 12H5M12 19l-7-7 7-7" />
     </Svg>
   );
@@ -42,7 +53,16 @@ export function ScreenHeader({
   const maskWalletBalance = useSecurityStore((s) => s.maskWalletBalance);
   const unreadCount = useNotificationStore((s) => s.unreadCount);
 
+  const triggerHaptic = () => {
+    try {
+      if (Platform.OS !== 'web') {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+    } catch (_) {}
+  };
+
   const handleBack = () => {
+    triggerHaptic();
     if (router.canGoBack()) {
       router.back();
     } else {
@@ -53,73 +73,100 @@ export function ScreenHeader({
   return (
     <View style={styles.container}>
       <View style={styles.row}>
+        {/* Back Button if present */}
         {showBack && (
           <Pressable
             onPress={handleBack}
             accessibilityRole="button"
             accessibilityLabel="Go back"
-            hitSlop={12}
+            hitSlop={10}
             style={({ pressed }) => [styles.backBtn, pressed && styles.backBtnPressed]}
           >
             <BackArrowIcon />
           </Pressable>
         )}
 
+        {/* Title & Subtitle Column */}
         <View style={styles.titleCol}>
           <Text style={styles.title} numberOfLines={2}>
             {title}
           </Text>
           {!!subtitle && (
-            <Text style={styles.subtitle} numberOfLines={1}>
-              {subtitle}
-            </Text>
+            <View style={styles.subtitleRow}>
+              <View style={styles.subDot} />
+              <Text style={styles.subtitle} numberOfLines={1}>
+                {subtitle}
+              </Text>
+            </View>
           )}
         </View>
 
-        {!hideLanguage && <LanguageSelector />}
+        {/* Right Actions Cluster */}
+        <View style={styles.rightCluster}>
+          {!hideLanguage && <LanguageSelector />}
 
-        {right}
+          {right}
 
-        {/* Notification Bell Icon */}
-        <Pressable
-          onPress={() => router.push('/notifications')}
-          accessibilityRole="button"
-          accessibilityLabel="Open notifications"
-          style={({ pressed }) => [styles.bellWrap, pressed && { opacity: 0.75 }]}
-        >
-          <Text style={styles.bellIcon}>🔔</Text>
-          <View style={styles.unreadBadge}>
-            <Text style={styles.unreadBadgeText}>{unreadCount > 0 ? (unreadCount > 9 ? '9+' : unreadCount) : '2'}</Text>
-          </View>
-        </Pressable>
-
-        {showWallet && (
+          {/* Luxury Notification Bell */}
           <Pressable
-            onPress={() => router.push('/wallet')}
+            onPress={() => {
+              triggerHaptic();
+              router.push('/notifications');
+            }}
             accessibilityRole="button"
-            accessibilityLabel="Open wallet"
-            style={({ pressed }) => [styles.walletWrap, pressed && { opacity: 0.75 }]}
+            accessibilityLabel="Open notifications"
+            style={({ pressed }) => [styles.bellWrap, pressed && { opacity: 0.8, transform: [{ scale: 0.94 }] }]}
           >
-            <Text style={styles.walletIcon}>💰</Text>
-            <Text style={styles.walletText}>
-              {maskWalletBalance ? '₹***' : formatCurrency(balance || 100)}
-            </Text>
+            <Text style={styles.bellIcon}>🔔</Text>
+            {unreadCount > 0 && (
+              <View style={styles.unreadBadge}>
+                <Text style={styles.unreadBadgeText}>
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </Text>
+              </View>
+            )}
           </Pressable>
-        )}
+
+          {/* Luxury Metallic Wallet Button */}
+          {showWallet && (
+            <Pressable
+              onPress={() => {
+                triggerHaptic();
+                router.push('/wallet');
+              }}
+              accessibilityRole="button"
+              accessibilityLabel="Open wallet"
+              style={({ pressed }) => [styles.walletWrap, pressed && { opacity: 0.85, transform: [{ scale: 0.95 }] }]}
+            >
+              <LinearGradient
+                colors={['#FEF3C7', '#FDE68A']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={StyleSheet.absoluteFill}
+              />
+              <Text style={styles.walletIcon}>💰</Text>
+              <Text style={styles.walletText}>
+                {maskWalletBalance ? '₹***' : formatCurrency(balance || 100)}
+              </Text>
+              <View style={styles.walletPlus}>
+                <Text style={styles.walletPlusText}>+</Text>
+              </View>
+            </Pressable>
+          )}
+        </View>
       </View>
 
       {/* Live Panchang Ticker Pill */}
       {showTicker && (
         <View style={styles.tickerPill}>
+          <View style={styles.tickerPulseDot} />
           <View style={{ flex: 1 }}>
             <Text style={styles.tickerText} numberOfLines={1}>
-              🌅 Sunrise 06:12 AM · <Text style={{ fontWeight: '800', color: colors.gold }}>Abhijit Muhurat 11:45 AM</Text>
+              🌅 Sunrise 06:12 AM · <Text style={{ fontWeight: '800', color: '#D97706' }}>Abhijit Muhurat 11:45 AM</Text>
             </Text>
           </View>
-
-          {/* Shubh Tithi Badge from design screenshot */}
           <View style={styles.shubhBadge}>
-            <Text style={styles.shubhText}>Shubh Tithi</Text>
+            <Text style={styles.shubhText}>✨ Shubh Tithi</Text>
           </View>
         </View>
       )}
@@ -134,74 +181,92 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.xs + 2,
+    justifyContent: 'space-between',
     paddingHorizontal: spacing.md,
-    paddingTop: spacing.md,
+    paddingTop: spacing.xs,
     paddingBottom: spacing.xs,
+    gap: 8,
   },
   backBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: radius.pill,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FFFFFF',
-    borderTopWidth: 1.5,
-    borderLeftWidth: 1.5,
-    borderTopColor: '#FFFFFF',
-    borderLeftColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: 'rgba(191, 219, 254, 0.6)',
-    borderRightColor: 'rgba(191, 219, 254, 0.6)',
-    shadowColor: '#BFDBFE',
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 0.6,
+    borderWidth: 1.5,
+    borderColor: 'rgba(226, 232, 240, 0.9)',
+    shadowColor: '#CBD5E1',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.35,
     shadowRadius: 6,
     elevation: 3,
-    marginRight: 4,
   },
   backBtnPressed: {
     opacity: 0.8,
     transform: [{ scale: 0.92 }],
   },
-  titleCol: { flex: 1, paddingRight: spacing.xs },
+  titleCol: {
+    flex: 1,
+    paddingRight: 4,
+  },
   title: {
-    fontSize: 24,
+    fontSize: 22,
     color: '#1E1B4B',
-    fontWeight: '800',
-    lineHeight: 28,
-    letterSpacing: -0.3,
+    fontWeight: '900',
+    lineHeight: 26,
+    letterSpacing: -0.4,
+  },
+  subtitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginTop: 3,
+  },
+  subDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#10B981',
   },
   subtitle: {
-    ...typography.small,
+    fontSize: 11.5,
     color: '#64748B',
-    marginTop: 2,
-    fontSize: 12.5,
-    fontWeight: '600',
+    fontWeight: '700',
+    letterSpacing: 0.2,
   },
 
+  /* Right Cluster */
+  rightCluster: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+
+  /* Notification Bell */
   bellWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: 'rgba(226, 232, 240, 0.8)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(226, 232, 240, 0.9)',
     position: 'relative',
     shadowColor: '#CBD5E1',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 4,
+    shadowOpacity: 0.35,
+    shadowRadius: 6,
     elevation: 2,
   },
-  bellIcon: { fontSize: 16 },
+  bellIcon: {
+    fontSize: 16,
+  },
   unreadBadge: {
     position: 'absolute',
-    top: -2,
-    right: -2,
+    top: -3,
+    right: -3,
     backgroundColor: '#EF4444',
     borderRadius: 8,
     minWidth: 16,
@@ -212,26 +277,52 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: '#FFFFFF',
   },
-  unreadBadgeText: { ...typography.tiny, color: colors.white, fontSize: 9.5, fontWeight: '900' },
+  unreadBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 9,
+    fontWeight: '900',
+  },
 
+  /* Wallet Button */
   walletWrap: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     borderRadius: radius.pill,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: '#FDE68A',
-    backgroundColor: '#FFFBEB',
-    shadowColor: '#FDE68A',
+    overflow: 'hidden',
+    shadowColor: '#D97706',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 3,
   },
-  walletIcon: { fontSize: 13 },
-  walletText: { ...typography.small, color: '#92400E', fontWeight: '800', fontSize: 13 },
+  walletIcon: {
+    fontSize: 13,
+  },
+  walletText: {
+    fontSize: 12.5,
+    color: '#92400E',
+    fontWeight: '900',
+  },
+  walletPlus: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: 'rgba(180, 83, 9, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 1,
+  },
+  walletPlusText: {
+    fontSize: 10,
+    fontWeight: '900',
+    color: '#B45309',
+    lineHeight: 11,
+  },
 
   /* Ticker */
   tickerPill: {
@@ -241,26 +332,40 @@ const styles = StyleSheet.create({
     gap: 8,
     marginHorizontal: spacing.md,
     marginTop: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: radius.pill,
     backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: 'rgba(226, 232, 240, 0.8)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(226, 232, 240, 0.9)',
     shadowColor: '#CBD5E1',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 2,
   },
-  tickerText: { ...typography.tiny, color: '#64748B', fontSize: 11, fontWeight: '600' },
+  tickerPulseDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#059669',
+  },
+  tickerText: {
+    color: '#475569',
+    fontSize: 10.5,
+    fontWeight: '600',
+  },
   shubhBadge: {
     backgroundColor: '#ECFDF5',
     borderRadius: radius.pill,
-    paddingHorizontal: 10,
-    paddingVertical: 3,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
     borderWidth: 1,
-    borderColor: 'rgba(5, 150, 105, 0.2)',
+    borderColor: 'rgba(5, 150, 105, 0.25)',
   },
-  shubhText: { ...typography.tiny, color: '#059669', fontSize: 10.5, fontWeight: '800' },
+  shubhText: {
+    color: '#059669',
+    fontSize: 9.5,
+    fontWeight: '800',
+  },
 });
