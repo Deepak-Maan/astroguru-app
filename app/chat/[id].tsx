@@ -231,31 +231,35 @@ export default function ChatScreen() {
     }
   }, [astrologer?.id]);
 
+  const elapsedCountRef = useRef(0);
+
   useEffect(() => {
     if (!active || !astrologer) return;
 
+    elapsedCountRef.current = 0;
+
     const t = setInterval(() => {
-      setElapsed((prev) => {
-        const next = prev + 1;
-        if (next > 0 && next % 60 === 0) {
-          const minute = next / 60 + 1;
-          const ok = debit(
-            astrologer.pricePerMin,
-            `Consult · ${astrologer.name} (min ${minute})`,
-          );
-          if (ok) {
-            billMinute(astrologer.id, astrologer.pricePerMin);
-          } else {
-            setRanOut(true);
-            endSession(astrologer.id);
-          }
+      elapsedCountRef.current += 1;
+      const count = elapsedCountRef.current;
+      setElapsed(count);
+
+      if (count > 0 && count % 60 === 0) {
+        const minute = Math.floor(count / 60) + 1;
+        const ok = debit(
+          astrologer.pricePerMin,
+          `Consult · ${astrologer.name} (min ${minute})`,
+        );
+        if (ok) {
+          billMinute(astrologer.id, astrologer.pricePerMin);
+        } else {
+          setRanOut(true);
+          endSession(astrologer.id);
         }
-        return next;
-      });
+      }
     }, 1000);
 
     return () => clearInterval(t);
-  }, [active, astrologer, debit, billMinute, endSession]);
+  }, [active, astrologer?.id]);
 
   function send(textToSend?: string) {
     const text = (textToSend || draft).trim();
