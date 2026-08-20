@@ -69,12 +69,14 @@ export const useWalletStore = create<WalletState>()(
         const userId = get().getActiveUserId();
         const wallets = { ...(get().userWallets || {}) };
         const current = wallets[userId] || createDefaultWallet();
+        const currentBalance = typeof current?.balance === 'number' ? current.balance : INITIAL_WELCOME_BALANCE;
+        const currentTxns = Array.isArray(current?.transactions) ? current.transactions : [];
 
         const updatedWallet: UserWalletData = {
-          balance: current.balance + amount,
+          balance: currentBalance + (amount || 0),
           transactions: [
-            { id: uid(), type: 'topup', amount, label, at: Date.now() },
-            ...current.transactions,
+            { id: uid(), type: 'topup', amount: amount || 0, label, at: Date.now() },
+            ...currentTxns,
           ],
         };
 
@@ -91,14 +93,16 @@ export const useWalletStore = create<WalletState>()(
         const userId = get().getActiveUserId();
         const wallets = { ...(get().userWallets || {}) };
         const current = wallets[userId] || createDefaultWallet();
+        const currentBalance = typeof current?.balance === 'number' ? current.balance : INITIAL_WELCOME_BALANCE;
+        const currentTxns = Array.isArray(current?.transactions) ? current.transactions : [];
 
-        if (current.balance < amount) return false;
+        if (currentBalance < amount) return false;
 
         const updatedWallet: UserWalletData = {
-          balance: current.balance - amount,
+          balance: currentBalance - amount,
           transactions: [
             { id: uid(), type: 'debit', amount, label, at: Date.now() },
-            ...current.transactions,
+            ...currentTxns,
           ],
         };
 
