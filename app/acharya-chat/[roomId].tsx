@@ -30,6 +30,7 @@ import { useAuthStore } from '../../src/store/authStore';
 import { useJyotishiStore } from '../../src/store/jyotishiStore';
 import { formatCurrency } from '../../src/utils';
 import { subscribeToFirebaseRoomMessages } from '../../src/services/firebaseRealtimeService';
+import { generateAIAstrologyReply } from '../../src/services/ai/aiAstrologyEngine';
 
 let idC = 0;
 const nid = () => `ac-${Date.now()}-${++idC}`;
@@ -428,10 +429,23 @@ export default function AcharyaChatScreen() {
                 <Text style={styles.composerIcon}>⚡</Text>
               </Pressable>
 
+              {/* ✨ AI Auto-Draft Button */}
+              <Pressable
+                onPress={() => {
+                  const lastSeekerMsg = [...messages].reverse().find((m) => (m.role as string) === 'seeker' || (m.role as string) === 'user');
+                  const question = lastSeekerMsg?.text || 'Career and marriage future';
+                  const aiDraft = generateAIAstrologyReply(question, null, null);
+                  setDraft(aiDraft);
+                }}
+                style={[styles.composerIconBtn, { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }]}
+              >
+                <Text style={styles.composerIcon}>✨</Text>
+              </Pressable>
+
               <TextInput
                 value={draft}
                 onChangeText={setDraft}
-                placeholder={isWaiting ? 'Accept session to reply…' : 'Type Vedic guidance…'}
+                placeholder={isWaiting ? 'Accept session to reply…' : 'Type or tap ✨ for AI Vedic reply…'}
                 placeholderTextColor={colors.textFaint}
                 style={styles.composerInput}
                 multiline

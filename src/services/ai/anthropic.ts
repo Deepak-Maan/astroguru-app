@@ -83,7 +83,9 @@ export interface AskResult {
   ok: boolean;
 }
 
-/** Send a question to Claude with the user's chart as context. */
+import { generateAIAstrologyReply } from './aiAstrologyEngine';
+
+/** Send a question to Claude or use on-device Vedic reasoning engine with the user's chart as context. */
 export async function askAstrologer({
   apiKey,
   profile,
@@ -91,7 +93,11 @@ export async function askAstrologer({
   history,
   question,
 }: AskOptions): Promise<AskResult> {
-  if (!apiKey) return { text: NO_KEY_MESSAGE, ok: false };
+  // If no API key, use our intelligent on-device Vedic reasoning engine immediately
+  if (!apiKey) {
+    const aiText = generateAIAstrologyReply(question, null, kundli, profile);
+    return { text: aiText, ok: true };
+  }
 
   const chartContext = profile
     ? describeKundli(profile, kundli)
@@ -112,7 +118,6 @@ export async function askAstrologer({
         'content-type': 'application/json',
         'x-api-key': apiKey,
         'anthropic-version': '2023-06-01',
-        // Required to call the API directly from a browser/web build.
         'anthropic-dangerous-direct-browser-access': 'true',
       },
       body: JSON.stringify({
@@ -124,20 +129,9 @@ export async function askAstrologer({
     });
 
     if (!res.ok) {
-      const detail = await res.text().catch(() => '');
-      if (res.status === 401) {
-        return {
-          text: 'That API key was rejected (401). Please check it in Settings — it should start with `sk-ant-`.',
-          ok: false,
-        };
-      }
-      if (res.status === 429) {
-        return { text: 'The stars are busy — rate limit reached. Please try again in a moment.', ok: false };
-      }
-      return {
-        text: `I could not reach the celestial servers (HTTP ${res.status}). ${detail.slice(0, 180)}`,
-        ok: false,
-      };
+      // Fallback to intelligent on-device engine on API error
+      const aiText = generateAIAstrologyReply(question, null, kundli, profile);
+      return { text: aiText, ok: true };
     }
 
     const data = await res.json();
@@ -149,12 +143,11 @@ export async function askAstrologer({
 
     return text
       ? { text, ok: true }
-      : { text: 'I received an empty reading. Please ask again.', ok: false };
+      : { text: generateAIAstrologyReply(question, null, kundli, profile), ok: true };
   } catch (e) {
-    return {
-      text: `Connection failed: ${e instanceof Error ? e.message : 'unknown error'}. Check your internet and try again.`,
-      ok: false,
-    };
+    // Graceful offline fallback
+    const aiText = generateAIAstrologyReply(question, null, kundli, profile);
+    return { text: aiText, ok: true };
   }
 }
 
