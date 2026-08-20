@@ -222,25 +222,28 @@ export default function WalletScreen() {
         </View>
 
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-          {/* ── Section 1: AstroGold Luxury Metal Card ── */}
+          {/* ── Section 1: AstroGold Metallic Card ── */}
           <View style={styles.luxuryCardContainer}>
             <LinearGradient
-              colors={['#0F172A', '#1E1B4B', '#2E1065']}
+              colors={['#1E1B4B', '#311042', '#1E1B4B']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={StyleSheet.absoluteFill}
             />
-
-            {/* Glowing Celestial Ring Overlay */}
-            <View style={styles.cardGlowOrb} />
-
+            {/* Diagonal holographic shimmer overlay */}
+            <LinearGradient
+              colors={['rgba(217, 119, 6, 0.20)', 'rgba(255, 255, 255, 0.05)', 'rgba(5, 150, 105, 0.15)']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={StyleSheet.absoluteFill}
+            />
             <View style={styles.cardHeaderRow}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <Text style={{ fontSize: 18 }}>🪐</Text>
-                <Text style={styles.cardBrandName}>ASTROGURU GOLD</Text>
+                <Text style={{ fontSize: 18 }}>👑</Text>
+                <Text style={styles.cardBrandName}>ASTROGURU GOLD VIP</Text>
               </View>
               <View style={styles.vipPill}>
-                <Text style={styles.vipPillText}>⚡ AUTO-ACTIVE</Text>
+                <Text style={styles.vipPillText}>⚡ 1-TAP ACTIVE</Text>
               </View>
             </View>
 

@@ -22,6 +22,8 @@ import { ChatBubble } from '../../src/components/ChatBubble';
 import { EmptyState } from '../../src/components/EmptyState';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { ASTROLOGERS } from '../../src/data/astrologers';
+import { RASHIS } from '../../src/data/rashis';
+import { NAKSHATRAS } from '../../src/data/nakshatras';
 import { greetingFor, replyTo, typingDelay } from '../../src/services/consult/replies';
 import { useChatStore } from '../../src/store/chatStore';
 import { useLiveChatStore } from '../../src/store/liveChatStore';
@@ -138,6 +140,7 @@ export default function ChatScreen() {
   const [elapsed, setElapsed] = useState(0);
   const [ranOut, setRanOut] = useState(false);
   const [showRechargeDrawer, setShowRechargeDrawer] = useState(false);
+  const [showKundliPeek, setShowKundliPeek] = useState(false);
   const [mode, setMode] = useState<'chat' | 'call'>('chat');
   const [isMuted, setIsMuted] = useState(false);
   const [isSpeaker, setIsSpeaker] = useState(false);
@@ -380,21 +383,29 @@ export default function ChatScreen() {
         {/* Sub-Header Session Info Strip */}
         <View style={styles.strip}>
           <Text style={styles.stripText}>
-            Spent: {formatCurrency(cost)} · ~{minLeft} min remaining
+            Spent: {formatCurrency(cost)} · ~{minLeft}m
           </Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            {/* Kundli Peek Button */}
+            <Pressable
+              onPress={() => setShowKundliPeek(true)}
+              style={styles.kundliPeekBtn}
+            >
+              <Text style={styles.kundliPeekBtnText}>🪐 Kundli</Text>
+            </Pressable>
+
             <Pressable
               onPress={() => setMode(mode === 'chat' ? 'call' : 'chat')}
               style={styles.modeToggle}
             >
               <LinearGradient
-                colors={mode === 'call' ? [colors.saffron, colors.gold] : ['#F1F5F9', '#E2E8F0']}
+                colors={mode === 'call' ? ['#059669', '#047857'] : ['#F8FAFC', '#E2E8F0']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.modeToggleGrad}
               >
-                <Text style={[styles.modeToggleText, mode === 'call' && { color: colors.white }]}>
-                  {mode === 'chat' ? '📞 Audio Call' : '💬 Live Chat'}
+                <Text style={[styles.modeToggleText, mode === 'call' && { color: '#FFFFFF' }]}>
+                  {mode === 'chat' ? '📞 Audio' : '💬 Chat'}
                 </Text>
               </LinearGradient>
             </Pressable>
@@ -627,7 +638,7 @@ export default function ChatScreen() {
                         <Text style={styles.popularTagText}>🌟 POPULAR</Text>
                       </View>
                     )}
-                    {pack.best && (
+              {pack.best && (
                       <View style={[styles.popularTag, { backgroundColor: colors.gold }]}>
                         <Text style={styles.popularTagText}>👑 BEST VALUE</Text>
                       </View>
@@ -649,6 +660,72 @@ export default function ChatScreen() {
                   </Text>
                 </Pressable>
               )}
+            </View>
+          </View>
+        </Modal>
+
+        {/* ── KUNDLI PEEK MODAL DRAWER ── */}
+        <Modal
+          visible={showKundliPeek}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setShowKundliPeek(false)}
+        >
+          <View style={styles.rechargeOverlay}>
+            <Pressable
+              style={StyleSheet.absoluteFill}
+              onPress={() => setShowKundliPeek(false)}
+            />
+            <View style={[styles.rechargeCard, { maxHeight: '80%' }]}>
+              <View style={styles.rechargeHandle} />
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Text style={styles.rechargeTitle}>🪐 Janam Kundli Quick Peek</Text>
+                <Pressable onPress={() => setShowKundliPeek(false)} hitSlop={8}>
+                  <Text style={{ color: '#94A3B8', fontWeight: '800', fontSize: 13 }}>✕ Close</Text>
+                </Pressable>
+              </View>
+              <Text style={styles.rechargeSub}>
+                Real-time chart parameters shared with {astrologer.name}
+              </Text>
+
+              <View style={styles.kundliPeekGrid}>
+                <View style={styles.peekGridItem}>
+                  <Text style={styles.peekItemLabel}>Ascendant (Lagna)</Text>
+                  <Text style={styles.peekItemVal}>{kundli ? RASHIS[kundli.lagnaIndex]?.sanskrit || 'Mesha' : 'Mesha (Aries ♈)'}</Text>
+                </View>
+                <View style={styles.peekGridItem}>
+                  <Text style={styles.peekItemLabel}>Moon Sign (Rashi)</Text>
+                  <Text style={styles.peekItemVal}>{kundli ? RASHIS[kundli.moonRashiIndex]?.sanskrit || 'Vrishabha' : 'Vrishabha (Taurus ♉)'}</Text>
+                </View>
+                <View style={styles.peekGridItem}>
+                  <Text style={styles.peekItemLabel}>Moon Nakshatra</Text>
+                  <Text style={styles.peekItemVal}>{kundli ? NAKSHATRAS[kundli.moonNakshatraIndex]?.name || 'Rohini' : 'Rohini (Pada 2)'}</Text>
+                </View>
+                <View style={styles.peekGridItem}>
+                  <Text style={styles.peekItemLabel}>Current Mahadasha</Text>
+                  <Text style={styles.peekItemVal}>Jupiter - Saturn (2026)</Text>
+                </View>
+                <View style={styles.peekGridItem}>
+                  <Text style={styles.peekItemLabel}>Manglik Dosha</Text>
+                  <Text style={[styles.peekItemVal, { color: kundli?.mangalDosha ? '#EF4444' : '#059669' }]}>
+                    {kundli?.mangalDosha ? '⚠️ Present (Mild)' : '✅ Not Present (Shant)'}
+                  </Text>
+                </View>
+                <View style={styles.peekGridItem}>
+                  <Text style={styles.peekItemLabel}>Lucky Gemstone</Text>
+                  <Text style={styles.peekItemVal}>Natural Yellow Sapphire / Panna</Text>
+                </View>
+              </View>
+
+              <Pressable
+                onPress={() => {
+                  setShowKundliPeek(false);
+                  router.push('/(tabs)/kundli');
+                }}
+                style={styles.fullKundliBtn}
+              >
+                <Text style={styles.fullKundliBtnText}>Open Full Planetary Kundli Chart ›</Text>
+              </Pressable>
             </View>
           </View>
         </Modal>
@@ -983,8 +1060,61 @@ const styles = StyleSheet.create({
   },
   rechargeMins: {
     fontSize: 10.5,
-    fontWeight: '600',
-    color: colors.textMuted,
+    color: colors.textFaint,
     marginTop: 2,
+  },
+
+  /* Kundli Peek Button & Drawer Styles */
+  kundliPeekBtn: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: radius.pill,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  kundliPeekBtnText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#059669',
+  },
+  kundliPeekGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginVertical: 12,
+  },
+  peekGridItem: {
+    flex: 1,
+    minWidth: '47%',
+    backgroundColor: '#F8FAFC',
+    borderRadius: radius.md,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  peekItemLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#64748B',
+    textTransform: 'uppercase',
+  },
+  peekItemVal: {
+    fontSize: 12.5,
+    fontWeight: '800',
+    color: '#1E1B4B',
+    marginTop: 2,
+  },
+  fullKundliBtn: {
+    backgroundColor: '#059669',
+    borderRadius: radius.lg,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  fullKundliBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '900',
+    fontSize: 13,
   },
 });

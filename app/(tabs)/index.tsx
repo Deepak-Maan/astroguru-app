@@ -255,6 +255,52 @@ export default function Home() {
             </View>
           </Pressable>
 
+          {/* 🪐 Live Celestial Graha Radar Widget */}
+          <View style={styles.grahaRadarCard}>
+            <View style={styles.grahaRadarHeader}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <View style={styles.livePulseDot} />
+                <Text style={styles.grahaRadarTitle}>LIVE CELESTIAL GRAHA RADAR</Text>
+              </View>
+              <Text style={styles.grahaRadarSub}>Current Transits vs Your Chart</Text>
+            </View>
+
+            <View style={styles.grahaPillGrid}>
+              <View style={styles.grahaTransitPill}>
+                <Text style={{ fontSize: 14 }}>🪐</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.grahaPillName}>Brihaspati (Jupiter) in 11th</Text>
+                  <Text style={styles.grahaPillEffect}>High financial & network gains active</Text>
+                </View>
+                <View style={styles.auspiciousBadge}>
+                  <Text style={styles.auspiciousBadgeText}>+85% BENEFIC</Text>
+                </View>
+              </View>
+
+              <View style={styles.grahaTransitPill}>
+                <Text style={{ fontSize: 14 }}>✨</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.grahaPillName}>Shukra (Venus) in 5th</Text>
+                  <Text style={styles.grahaPillEffect}>Romantic bliss & creative clarity</Text>
+                </View>
+                <View style={styles.auspiciousBadge}>
+                  <Text style={styles.auspiciousBadgeText}>+92% HARMONY</Text>
+                </View>
+              </View>
+
+              <View style={styles.grahaTransitPill}>
+                <Text style={{ fontSize: 14 }}>🛡️</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.grahaPillName}>Shani (Saturn) in 10th</Text>
+                  <Text style={styles.grahaPillEffect}>Disciplined career elevation & stability</Text>
+                </View>
+                <View style={[styles.auspiciousBadge, { backgroundColor: '#FEF3C7', borderColor: '#FDE68A' }]}>
+                  <Text style={[styles.auspiciousBadgeText, { color: '#B45309' }]}>KARMA SHIELD</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+
           {/* 8-Grid Super App Quick Actions */}
           <View>
             <SectionHeader title="✨ Vedic Astro Services" subtitle="Instant consultations & spiritual tools" />
@@ -817,5 +863,77 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: '#0284C7',
     fontWeight: '700',
+  },
+
+  /* Graha Radar Widget Styles */
+  grahaRadarCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 22,
+    padding: 16,
+    borderWidth: 1.5,
+    borderColor: 'rgba(226, 232, 240, 0.9)',
+    shadowColor: '#CBD5E1',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 3,
+    gap: 12,
+  },
+  grahaRadarHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+    paddingBottom: 8,
+  },
+  grahaRadarTitle: {
+    fontSize: 10.5,
+    fontWeight: '900',
+    color: '#059669',
+    letterSpacing: 0.5,
+  },
+  grahaRadarSub: {
+    fontSize: 9.5,
+    color: '#64748B',
+    fontWeight: '600',
+  },
+  grahaPillGrid: {
+    gap: 8,
+  },
+  grahaTransitPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  grahaPillName: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#1E1B4B',
+  },
+  grahaPillEffect: {
+    fontSize: 10,
+    color: '#64748B',
+    fontWeight: '500',
+    marginTop: 1,
+  },
+  auspiciousBadge: {
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 7,
+    paddingVertical: 2.5,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+  },
+  auspiciousBadgeText: {
+    fontSize: 9,
+    fontWeight: '900',
+    color: '#059669',
+    letterSpacing: 0.3,
   },
 });

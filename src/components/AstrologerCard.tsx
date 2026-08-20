@@ -1,5 +1,5 @@
-import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { Platform } from 'react-native';
@@ -15,6 +15,9 @@ interface Props {
 }
 
 export function AstrologerCard({ astrologer: a, onPress, compact = false }: Props) {
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const barAnims = useRef(Array.from({ length: 5 }, () => new Animated.Value(4))).current;
+
   const triggerAudioPreview = (e: any) => {
     e.stopPropagation();
     try {
@@ -22,6 +25,28 @@ export function AstrologerCard({ astrologer: a, onPress, compact = false }: Prop
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       }
     } catch (_) {}
+
+    if (isPlayingAudio) {
+      setIsPlayingAudio(false);
+      barAnims.forEach((anim) => anim.setValue(4));
+    } else {
+      setIsPlayingAudio(true);
+      const loops = barAnims.map((anim, i) =>
+        Animated.loop(
+          Animated.sequence([
+            Animated.timing(anim, { toValue: 12 + (i % 3) * 4, duration: 180 + i * 50, useNativeDriver: false }),
+            Animated.timing(anim, { toValue: 3 + (i % 2) * 3, duration: 180 + i * 50, useNativeDriver: false }),
+          ])
+        )
+      );
+      loops.forEach((l) => l.start());
+
+      setTimeout(() => {
+        setIsPlayingAudio(false);
+        loops.forEach((l) => l.stop());
+        barAnims.forEach((anim) => anim.setValue(4));
+      }, 5000);
+    }
   };
 
   /* ── Compact (Horizontal Top Carousel) ── */
@@ -73,6 +98,7 @@ export function AstrologerCard({ astrologer: a, onPress, compact = false }: Prop
 
   /* ── Full Premium Card ── */
   const originalPrice = Math.round(a.pricePerMin * 1.35);
+  const isTopMaster = a.rating >= 4.9;
 
   return (
     <Pressable
@@ -103,12 +129,17 @@ export function AstrologerCard({ astrologer: a, onPress, compact = false }: Prop
 
           {/* Badges Row */}
           <View style={styles.badgeRow}>
+            {isTopMaster && (
+              <View style={styles.topMasterTag}>
+                <Text style={styles.topMasterTagText}>🏆 TOP 1% MASTER</Text>
+              </View>
+            )}
             <View style={styles.verifiedTag}>
               <Text style={styles.verifiedTagText}>👑 VERIFIED</Text>
             </View>
             <View style={[styles.queueTag, !a.online && styles.queueTagBusy]}>
               <Text style={[styles.queueTagText, !a.online && styles.queueTagTextBusy]}>
-                {a.online ? '⚡ Available Now' : '⏱️ ~2m wait'}
+                {a.online ? '⚡ 0m Wait' : '⏱️ ~2m wait'}
               </Text>
             </View>
             <View style={styles.experienceTag}>
@@ -130,11 +161,25 @@ export function AstrologerCard({ astrologer: a, onPress, compact = false }: Prop
       {/* Languages & Consultations Meta */}
       <View style={styles.metaRow}>
         <Text style={styles.metaText} numberOfLines={1}>
-          🗣️ {a.languages.slice(0, 2).join(', ')} · 🔮 {(a.consultations || 4200).toLocaleString()}+ Consultations
+          🗣️ {a.languages.slice(0, 2).join(', ')} · 🔮 {(a.consultations || 4200).toLocaleString()}+
         </Text>
 
-        <Pressable onPress={triggerAudioPreview} style={styles.audioIntroPill}>
-          <Text style={styles.audioIntroText}>▶ 0:10 Intro</Text>
+        {/* Animated Waveform Voice Bio Button */}
+        <Pressable onPress={triggerAudioPreview} style={[styles.audioIntroPill, isPlayingAudio && styles.audioIntroPillActive]}>
+          <Text style={[styles.audioIntroText, isPlayingAudio && { color: '#059669' }]}>
+            {isPlayingAudio ? '⏸ Playing' : '▶ 0:10 Intro'}
+          </Text>
+          <View style={styles.waveformBars}>
+            {barAnims.map((anim, i) => (
+              <Animated.View
+                key={i}
+                style={[
+                  styles.waveformBar,
+                  { height: anim, backgroundColor: isPlayingAudio ? '#059669' : '#94A3B8' },
+                ]}
+              />
+            ))}
+          </View>
         </Pressable>
       </View>
 
@@ -264,7 +309,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   avatarWrap: {
-    borderRadius: 32,
+    position: 'relative',
   },
   headerInfo: {
     flex: 1,
@@ -277,7 +322,7 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 16,
-    fontWeight: '800',
+    fontWeight: '900',
     color: '#1E1B4B',
     flex: 1,
   },
@@ -286,9 +331,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 3,
     backgroundColor: '#FEF3C7',
-    paddingHorizontal: 8,
+    paddingHorizontal: 7,
     paddingVertical: 2.5,
-    borderRadius: 10,
+    borderRadius: radius.pill,
     borderWidth: 1,
     borderColor: '#FDE68A',
   },
@@ -303,44 +348,56 @@ const styles = StyleSheet.create({
     color: '#B45309',
   },
   reviewCount: {
-    fontSize: 9.5,
-    fontWeight: '700',
+    fontSize: 10,
     color: '#92400E',
+    fontWeight: '600',
   },
   badgeRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
     flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: 5,
   },
-  verifiedTag: {
-    backgroundColor: 'rgba(217, 119, 6, 0.12)',
-    paddingHorizontal: 7,
+  topMasterTag: {
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: 'rgba(217, 119, 6, 0.25)',
+    borderColor: '#FDE68A',
+  },
+  topMasterTagText: {
+    fontSize: 9,
+    fontWeight: '900',
+    color: '#B45309',
+    letterSpacing: 0.3,
+  },
+  verifiedTag: {
+    backgroundColor: 'rgba(5, 150, 105, 0.08)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
   },
   verifiedTagText: {
     fontSize: 9,
-    fontWeight: '900',
-    color: '#D97706',
-    letterSpacing: 0.4,
+    fontWeight: '800',
+    color: '#059669',
+    letterSpacing: 0.3,
   },
   queueTag: {
     backgroundColor: '#ECFDF5',
-    paddingHorizontal: 7,
+    paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: 'rgba(5, 150, 105, 0.3)',
+    borderColor: '#A7F3D0',
   },
   queueTagBusy: {
     backgroundColor: '#FFFBEB',
-    borderColor: 'rgba(245, 158, 11, 0.3)',
+    borderColor: '#FDE68A',
   },
   queueTagText: {
-    fontSize: 9,
+    fontSize: 9.5,
     fontWeight: '800',
     color: '#059669',
   },
@@ -348,76 +405,87 @@ const styles = StyleSheet.create({
     color: '#D97706',
   },
   experienceTag: {
-    backgroundColor: '#F1F5F9',
+    backgroundColor: '#F8FAFC',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   experienceTagText: {
-    fontSize: 9,
+    fontSize: 9.5,
     fontWeight: '700',
-    color: '#475569',
+    color: '#64748B',
   },
-
-  /* Specialties */
   specialtiesWrap: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
   },
   specChip: {
-    backgroundColor: 'rgba(5, 150, 105, 0.08)',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: 'rgba(5, 150, 105, 0.2)',
+    borderColor: '#E2E8F0',
   },
   specChipText: {
-    fontSize: 10.5,
+    fontSize: 11,
     fontWeight: '700',
-    color: '#059669',
+    color: '#334155',
   },
-
-  /* Meta */
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 8,
+    gap: 6,
   },
   metaText: {
     fontSize: 11,
-    fontWeight: '600',
     color: '#64748B',
+    fontWeight: '600',
     flex: 1,
   },
   audioIntroPill: {
-    backgroundColor: '#FFFBEB',
-    paddingVertical: 3,
-    paddingHorizontal: 8,
-    borderRadius: radius.pill,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: '#F8FAFC',
     borderWidth: 1,
-    borderColor: '#FDE68A',
+    borderColor: '#E2E8F0',
+    paddingHorizontal: 8,
+    paddingVertical: 3.5,
+    borderRadius: radius.pill,
+  },
+  audioIntroPillActive: {
+    backgroundColor: '#ECFDF5',
+    borderColor: '#A7F3D0',
   },
   audioIntroText: {
     fontSize: 10,
     fontWeight: '800',
-    color: '#D97706',
+    color: '#475569',
   },
-
-  /* Divider */
+  waveformBars: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    height: 12,
+  },
+  waveformBar: {
+    width: 2,
+    borderRadius: 1,
+  },
   cardDivider: {
     height: 1,
     backgroundColor: '#F1F5F9',
-    marginVertical: 2,
   },
-
-  /* Footer */
   cardFooter: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingTop: 2,
   },
   priceContainer: {
     gap: 2,
@@ -428,33 +496,33 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   priceCurrent: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '900',
-    color: '#D97706',
+    color: '#0F172A',
   },
   priceOriginal: {
     fontSize: 12,
-    fontWeight: '600',
     color: '#94A3B8',
     textDecorationLine: 'line-through',
+    fontWeight: '600',
   },
   perMin: {
     fontSize: 11,
-    fontWeight: '700',
     color: '#64748B',
+    fontWeight: '700',
   },
   offerBadge: {
-    alignSelf: 'flex-start',
-    backgroundColor: 'rgba(234, 88, 12, 0.12)',
+    backgroundColor: 'rgba(217, 119, 6, 0.1)',
     paddingHorizontal: 5,
-    paddingVertical: 1,
+    paddingVertical: 1.5,
     borderRadius: 4,
+    alignSelf: 'flex-start',
   },
   offerBadgeText: {
     fontSize: 8.5,
     fontWeight: '900',
-    color: '#EA580C',
-    letterSpacing: 0.4,
+    color: '#D97706',
+    letterSpacing: 0.3,
   },
   actionButtonsRow: {
     flexDirection: 'row',
@@ -464,17 +532,17 @@ const styles = StyleSheet.create({
   consultBtn: {
     paddingHorizontal: 16,
     paddingVertical: 9,
-    borderRadius: 14,
+    borderRadius: radius.pill,
     overflow: 'hidden',
     shadowColor: '#059669',
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.35,
     shadowRadius: 6,
     elevation: 3,
   },
   consultBtnText: {
+    color: '#FFFFFF',
     fontSize: 12.5,
     fontWeight: '900',
-    color: '#FFFFFF',
   },
 });

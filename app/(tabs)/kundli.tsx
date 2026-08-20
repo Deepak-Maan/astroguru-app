@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 import { GradientBackground } from '../../src/components/GradientBackground';
 import { Card } from '../../src/components/Card';
 import { Chip } from '../../src/components/Chip';
@@ -198,8 +199,57 @@ export default function KundliScreen() {
                 </View>
 
                 <View style={{ marginTop: spacing.lg, alignItems: 'center' }}>
-                  <KundliChart kundli={kundli} size={300} />
+                  <KundliChart kundli={kundli} size={300} chartStyle={chartFormat} />
                 </View>
+              </Card>
+
+              {/* ── Magazine-Grade Vedic Kundli PDF Report Preview Card ── */}
+              <Card>
+                <LinearGradient
+                  colors={['#FFFBEB', '#FEF3C7']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={StyleSheet.absoluteFill}
+                />
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                  <View style={{ width: 48, height: 48, borderRadius: 12, backgroundColor: '#D97706', alignItems: 'center', justifyContent: 'center', shadowColor: '#D97706', shadowOpacity: 0.3, shadowRadius: 6, elevation: 3 }}>
+                    <Text style={{ fontSize: 24 }}>📜</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 15, fontWeight: '900', color: '#78350F' }}>
+                      Complete 10-Page Vedic Kundli
+                    </Text>
+                    <Text style={{ fontSize: 11, color: '#92400E', fontWeight: '600', marginTop: 2 }}>
+                      Gold-Sealed PDF · D1, D9 Navamsha, Dasha & Gemstone Upays
+                    </Text>
+                  </View>
+                </View>
+
+                <Pressable
+                  onPress={() => {
+                    try {
+                      if (Platform.OS !== 'web') {
+                        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                      }
+                    } catch (_) {}
+                    router.push('/(tabs)/profile');
+                  }}
+                  style={({ pressed }) => [{
+                    marginTop: 12,
+                    backgroundColor: '#D97706',
+                    paddingVertical: 10,
+                    borderRadius: radius.pill,
+                    alignItems: 'center',
+                    shadowColor: '#D97706',
+                    shadowOpacity: 0.25,
+                    shadowRadius: 4,
+                    elevation: 2,
+                  }, pressed && { opacity: 0.85 }]}
+                >
+                  <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 12.5 }}>
+                    📥 Download Vedic PDF Report (Free) ›
+                  </Text>
+                </Pressable>
               </Card>
 
               <Card>

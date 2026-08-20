@@ -169,6 +169,81 @@ export default function NumerologyScreen() {
             </View>
           </View>
 
+          {/* 🔮 3x3 Sacred Lo Shu Grid Visualizer */}
+          <View>
+            <SectionHeader
+              title="✨ 3x3 Sacred Lo Shu Grid"
+              subtitle="Ancient Planetary Energy & Destiny Planes"
+            />
+
+            <View style={styles.loShuCard}>
+              <View style={styles.loShuGridContainer}>
+                {[
+                  [
+                    { num: 4, label: 'Wood · Wealth', bg: '#ECFDF5', text: '#047857' },
+                    { num: 9, label: 'Fire · Fame', bg: '#FEF2F2', text: '#B91C1C' },
+                    { num: 2, label: 'Earth · Marriage', bg: '#FFFBEB', text: '#B45309' },
+                  ],
+                  [
+                    { num: 3, label: 'Wood · Family', bg: '#ECFDF5', text: '#047857' },
+                    { num: 5, label: 'Earth · Balance', bg: '#FEF3C7', text: '#92400E' },
+                    { num: 7, label: 'Metal · Creativity', bg: '#F8FAFC', text: '#475569' },
+                  ],
+                  [
+                    { num: 8, label: 'Earth · Wisdom', bg: '#FFFBEB', text: '#B45309' },
+                    { num: 1, label: 'Water · Career', bg: '#EFF6FF', text: '#1D4ED8' },
+                    { num: 6, label: 'Metal · Travel', bg: '#F8FAFC', text: '#475569' },
+                  ],
+                ].map((row, rIdx) => (
+                  <View key={rIdx} style={styles.loShuRow}>
+                    {row.map((cell) => {
+                      const dobDigits = dob.replace(/\D/g, '');
+                      const count = dobDigits.split('').filter((d) => d === String(cell.num)).length;
+                      const isPresent = count > 0;
+
+                      return (
+                        <View
+                          key={cell.num}
+                          style={[
+                            styles.loShuCell,
+                            { backgroundColor: cell.bg },
+                            isPresent && styles.loShuCellPresent,
+                          ]}
+                        >
+                          <Text style={[styles.loShuNum, { color: cell.text }]}>
+                            {isPresent ? `${cell.num}`.repeat(Math.min(count, 3)) : `—`}
+                          </Text>
+                          <Text style={styles.loShuSub} numberOfLines={1}>{cell.label}</Text>
+                          {isPresent && (
+                            <View style={styles.activeDot}>
+                              <Text style={{ fontSize: 8, color: '#059669', fontWeight: '900' }}>● {count}x</Text>
+                            </View>
+                          )}
+                        </View>
+                      );
+                    })}
+                  </View>
+                ))}
+              </View>
+
+              {/* Lo Shu Planes Summary */}
+              <View style={styles.loShuPlanes}>
+                <View style={styles.planeItem}>
+                  <Text style={styles.planeTitle}>🧠 Mental Plane (4-9-2)</Text>
+                  <Text style={styles.planeStatus}>Intellect, deep analytical & memory power</Text>
+                </View>
+                <View style={styles.planeItem}>
+                  <Text style={styles.planeTitle}>💖 Emotional Plane (3-5-7)</Text>
+                  <Text style={styles.planeStatus}>Heart feelings, compassion & inner intuition</Text>
+                </View>
+                <View style={styles.planeItem}>
+                  <Text style={styles.planeTitle}>⚡ Practical Plane (8-1-6)</Text>
+                  <Text style={styles.planeStatus}>Execution capability, wealth & material success</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+
           {/* 📜 Past Life & Karmic Insights */}
           <View style={styles.pastLifeCard}>
             <View style={styles.pastLifeHeader}>
@@ -692,5 +767,89 @@ const styles = StyleSheet.create({
     color: '#475569',
     fontWeight: '700',
     flex: 1,
+  },
+
+  /* 3x3 Lo Shu Sacred Grid Styles */
+  loShuCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 16,
+    borderWidth: 1.5,
+    borderColor: 'rgba(226, 232, 240, 0.9)',
+    shadowColor: '#CBD5E1',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 3,
+    gap: 12,
+  },
+  loShuGridContainer: {
+    gap: 8,
+  },
+  loShuRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  loShuCell: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 6,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+    minHeight: 68,
+  },
+  loShuCellPresent: {
+    borderColor: '#059669',
+    borderWidth: 1.5,
+    shadowColor: '#059669',
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  loShuNum: {
+    fontSize: 20,
+    fontWeight: '900',
+    letterSpacing: 1,
+  },
+  loShuSub: {
+    fontSize: 8.5,
+    fontWeight: '800',
+    color: '#64748B',
+    marginTop: 2,
+    textAlign: 'center',
+  },
+  activeDot: {
+    position: 'absolute',
+    top: 4,
+    right: 5,
+  },
+  loShuPlanes: {
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+    paddingTop: 10,
+    gap: 6,
+  },
+  planeItem: {
+    backgroundColor: '#F8FAFC',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  planeTitle: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: '#1E1B4B',
+  },
+  planeStatus: {
+    fontSize: 9.5,
+    color: '#64748B',
+    fontWeight: '500',
+    marginTop: 1,
   },
 });

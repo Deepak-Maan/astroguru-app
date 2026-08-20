@@ -32,6 +32,7 @@ import { AcharyaChatCenter } from '../../src/components/workstation/AcharyaChatC
 
 const CATEGORIES = [
   { id: 'All', label: '🌟 All' },
+  { id: 'Instant', label: '⚡ 0m Wait' },
   { id: 'Online', label: '🟢 Online Now' },
   { id: 'Vedic', label: '🪐 Vedic Jyotish' },
   { id: 'Tarot', label: '🃏 Tarot' },
@@ -109,7 +110,11 @@ export default function Consult() {
         a.languages.some((l: string) => l.toLowerCase().includes(q));
       const matchF =
         filter === 'All' ||
-        (filter === 'Online' ? a.online : a.specialties.some((s: string) => s.toLowerCase().includes(filter.toLowerCase())));
+        (filter === 'Instant'
+          ? a.online
+          : filter === 'Online'
+          ? a.online
+          : a.specialties.some((s: string) => s.toLowerCase().includes(filter.toLowerCase())));
       return matchQ && matchF;
     });
     out = [...out].sort((x, y) => {
