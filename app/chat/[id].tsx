@@ -107,17 +107,30 @@ export default function ChatScreen() {
   const messages = session?.messages ?? [];
 
   const displayMessages = useMemo(() => {
-    if (liveMessages.length > 0) {
-      return liveMessages
-        .filter((lm) => lm.role !== 'system')
-        .map((lm) => ({
+    // Merge liveMessages and local session messages into unified timeline
+    const map = new Map<string, { id: string; role: 'user' | 'assistant'; text: string; at: number }>();
+
+    messages.forEach((m) => {
+      if (m && m.text) {
+        map.set(`${m.role}_${m.text.trim()}`, m);
+      }
+    });
+
+    liveMessages
+      .filter((lm) => lm && lm.role !== 'system' && lm.text)
+      .forEach((lm) => {
+        const role = lm.role === 'acharya' ? ('assistant' as const) : ('user' as const);
+        map.set(`${role}_${lm.text.trim()}`, {
           id: lm.id,
-          role: lm.role === 'acharya' ? ('assistant' as const) : ('user' as const),
+          role,
           text: lm.text,
           at: lm.at,
-        }));
-    }
-    return messages;
+        });
+      });
+
+    const combined = Array.from(map.values());
+    combined.sort((a, b) => (a.at || 0) - (b.at || 0));
+    return combined.length > 0 ? combined : messages;
   }, [liveMessages, messages]);
 
   const [draft, setDraft] = useState('');
@@ -195,15 +208,19 @@ export default function ChatScreen() {
       });
 
       if ((useChatStore.getState().sessions[astrologer.id]?.messages.length ?? 0) === 0) {
+        const greeting = greetingFor(astrologer);
         addMessage(astrologer.id, {
           id: nextId(),
           role: 'assistant',
-          text: greetingFor(astrologer),
+          text: greeting,
           at: Date.now(),
         });
+        if (liveRoomId) {
+          sendLiveMessage(liveRoomId, 'acharya', astrologer.name, greeting);
+        }
       }
     }, 0);
-  }, [astrologer, balance, topup, debit, startSession, billMinute, addMessage, createRoom, currentSeekerId, currentSeekerName]);
+  }, [astrologer, balance, topup, debit, startSession, billMinute, addMessage, createRoom, currentSeekerId, currentSeekerName, liveRoomId, sendLiveMessage]);
 
   useEffect(() => {
     if (astrologer && !session?.startedAt && !session?.ended) {
@@ -271,12 +288,16 @@ export default function ChatScreen() {
     setTyping(true);
     setTimeout(() => {
       setTyping(false);
+      const replyMsgId = nextId();
       addMessage(astrologer.id, {
-        id: nextId(),
+        id: replyMsgId,
         role: 'assistant',
         text: reply,
         at: Date.now(),
       });
+      if (liveRoomId) {
+        sendLiveMessage(liveRoomId, 'acharya', astrologer.name, reply);
+      }
       scrollToEnd();
     }, typingDelay(reply));
   }
