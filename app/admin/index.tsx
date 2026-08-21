@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import {
+  Alert,
   FlatList,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   View,
@@ -24,24 +27,69 @@ import { ASTROLOGERS } from '../../src/data/astrologers';
 import { Astrologer } from '../../src/types';
 import { useRemediesStore } from '../../src/store/remediesStore';
 import { useSpellsStore } from '../../src/store/spellsStore';
+import { useAdminStore, PromoCoupon } from '../../src/store/adminStore';
+import { useAntiHackingStore } from '../../src/store/antiHackingStore';
 import { formatCurrency } from '../../src/utils';
-
-import { sendAdminBroadcastPushNotification, scheduleLocalPushNotification } from '../../src/services/pushNotificationService';
+import {
+  sendAdminBroadcastPushNotification,
+  scheduleLocalPushNotification,
+} from '../../src/services/pushNotificationService';
 import { useUpdateStore } from '../../src/store/updateStore';
 
-type AdminTab = 'overview' | 'spells' | 'orders' | 'inventory' | 'astrologers' | 'revenue' | 'users' | 'push_notifications';
+type AdminTab =
+  | 'overview'
+  | 'kyc'
+  | 'payouts'
+  | 'coupons'
+  | 'radar'
+  | 'security'
+  | 'astrologers'
+  | 'revenue'
+  | 'users'
+  | 'orders'
+  | 'spells'
+  | 'inventory'
+  | 'push_notifications';
 
 export default function AdminDashboard() {
   const router = useRouter();
   const [tab, setTab] = useState<AdminTab>('overview');
   const [astrologers, setAstrologers] = useState<Astrologer[]>([...ASTROLOGERS]);
 
+  // Admin Expanded Store
+  const {
+    kycQueue,
+    payoutQueue,
+    coupons,
+    liveSessions,
+    securityIncidents,
+    bannedFingerprints,
+    platformFeePercent,
+    vipMonthlyPrice,
+    vipAnnualPrice,
+    approveKyc,
+    rejectKyc,
+    approvePayout,
+    rejectPayout,
+    createCoupon,
+    toggleCouponActive,
+    deleteCoupon,
+    refundConsultation,
+    terminateSession,
+    banDevice,
+    unbanDevice,
+    updatePlatformFee,
+    updateVipPricing,
+  } = useAdminStore();
+
+  const antiHackingAudit = useAntiHackingStore((s) => s.lastAudit);
+
   // Manual App Update Broadcast States
   const broadcastUpdate = useUpdateStore((s) => s.broadcastUpdate);
   const currentAppVersion = useUpdateStore((s) => s.currentVersion);
   const [updateVerInput, setUpdateVerInput] = useState('1.6.0');
   const [updateNotesInput, setUpdateNotesInput] = useState(
-    '⚡ New Performance Enhancements & Vedic Astrology Algorithms\n✨ Theme 4 Dark Obsidian Updates\n📱 Live Experts Consultation Improvements'
+    '⚡ New Performance Enhancements & Vedic Algorithms\n🛡️ High-Security RASP Anti-Hacking Protection\n🪪 Aadhaar Watermarking & KYC Verification'
   );
   const [otaBroadcastSuccess, setOtaBroadcastSuccess] = useState<string | null>(null);
 
@@ -53,7 +101,6 @@ export default function AdminDashboard() {
       .filter((n) => n.length > 0);
 
     broadcastUpdate(updateVerInput.trim(), notesArray, false);
-
     setOtaBroadcastSuccess(
       `🎉 App Update v${updateVerInput.trim()} broadcasted! Mobile users will now receive the update modal.`
     );
@@ -62,7 +109,6 @@ export default function AdminDashboard() {
   // Push Broadcast States
   const [notifTitle, setNotifTitle] = useState('');
   const [notifBody, setNotifBody] = useState('');
-  const [notifTarget, setNotifTarget] = useState<'all' | 'vip' | 'astrologers'>('all');
   const [sendingBroadcast, setSendingBroadcast] = useState(false);
   const [broadcastSuccess, setBroadcastSuccess] = useState<string | null>(null);
 
@@ -105,7 +151,18 @@ export default function AdminDashboard() {
   const [newExp, setNewExp] = useState('8');
   const [newLang, setNewLang] = useState('Hindi, English');
 
-  // Toggle online/offline status & trigger automatic push notification
+  // Modal for creating promo coupon
+  const [showCouponModal, setShowCouponModal] = useState(false);
+  const [newCouponCode, setNewCouponCode] = useState('');
+  const [newCouponTitle, setNewCouponTitle] = useState('');
+  const [newCouponDiscount, setNewCouponDiscount] = useState('50');
+  const [newCouponMin, setNewCouponMin] = useState('200');
+  const [newCouponMax, setNewCouponMax] = useState('1000');
+
+  // Modal for rejecting KYC
+  const [rejectKycModal, setRejectKycModal] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState('Document text is blurry or cropped.');
+
   const toggleStatus = (id: string) => {
     setAstrologers((prev) =>
       prev.map((a) => {
@@ -127,20 +184,18 @@ export default function AdminDashboard() {
     );
   };
 
-  // Edit Astrologer Price & Experience
-  const updateAstroPrice = (id: string, newPrice: number) => {
+  const updateAstroPrice = (id: string, newP: number) => {
     setAstrologers((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, pricePerMin: newPrice } : a))
+      prev.map((a) => (a.id === id ? { ...a, pricePerMin: newP } : a))
     );
   };
 
-  const updateAstroExp = (id: string, newExp: number) => {
+  const updateAstroExp = (id: string, newE: number) => {
     setAstrologers((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, experienceYears: newExp } : a))
+      prev.map((a) => (a.id === id ? { ...a, experienceYears: newE } : a))
     );
   };
 
-  // Add new astrologer
   const handleAddAstrologer = () => {
     if (!newName.trim()) return;
     const newAstro: Astrologer = {
@@ -162,6 +217,26 @@ export default function AdminDashboard() {
     setNewName('');
   };
 
+  const handleCreateCoupon = () => {
+    if (!newCouponCode.trim()) return;
+    createCoupon({
+      code: newCouponCode.trim().toUpperCase(),
+      title: newCouponTitle.trim() || `${newCouponDiscount}% Discount Voucher`,
+      discountType: 'percentage',
+      discountValue: Number(newCouponDiscount) || 50,
+      minRecharge: Number(newCouponMin) || 200,
+      maxUsage: Number(newCouponMax) || 1000,
+      expiresAt: '2026-12-31',
+      active: true,
+    });
+    setShowCouponModal(false);
+    setNewCouponCode('');
+    setNewCouponTitle('');
+  };
+
+  const pendingKycCount = kycQueue.filter((k) => k.status === 'pending').length;
+  const pendingPayoutCount = payoutQueue.filter((p) => p.status === 'pending').length;
+  const activeConsultationsCount = liveSessions.filter((s) => s.status === 'active').length;
   const activeCount = astrologers.filter((a) => a.online).length;
 
   return (
@@ -169,13 +244,13 @@ export default function AdminDashboard() {
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
         {/* Admin Header */}
         <ScreenHeader
-          title="⚡ Admin Control Panel"
-          subtitle="Platform & E-Commerce Operations"
+          title="⚡ Enterprise Admin Console"
+          subtitle="AstroGuru Master Operations, KYC & Finance"
           showBack
           hideLanguage
         />
 
-        {/* Tab Switcher Wrapper with Fixed Height */}
+        {/* Tab Switcher */}
         <View style={styles.tabsWrapper}>
           <ScrollView
             horizontal
@@ -184,14 +259,19 @@ export default function AdminDashboard() {
             style={{ flexGrow: 0 }}
           >
             {[
-              { id: 'overview', label: '📊 Stats' },
-              { id: 'spells', label: `🪄 Spells (${spells.length})` },
-              { id: 'orders', label: `🛒 Orders (${orders.length})` },
-              { id: 'inventory', label: '📦 Inventory' },
-              { id: 'astrologers', label: '🔮 Experts' },
-              { id: 'revenue', label: '💸 Revenue' },
+              { id: 'overview', label: '📊 Overview' },
+              { id: 'kyc', label: `🪪 KYC Desk (${pendingKycCount})` },
+              { id: 'payouts', label: `💸 Payouts (${pendingPayoutCount})` },
+              { id: 'coupons', label: `🏷️ Coupons (${coupons.length})` },
+              { id: 'radar', label: `📞 Live Radar (${activeConsultationsCount})` },
+              { id: 'security', label: '🚨 Cyber Defense' },
+              { id: 'astrologers', label: `🔮 Experts (${astrologers.length})` },
+              { id: 'revenue', label: '💰 Revenue & VIP' },
               { id: 'users', label: '👥 Users' },
-              { id: 'push_notifications', label: '🔔 Broadcast Push' },
+              { id: 'push_notifications', label: '📣 Broadcast Push' },
+              { id: 'orders', label: `🛒 Orders (${orders.length})` },
+              { id: 'spells', label: `🪄 Spells (${spells.length})` },
+              { id: 'inventory', label: '📦 Inventory' },
             ].map((t) => (
               <Pressable
                 key={t.id}
@@ -215,137 +295,400 @@ export default function AdminDashboard() {
         </View>
 
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-          {/* ── OVERVIEW TAB ── */}
+          {/* ══════════════════════════════════════════════════
+              1. OVERVIEW TAB
+             ══════════════════════════════════════════════════ */}
           {tab === 'overview' && (
             <View style={{ gap: spacing.md }}>
-              {/* Stat Cards Grid */}
+              {/* Quick Stat Cards */}
               <View style={styles.statsGrid}>
                 <View style={styles.statBox}>
                   <Text style={styles.statIcon}>💰</Text>
-                  <Text style={styles.statNum}>₹1,42,800</Text>
-                  <Text style={styles.statTitle}>Total Gross Revenue</Text>
+                  <Text style={styles.statNum}>₹4,28,500</Text>
+                  <Text style={styles.statTitle}>Total Gross GMV</Text>
                 </View>
 
                 <View style={styles.statBox}>
-                  <Text style={styles.statIcon}>🪄</Text>
-                  <Text style={styles.statNum}>{spellOrders.length} Spells</Text>
-                  <Text style={styles.statTitle}>Spells Booked</Text>
+                  <Text style={styles.statIcon}>📞</Text>
+                  <Text style={[styles.statNum, { color: '#10B981' }]}>{activeConsultationsCount} Active</Text>
+                  <Text style={styles.statTitle}>Live Calls & Chats</Text>
                 </View>
 
                 <View style={styles.statBox}>
-                  <Text style={styles.statIcon}>🛒</Text>
-                  <Text style={styles.statNum}>{orders.length} Orders</Text>
-                  <Text style={styles.statTitle}>Shopping Completed</Text>
+                  <Text style={styles.statIcon}>🪪</Text>
+                  <Text style={[styles.statNum, { color: '#F59E0B' }]}>{pendingKycCount} Pending</Text>
+                  <Text style={styles.statTitle}>KYC Approvals</Text>
                 </View>
 
                 <View style={styles.statBox}>
-                  <Text style={styles.statIcon}>🔮</Text>
-                  <Text style={styles.statNum}>{activeCount} / {astrologers.length}</Text>
-                  <Text style={styles.statTitle}>Online Experts</Text>
+                  <Text style={styles.statIcon}>💸</Text>
+                  <Text style={[styles.statNum, { color: '#EC4899' }]}>{pendingPayoutCount} Requests</Text>
+                  <Text style={styles.statTitle}>Pending Payouts</Text>
                 </View>
               </View>
 
-              {/* Quick Actions */}
+              {/* RASP Cyber Sentinel Snapshot */}
+              <Card style={{ backgroundColor: '#090D16', borderColor: '#1E293B', gap: 10 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <Text style={{ fontSize: 24 }}>🛡️</Text>
+                    <View>
+                      <Text style={{ fontSize: 14, fontWeight: '900', color: '#FFFFFF' }}>
+                        RASP Cyber Sentinel & Threat Radar
+                      </Text>
+                      <Text style={{ fontSize: 11, color: '#94A3B8' }}>
+                        Memory shielding · Anti-Reverse Engineering · HMAC Signing
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={{ backgroundColor: '#065F46', paddingHorizontal: 8, paddingVertical: 3, borderRadius: radius.pill }}>
+                    <Text style={{ fontSize: 9.5, fontWeight: '900', color: '#A7F3D0' }}>100% FORTIFIED</Text>
+                  </View>
+                </View>
+              </Card>
+
+              {/* Quick Operation Jumpers */}
               <Card style={{ gap: spacing.md }}>
-                <SectionHeader title="Platform Controls" />
-                <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+                <SectionHeader title="⚡ Instant Operational Actions" />
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                   <Button
-                    label="🛒 Manage Orders"
+                    label="🪪 Review KYC"
                     variant="gold"
                     size="sm"
                     fullWidth={false}
-                    style={{ flex: 1 }}
-                    onPress={() => setTab('orders')}
+                    style={{ flex: 1, minWidth: 140 }}
+                    onPress={() => setTab('kyc')}
                   />
                   <Button
-                    label="🪄 Manage Spells"
+                    label="💸 Release Payouts"
                     variant="outline"
                     size="sm"
                     fullWidth={false}
-                    style={{ flex: 1 }}
-                    onPress={() => setTab('spells')}
+                    style={{ flex: 1, minWidth: 140 }}
+                    onPress={() => setTab('payouts')}
+                  />
+                  <Button
+                    label="🏷️ Promo Coupons"
+                    variant="outline"
+                    size="sm"
+                    fullWidth={false}
+                    style={{ flex: 1, minWidth: 140 }}
+                    onPress={() => setTab('coupons')}
+                  />
+                  <Button
+                    label="📞 Live Radar"
+                    variant="gold"
+                    size="sm"
+                    fullWidth={false}
+                    style={{ flex: 1, minWidth: 140 }}
+                    onPress={() => setTab('radar')}
                   />
                 </View>
               </Card>
             </View>
           )}
 
-          {/* ── SPELLS & PRICE MANAGEMENT TAB ── */}
-          {tab === 'spells' && (
+          {/* ══════════════════════════════════════════════════
+              2. KYC APPROVALS DESK TAB
+             ══════════════════════════════════════════════════ */}
+          {tab === 'kyc' && (
             <View style={{ gap: spacing.md }}>
-              <SectionHeader title="Spells Catalog & Price Management" subtitle="Edit Spell Fees & Manage Availability" />
+              <SectionHeader
+                title="🪪 Astrologer KYC & Document Approvals Desk"
+                subtitle="Review watermarked Aadhaar, PAN and Jyotish certificates"
+              />
 
-              {spells.map((spell) => (
-                <Card key={spell.id} style={styles.inventoryCard}>
-                  <View style={{ flexDirection: 'row', gap: spacing.md, alignItems: 'center' }}>
-                    <Text style={{ fontSize: 28 }}>{spell.icon}</Text>
+              {kycQueue.map((item) => (
+                <Card key={item.id} style={{ gap: 10, borderLeftWidth: 4, borderLeftColor: item.status === 'approved' ? '#10B981' : item.status === 'rejected' ? '#EF4444' : '#F59E0B' }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.invTitle}>{spell.title}</Text>
-                      <Text style={styles.invSub}>{spell.sanskritName} · {spell.category}</Text>
-                    </View>
-                    <Pressable
-                      onPress={() => toggleSpellAvailable(spell.id)}
-                      style={[styles.toggleBtn, spell.available ? styles.toggleOnline : styles.toggleOffline]}
-                    >
-                      <Text style={[styles.toggleText, { color: spell.available ? colors.success : colors.danger }]}>
-                        {spell.available ? 'ACTIVE' : 'DISABLED'}
+                      <Text style={{ fontSize: 15, fontWeight: '900', color: colors.text }}>
+                        {item.astrologerName}
                       </Text>
-                    </Pressable>
+                      <Text style={{ fontSize: 12, color: colors.textMuted, fontWeight: '700', textTransform: 'capitalize', marginTop: 2 }}>
+                        📄 {item.docType.replace('_', ' ')} · {item.docNumberMasked}
+                      </Text>
+                      <Text style={{ fontSize: 10.5, color: colors.textFaint, marginTop: 2 }}>
+                        🔒 Cryptographic Hash: {item.securityHash} · Submitted {item.submittedAt}
+                      </Text>
+                    </View>
+
+                    <Chip
+                      label={item.status.toUpperCase()}
+                      tone={item.status === 'approved' ? 'teal' : item.status === 'rejected' ? 'rose' : 'gold'}
+                    />
                   </View>
 
-                  <View style={styles.invControlsRow}>
-                    <View style={styles.inputBoxCol}>
-                      <Text style={styles.inputColLabel}>Spell Fee (₹):</Text>
-                      <TextInput
-                        style={styles.invInput}
-                        value={String(spell.price)}
-                        keyboardType="numeric"
-                        onChangeText={(txt) => updateSpellPrice(spell.id, Number(txt) || 0)}
+                  {item.rejectionReason && (
+                    <View style={{ backgroundColor: '#FEF2F2', padding: 8, borderRadius: 8, borderWidth: 1, borderColor: '#FECACA' }}>
+                      <Text style={{ fontSize: 11, color: '#DC2626', fontWeight: '700' }}>
+                        ❌ Rejection Note: {item.rejectionReason}
+                      </Text>
+                    </View>
+                  )}
+
+                  {item.status === 'pending' && (
+                    <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
+                      <Button
+                        label="❌ Reject Document"
+                        variant="outline"
+                        size="sm"
+                        style={{ flex: 1 }}
+                        onPress={() => {
+                          setRejectKycModal(item.id);
+                        }}
+                      />
+                      <Button
+                        label="✅ Approve & Issue Badge"
+                        variant="gold"
+                        size="sm"
+                        style={{ flex: 1 }}
+                        onPress={() => approveKyc(item.id)}
                       />
                     </View>
+                  )}
+                </Card>
+              ))}
+            </View>
+          )}
+
+          {/* ══════════════════════════════════════════════════
+              3. PAYOUTS DESK TAB
+             ══════════════════════════════════════════════════ */}
+          {tab === 'payouts' && (
+            <View style={{ gap: spacing.md }}>
+              <SectionHeader
+                title="💸 Astrologer Bank & UPI Withdrawal Desk"
+                subtitle="Review and release net consultation earnings"
+              />
+
+              {payoutQueue.map((p) => (
+                <Card key={p.id} style={{ gap: 10, borderLeftWidth: 4, borderLeftColor: p.status === 'processed' ? '#10B981' : p.status === 'rejected' ? '#EF4444' : '#F59E0B' }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 16, fontWeight: '900', color: colors.text }}>
+                        {p.astrologerName}
+                      </Text>
+                      <Text style={{ fontSize: 18, fontWeight: '900', color: colors.gold, marginTop: 2 }}>
+                        {formatCurrency(p.amount)}
+                      </Text>
+                      <Text style={{ fontSize: 11.5, color: colors.textMuted, marginTop: 2 }}>
+                        🏦 {p.payoutMethod}: {p.payoutDetails}
+                      </Text>
+                      <Text style={{ fontSize: 10, color: colors.textFaint, marginTop: 2 }}>
+                        Requested on: {p.requestedAt}
+                      </Text>
+                    </View>
+
+                    <Chip
+                      label={p.status.toUpperCase()}
+                      tone={p.status === 'processed' ? 'teal' : p.status === 'rejected' ? 'rose' : 'gold'}
+                    />
+                  </View>
+
+                  {p.utrNumber && (
+                    <View style={{ backgroundColor: '#ECFDF5', padding: 8, borderRadius: 8, borderWidth: 1, borderColor: '#A7F3D0' }}>
+                      <Text style={{ fontSize: 11, color: '#065F46', fontWeight: '800' }}>
+                        🧾 Bank Reference: {p.utrNumber}
+                      </Text>
+                    </View>
+                  )}
+
+                  {p.status === 'pending' && (
+                    <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
+                      <Button
+                        label="❌ Reject Request"
+                        variant="outline"
+                        size="sm"
+                        style={{ flex: 1 }}
+                        onPress={() => rejectPayout(p.id)}
+                      />
+                      <Button
+                        label="⚡ Approve & Release (Auto UTR)"
+                        variant="gold"
+                        size="sm"
+                        style={{ flex: 1 }}
+                        onPress={() => approvePayout(p.id)}
+                      />
+                    </View>
+                  )}
+                </Card>
+              ))}
+            </View>
+          )}
+
+          {/* ══════════════════════════════════════════════════
+              4. PROMO COUPONS & DISCOUNTS TAB
+             ══════════════════════════════════════════════════ */}
+          {tab === 'coupons' && (
+            <View style={{ gap: spacing.md }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <SectionHeader
+                  title="🏷️ Promo Coupons & Cash Bonus Engine"
+                  subtitle="Manage discount codes for consultations & remedies"
+                />
+                <Button
+                  label="➕ New Coupon"
+                  variant="gold"
+                  size="sm"
+                  fullWidth={false}
+                  onPress={() => setShowCouponModal(true)}
+                />
+              </View>
+
+              {coupons.map((c) => (
+                <Card key={c.code} style={{ gap: 8 }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                      <View style={{ backgroundColor: '#EFF6FF', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, borderWidth: 1, borderColor: '#BFDBFE' }}>
+                        <Text style={{ fontSize: 13, fontWeight: '900', color: '#1D4ED8', fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace' }}>
+                          {c.code}
+                        </Text>
+                      </View>
+                      <Text style={{ fontSize: 13, fontWeight: '800', color: colors.text }}>
+                        {c.discountValue}% OFF
+                      </Text>
+                    </View>
+
+                    <Switch
+                      value={c.active}
+                      onValueChange={() => toggleCouponActive(c.code)}
+                      trackColor={{ true: '#10B981', false: '#CBD5E1' }}
+                      thumbColor="#FFFFFF"
+                    />
+                  </View>
+
+                  <Text style={{ fontSize: 12, color: colors.textMuted }}>{c.title}</Text>
+
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', backgroundColor: '#F8FAFC', padding: 8, borderRadius: 8 }}>
+                    <Text style={{ fontSize: 11, color: colors.textFaint }}>
+                      Min Recharge: ₹{c.minRecharge}
+                    </Text>
+                    <Text style={{ fontSize: 11, color: colors.teal, fontWeight: '700' }}>
+                      Redeemed: {c.redeemedCount} / {c.maxUsage}
+                    </Text>
+                    <Text style={{ fontSize: 11, color: colors.textFaint }}>
+                      Exp: {c.expiresAt}
+                    </Text>
                   </View>
                 </Card>
               ))}
+            </View>
+          )}
 
-              <SectionHeader title="Booked Spell Rituals" subtitle={`${spellOrders.length} rituals scheduled`} />
-              {spellOrders.map((ord) => (
-                <Card key={ord.id} style={styles.orderCard}>
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Text style={styles.orderId}>{ord.id}</Text>
+          {/* ══════════════════════════════════════════════════
+              5. LIVE RADAR & DISPUTE REFUND DESK TAB
+             ══════════════════════════════════════════════════ */}
+          {tab === 'radar' && (
+            <View style={{ gap: spacing.md }}>
+              <SectionHeader
+                title="📞 Live Consultation Radar & Dispute Resolution"
+                subtitle="Monitor active sessions & settle seeker refund disputes"
+              />
+
+              {liveSessions.map((sess) => (
+                <Card key={sess.id} style={{ gap: 10, borderLeftWidth: 4, borderLeftColor: sess.status === 'active' ? '#10B981' : sess.status === 'disputed' ? '#EF4444' : '#64748B' }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 14.5, fontWeight: '900', color: colors.text }}>
+                        👤 {sess.seekerName} ↔ 🔮 {sess.astrologerName}
+                      </Text>
+                      <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>
+                        {sess.channel} · Duration: {sess.durationMins} mins · Billed: {formatCurrency(sess.billedAmount)}
+                      </Text>
+                      <Text style={{ fontSize: 10.5, color: colors.textFaint, marginTop: 2 }}>
+                        Session ID: {sess.id} · Started {sess.startedAt}
+                      </Text>
+                    </View>
+
                     <Chip
-                      label={ord.status}
-                      tone={ord.status === 'Ritual Completed' ? 'teal' : ord.status === 'Casting in Progress' ? 'gold' : 'rose'}
+                      label={sess.status.toUpperCase()}
+                      tone={sess.status === 'active' ? 'teal' : sess.status === 'disputed' ? 'rose' : 'default'}
                     />
                   </View>
 
-                  <Text style={styles.orderItemName}>{ord.spellTitle}</Text>
-                  <Text style={styles.orderPrice}>{formatCurrency(ord.price)}</Text>
+                  {sess.disputeReason && (
+                    <View style={{ backgroundColor: '#FEF2F2', padding: 8, borderRadius: 8, borderWidth: 1, borderColor: '#FECACA' }}>
+                      <Text style={{ fontSize: 11.5, color: '#DC2626', fontWeight: '800' }}>
+                        ⚠️ Seeker Dispute: "{sess.disputeReason}"
+                      </Text>
+                    </View>
+                  )}
 
-                  <View style={styles.userInfoBox}>
-                    <Text style={styles.userInfoText}>👤 Seeker Name: <Text style={{ color: colors.text }}>{ord.userName}</Text></Text>
-                    <Text style={styles.userInfoText}>👥 Target Name: <Text style={{ color: colors.text }}>{ord.targetName}</Text></Text>
-                    <Text style={styles.userInfoText}>🎂 DOB: <Text style={{ color: colors.text }}>{ord.dob}</Text></Text>
-                    <Text style={styles.userInfoText}>📝 Intention: <Text style={{ color: colors.text }}>"{ord.intention}"</Text></Text>
-                    <Text style={styles.userInfoText}>💳 Payment Mode: <Text style={{ color: colors.saffron }}>{ord.paymentMethod.toUpperCase()}</Text></Text>
-                    <Text style={styles.userInfoText}>🕒 Placed On: <Text style={{ color: colors.textMuted }}>{ord.date}</Text></Text>
+                  {sess.status === 'disputed' && (
+                    <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
+                      <Button
+                        label="❌ Reject Dispute"
+                        variant="outline"
+                        size="sm"
+                        style={{ flex: 1 }}
+                        onPress={() => terminateSession(sess.id)}
+                      />
+                      <Button
+                        label={`💸 1-Tap Refund (${formatCurrency(sess.billedAmount)})`}
+                        variant="gold"
+                        size="sm"
+                        style={{ flex: 1 }}
+                        onPress={() => refundConsultation(sess.id)}
+                      />
+                    </View>
+                  )}
+                </Card>
+              ))}
+            </View>
+          )}
+
+          {/* ══════════════════════════════════════════════════
+              6. CYBER DEFENSE & INCIDENT LOGS TAB
+             ══════════════════════════════════════════════════ */}
+          {tab === 'security' && (
+            <View style={{ gap: spacing.md }}>
+              <SectionHeader
+                title="🚨 Cyber Defense & Security Incident Logs"
+                subtitle="Live stream of blocked RASP threats, root hooks & banned devices"
+              />
+
+              <Card style={{ backgroundColor: '#090D16', borderColor: '#1E293B', gap: 8 }}>
+                <Text style={{ fontSize: 13, fontWeight: '900', color: '#FFFFFF' }}>
+                  🚫 Blacklisted Device Fingerprints ({bannedFingerprints.length})
+                </Text>
+                {bannedFingerprints.map((fp) => (
+                  <View key={fp} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#1E293B', padding: 8, borderRadius: 8 }}>
+                    <Text style={{ fontSize: 11.5, color: '#F59E0B', fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace', fontWeight: '800' }}>
+                      {fp}
+                    </Text>
+                    <Pressable onPress={() => unbanDevice(fp)} style={{ backgroundColor: '#334155', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4 }}>
+                      <Text style={{ fontSize: 10, color: '#FFFFFF', fontWeight: '800' }}>UNBAN</Text>
+                    </Pressable>
+                  </View>
+                ))}
+              </Card>
+
+              {securityIncidents.map((inc) => (
+                <Card key={inc.id} style={{ gap: 6 }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Text style={{ fontSize: 16 }}>🚨</Text>
+                      <Text style={{ fontSize: 13, fontWeight: '900', color: '#DC2626' }}>
+                        {inc.threatType}
+                      </Text>
+                    </View>
+                    <Chip label={inc.actionTaken} tone={inc.actionTaken === 'BANNED' ? 'rose' : 'gold'} />
                   </View>
 
-                  <View style={styles.statusActionRow}>
+                  <Text style={{ fontSize: 11, color: colors.textMuted }}>
+                    Device: <Text style={{ color: colors.text, fontWeight: '700' }}>{inc.deviceFingerprint}</Text> · IP: {inc.ipAddress}
+                  </Text>
+                  <Text style={{ fontSize: 10, color: colors.textFaint }}>
+                    Detected: {inc.timestamp}
+                  </Text>
+
+                  <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
                     <Button
-                      label="Casting in Progress"
+                      label="🔨 1-Tap Ban Device Fingerprint"
                       variant="outline"
                       size="sm"
-                      disabled={ord.status === 'Casting in Progress' || ord.status === 'Ritual Completed'}
-                      onPress={() => updateSpellOrderStatus(ord.id, 'Casting in Progress')}
-                      style={{ flex: 1 }}
-                    />
-                    <Button
-                      label="Ritual Completed"
-                      variant="gold"
-                      size="sm"
-                      disabled={ord.status === 'Ritual Completed'}
-                      onPress={() => updateSpellOrderStatus(ord.id, 'Ritual Completed')}
-                      style={{ flex: 1 }}
+                      onPress={() => banDevice(inc.deviceFingerprint)}
                     />
                   </View>
                 </Card>
@@ -353,11 +696,257 @@ export default function AdminDashboard() {
             </View>
           )}
 
-          {/* ── USER ORDERS TRACKING TAB ── */}
+          {/* ══════════════════════════════════════════════════
+              7. ASTROLOGERS TAB
+             ══════════════════════════════════════════════════ */}
+          {tab === 'astrologers' && (
+            <View style={{ gap: spacing.md }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Text style={styles.tabHeading}>Manage Panel ({astrologers.length})</Text>
+                <Button
+                  label="➕ New Expert"
+                  variant="gold"
+                  size="sm"
+                  fullWidth={false}
+                  onPress={() => setShowAddModal(true)}
+                />
+              </View>
+
+              {astrologers.map((a) => (
+                <Card key={a.id} style={styles.manageCard}>
+                  <View style={{ flexDirection: 'row', gap: spacing.md, alignItems: 'center' }}>
+                    <Avatar uri={a.avatar} name={a.name} size={50} online={a.online} showStatus />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.manageName}>{a.name}</Text>
+                      <Text style={styles.manageMeta}>
+                        ⭐ {a.rating} ({a.reviews} reviews) · {a.specialties.join(' · ')}
+                      </Text>
+                    </View>
+                    <Pressable
+                      onPress={() => toggleStatus(a.id)}
+                      style={[
+                        styles.toggleBtn,
+                        a.online ? styles.toggleOnline : styles.toggleOffline,
+                      ]}
+                    >
+                      <Text style={[styles.toggleText, { color: a.online ? colors.success : colors.danger }]}>
+                        {a.online ? 'ONLINE' : 'OFFLINE'}
+                      </Text>
+                    </Pressable>
+                  </View>
+
+                  <View style={styles.invControlsRow}>
+                    <View style={styles.inputBoxCol}>
+                      <Text style={styles.inputColLabel}>Price / min (₹):</Text>
+                      <TextInput
+                        style={styles.invInput}
+                        value={String(a.pricePerMin)}
+                        keyboardType="numeric"
+                        onChangeText={(txt) => updateAstroPrice(a.id, Number(txt) || 0)}
+                      />
+                    </View>
+
+                    <View style={styles.inputBoxCol}>
+                      <Text style={styles.inputColLabel}>Experience (Yrs):</Text>
+                      <TextInput
+                        style={styles.invInput}
+                        value={String(a.experienceYears)}
+                        keyboardType="numeric"
+                        onChangeText={(txt) => updateAstroExp(a.id, Number(txt) || 0)}
+                      />
+                    </View>
+                  </View>
+                </Card>
+              ))}
+            </View>
+          )}
+
+          {/* ══════════════════════════════════════════════════
+              8. REVENUE & VIP PRICING CONTROLLER TAB
+             ══════════════════════════════════════════════════ */}
+          {tab === 'revenue' && (
+            <View style={{ gap: spacing.md }}>
+              <Card style={{ gap: 12 }}>
+                <SectionHeader title="Revenue Share & Commission Split" subtitle="Set Global Platform Margin" />
+                <View style={styles.revenueSplitRow}>
+                  <View style={styles.splitBox}>
+                    <Text style={styles.splitPct}>{platformFeePercent}%</Text>
+                    <Text style={styles.splitLabel}>Platform Commission</Text>
+                  </View>
+                  <View style={styles.splitBox}>
+                    <Text style={[styles.splitPct, { color: colors.teal }]}>{100 - platformFeePercent}%</Text>
+                    <Text style={styles.splitLabel}>Astrologer Share</Text>
+                  </View>
+                </View>
+
+                <View style={{ flexDirection: 'row', gap: 8, marginTop: 6 }}>
+                  {[15, 20, 25, 30].map((fee) => (
+                    <Button
+                      key={fee}
+                      label={`${fee}% Fee`}
+                      variant={platformFeePercent === fee ? 'gold' : 'outline'}
+                      size="sm"
+                      style={{ flex: 1 }}
+                      onPress={() => updatePlatformFee(fee)}
+                    />
+                  ))}
+                </View>
+              </Card>
+
+              <Card style={{ gap: 12 }}>
+                <SectionHeader title="👑 AstroVIP Pass Pricing Controller" subtitle="Configure subscription rates" />
+                <View style={{ flexDirection: 'row', gap: 10 }}>
+                  <View style={{ flex: 1, backgroundColor: '#FFFBEB', padding: 12, borderRadius: 10, borderWidth: 1, borderColor: '#FDE68A' }}>
+                    <Text style={{ fontSize: 11, color: '#B45309', fontWeight: '800' }}>MONTHLY VIP PASS</Text>
+                    <Text style={{ fontSize: 18, color: '#D97706', fontWeight: '900', marginTop: 2 }}>₹{vipMonthlyPrice}</Text>
+                  </View>
+                  <View style={{ flex: 1, backgroundColor: '#ECFDF5', padding: 12, borderRadius: 10, borderWidth: 1, borderColor: '#A7F3D0' }}>
+                    <Text style={{ fontSize: 11, color: '#065F46', fontWeight: '800' }}>ANNUAL VIP PASS</Text>
+                    <Text style={{ fontSize: 18, color: '#059669', fontWeight: '900', marginTop: 2 }}>₹{vipAnnualPrice}</Text>
+                  </View>
+                </View>
+              </Card>
+            </View>
+          )}
+
+          {/* ══════════════════════════════════════════════════
+              9. USERS TAB
+             ══════════════════════════════════════════════════ */}
+          {tab === 'users' && (
+            <View style={{ gap: spacing.md }}>
+              <Card padded={false}>
+                <View style={{ padding: spacing.lg, paddingBottom: spacing.sm }}>
+                  <SectionHeader title="Registered Users (1,240)" subtitle="Account statuses & wallet balances" />
+                </View>
+                {[
+                  { name: 'Demo Seeker', email: 'seeker@astroguru.app', wallet: '₹310', role: 'User' },
+                  { name: 'Master Admin', email: 'admin@astroguru.app', wallet: '₹9,999', role: 'Admin' },
+                  { name: 'Rajesh Sharma', email: 'rajesh@gmail.com', wallet: '₹750', role: 'User' },
+                  { name: 'Priyanka Verma', email: 'priyanka@gmail.com', wallet: '₹150', role: 'User' },
+                ].map((u, idx) => (
+                  <View key={idx} style={styles.userRow}>
+                    <Avatar name={u.name} size={42} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.userName}>
+                        {u.name}{' '}
+                        {u.role === 'Admin' && (
+                          <Text style={{ color: colors.saffron, fontSize: 11 }}>⚡ ADMIN</Text>
+                        )}
+                      </Text>
+                      <Text style={styles.userEmail}>{u.email}</Text>
+                    </View>
+                    <Text style={styles.userWallet}>{u.wallet}</Text>
+                  </View>
+                ))}
+              </Card>
+            </View>
+          )}
+
+          {/* ══════════════════════════════════════════════════
+              10. PUSH BROADCAST & OTA TAB
+             ══════════════════════════════════════════════════ */}
+          {tab === 'push_notifications' && (
+            <View style={{ gap: spacing.md }}>
+              <Card style={{ gap: spacing.md }}>
+                <SectionHeader
+                  title="📣 Broadcast Push Notification"
+                  subtitle="Send instant mobile alerts to seekers & astrologers"
+                />
+
+                <View style={styles.field}>
+                  <Text style={styles.fieldLabel}>Notification Title</Text>
+                  <TextInput
+                    value={notifTitle}
+                    onChangeText={setNotifTitle}
+                    placeholder="e.g. 🔴 Acharya Dev is NOW LIVE!"
+                    placeholderTextColor={colors.textFaint}
+                    style={styles.fieldInput}
+                  />
+                </View>
+
+                <View style={styles.field}>
+                  <Text style={styles.fieldLabel}>Notification Message Body</Text>
+                  <TextInput
+                    value={notifBody}
+                    onChangeText={setNotifBody}
+                    placeholder="e.g. Tap now to join instant live audio/video consultation."
+                    placeholderTextColor={colors.textFaint}
+                    multiline
+                    numberOfLines={3}
+                    style={[styles.fieldInput, { height: 70, textAlignVertical: 'top' }]}
+                  />
+                </View>
+
+                {broadcastSuccess && (
+                  <View style={{ backgroundColor: 'rgba(16,185,129,0.15)', padding: spacing.md, borderRadius: radius.md, borderWidth: 1, borderColor: 'rgba(16,185,129,0.4)' }}>
+                    <Text style={{ ...typography.small, color: colors.auroraA, fontWeight: '700', textAlign: 'center' }}>
+                      {broadcastSuccess}
+                    </Text>
+                  </View>
+                )}
+
+                <Button
+                  label={sendingBroadcast ? 'Broadcasting Push Alerts…' : '🚀 Send Instant Push Broadcast (14,200 Devices)'}
+                  variant="gold"
+                  size="md"
+                  loading={sendingBroadcast}
+                  onPress={handleSendBroadcast}
+                />
+              </Card>
+
+              {/* OTA App Updates Broadcaster */}
+              <Card style={{ gap: spacing.md }}>
+                <SectionHeader
+                  title="🚀 In-App Over-The-Air (OTA) Update Broadcaster"
+                  subtitle={`Current App Version: v${currentAppVersion}`}
+                />
+
+                <View style={styles.field}>
+                  <Text style={styles.fieldLabel}>New Version Number</Text>
+                  <TextInput
+                    value={updateVerInput}
+                    onChangeText={setUpdateVerInput}
+                    placeholder="e.g. 1.6.0"
+                    placeholderTextColor={colors.textFaint}
+                    style={styles.fieldInput}
+                  />
+                </View>
+
+                <View style={styles.field}>
+                  <Text style={styles.fieldLabel}>Release Notes (one per line)</Text>
+                  <TextInput
+                    value={updateNotesInput}
+                    onChangeText={setUpdateNotesInput}
+                    multiline
+                    numberOfLines={4}
+                    style={[styles.fieldInput, { height: 80, textAlignVertical: 'top' }]}
+                  />
+                </View>
+
+                {otaBroadcastSuccess && (
+                  <View style={{ backgroundColor: 'rgba(16,185,129,0.15)', padding: spacing.md, borderRadius: radius.md, borderWidth: 1, borderColor: 'rgba(16,185,129,0.4)' }}>
+                    <Text style={{ ...typography.small, color: colors.auroraA, fontWeight: '700', textAlign: 'center' }}>
+                      {otaBroadcastSuccess}
+                    </Text>
+                  </View>
+                )}
+
+                <Button
+                  label="📡 Broadcast OTA Update to All Users"
+                  variant="outline"
+                  size="md"
+                  onPress={handleBroadcastAppUpdate}
+                />
+              </Card>
+            </View>
+          )}
+
+          {/* ══════════════════════════════════════════════════
+              11. ORDERS TAB
+             ══════════════════════════════════════════════════ */}
           {tab === 'orders' && (
             <View style={{ gap: spacing.md }}>
               <SectionHeader title="User Shopping Orders" subtitle={`${orders.length} total orders recorded`} />
-
               {orders.map((ord) => (
                 <Card key={ord.id} style={styles.orderCard}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -401,11 +990,52 @@ export default function AdminDashboard() {
             </View>
           )}
 
-          {/* ── INVENTORY & PRICE MANAGEMENT TAB ── */}
+          {/* ══════════════════════════════════════════════════
+              12. SPELLS TAB
+             ══════════════════════════════════════════════════ */}
+          {tab === 'spells' && (
+            <View style={{ gap: spacing.md }}>
+              <SectionHeader title="Spells Catalog & Price Management" subtitle="Edit Spell Fees & Manage Availability" />
+              {spells.map((spell) => (
+                <Card key={spell.id} style={styles.inventoryCard}>
+                  <View style={{ flexDirection: 'row', gap: spacing.md, alignItems: 'center' }}>
+                    <Text style={{ fontSize: 28 }}>{spell.icon}</Text>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.invTitle}>{spell.title}</Text>
+                      <Text style={styles.invSub}>{spell.sanskritName} · {spell.category}</Text>
+                    </View>
+                    <Pressable
+                      onPress={() => toggleSpellAvailable(spell.id)}
+                      style={[styles.toggleBtn, spell.available ? styles.toggleOnline : styles.toggleOffline]}
+                    >
+                      <Text style={[styles.toggleText, { color: spell.available ? colors.success : colors.danger }]}>
+                        {spell.available ? 'ACTIVE' : 'DISABLED'}
+                      </Text>
+                    </Pressable>
+                  </View>
+
+                  <View style={styles.invControlsRow}>
+                    <View style={styles.inputBoxCol}>
+                      <Text style={styles.inputColLabel}>Spell Fee (₹):</Text>
+                      <TextInput
+                        style={styles.invInput}
+                        value={String(spell.price)}
+                        keyboardType="numeric"
+                        onChangeText={(txt) => updateSpellPrice(spell.id, Number(txt) || 0)}
+                      />
+                    </View>
+                  </View>
+                </Card>
+              ))}
+            </View>
+          )}
+
+          {/* ══════════════════════════════════════════════════
+              13. INVENTORY TAB
+             ══════════════════════════════════════════════════ */}
           {tab === 'inventory' && (
             <View style={{ gap: spacing.md }}>
               <SectionHeader title="AstroRemedies Catalog & Pricing" subtitle="Edit Prices & Manage Item Stock" />
-
               {inventory.map((item) => (
                 <Card key={item.id} style={styles.inventoryCard}>
                   <View style={{ flexDirection: 'row', gap: spacing.md, alignItems: 'center' }}>
@@ -450,198 +1080,119 @@ export default function AdminDashboard() {
             </View>
           )}
 
-          {/* ── ASTROLOGERS TAB (EXPERT PRICE & EXP MANAGEMENT) ── */}
-          {tab === 'astrologers' && (
-            <View style={{ gap: spacing.md }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Text style={styles.tabHeading}>Manage Panel ({astrologers.length})</Text>
-                <Button
-                  label="➕ New Expert"
-                  variant="gold"
-                  size="sm"
-                  fullWidth={false}
-                  onPress={() => setShowAddModal(true)}
-                />
-              </View>
+          <View style={{ height: 40 }} />
+        </ScrollView>
 
-              {astrologers.map((a) => (
-                <Card key={a.id} style={styles.manageCard}>
-                  <View style={{ flexDirection: 'row', gap: spacing.md, alignItems: 'center' }}>
-                    <Avatar uri={a.avatar} name={a.name} size={50} online={a.online} showStatus />
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.manageName}>{a.name}</Text>
-                      <Text style={styles.manageMeta}>
-                        ⭐ {a.rating} ({a.reviews} reviews) · {a.specialties.join(' · ')}
-                      </Text>
-                    </View>
-                    <Pressable
-                      onPress={() => toggleStatus(a.id)}
-                      style={[
-                        styles.toggleBtn,
-                        a.online ? styles.toggleOnline : styles.toggleOffline,
-                      ]}
-                    >
-                      <Text style={[styles.toggleText, { color: a.online ? colors.success : colors.danger }]}>
-                        {a.online ? 'ONLINE' : 'OFFLINE'}
-                      </Text>
-                    </Pressable>
-                  </View>
-
-                  {/* Inline Price & Experience Editor Inputs */}
-                  <View style={styles.invControlsRow}>
-                    <View style={styles.inputBoxCol}>
-                      <Text style={styles.inputColLabel}>Price / min (₹):</Text>
-                      <TextInput
-                        style={styles.invInput}
-                        value={String(a.pricePerMin)}
-                        keyboardType="numeric"
-                        onChangeText={(txt) => updateAstroPrice(a.id, Number(txt) || 0)}
-                      />
-                    </View>
-
-                    <View style={styles.inputBoxCol}>
-                      <Text style={styles.inputColLabel}>Experience (Yrs):</Text>
-                      <TextInput
-                        style={styles.invInput}
-                        value={String(a.experienceYears)}
-                        keyboardType="numeric"
-                        onChangeText={(txt) => updateAstroExp(a.id, Number(txt) || 0)}
-                      />
-                    </View>
-                  </View>
-                </Card>
-              ))}
-            </View>
-          )}
-
-          {/* ── REVENUE TAB ── */}
-          {tab === 'revenue' && (
-            <View style={{ gap: spacing.md }}>
-              <Card>
-                <SectionHeader title="Revenue Share Settings" subtitle="Platform vs Expert Split" />
-                <View style={styles.revenueSplitRow}>
-                  <View style={styles.splitBox}>
-                    <Text style={styles.splitPct}>20%</Text>
-                    <Text style={styles.splitLabel}>AstroGuru Platform Fee</Text>
-                  </View>
-                  <View style={styles.splitBox}>
-                    <Text style={[styles.splitPct, { color: colors.teal }]}>80%</Text>
-                    <Text style={styles.splitLabel}>Astrologer Payout</Text>
-                  </View>
-                </View>
-              </Card>
-            </View>
-          )}
-
-          {/* ── USERS TAB ── */}
-          {tab === 'users' && (
-            <View style={{ gap: spacing.md }}>
-              <Card padded={false}>
-                <View style={{ padding: spacing.lg, paddingBottom: spacing.sm }}>
-                  <SectionHeader title="Registered Users (1,240)" subtitle="Account statuses & history" />
-                </View>
-                {[
-                  { name: 'Demo Seeker', email: 'seeker@astroguru.app', wallet: '₹310', role: 'User' },
-                  { name: 'Master Admin', email: 'admin@astroguru.app', wallet: '₹9,999', role: 'Admin' },
-                  { name: 'Rajesh Sharma', email: 'rajesh@gmail.com', wallet: '₹750', role: 'User' },
-                  { name: 'Priyanka Verma', email: 'priyanka@gmail.com', wallet: '₹150', role: 'User' },
-                ].map((u, idx) => (
-                  <View key={idx} style={styles.userRow}>
-                    <Avatar name={u.name} size={42} />
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.userName}>
-                        {u.name}{' '}
-                        {u.role === 'Admin' && (
-                          <Text style={{ color: colors.saffron, fontSize: 11 }}>⚡ ADMIN</Text>
-                        )}
-                      </Text>
-                      <Text style={styles.userEmail}>{u.email}</Text>
-                    </View>
-                    <Text style={styles.userWallet}>{u.wallet}</Text>
-                  </View>
-                ))}
-              </Card>
-            </View>
-          )}
-
-          {/* ── PUSH NOTIFICATIONS BROADCAST TAB ── */}
-          {tab === 'push_notifications' && (
-            <View style={{ gap: spacing.md }}>
-              <Card style={{ gap: spacing.md }}>
-                <SectionHeader
-                  title="📣 Broadcast Push Notification"
-                  subtitle="Send instant mobile alerts to seekers & astrologers"
-                />
-
+        {/* ── CREATE COUPON MODAL ── */}
+        <Modal visible={showCouponModal} animationType="slide" transparent>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Create Promo Coupon</Text>
+              <View style={{ gap: spacing.sm }}>
                 <View style={styles.field}>
-                  <Text style={styles.fieldLabel}>Notification Title</Text>
+                  <Text style={styles.fieldLabel}>Coupon Code (e.g. DIWALI50)</Text>
                   <TextInput
-                    value={notifTitle}
-                    onChangeText={setNotifTitle}
-                    placeholder="e.g. 🔴 Acharya Dev is NOW LIVE!"
+                    value={newCouponCode}
+                    onChangeText={setNewCouponCode}
+                    placeholder="e.g. MAHASHIVRATRI"
                     placeholderTextColor={colors.textFaint}
+                    autoCapitalize="characters"
                     style={styles.fieldInput}
                   />
                 </View>
 
                 <View style={styles.field}>
-                  <Text style={styles.fieldLabel}>Notification Message Body</Text>
+                  <Text style={styles.fieldLabel}>Coupon Description</Text>
                   <TextInput
-                    value={notifBody}
-                    onChangeText={setNotifBody}
-                    placeholder="e.g. Tap now to join instant live audio/video consultation for Rahu Mahadasha remedies."
+                    value={newCouponTitle}
+                    onChangeText={setNewCouponTitle}
+                    placeholder="e.g. 50% Off On All Consultations"
                     placeholderTextColor={colors.textFaint}
-                    multiline
-                    numberOfLines={3}
-                    style={[styles.fieldInput, { height: 70, textAlignVertical: 'top' }]}
+                    style={styles.fieldInput}
                   />
                 </View>
 
-                {broadcastSuccess && (
-                  <View style={{ backgroundColor: 'rgba(16,185,129,0.15)', padding: spacing.md, borderRadius: radius.md, borderWidth: 1, borderColor: 'rgba(16,185,129,0.4)' }}>
-                    <Text style={{ ...typography.small, color: colors.auroraA, fontWeight: '700', textAlign: 'center' }}>
-                      {broadcastSuccess}
-                    </Text>
+                <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+                  <View style={[styles.field, { flex: 1 }]}>
+                    <Text style={styles.fieldLabel}>Discount (%)</Text>
+                    <TextInput
+                      value={newCouponDiscount}
+                      onChangeText={setNewCouponDiscount}
+                      keyboardType="numeric"
+                      style={styles.fieldInput}
+                    />
                   </View>
-                )}
-
-                <Button
-                  label={sendingBroadcast ? 'Broadcasting Push Alerts…' : '🚀 Send Instant Push Broadcast (14,200 Devices)'}
-                  variant="gold"
-                  size="md"
-                  loading={sendingBroadcast}
-                  onPress={handleSendBroadcast}
-                />
-              </Card>
-
-              {/* Scheduled Daily Astro Alerts */}
-              <Card style={{ gap: spacing.md }}>
-                <SectionHeader
-                  title="⏰ Automated Daily Astro Alerts"
-                  subtitle="Managed background cron schedules"
-                />
-
-                {[
-                  { time: '06:00 AM', title: '🌅 Daily Panchang & Shubh Muhurat', desc: 'Brahma Muhurat & Sunrise auspicious timings alert', active: true },
-                  { time: '09:00 AM', title: '🔮 Daily Horoscope & Moon Transit', desc: 'Rashi predictions for Mesha to Meena', active: true },
-                  { time: '12:30 PM', title: '⚠️ Rahu Kaal Cautionary Alert', desc: 'Avoid new endeavors during Rahu Kaal window', active: true },
-                  { time: '07:00 PM', title: '🪔 Evening Sandhya Aarti & Live Darshan', desc: 'Live temple darshan broadcast alert', active: true },
-                ].map((item, idx) => (
-                  <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#070D18', padding: spacing.md, borderRadius: radius.md, borderWidth: 1, borderColor: 'rgba(16,185,129,0.2)' }}>
-                    <View style={{ flex: 1, gap: 2 }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                        <Text style={{ ...typography.tiny, color: colors.saffron, fontWeight: '800' }}>{item.time}</Text>
-                        <Text style={{ ...typography.h3, color: '#F8FAFC', fontSize: 13, fontWeight: '800' }}>{item.title}</Text>
-                      </View>
-                      <Text style={{ ...typography.small, color: colors.textMuted, fontSize: 11.5 }}>{item.desc}</Text>
-                    </View>
-                    <Chip label={item.active ? 'ACTIVE' : 'OFF'} tone={item.active ? 'gold' : 'default'} selected={item.active} />
+                  <View style={[styles.field, { flex: 1 }]}>
+                    <Text style={styles.fieldLabel}>Min Recharge (₹)</Text>
+                    <TextInput
+                      value={newCouponMin}
+                      onChangeText={setNewCouponMin}
+                      keyboardType="numeric"
+                      style={styles.fieldInput}
+                    />
                   </View>
-                ))}
-              </Card>
+                </View>
+
+                <View style={{ flexDirection: 'row', gap: spacing.sm, marginTop: 10 }}>
+                  <Button
+                    label="Cancel"
+                    variant="outline"
+                    size="md"
+                    style={{ flex: 1 }}
+                    onPress={() => setShowCouponModal(false)}
+                  />
+                  <Button
+                    label="Create Coupon"
+                    variant="gold"
+                    size="md"
+                    style={{ flex: 1 }}
+                    onPress={handleCreateCoupon}
+                  />
+                </View>
+              </View>
             </View>
-          )}
-        </ScrollView>
+          </View>
+        </Modal>
+
+        {/* ── REJECT KYC MODAL ── */}
+        <Modal visible={!!rejectKycModal} animationType="slide" transparent>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Reject Astrologer Document</Text>
+              <Text style={{ fontSize: 12, color: colors.textMuted, marginBottom: 8 }}>
+                Provide a reason so the astrologer can re-upload a valid document:
+              </Text>
+              <TextInput
+                value={rejectReason}
+                onChangeText={setRejectReason}
+                multiline
+                numberOfLines={3}
+                style={[styles.fieldInput, { height: 70, textAlignVertical: 'top' }]}
+              />
+              <View style={{ flexDirection: 'row', gap: spacing.sm, marginTop: 12 }}>
+                <Button
+                  label="Cancel"
+                  variant="outline"
+                  size="md"
+                  style={{ flex: 1 }}
+                  onPress={() => setRejectKycModal(null)}
+                />
+                <Button
+                  label="Confirm Reject"
+                  variant="danger"
+                  size="md"
+                  style={{ flex: 1 }}
+                  onPress={() => {
+                    if (rejectKycModal) {
+                      rejectKyc(rejectKycModal, rejectReason);
+                      setRejectKycModal(null);
+                    }
+                  }}
+                />
+              </View>
+            </View>
+          </View>
+        </Modal>
 
         {/* ── ADD ASTROLOGER MODAL ── */}
         <Modal visible={showAddModal} animationType="slide" transparent>
@@ -693,36 +1244,23 @@ export default function AdminDashboard() {
                   </View>
                 </View>
 
-                <View style={styles.field}>
-                  <Text style={styles.fieldLabel}>Languages</Text>
-                  <TextInput
-                    value={newLang}
-                    onChangeText={setNewLang}
-                    placeholder="Hindi, English, Gujarati"
-                    placeholderTextColor={colors.textFaint}
-                    style={styles.fieldInput}
+                <View style={{ flexDirection: 'row', gap: spacing.sm, marginTop: 10 }}>
+                  <Button
+                    label="Cancel"
+                    variant="outline"
+                    size="md"
+                    style={{ flex: 1 }}
+                    onPress={() => setShowAddModal(false)}
+                  />
+                  <Button
+                    label="Save Astrologer"
+                    variant="gold"
+                    size="md"
+                    style={{ flex: 1 }}
+                    onPress={handleAddAstrologer}
                   />
                 </View>
               </ScrollView>
-
-              <View style={{ flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md }}>
-                <Button
-                  label="Cancel"
-                  variant="outline"
-                  size="sm"
-                  fullWidth={false}
-                  style={{ flex: 1 }}
-                  onPress={() => setShowAddModal(false)}
-                />
-                <Button
-                  label="Save Expert"
-                  variant="gold"
-                  size="sm"
-                  fullWidth={false}
-                  style={{ flex: 1 }}
-                  onPress={handleAddAstrologer}
-                />
-              </View>
             </View>
           </View>
         </Modal>
@@ -734,207 +1272,271 @@ export default function AdminDashboard() {
 const styles = StyleSheet.create({
   tabsWrapper: {
     height: 48,
-    backgroundColor: '#E6ECF5',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
-    justifyContent: 'center',
-    shadowColor: '#A3B1C6',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 6,
-    elevation: 3,
-    zIndex: 10,
+    borderBottomColor: 'rgba(191,219,254,0.4)',
+    backgroundColor: '#FFFFFF',
   },
   tabsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
+    paddingHorizontal: spacing.md,
     gap: spacing.xs,
+    alignItems: 'center',
+    height: 48,
   },
   tabBtn: {
-    minWidth: 76,
-    paddingHorizontal: spacing.md,
-    height: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 7,
     borderRadius: radius.pill,
-    backgroundColor: '#E6ECF5',
-    borderTopWidth: 1.5,
-    borderLeftWidth: 1.5,
-    borderTopColor: '#FFFFFF',
-    borderLeftColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
-    borderRightColor: 'rgba(163, 177, 198, 0.4)',
+    backgroundColor: '#F1F5F9',
     overflow: 'hidden',
   },
-  tabBtnActive: { borderColor: 'transparent' },
-  tabBtnText: { ...typography.tiny, color: colors.textMuted, fontWeight: '800', fontSize: 11.5 },
-  tabBtnTextActive: { color: colors.white },
-
-  scroll: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    paddingBottom: spacing.xxl,
-    gap: spacing.md,
+  tabBtnActive: {
+    backgroundColor: colors.saffron,
   },
-
-  /* Overview */
+  tabBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#64748B',
+  },
+  tabBtnTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '900',
+  },
+  scroll: {
+    padding: spacing.lg,
+    paddingBottom: 50,
+  },
   statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: spacing.xs + 2,
+    gap: spacing.sm,
   },
   statBox: {
-    flexBasis: '47%',
-    flexGrow: 1,
-    borderRadius: radius.md,
+    flex: 1,
+    minWidth: '47%',
+    backgroundColor: '#FFFFFF',
     padding: spacing.md,
-    borderTopWidth: 1.5,
-    borderLeftWidth: 1.5,
-    borderTopColor: '#FFFFFF',
-    borderLeftColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
-    borderRightColor: 'rgba(163, 177, 198, 0.4)',
-    backgroundColor: '#E6ECF5',
-    gap: 2,
-    shadowColor: '#A3B1C6',
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  statIcon: { fontSize: 22 },
-  statNum: { ...typography.h1, fontSize: 19, color: colors.text, fontWeight: '800' },
-  statTitle: { ...typography.tiny, color: colors.textMuted, fontWeight: '600', fontSize: 11 },
-
-  /* Orders */
-  orderCard: { gap: spacing.xs },
-  orderId: { ...typography.h3, color: colors.gold, fontSize: 15, fontWeight: '800' },
-  orderItemName: { ...typography.h2, color: colors.text, fontSize: 15, fontWeight: '800', marginTop: 2 },
-  orderPrice: { ...typography.h2, color: colors.gold, fontWeight: '900', fontSize: 17 },
-  userInfoBox: {
-    backgroundColor: '#DFE6F0',
-    borderRadius: radius.md,
-    padding: spacing.sm,
+    borderRadius: radius.lg,
+    alignItems: 'center',
+    gap: 4,
     borderWidth: 1,
-    borderColor: 'rgba(163, 177, 198, 0.4)',
-    gap: 2,
-    marginTop: 4,
+    borderColor: 'rgba(191,219,254,0.5)',
+    shadowColor: '#BFDBFE',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  userInfoText: { ...typography.tiny, color: colors.textMuted, fontWeight: '700' },
-  statusActionRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xs },
-
-  /* Inventory */
-  inventoryCard: { gap: spacing.sm },
-  invTitle: { ...typography.h3, color: colors.text, fontSize: 15, fontWeight: '800' },
-  invSub: { ...typography.tiny, color: colors.textMuted },
-  invControlsRow: { flexDirection: 'row', gap: spacing.md, marginTop: 4 },
-  inputBoxCol: { flex: 1, gap: 2 },
-  inputColLabel: { ...typography.tiny, color: colors.textMuted, fontWeight: '700' },
-  invInput: {
-    backgroundColor: '#DFE6F0',
-    borderWidth: 1,
-    borderColor: 'rgba(163, 177, 198, 0.4)',
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 6,
-    ...typography.body,
+  statIcon: {
+    fontSize: 24,
+  },
+  statNum: {
+    fontSize: 18,
+    fontWeight: '900',
     color: colors.text,
-    fontWeight: '800',
   },
-
-  /* Astrologers */
-  tabHeading: { ...typography.h2, color: colors.text, fontWeight: '800' },
-  manageCard: { padding: spacing.md, gap: spacing.xs },
-  manageName: { ...typography.h3, color: colors.text, fontSize: 15, fontWeight: '800' },
-  manageMeta: { ...typography.tiny, color: colors.gold, marginTop: 2, fontWeight: '700' },
-  manageSpec: { ...typography.tiny, color: colors.textMuted, marginTop: 1 },
+  statTitle: {
+    fontSize: 11,
+    color: colors.textMuted,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  tabHeading: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: colors.text,
+  },
+  manageCard: {
+    gap: spacing.sm,
+    backgroundColor: '#FFFFFF',
+  },
+  manageName: {
+    fontSize: 14.5,
+    fontWeight: '800',
+    color: colors.text,
+  },
+  manageMeta: {
+    fontSize: 11.5,
+    color: colors.textMuted,
+    marginTop: 2,
+  },
   toggleBtn: {
     paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingVertical: 5,
     borderRadius: radius.pill,
     borderWidth: 1,
   },
   toggleOnline: {
-    backgroundColor: 'rgba(5,150,105,0.12)',
-    borderColor: 'rgba(5,150,105,0.35)',
+    backgroundColor: 'rgba(16,185,129,0.1)',
+    borderColor: colors.success,
   },
   toggleOffline: {
-    backgroundColor: 'rgba(148,163,184,0.15)',
-    borderColor: 'rgba(148,163,184,0.35)',
+    backgroundColor: 'rgba(239,68,68,0.1)',
+    borderColor: colors.danger,
   },
-  toggleText: { ...typography.tiny, fontWeight: '800', fontSize: 10 },
-
-  /* Revenue */
-  revenueSplitRow: { flexDirection: 'row', gap: spacing.md },
+  toggleText: {
+    fontSize: 10,
+    fontWeight: '800',
+  },
+  invControlsRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginTop: spacing.xs,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+    paddingTop: spacing.sm,
+  },
+  inputBoxCol: {
+    flex: 1,
+    gap: 4,
+  },
+  inputColLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: colors.textMuted,
+  },
+  invInput: {
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: radius.md,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    fontSize: 13,
+    color: colors.text,
+    fontWeight: '700',
+  },
+  revenueSplitRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginTop: spacing.sm,
+  },
   splitBox: {
     flex: 1,
-    backgroundColor: '#DFE6F0',
-    borderRadius: radius.md,
+    backgroundColor: '#F8FAFC',
     padding: spacing.md,
+    borderRadius: radius.md,
     alignItems: 'center',
+    gap: 4,
     borderWidth: 1,
-    borderColor: 'rgba(163, 177, 198, 0.4)',
+    borderColor: '#E2E8F0',
   },
-  splitPct: { ...typography.display, fontSize: 28, color: colors.gold, fontWeight: '900' },
-  splitLabel: { ...typography.tiny, color: colors.textMuted, marginTop: 4, textAlign: 'center', fontWeight: '700' },
-
-  /* Users */
+  splitPct: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: colors.saffron,
+  },
+  splitLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: colors.textMuted,
+    textAlign: 'center',
+  },
   userRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(163, 177, 198, 0.3)',
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
   },
-  userName: { ...typography.small, color: colors.text, fontWeight: '700' },
-  userEmail: { ...typography.tiny, color: colors.textMuted, marginTop: 1 },
-  userWallet: { ...typography.small, color: colors.gold, fontWeight: '800' },
-
-  /* Modal */
+  userName: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: colors.text,
+  },
+  userEmail: {
+    fontSize: 12,
+    color: colors.textMuted,
+    marginTop: 2,
+  },
+  userWallet: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: colors.gold,
+  },
+  field: {
+    gap: 4,
+  },
+  fieldLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: colors.textMuted,
+  },
+  fieldInput: {
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: radius.md,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 13.5,
+    color: colors.text,
+  },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(30,41,59,0.50)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     padding: spacing.lg,
   },
   modalContent: {
-    backgroundColor: '#E6ECF5',
+    backgroundColor: '#FFFFFF',
     borderRadius: radius.xl,
     padding: spacing.lg,
-    borderTopWidth: 1.5,
-    borderLeftWidth: 1.5,
-    borderTopColor: '#FFFFFF',
-    borderLeftColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
-    borderRightColor: 'rgba(163, 177, 198, 0.4)',
     gap: spacing.md,
-    shadowColor: '#A3B1C6',
-    shadowOffset: { width: 6, height: 6 },
-    shadowOpacity: 0.7,
-    shadowRadius: 12,
-    elevation: 8,
   },
-  modalTitle: { ...typography.h2, color: colors.gold, textAlign: 'center', fontWeight: '800' },
-  field: { gap: 4 },
-  fieldLabel: { ...typography.tiny, color: colors.textMuted, fontWeight: '700' },
-  fieldInput: {
-    backgroundColor: '#DFE6F0',
-    borderWidth: 1,
-    borderColor: 'rgba(163, 177, 198, 0.4)',
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 8,
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '900',
     color: colors.text,
+  },
+  orderCard: {
+    gap: spacing.xs,
+  },
+  orderId: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: colors.textMuted,
+  },
+  orderItemName: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: colors.text,
+    marginTop: 4,
+  },
+  orderPrice: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '800',
+    color: colors.gold,
+  },
+  userInfoBox: {
+    backgroundColor: '#F8FAFC',
+    padding: spacing.sm,
+    borderRadius: radius.md,
+    gap: 3,
+    marginTop: 6,
+  },
+  userInfoText: {
+    fontSize: 11.5,
+    color: colors.textMuted,
+    fontWeight: '600',
+  },
+  statusActionRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.sm,
+  },
+  inventoryCard: {
+    gap: spacing.sm,
+  },
+  invTitle: {
+    fontSize: 14.5,
+    fontWeight: '800',
+    color: colors.text,
+  },
+  invSub: {
+    fontSize: 11.5,
+    color: colors.textMuted,
+    marginTop: 2,
   },
 });
