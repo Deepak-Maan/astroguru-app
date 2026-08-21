@@ -78,6 +78,31 @@ export default function Security() {
             <Text style={{ fontSize: 18, color: '#059669', fontWeight: '900' }}>→</Text>
           </Pressable>
 
+          {/* ── Anti-Hacking & Cyber Defense Hub ── */}
+          <Pressable
+            onPress={() => router.push('/acharya/anti-hacking-hub' as any)}
+            style={({ pressed }) => [
+              styles.antiHackingBanner,
+              pressed && { opacity: 0.9, transform: [{ scale: 0.985 }] },
+            ]}
+          >
+            <View style={styles.antiHackingIconRing}>
+              <Text style={{ fontSize: 22 }}>⚡</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Text style={styles.antiHackingTitle}>Anti-Hacking & Cyber Defense</Text>
+                <View style={styles.fortifiedBadge}>
+                  <Text style={styles.fortifiedBadgeText}>RASP SHIELD</Text>
+                </View>
+              </View>
+              <Text style={styles.antiHackingSub}>
+                Real-time root/jailbreak detection, FLAG_SECURE screen blocker & HMAC request signing.
+              </Text>
+            </View>
+            <Text style={{ fontSize: 18, color: '#3B82F6', fontWeight: '900' }}>→</Text>
+          </Pressable>
+
           {/* Change Password */}
           <Text style={styles.sectionTitle}>🔒 Change Password</Text>
           <View style={styles.card}>
@@ -205,6 +230,54 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   kycBadgeText: {
+    fontSize: 8.5,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
+  },
+  antiHackingBanner: {
+    backgroundColor: '#EFF6FF',
+    borderRadius: radius.lg,
+    padding: 14,
+    borderWidth: 1.5,
+    borderColor: '#BFDBFE',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    shadowColor: '#3B82F6',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  antiHackingIconRing: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#93C5FD',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  antiHackingTitle: {
+    fontSize: 13.5,
+    fontWeight: '900',
+    color: '#1E3A8A',
+  },
+  antiHackingSub: {
+    fontSize: 10.5,
+    color: '#1D4ED8',
+    marginTop: 2,
+    lineHeight: 15,
+  },
+  fortifiedBadge: {
+    backgroundColor: '#2563EB',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  fortifiedBadgeText: {
     fontSize: 8.5,
     fontWeight: '900',
     color: '#FFFFFF',

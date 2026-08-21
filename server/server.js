@@ -13,9 +13,29 @@ const FAST2SMS_API_KEY = process.env.FAST2SMS_API_KEY || 'WYBgdyn8OqCVIZKU2FAGvu
 const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID || '';
 const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN || '';
 const TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER || '';
+const { securityShieldMiddleware } = require('./middleware/securityShield');
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
+app.use(securityShieldMiddleware);
+
+// ── Security Shield Telemetry & Diagnostic Endpoints ──
+app.get('/api/security/shield-status', (req, res) => {
+  res.json({
+    success: true,
+    serverStatus: 'ACTIVE_SHIELD_V2',
+    antiReplayEnabled: true,
+    hmacVerification: true,
+    sslPinningEnforced: true,
+    serverTime: Date.now(),
+  });
+});
+
+app.post('/api/security/report-threat', (req, res) => {
+  const { threatType, details, deviceFingerprint } = req.body;
+  console.warn(`🚨 [SECURITY SENTINEL ALERT] Threat: ${threatType} | Device: ${deviceFingerprint}`, details);
+  res.json({ success: true, logged: true, action: 'FLAGGED_FOR_AUDIT' });
+});
 
 const DB_FILE = path.join(__dirname, 'db.json');
 

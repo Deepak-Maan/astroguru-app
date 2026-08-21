@@ -246,6 +246,24 @@ export default function Settings() {
                 />
               </View>
 
+              {/* Anti-Hacking & RASP Cyber Defense Hub */}
+              <Pressable
+                onPress={() => router.push('/acharya/anti-hacking-hub' as any)}
+                style={({ pressed }) => [styles.prefRow, pressed && { opacity: 0.65 }]}
+              >
+                <View style={{ flex: 1 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Text style={[styles.prefLabel, { color: '#2563EB', fontWeight: '800' }]}>
+                      🛡️ Anti-Hacking & Cyber Defense Hub
+                    </Text>
+                  </View>
+                  <Text style={styles.prefSub}>
+                    Root detection, FLAG_SECURE screen blocker & HMAC request signing
+                  </Text>
+                </View>
+                <Text style={[styles.chevron, { color: '#2563EB' }]}>›</Text>
+              </Pressable>
+
               {isPinEnabled && (
                 <Pressable
                   onPress={lockApp}

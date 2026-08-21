@@ -10,6 +10,7 @@ import { AppUpdateModal } from '../src/components/AppUpdateModal';
 import { SecurityLockModal } from '../src/components/SecurityLockModal';
 import { NotificationToast } from '../src/components/NotificationToast';
 import { IncomingCallModal } from '../src/components/IncomingCallModal';
+import { SecurityBlurShield } from '../src/components/SecurityBlurShield';
 
 import { useUpdateStore } from '../src/store/updateStore';
 import { seedAllUsersAndAstrologersToFirebase } from '../src/services/firebaseRealtimeService';
@@ -159,6 +160,7 @@ export default function RootLayout() {
           <IncomingCallModal />
           <AppUpdateModal />
           <SecurityLockModal />
+          <SecurityBlurShield />
         </SafeAreaProvider>
       </GestureHandlerRootView>
     </RootErrorBoundary>

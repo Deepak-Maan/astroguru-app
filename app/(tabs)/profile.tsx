@@ -236,6 +236,7 @@ export default function Profile() {
                   <Row icon="🏦" label="Bank Account & UPI Settings" onPress={() => router.push('/acharya/bank-settings')} />
                   <Row icon="📊" label="Monthly Earnings Report" onPress={() => router.push('/acharya/earnings-report')} />
                   <Row icon="🔒" label="Security & Privacy Vault" onPress={() => router.push('/acharya/security')} />
+                  <Row icon="🛡️" label="Anti-Hacking & Cyber Defense" onPress={() => router.push('/acharya/anti-hacking-hub')} accent={colors.teal} />
                   <Row icon="🔄" label={`Check for In-App Updates · v${latestVersion}`} onPress={triggerUpdateModal} accent={colors.teal} />
                   <Row icon="📞" label="Support & Help Center" onPress={() => router.push('/acharya/support')} />
                   <Row icon="🚪" label="Sign Out" onPress={handleSignOut} accent={colors.danger} />
