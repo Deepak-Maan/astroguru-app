@@ -13,6 +13,8 @@ export default function Index() {
   const authHydrated = useAuthStore((s) => s.hydrated);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
+  const authUser = useAuthStore((s) => s.user);
+
   if (!userHydrated || !authHydrated) {
     return (
       <View style={{ flex: 1, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center' }}>
@@ -23,6 +25,10 @@ export default function Index() {
 
   if (!isAuthenticated) {
     return <Redirect href="/(auth)/login" />;
+  }
+
+  if (authUser?.role === 'admin') {
+    return <Redirect href="/admin" />;
   }
 
   return <Redirect href="/(tabs)" />;

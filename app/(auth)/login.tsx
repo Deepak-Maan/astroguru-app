@@ -119,7 +119,7 @@ export default function LoginScreen() {
     setGoogleLoading(false);
 
     if (res.success && res.user) {
-      triggerSuccessAnimation(res.user, '/(tabs)');
+      triggerSuccessAnimation(res.user, res.user.role === 'admin' ? '/admin' : '/(tabs)');
     } else {
       setError(res.error || 'Google Sign-In failed. Please try again.');
     }
@@ -162,7 +162,7 @@ export default function LoginScreen() {
     setVerifyLoading(false);
 
     if (res.success && res.user) {
-      triggerSuccessAnimation(res.user, '/(tabs)');
+      triggerSuccessAnimation(res.user, res.user.role === 'admin' ? '/admin' : '/(tabs)');
     } else {
       setError(res.error || 'Invalid OTP code. Please check and try again.');
     }

@@ -12,7 +12,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { Redirect, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GradientBackground } from '../../src/components/GradientBackground';
@@ -28,6 +28,7 @@ import { Astrologer } from '../../src/types';
 import { useRemediesStore } from '../../src/store/remediesStore';
 import { useSpellsStore } from '../../src/store/spellsStore';
 import { useAdminStore, PromoCoupon } from '../../src/store/adminStore';
+import { useAuthStore } from '../../src/store/authStore';
 import { useAntiHackingStore } from '../../src/store/antiHackingStore';
 import { formatCurrency } from '../../src/utils';
 import {
@@ -53,6 +54,15 @@ type AdminTab =
 
 export default function AdminDashboard() {
   const router = useRouter();
+  const authUser = useAuthStore((s) => s.user);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const logout = useAuthStore((s) => s.logout);
+
+  // Strict Admin Gate: non-admins are routed away
+  if (!isAuthenticated || authUser?.role !== 'admin') {
+    return <Redirect href="/(auth)/login" />;
+  }
+
   const [tab, setTab] = useState<AdminTab>('overview');
   const [astrologers, setAstrologers] = useState<Astrologer[]>([...ASTROLOGERS]);
 
@@ -242,13 +252,33 @@ export default function AdminDashboard() {
   return (
     <GradientBackground>
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-        {/* Admin Header */}
-        <ScreenHeader
-          title="⚡ Enterprise Admin Console"
-          subtitle="AstroGuru Master Operations, KYC & Finance"
-          showBack
-          hideLanguage
-        />
+        {/* Admin Header with 1-Tap Sign Out */}
+        <View style={styles.adminTopBar}>
+          <View style={{ flex: 1 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Text style={styles.adminTitle}>⚡ Master Admin Console</Text>
+              <View style={styles.adminBadge}>
+                <Text style={styles.adminBadgeText}>SUPERUSER</Text>
+              </View>
+            </View>
+            <Text style={styles.adminSub}>
+              Signed in as: <Text style={{ color: colors.gold, fontWeight: '700' }}>{authUser?.email}</Text>
+            </Text>
+          </View>
+
+          <Pressable
+            onPress={() => {
+              logout();
+              router.replace('/(auth)/login');
+            }}
+            style={({ pressed }) => [
+              styles.adminSignOutBtn,
+              pressed && { opacity: 0.8, transform: [{ scale: 0.96 }] },
+            ]}
+          >
+            <Text style={styles.adminSignOutText}>🚪 Sign Out</Text>
+          </Pressable>
+        </View>
 
         {/* Tab Switcher */}
         <View style={styles.tabsWrapper}>
@@ -1270,6 +1300,53 @@ export default function AdminDashboard() {
 }
 
 const styles = StyleSheet.create({
+  adminTopBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: 14,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(191,219,254,0.5)',
+  },
+  adminTitle: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: colors.text,
+  },
+  adminBadge: {
+    backgroundColor: 'rgba(217,119,6,0.12)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(217,119,6,0.3)',
+  },
+  adminBadgeText: {
+    fontSize: 8.5,
+    fontWeight: '900',
+    color: colors.gold,
+    letterSpacing: 0.5,
+  },
+  adminSub: {
+    fontSize: 11,
+    color: colors.textMuted,
+    marginTop: 2,
+  },
+  adminSignOutBtn: {
+    backgroundColor: '#FEF2F2',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: '#FECACA',
+  },
+  adminSignOutText: {
+    fontSize: 11.5,
+    fontWeight: '800',
+    color: '#DC2626',
+  },
   tabsWrapper: {
     height: 48,
     borderBottomWidth: 1,

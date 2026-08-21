@@ -77,6 +77,12 @@ export default function Home() {
     return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
   }
 
+  // Admin view -> Redirect to Admin Panel immediately
+  if (authUser?.role === 'admin') {
+    router.replace('/admin');
+    return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
+  }
+
   // Astrologer Workstation view
   if (authUser?.role === 'astrologer') {
     return (

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Tabs } from 'expo-router';
+import { Redirect, Tabs } from 'expo-router';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { colors, typography } from '../../src/theme';
 import { useAuthStore } from '../../src/store/authStore';
@@ -169,6 +169,13 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
 }
 
 export default function TabsLayout() {
+  const authUser = useAuthStore((s) => s.user);
+
+  // Admins must strictly only see the Admin Console, never Seeker tabs
+  if (authUser?.role === 'admin') {
+    return <Redirect href="/admin" />;
+  }
+
   return (
     <Tabs
       tabBar={(props) => <CustomTabBar {...props} />}
