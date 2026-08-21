@@ -5,6 +5,7 @@ import {
   Easing,
   Image,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -25,6 +26,7 @@ import { colors, radius, spacing, typography } from '../../src/theme';
 import { useAuthStore } from '../../src/store/authStore';
 import {
   loginWithEmailPassword,
+  registerUserAccount,
   sendMobileOtp,
   verifyMobileOtp,
 } from '../../src/services/authService';
@@ -32,6 +34,8 @@ import { signInWithGoogle } from '../../src/services/firebaseConfig';
 
 const { width } = Dimensions.get('window');
 
+// 12 Sacred Zodiac Rashi Symbols for the outer rotating cosmic ring
+const ZODIAC_SYMBOLS = ['♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓'];
 const PLANETARY_GLYPHS = ['☉', '☽', '☿', '♀', '♂', '♃', '♄', '☊', '☋'];
 
 export default function LoginScreen() {
@@ -43,6 +47,7 @@ export default function LoginScreen() {
   const slideAnim = useRef(new Animated.Value(30)).current;
   const scaleAnim = useRef(new Animated.Value(0.92)).current;
   const haloRotateAnim = useRef(new Animated.Value(0)).current;
+  const counterHaloAnim = useRef(new Animated.Value(0)).current;
   const floatAnim = useRef(new Animated.Value(0)).current;
   const tabSlideAnim = useRef(new Animated.Value(0)).current;
   const pulseAura = useRef(new Animated.Value(1)).current;
@@ -76,6 +81,29 @@ export default function LoginScreen() {
   const [error, setError] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
 
+  // ── New Seeker Sign Up Modal States ──
+  const [showSeekerSignUp, setShowSeekerSignUp] = useState(false);
+  const [regName, setRegName] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regPhone, setRegPhone] = useState('');
+  const [regPassword, setRegPassword] = useState('');
+  const [regDob, setRegDob] = useState('15/08/1995');
+  const [regLoading, setRegLoading] = useState(false);
+  const [regError, setRegError] = useState<string | null>(null);
+
+  // ── New Astrologer / Acharya Registration Modal States ──
+  const [showAstroSignUp, setShowAstroSignUp] = useState(false);
+  const [astroName, setAstroName] = useState('');
+  const [astroEmail, setAstroEmail] = useState('');
+  const [astroPhone, setAstroPhone] = useState('');
+  const [astroPassword, setAstroPassword] = useState('');
+  const [astroSpecialty, setAstroSpecialty] = useState('Vedic Astrology, Kundli Prashna');
+  const [astroExp, setAstroExp] = useState('10');
+  const [astroRate, setAstroRate] = useState('25');
+  const [astroLang, setAstroLang] = useState('Hindi, English, Sanskrit');
+  const [astroLoading, setAstroLoading] = useState(false);
+  const [astroError, setAstroError] = useState<string | null>(null);
+
   const triggerHaptic = (type: 'light' | 'medium' | 'success' = 'light') => {
     try {
       if (Platform.OS !== 'web') {
@@ -93,7 +121,7 @@ export default function LoginScreen() {
   };
 
   useEffect(() => {
-    // 1. Entrance Smooth Stagger (Framer-Motion style)
+    // 1. Entrance Smooth Stagger
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -115,18 +143,29 @@ export default function LoginScreen() {
       }),
     ]).start();
 
-    // 2. Continuous Sacred Halo Rotation (GSAP style)
+    // 2. Perfectly Balanced GSAP-style Continuous Rotation (Clockwise Zodiac Ring)
     const haloSpin = Animated.loop(
       Animated.timing(haloRotateAnim, {
         toValue: 1,
-        duration: 18000,
+        duration: 20000,
         easing: Easing.linear,
         useNativeDriver: true,
       })
     );
     haloSpin.start();
 
-    // 3. Floating Orb Levitation
+    // 3. Counter-Rotating Inner Sacred Orbital Ring
+    const counterSpin = Animated.loop(
+      Animated.timing(counterHaloAnim, {
+        toValue: 1,
+        duration: 14000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    );
+    counterSpin.start();
+
+    // 4. Floating Orb Levitation
     const floating = Animated.loop(
       Animated.sequence([
         Animated.timing(floatAnim, {
@@ -145,7 +184,7 @@ export default function LoginScreen() {
     );
     floating.start();
 
-    // 4. Subtle Golden Aura Breathing
+    // 5. Subtle Golden Aura Breathing
     const auraPulse = Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAura, {
@@ -166,6 +205,7 @@ export default function LoginScreen() {
 
     return () => {
       haloSpin.stop();
+      counterSpin.stop();
       floating.stop();
       auraPulse.stop();
     };
@@ -288,6 +328,80 @@ export default function LoginScreen() {
     }
   };
 
+  // Handle New Seeker Sign Up Submission
+  const handleSeekerRegister = async () => {
+    if (!regName.trim()) {
+      setRegError('Please enter your full name.');
+      return;
+    }
+    if (!regEmail.trim() || !regEmail.includes('@')) {
+      setRegError('Please enter a valid email address.');
+      return;
+    }
+    if (!regPassword || regPassword.length < 6) {
+      setRegError('Password must be at least 6 characters.');
+      return;
+    }
+
+    setRegLoading(true);
+    setRegError(null);
+
+    const newUser = {
+      id: `usr_${Date.now()}`,
+      name: regName.trim(),
+      email: regEmail.trim().toLowerCase(),
+      phone: regPhone.trim() || '9876543210',
+      role: 'user' as const,
+      wallet: 200, // ₹200 Welcome Bonus!
+      createdAt: new Date().toISOString(),
+    };
+
+    setTimeout(() => {
+      setRegLoading(false);
+      setShowSeekerSignUp(false);
+      triggerSuccessAnimation(newUser, '/(tabs)');
+    }, 600);
+  };
+
+  // Handle New Astrologer Application Submission
+  const handleAstroRegister = async () => {
+    if (!astroName.trim()) {
+      setAstroError('Please enter your official Jyotishi name.');
+      return;
+    }
+    if (!astroEmail.trim() || !astroEmail.includes('@')) {
+      setAstroError('Please enter your professional email address.');
+      return;
+    }
+    if (!astroPassword || astroPassword.length < 6) {
+      setAstroError('Password must be at least 6 characters.');
+      return;
+    }
+
+    setAstroLoading(true);
+    setAstroError(null);
+
+    const newAstroUser = {
+      id: `astro_${Date.now()}`,
+      name: astroName.trim(),
+      email: astroEmail.trim().toLowerCase(),
+      phone: astroPhone.trim() || '9876543210',
+      role: 'astrologer' as const,
+      specialties: astroSpecialty.split(',').map((s) => s.trim()),
+      experienceYears: Number(astroExp) || 10,
+      pricePerMin: Number(astroRate) || 25,
+      languages: astroLang.split(',').map((l) => l.trim()),
+      wallet: 0,
+      createdAt: new Date().toISOString(),
+    };
+
+    setTimeout(() => {
+      setAstroLoading(false);
+      setShowAstroSignUp(false);
+      triggerSuccessAnimation(newAstroUser, '/(tabs)');
+    }, 600);
+  };
+
   // Quick Demo Auto-Fill Helpers
   const handleQuickLogin = async (type: 'user' | 'astro' | 'admin') => {
     triggerHaptic('medium');
@@ -330,6 +444,11 @@ export default function LoginScreen() {
   const spinInterpolation = haloRotateAnim.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '360deg'],
+  });
+
+  const counterSpinInterpolation = counterHaloAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['360deg', '0deg'],
   });
 
   return (
@@ -382,25 +501,49 @@ export default function LoginScreen() {
                 },
               ]}
             >
-              {/* ── Cosmic Hero & Breathing Sacred Chakra ── */}
+              {/* ── PERFECT 3D DUAL-ROTATING SACRED CHAKRA LOGO ── */}
               <View style={styles.hero}>
                 <View style={styles.logoStack}>
-                  {/* Rotating Outer Sacred Halo (GSAP style) */}
+                  {/* Layer 1: Outer Rotating Zodiac Symbols Mandala Ring (GSAP Clockwise) */}
                   <Animated.View
                     style={[
-                      styles.haloRing,
+                      styles.zodiacMandalaRing,
                       { transform: [{ rotate: spinInterpolation }] },
                     ]}
                   >
-                    <LinearGradient
-                      colors={['rgba(217, 119, 6, 0.4)', 'rgba(5, 150, 105, 0)', 'rgba(245, 158, 11, 0.4)']}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                      style={StyleSheet.absoluteFill}
-                    />
+                    {ZODIAC_SYMBOLS.map((symbol, idx) => {
+                      const angle = (idx * 30 * Math.PI) / 180;
+                      const radius = 50;
+                      const x = radius * Math.cos(angle);
+                      const y = radius * Math.sin(angle);
+                      return (
+                        <Text
+                          key={idx}
+                          style={[
+                            styles.zodiacRashiChar,
+                            {
+                              transform: [{ translateX: x }, { translateY: y }],
+                            },
+                          ]}
+                        >
+                          {symbol}
+                        </Text>
+                      );
+                    })}
                   </Animated.View>
 
-                  {/* Pulsing Aura */}
+                  {/* Layer 2: Counter-Rotating Dashed Golden Celestial Orbit (Counter-Clockwise) */}
+                  <Animated.View
+                    style={[
+                      styles.dashedOrbitRing,
+                      { transform: [{ rotate: counterSpinInterpolation }] },
+                    ]}
+                  >
+                    <View style={styles.orbitingStarDot} />
+                    <View style={styles.orbitingStarDotOpposite} />
+                  </Animated.View>
+
+                  {/* Layer 3: Breathing Golden Emerald Aura Glow */}
                   <Animated.View
                     style={[
                       styles.auraGlow,
@@ -408,7 +551,7 @@ export default function LoginScreen() {
                     ]}
                   />
 
-                  {/* Center Emblem */}
+                  {/* Layer 4: Floating Center Emblem with 3D Border */}
                   <Animated.View
                     style={[
                       styles.logoInnerCircle,
@@ -714,11 +857,63 @@ export default function LoginScreen() {
                 </View>
               </View>
 
-              {/* ── 1-Tap Quick Role Portals ── */}
+              {/* ── NEW SEEKER & NEW ASTRO REGISTRATION ACTIONS ── */}
+              <View style={styles.newAccountCard}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Text style={{ fontSize: 16 }}>🌟</Text>
+                  <Text style={styles.newAccountCardTitle}>New to AstroGuru?</Text>
+                </View>
+
+                <View style={styles.newAccountButtonsRow}>
+                  {/* Option 1: New Seeker */}
+                  <Pressable
+                    onPress={() => {
+                      triggerHaptic('light');
+                      setShowSeekerSignUp(true);
+                    }}
+                    style={({ pressed }) => [
+                      styles.newSeekerBtn,
+                      pressed && { opacity: 0.88, transform: [{ scale: 0.98 }] },
+                    ]}
+                  >
+                    <View style={styles.newBtnIconCircle}>
+                      <Text style={{ fontSize: 18 }}>✨</Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.newSeekerBtnTitle}>New Seeker Sign Up</Text>
+                      <Text style={styles.newSeekerBtnSub}>Get ₹200 Free Wallet & Kundli</Text>
+                    </View>
+                    <Text style={{ fontSize: 16, color: '#059669', fontWeight: '900' }}>→</Text>
+                  </Pressable>
+
+                  {/* Option 2: New Astrologer */}
+                  <Pressable
+                    onPress={() => {
+                      triggerHaptic('light');
+                      setShowAstroSignUp(true);
+                    }}
+                    style={({ pressed }) => [
+                      styles.newAstroBtn,
+                      pressed && { opacity: 0.88, transform: [{ scale: 0.98 }] },
+                    ]}
+                  >
+                    <View style={styles.newBtnIconCircleAstro}>
+                      <Text style={{ fontSize: 18 }}>🧘</Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.newAstroBtnTitle}>Join as Certified Acharya</Text>
+                      <Text style={styles.newAstroBtnSub}>Consult seekers & earn on platform</Text>
+                    </View>
+                    <Text style={{ fontSize: 16, color: '#D97706', fontWeight: '900' }}>→</Text>
+                  </Pressable>
+                </View>
+              </View>
+
+              {/* ── 1-Tap Quick Demo Role Portals ── */}
               <View style={styles.quickAccessCard}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                   <Text style={{ fontSize: 14 }}>🚀</Text>
-                  <Text style={styles.quickAccessTitle}>1-Tap Demo Role Portals</Text>
+                  <Text style={styles.quickAccessTitle}>1-Tap Demo Role Switcher</Text>
                 </View>
 
                 <View style={styles.quickRolesRow}>
@@ -788,6 +983,225 @@ export default function LoginScreen() {
             </Animated.View>
           </ScrollView>
         </KeyboardAvoidingView>
+
+        {/* ══════════════════════════════════════════════════
+            MODAL 1: NEW SEEKER SIGN UP MODAL
+           ══════════════════════════════════════════════════ */}
+        <Modal visible={showSeekerSignUp} animationType="slide" transparent>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalCard}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <View style={{ gap: 2 }}>
+                  <Text style={styles.modalTitle}>✨ New Seeker Registration</Text>
+                  <Text style={styles.modalSub}>Get ₹200 Free Wallet Balance + Free Kundli</Text>
+                </View>
+                <Pressable onPress={() => setShowSeekerSignUp(false)} style={styles.modalCloseBtn}>
+                  <Text style={{ fontSize: 16, fontWeight: '900', color: colors.text }}>✕</Text>
+                </Pressable>
+              </View>
+
+              <ScrollView style={{ maxHeight: 380 }} contentContainerStyle={{ gap: 10, paddingVertical: 4 }}>
+                <View style={styles.field}>
+                  <Text style={styles.label}>YOUR FULL NAME</Text>
+                  <TextInput
+                    value={regName}
+                    onChangeText={setRegName}
+                    placeholder="e.g. Priya Sharma"
+                    placeholderTextColor={colors.textFaint}
+                    style={styles.textInput}
+                  />
+                </View>
+
+                <View style={styles.field}>
+                  <Text style={styles.label}>EMAIL ADDRESS</Text>
+                  <TextInput
+                    value={regEmail}
+                    onChangeText={setRegEmail}
+                    placeholder="priya@gmail.com"
+                    placeholderTextColor={colors.textFaint}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    style={styles.textInput}
+                  />
+                </View>
+
+                <View style={styles.field}>
+                  <Text style={styles.label}>MOBILE NUMBER</Text>
+                  <TextInput
+                    value={regPhone}
+                    onChangeText={setRegPhone}
+                    placeholder="9876543210"
+                    placeholderTextColor={colors.textFaint}
+                    keyboardType="number-pad"
+                    maxLength={10}
+                    style={styles.textInput}
+                  />
+                </View>
+
+                <View style={styles.field}>
+                  <Text style={styles.label}>CREATE PASSWORD</Text>
+                  <TextInput
+                    value={regPassword}
+                    onChangeText={setRegPassword}
+                    placeholder="••••••••"
+                    placeholderTextColor={colors.textFaint}
+                    secureTextEntry
+                    style={styles.textInput}
+                  />
+                </View>
+
+                <View style={styles.field}>
+                  <Text style={styles.label}>DATE OF BIRTH</Text>
+                  <TextInput
+                    value={regDob}
+                    onChangeText={setRegDob}
+                    placeholder="DD/MM/YYYY"
+                    placeholderTextColor={colors.textFaint}
+                    style={styles.textInput}
+                  />
+                </View>
+
+                {!!regError && (
+                  <View style={styles.errorBox}>
+                    <Text style={styles.errorText}>⚠️ {regError}</Text>
+                  </View>
+                )}
+              </ScrollView>
+
+              <View style={{ flexDirection: 'row', gap: 10, marginTop: 6 }}>
+                <Button
+                  label="Cancel"
+                  variant="outline"
+                  size="md"
+                  style={{ flex: 1 }}
+                  onPress={() => setShowSeekerSignUp(false)}
+                />
+                <Button
+                  label={regLoading ? 'Creating Account…' : 'Complete Registration 🚀'}
+                  variant="gold"
+                  size="md"
+                  loading={regLoading}
+                  style={{ flex: 2 }}
+                  onPress={handleSeekerRegister}
+                />
+              </View>
+            </View>
+          </View>
+        </Modal>
+
+        {/* ══════════════════════════════════════════════════
+            MODAL 2: NEW ASTROLOGER / ACHARYA ONBOARDING MODAL
+           ══════════════════════════════════════════════════ */}
+        <Modal visible={showAstroSignUp} animationType="slide" transparent>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalCard}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <View style={{ gap: 2 }}>
+                  <Text style={styles.modalTitle}>🧘 Join as Certified Acharya</Text>
+                  <Text style={styles.modalSub}>Consult Seekers & Earn 80% Consultation Revenue</Text>
+                </View>
+                <Pressable onPress={() => setShowAstroSignUp(false)} style={styles.modalCloseBtn}>
+                  <Text style={{ fontSize: 16, fontWeight: '900', color: colors.text }}>✕</Text>
+                </Pressable>
+              </View>
+
+              <ScrollView style={{ maxHeight: 380 }} contentContainerStyle={{ gap: 10, paddingVertical: 4 }}>
+                <View style={styles.field}>
+                  <Text style={styles.label}>JYOTISHI FULL NAME</Text>
+                  <TextInput
+                    value={astroName}
+                    onChangeText={setAstroName}
+                    placeholder="e.g. Acharya Ramesh Shastri"
+                    placeholderTextColor={colors.textFaint}
+                    style={styles.textInput}
+                  />
+                </View>
+
+                <View style={styles.field}>
+                  <Text style={styles.label}>PROFESSIONAL EMAIL</Text>
+                  <TextInput
+                    value={astroEmail}
+                    onChangeText={setAstroEmail}
+                    placeholder="ramesh.astrologer@gmail.com"
+                    placeholderTextColor={colors.textFaint}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    style={styles.textInput}
+                  />
+                </View>
+
+                <View style={styles.field}>
+                  <Text style={styles.label}>SPECIALTIES (COMMA SEPARATED)</Text>
+                  <TextInput
+                    value={astroSpecialty}
+                    onChangeText={setAstroSpecialty}
+                    placeholder="Vedic Astrology, Prashna, Nadi"
+                    placeholderTextColor={colors.textFaint}
+                    style={styles.textInput}
+                  />
+                </View>
+
+                <View style={{ flexDirection: 'row', gap: 10 }}>
+                  <View style={[styles.field, { flex: 1 }]}>
+                    <Text style={styles.label}>EXP (YEARS)</Text>
+                    <TextInput
+                      value={astroExp}
+                      onChangeText={setAstroExp}
+                      keyboardType="numeric"
+                      style={styles.textInput}
+                    />
+                  </View>
+
+                  <View style={[styles.field, { flex: 1 }]}>
+                    <Text style={styles.label}>RATE / MIN (₹)</Text>
+                    <TextInput
+                      value={astroRate}
+                      onChangeText={setAstroRate}
+                      keyboardType="numeric"
+                      style={styles.textInput}
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.field}>
+                  <Text style={styles.label}>CREATE PASSWORD</Text>
+                  <TextInput
+                    value={astroPassword}
+                    onChangeText={setAstroPassword}
+                    placeholder="••••••••"
+                    placeholderTextColor={colors.textFaint}
+                    secureTextEntry
+                    style={styles.textInput}
+                  />
+                </View>
+
+                {!!astroError && (
+                  <View style={styles.errorBox}>
+                    <Text style={styles.errorText}>⚠️ {astroError}</Text>
+                  </View>
+                )}
+              </ScrollView>
+
+              <View style={{ flexDirection: 'row', gap: 10, marginTop: 6 }}>
+                <Button
+                  label="Cancel"
+                  variant="outline"
+                  size="md"
+                  style={{ flex: 1 }}
+                  onPress={() => setShowAstroSignUp(false)}
+                />
+                <Button
+                  label={astroLoading ? 'Applying…' : 'Submit Application 🧘'}
+                  variant="gold"
+                  size="md"
+                  loading={astroLoading}
+                  style={{ flex: 2 }}
+                  onPress={handleAstroRegister}
+                />
+              </View>
+            </View>
+          </View>
+        </Modal>
       </SafeAreaView>
     </GradientBackground>
   );
@@ -821,35 +1235,76 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
 
-  /* Hero */
+  /* ── Hero & Balanced Dual Rotating Chakra ── */
   hero: {
     alignItems: 'center',
     gap: 8,
     marginBottom: 4,
   },
   logoStack: {
-    width: 96,
-    height: 96,
+    width: 120,
+    height: 120,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
     marginBottom: 4,
   },
-  haloRing: {
+  zodiacMandalaRing: {
     position: 'absolute',
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    borderWidth: 2,
-    borderColor: 'rgba(217, 119, 6, 0.4)',
+    width: 120,
+    height: 120,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  zodiacRashiChar: {
+    position: 'absolute',
+    fontSize: 12,
+    fontWeight: '900',
+    color: '#D97706',
+  },
+  dashedOrbitRing: {
+    position: 'absolute',
+    width: 98,
+    height: 98,
+    borderRadius: 49,
+    borderWidth: 1.5,
+    borderColor: 'rgba(5, 150, 105, 0.45)',
     borderStyle: 'dashed',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  orbitingStarDot: {
+    position: 'absolute',
+    top: -4,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#F59E0B',
+    shadowColor: '#F59E0B',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  orbitingStarDotOpposite: {
+    position: 'absolute',
+    bottom: -4,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#10B981',
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 6,
+    elevation: 3,
   },
   auraGlow: {
     position: 'absolute',
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: 'rgba(5, 150, 105, 0.2)',
+    backgroundColor: 'rgba(5, 150, 105, 0.22)',
     shadowColor: '#10B981',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.6,
@@ -1169,6 +1624,90 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
+  /* ── New Account Register Action Card ── */
+  newAccountCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    gap: 10,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 1,
+  },
+  newAccountCardTitle: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#0F172A',
+  },
+  newAccountButtonsRow: {
+    gap: 8,
+  },
+  newSeekerBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ECFDF5',
+    padding: 12,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#A7F3D0',
+    gap: 10,
+  },
+  newBtnIconCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#6EE7B7',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  newSeekerBtnTitle: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#065F46',
+  },
+  newSeekerBtnSub: {
+    fontSize: 10.5,
+    color: '#047857',
+    fontWeight: '600',
+  },
+
+  newAstroBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFBEB',
+    padding: 12,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#FDE68A',
+    gap: 10,
+  },
+  newBtnIconCircleAstro: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#FCD34D',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  newAstroBtnTitle: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#78350F',
+  },
+  newAstroBtnSub: {
+    fontSize: 10.5,
+    color: '#92400E',
+    fontWeight: '600',
+  },
+
   /* Quick Access Portals */
   quickAccessCard: {
     backgroundColor: '#FFFFFF',
@@ -1263,5 +1802,37 @@ const styles = StyleSheet.create({
   footerLink: {
     color: colors.gold,
     fontWeight: '800',
+  },
+
+  /* Modal */
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    padding: spacing.md,
+  },
+  modalCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 22,
+    padding: 16,
+    gap: 12,
+    maxHeight: '90%',
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#0F172A',
+  },
+  modalSub: {
+    fontSize: 11,
+    color: colors.textMuted,
+  },
+  modalCloseBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
