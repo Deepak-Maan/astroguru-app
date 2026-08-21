@@ -39,6 +39,7 @@ export interface RewardState {
   tarotDate: string | null;
   remedies: RemedyItem[];
 
+  addCoins: (amount: number) => void;
   checkInToday: () => { success: boolean; coinsAwarded: number; newStreak: number };
   spinChakra: () => { prize: string; coins?: number; cash?: number; voucher?: string };
   drawDailyTarot: () => TarotCard;
@@ -178,6 +179,10 @@ export const useRewardsStore = create<RewardState>()(
       tarotFlipped: false,
       tarotDate: null,
       remedies: DEFAULT_REMEDIES,
+
+      addCoins: (amount) => {
+        set((s) => ({ astroCoins: s.astroCoins + (amount || 0) }));
+      },
 
       checkInToday: () => {
         const today = getTodayDateStr();
