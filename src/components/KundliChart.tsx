@@ -52,6 +52,23 @@ export function KundliChart({ kundli, size = 300, chartStyle = 'north', onHouseS
     { rashiIdx: 10, col: 0, row: 0 }, // Aquarius
   ];
 
+  const getInteractiveProps = (fn: () => void) => {
+    if (Platform.OS === 'web') {
+      return {
+        onClick: (e: any) => {
+          if (e && typeof e.stopPropagation === 'function') {
+            e.stopPropagation();
+          }
+          fn();
+        },
+        cursor: 'pointer',
+      } as any;
+    }
+    return {
+      onPress: fn,
+    };
+  };
+
   if (chartStyle === 'south') {
     return (
       <View style={[styles.wrap, { width: S, height: S }]}>
@@ -79,10 +96,19 @@ export function KundliChart({ kundli, size = 300, chartStyle = 'north', onHouseS
             const y = cell.row * boxSize;
 
             return (
-              <G key={cell.rashiIdx} onPress={() => handleHousePress(houseNum)}>
-                {isSelected && (
-                  <Rect x={x} y={y} width={boxSize} height={boxSize} fill="rgba(5, 150, 105, 0.12)" stroke="#059669" strokeWidth={1.5} />
-                )}
+              <G key={cell.rashiIdx}>
+                {/* Touch Target Rect */}
+                <Rect
+                  x={x}
+                  y={y}
+                  width={boxSize}
+                  height={boxSize}
+                  fill={isSelected ? 'rgba(5, 150, 105, 0.12)' : 'rgba(255,255,255,0.01)'}
+                  stroke={isSelected ? '#059669' : 'none'}
+                  strokeWidth={1.5}
+                  {...getInteractiveProps(() => handleHousePress(houseNum))}
+                />
+
                 {/* Rashi Short Name */}
                 <SvgText
                   x={x + 4}
@@ -184,7 +210,7 @@ export function KundliChart({ kundli, size = 300, chartStyle = 'north', onHouseS
               key={`fill-${num}`}
               points={toStr(pts)}
               fill={isSelected ? 'rgba(5, 150, 105, 0.14)' : num % 2 === 0 ? 'rgba(255,255,255,0.65)' : 'rgba(217,119,6,0.05)'}
-              onPress={() => handleHousePress(num)}
+              {...getInteractiveProps(() => handleHousePress(num))}
             />
           );
         })}
@@ -216,7 +242,7 @@ export function KundliChart({ kundli, size = 300, chartStyle = 'north', onHouseS
           const startY = labelY - ((rows.length - 1) * 11) / 2 + 4;
 
           return (
-            <G key={`content-${num}`} onPress={() => handleHousePress(num)}>
+            <G key={`content-${num}`}>
               {/* Rashi number */}
               <SvgText
                 x={labelX}
