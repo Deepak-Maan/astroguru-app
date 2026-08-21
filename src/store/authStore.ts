@@ -11,6 +11,7 @@ interface AuthState {
   isAuthenticated: boolean;
   hydrated: boolean;
   setUserSession: (user: UserAccount) => void;
+  updateUser: (updates: Partial<UserAccount>) => void;
   logout: () => void;
   setHydrated: () => void;
 }
@@ -30,6 +31,12 @@ export const useAuthStore = create<AuthState>()(
         try {
           useWalletStore.getState().syncUserSessionWallet();
         } catch (e) {}
+      },
+
+      updateUser: (updates: Partial<UserAccount>) => {
+        set((s) => ({
+          user: s.user ? { ...s.user, ...updates } : null,
+        }));
       },
 
       logout: () => {

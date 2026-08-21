@@ -292,13 +292,27 @@ export default function Profile() {
                   </View>
                 )}
 
-                <Button
-                  label={profile ? 'Edit birth details' : 'Add birth details'}
-                  variant="outline"
-                  size="sm"
-                  style={{ marginTop: spacing.lg }}
-                  onPress={() => router.push('/(onboarding)/birth-details')}
-                />
+                <View style={{ flexDirection: 'row', gap: 8, marginTop: spacing.md, width: '100%' }}>
+                  <Pressable
+                    onPress={() => router.push('/edit-profile')}
+                    style={({ pressed }) => [styles.editProfileBtn, pressed && { opacity: 0.88, transform: [{ scale: 0.98 }] }]}
+                  >
+                    <LinearGradient
+                      colors={[colors.saffron, colors.gold]}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      style={StyleSheet.absoluteFill}
+                    />
+                    <Text style={styles.editProfileBtnText}>✏️ Edit Profile & Kundli</Text>
+                  </Pressable>
+
+                  <Pressable
+                    onPress={() => router.push(profile ? '/(tabs)/kundli' : '/(onboarding)/birth-details')}
+                    style={styles.viewKundliBtn}
+                  >
+                    <Text style={styles.viewKundliBtnText}>🪐 Chart</Text>
+                  </Pressable>
+                </View>
               </View>
 
               {/* Wallet snapshot */}
@@ -336,6 +350,7 @@ export default function Profile() {
               <View>
                 <SectionHeader title="⚙️ Account & Settings" />
                 <Card padded={false}>
+                  <Row icon="✏️" label="Edit Profile & Birth Details" onPress={() => router.push('/edit-profile')} accent={colors.teal} />
                   <Row icon="🚀" label={`Upgrade / Update App (v${currentVersion})`} onPress={() => triggerUpdateModal()} accent={colors.teal} />
                   <Row icon="👑" label={isVip ? `AstroVIP — ${vipPlanId} (Active)` : 'Get AstroVIP Pass'} onPress={() => router.push('/vip')} accent={colors.gold} />
                   <Row icon="📄" label="10-Page Kundli PDF Export" onPress={() => router.push('/kundli-pdf')} />
@@ -491,5 +506,40 @@ const styles = StyleSheet.create({
     color: colors.textFaint,
     textAlign: 'center',
     marginTop: spacing.sm,
+  },
+
+  editProfileBtn: {
+    flex: 2,
+    height: 42,
+    borderRadius: radius.pill,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#D97706',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  editProfileBtnText: {
+    fontSize: 12.5,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: 0.3,
+  },
+  viewKundliBtn: {
+    flex: 1,
+    height: 42,
+    borderRadius: radius.pill,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: 'rgba(217, 119, 6, 0.4)',
+  },
+  viewKundliBtnText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: colors.gold,
   },
 });

@@ -20,6 +20,7 @@ import { colors, radius, spacing, typography } from '../../src/theme';
 import { City } from '../../src/types';
 import { searchCities } from '../../src/data/cities';
 import { useUserStore } from '../../src/store/userStore';
+import { useAuthStore } from '../../src/store/authStore';
 
 /** Numeric segmented input (works identically on web and native). */
 function NumField({
@@ -55,17 +56,22 @@ function NumField({
 
 export default function BirthDetails() {
   const router = useRouter();
+  const existingProfile = useUserStore((s) => s.profile);
   const setProfile = useUserStore((s) => s.setProfile);
+  const authUser = useAuthStore((s) => s.user);
 
-  const [name, setName] = useState('');
-  const [gender, setGender] = useState<'male' | 'female' | 'other'>('male');
-  const [dd, setDd] = useState('');
-  const [mm, setMm] = useState('');
-  const [yyyy, setYyyy] = useState('');
-  const [hh, setHh] = useState('');
-  const [min, setMin] = useState('');
+  const defaultDateParts = existingProfile?.date ? existingProfile.date.split('-') : [];
+  const defaultTimeParts = existingProfile?.time ? existingProfile.time.split(':') : [];
+
+  const [name, setName] = useState(existingProfile?.name || authUser?.name || '');
+  const [gender, setGender] = useState<'male' | 'female' | 'other'>(existingProfile?.gender || 'male');
+  const [dd, setDd] = useState(defaultDateParts[2] || '');
+  const [mm, setMm] = useState(defaultDateParts[1] || '');
+  const [yyyy, setYyyy] = useState(defaultDateParts[0] || '');
+  const [hh, setHh] = useState(defaultTimeParts[0] || '');
+  const [min, setMin] = useState(defaultTimeParts[1] || '');
   const [query, setQuery] = useState('');
-  const [city, setCity] = useState<City | null>(null);
+  const [city, setCity] = useState<City | null>(existingProfile?.place || null);
   const [showList, setShowList] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
