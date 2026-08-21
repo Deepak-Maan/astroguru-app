@@ -58,11 +58,6 @@ export default function AdminDashboard() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const logout = useAuthStore((s) => s.logout);
 
-  // Strict Admin Gate: non-admins are routed away
-  if (!isAuthenticated || authUser?.role !== 'admin') {
-    return <Redirect href="/(auth)/login" />;
-  }
-
   const [tab, setTab] = useState<AdminTab>('overview');
   const [astrologers, setAstrologers] = useState<Astrologer[]>([...ASTROLOGERS]);
 
@@ -249,6 +244,18 @@ export default function AdminDashboard() {
   const activeConsultationsCount = liveSessions.filter((s) => s.status === 'active').length;
   const activeCount = astrologers.filter((a) => a.online).length;
 
+  const handleAdminSignOut = () => {
+    router.replace('/(auth)/login');
+    setTimeout(() => {
+      logout();
+    }, 50);
+  };
+
+  // Strict Admin Gate: non-admins are routed away safely after hooks execute
+  if (!isAuthenticated || authUser?.role !== 'admin') {
+    return <Redirect href="/(auth)/login" />;
+  }
+
   return (
     <GradientBackground>
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
@@ -267,10 +274,7 @@ export default function AdminDashboard() {
           </View>
 
           <Pressable
-            onPress={() => {
-              logout();
-              router.replace('/(auth)/login');
-            }}
+            onPress={handleAdminSignOut}
             style={({ pressed }) => [
               styles.adminSignOutBtn,
               pressed && { opacity: 0.8, transform: [{ scale: 0.96 }] },

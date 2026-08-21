@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import {
   Alert,
+  Image,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -17,38 +19,50 @@ import { GradientBackground } from '../../src/components/GradientBackground';
 import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { WatermarkedDocViewer } from '../../src/components/WatermarkedDocViewer';
 import { DocType, KycDocument, useKycStore } from '../../src/store/kycStore';
-import { colors, radius, spacing } from '../../src/theme';
+import { useAdminStore } from '../../src/store/adminStore';
+import { colors, radius, spacing, typography } from '../../src/theme';
 
-const DOC_TYPES: Array<{ id: DocType; label: string; icon: string; desc: string }> = [
+const SAMPLE_AVATARS = [
+  'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=300',
+  'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300',
+  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=300',
+];
+
+const DOC_TYPES: Array<{ id: DocType; label: string; icon: string; desc: string; sampleNum: string }> = [
   {
     id: 'aadhaar_front',
     label: 'Aadhaar (Front)',
     icon: '🇮🇳',
     desc: 'UIDAI Government ID with Photo',
+    sampleNum: '582948199182',
   },
   {
     id: 'aadhaar_back',
     label: 'Aadhaar (Back)',
     icon: '🇮🇳',
     desc: 'Address & QR verification side',
+    sampleNum: '582948199182',
   },
   {
     id: 'pan_card',
     label: 'PAN Card',
     icon: '🪪',
     desc: 'Income Tax Department ID for payouts',
+    sampleNum: 'ABCDE9482Q',
   },
   {
     id: 'jyotish_degree',
     label: 'Jyotish Degree',
     icon: '📜',
-    desc: 'ICAS, BVB or University Astrological Degree',
+    desc: 'ICAS, BVB or University Degree Certificate',
+    sampleNum: 'ICAS-JYOTISH-2015-882',
   },
   {
     id: 'passport',
     label: 'Passport',
     icon: '🛂',
     desc: 'Indian or International Passport page',
+    sampleNum: 'Z4819582',
   },
 ];
 
@@ -69,10 +83,14 @@ export default function KycVerificationScreen() {
 
   const [selectedType, setSelectedType] = useState<DocType>('aadhaar_front');
   const [holderName, setHolderName] = useState('Pandit Deepak Sharma');
-  const [docNumber, setDocNumber] = useState('481958294819');
-  const [notes, setNotes] = useState('');
-  const [showPreviewModal, setShowPreviewModal] = useState(true);
+  const [docNumber, setDocNumber] = useState('582948199182');
+  const [dob, setDob] = useState('15/08/1988');
+  const [gender, setGender] = useState('MALE / पुरुष');
+  const [attachedImage, setAttachedImage] = useState<string | null>(SAMPLE_AVATARS[0]);
   const [successToast, setSuccessToast] = useState<string | null>(null);
+
+  // Fullscreen Inspection Modal
+  const [inspectDoc, setInspectDoc] = useState<KycDocument | null>(null);
 
   const triggerHaptic = (type: 'light' | 'medium' | 'success' = 'light') => {
     try {
@@ -88,6 +106,12 @@ export default function KycVerificationScreen() {
         }
       }
     } catch (_) {}
+  };
+
+  const handleSelectDocType = (type: DocType, sample: string) => {
+    triggerHaptic('light');
+    setSelectedType(type);
+    setDocNumber(sample);
   };
 
   const handleUploadAndStamp = () => {
@@ -109,25 +133,38 @@ export default function KycVerificationScreen() {
     // Compute masked format
     let maskedNumber = docNumber;
     if (maskAadhaarDigits && (selectedType === 'aadhaar_front' || selectedType === 'aadhaar_back')) {
-      maskedNumber = `XXXX-XXXX-${docNumber.slice(-4)}`;
+      const last4 = docNumber.length >= 4 ? docNumber.slice(-4) : '9182';
+      maskedNumber = `XXXX-XXXX-${last4}`;
     } else if (selectedType === 'pan_card') {
-      maskedNumber = `•••••${docNumber.slice(-4)}`;
+      const last4 = docNumber.length >= 4 ? docNumber.slice(-4) : '9482Q';
+      maskedNumber = `••••••${last4}`;
     }
 
     uploadDocument({
       docType: selectedType,
+      docNumber: docNumber.trim(),
       docNumberMasked: maskedNumber,
       holderName: holderName.trim(),
+      dob: dob.trim(),
+      gender: gender.trim(),
+      imageUri: attachedImage || undefined,
       watermarkText: customWatermarkNote,
+      watermarkOpacity,
       status: 'pending_review',
-      notes: notes.trim() || undefined,
     });
 
-    setSuccessToast(`✅ Document securely watermarked & submitted to KYC Vault!`);
+    setSuccessToast(`🎉 ${DOC_TYPES.find((d) => d.id === selectedType)?.label} watermarked & stamped to KYC Vault!`);
     setTimeout(() => setSuccessToast(null), 4000);
   };
 
+  const handleDownloadCopy = (doc: KycDocument) => {
+    triggerHaptic('success');
+    setSuccessToast(`📥 Secure watermarked copy of "${doc.holderName} (${doc.docNumberMasked})" exported!`);
+    setTimeout(() => setSuccessToast(null), 3500);
+  };
+
   const handleRemoveDoc = (id: string, name: string) => {
+    triggerHaptic('medium');
     const msg = `Remove "${name}" from your KYC security vault?`;
     if (Platform.OS === 'web') {
       if (window.confirm(msg)) {
@@ -186,14 +223,14 @@ export default function KycVerificationScreen() {
                   </View>
                 </View>
                 <Text style={styles.heroSub}>
-                  Client-side tamper-proof watermarking prevents misuse of your government IDs.
+                  Client-side tamper-proof watermarking prevents unauthorized misuse of your credentials.
                 </Text>
               </View>
             </View>
 
             <View style={styles.trustScoreBar}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
-                <Text style={styles.trustLabel}>Astrologer Trust & Identity Score</Text>
+                <Text style={styles.trustLabel}>Astrologer Trust & Verification Score</Text>
                 <Text style={styles.trustValue}>{trustScore}%</Text>
               </View>
               <View style={styles.progressBarTrack}>
@@ -224,80 +261,176 @@ export default function KycVerificationScreen() {
                 return (
                   <Pressable
                     key={dt.id}
-                    onPress={() => {
-                      triggerHaptic('light');
-                      setSelectedType(dt.id);
-                    }}
-                    style={[styles.docTypePill, isSelected && styles.docTypePillActive]}
+                    onPress={() => handleSelectDocType(dt.id, dt.sampleNum)}
+                    style={[
+                      styles.docTypeBtn,
+                      isSelected && styles.docTypeBtnActive,
+                    ]}
                   >
-                    <Text style={{ fontSize: 18 }}>{dt.icon}</Text>
-                    <View>
-                      <Text style={[styles.docTypePillText, isSelected && styles.docTypePillTextActive]}>
-                        {dt.label}
-                      </Text>
-                      <Text style={styles.docTypeDescText}>{dt.desc}</Text>
-                    </View>
+                    <Text style={{ fontSize: 24 }}>{dt.icon}</Text>
+                    <Text
+                      style={[
+                        styles.docTypeLabel,
+                        isSelected && styles.docTypeLabelActive,
+                      ]}
+                    >
+                      {dt.label}
+                    </Text>
+                    <Text style={styles.docTypeDesc} numberOfLines={2}>
+                      {dt.desc}
+                    </Text>
+                    {isSelected && (
+                      <View style={styles.activeCheckPill}>
+                        <Text style={styles.activeCheckText}>✓ SELECTED</Text>
+                      </View>
+                    )}
                   </Pressable>
                 );
               })}
             </ScrollView>
           </View>
 
-          {/* ── Section 2: Security & Watermark Customization ── */}
+          {/* ── Section 2: Input Document Details & Photo ── */}
           <View style={styles.sectionCard}>
             <View style={styles.sectionHeaderRow}>
               <View style={styles.sectionIconPill}>
-                <Text style={{ fontSize: 15 }}>🔒</Text>
+                <Text style={{ fontSize: 15 }}>✏️</Text>
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.sectionTitle}>2. Document Details & Security Stamp</Text>
-                <Text style={styles.sectionSub}>Watermark is permanently embedded into image</Text>
+                <Text style={styles.sectionTitle}>2. Document Details & Photo</Text>
+                <Text style={styles.sectionSub}>Provide details to generate the official card preview</Text>
+              </View>
+            </View>
+
+            {/* Photo Attachment Row */}
+            <View style={styles.photoUploadRow}>
+              <View style={styles.photoThumbWrapper}>
+                {attachedImage ? (
+                  <Image source={{ uri: attachedImage }} style={styles.photoThumb} />
+                ) : (
+                  <View style={styles.photoThumbPlaceholder}>
+                    <Text style={{ fontSize: 20 }}>📸</Text>
+                  </View>
+                )}
+              </View>
+
+              <View style={{ flex: 1, gap: 4 }}>
+                <Text style={{ fontSize: 12.5, fontWeight: '800', color: colors.text }}>
+                  Document Identification Photo
+                </Text>
+                <Text style={{ fontSize: 10.5, color: colors.textMuted }}>
+                  Tap below to switch sample portrait photo
+                </Text>
+                <View style={{ flexDirection: 'row', gap: 6, marginTop: 2 }}>
+                  {SAMPLE_AVATARS.map((uri, idx) => (
+                    <Pressable
+                      key={idx}
+                      onPress={() => {
+                        triggerHaptic('light');
+                        setAttachedImage(uri);
+                      }}
+                      style={[
+                        styles.avatarSampleBtn,
+                        attachedImage === uri && styles.avatarSampleBtnActive,
+                      ]}
+                    >
+                      <Image source={{ uri }} style={{ width: 28, height: 28, borderRadius: 14 }} />
+                    </Pressable>
+                  ))}
+                  <Pressable
+                    onPress={() => {
+                      triggerHaptic('light');
+                      setAttachedImage(null);
+                    }}
+                    style={styles.removePhotoBtn}
+                  >
+                    <Text style={{ fontSize: 10, color: '#DC2626', fontWeight: '800' }}>No Photo</Text>
+                  </Pressable>
+                </View>
               </View>
             </View>
 
             {/* Holder Name */}
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>FULL NAME (EXACTLY AS ON ID)</Text>
+              <Text style={styles.inputLabel}>Full Name on Document</Text>
               <TextInput
                 value={holderName}
                 onChangeText={setHolderName}
-                style={styles.textInput}
                 placeholder="e.g. Pandit Deepak Sharma"
-                placeholderTextColor="#94A3B8"
+                placeholderTextColor={colors.textFaint}
+                style={styles.textInput}
               />
             </View>
 
             {/* Document Number */}
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>
-                {selectedType.includes('aadhaar')
-                  ? '12-DIGIT AADHAAR NUMBER'
+                {selectedType === 'aadhaar_front' || selectedType === 'aadhaar_back'
+                  ? 'Aadhaar Number (12 Digits)'
                   : selectedType === 'pan_card'
-                  ? '10-CHARACTER PAN NUMBER'
-                  : 'REGISTRATION / CERTIFICATE NO.'}
+                  ? 'PAN Number (10 Characters)'
+                  : 'Registration / Certificate Number'}
               </Text>
               <TextInput
                 value={docNumber}
                 onChangeText={setDocNumber}
-                style={styles.textInput}
-                placeholder={selectedType.includes('aadhaar') ? '4819 5829 4819' : 'ABCDE1234F'}
-                placeholderTextColor="#94A3B8"
-                maxLength={20}
+                placeholder="e.g. 5829 4819 9182"
+                placeholderTextColor={colors.textFaint}
+                autoCapitalize="characters"
+                style={[styles.textInput, { fontFamily: Platform.OS === 'ios' ? 'Courier-Bold' : 'monospace', fontWeight: '800' }]}
               />
             </View>
 
-            {/* UIDAI Masking Toggle for Aadhaar */}
-            {selectedType.includes('aadhaar') && (
-              <View style={styles.securityToggleCard}>
-                <View style={{ flex: 1 }}>
+            {/* DOB & Gender */}
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <View style={[styles.inputGroup, { flex: 1 }]}>
+                <Text style={styles.inputLabel}>Date of Birth</Text>
+                <TextInput
+                  value={dob}
+                  onChangeText={setDob}
+                  placeholder="DD/MM/YYYY"
+                  placeholderTextColor={colors.textFaint}
+                  style={styles.textInput}
+                />
+              </View>
+
+              <View style={[styles.inputGroup, { flex: 1 }]}>
+                <Text style={styles.inputLabel}>Gender</Text>
+                <TextInput
+                  value={gender}
+                  onChangeText={setGender}
+                  placeholder="MALE / FEMALE"
+                  placeholderTextColor={colors.textFaint}
+                  style={styles.textInput}
+                />
+              </View>
+            </View>
+          </View>
+
+          {/* ── Section 3: Watermark & Anti-Theft Security Settings ── */}
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionHeaderRow}>
+              <View style={styles.sectionIconPill}>
+                <Text style={{ fontSize: 15 }}>🛡️</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.sectionTitle}>3. Watermark & UIDAI Redaction Settings</Text>
+                <Text style={styles.sectionSub}>Configure anti-theft stamps and digit masks</Text>
+              </View>
+            </View>
+
+            {/* UIDAI Masking Switch (Aadhaar Only) */}
+            {(selectedType === 'aadhaar_front' || selectedType === 'aadhaar_back') && (
+              <View style={styles.switchRow}>
+                <View style={{ flex: 1, gap: 2 }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                    <Text style={styles.toggleTitle}>UIDAI 8-Digit Aadhaar Masking</Text>
-                    <View style={styles.recomBadge}>
-                      <Text style={styles.recomBadgeText}>RECOMMENDED</Text>
+                    <Text style={styles.switchTitle}>Mask First 8 Aadhaar Digits</Text>
+                    <View style={styles.uidaiPill}>
+                      <Text style={styles.uidaiPillText}>UIDAI COMPLIANT</Text>
                     </View>
                   </View>
-                  <Text style={styles.toggleSub}>
-                    Masks first 8 digits (XXXX-XXXX-1234) per UIDAI identity safety guidelines.
+                  <Text style={styles.switchSub}>
+                    Converts numbers to "XXXX-XXXX-1234" to prevent identity theft.
                   </Text>
                 </View>
                 <Switch
@@ -312,47 +445,47 @@ export default function KycVerificationScreen() {
               </View>
             )}
 
-            {/* Custom Watermark Purpose Text */}
+            {/* Watermark Note */}
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>WATERMARK PURPOSE TEXT</Text>
+              <Text style={styles.inputLabel}>Custom Watermark Text</Text>
               <TextInput
                 value={customWatermarkNote}
                 onChangeText={setCustomWatermarkNote}
+                placeholder="e.g. FOR ASTROGURU VERIFICATION ONLY"
+                placeholderTextColor={colors.textFaint}
                 style={styles.textInput}
-                placeholder="FOR ASTROGURU VERIFICATION ONLY"
-                placeholderTextColor="#94A3B8"
               />
-              <Text style={styles.helperText}>
-                Stamps diagonally across your document with dynamic date & SHA-256 hash.
-              </Text>
             </View>
 
-            {/* Watermark Opacity Picker */}
+            {/* Watermark Opacity Chips */}
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>WATERMARK OPACITY / DENSITY</Text>
+              <Text style={styles.inputLabel}>Watermark Density & Opacity</Text>
               <View style={styles.opacityRow}>
                 {[
-                  { label: 'Subtle (25%)', val: 0.25 },
+                  { label: 'Subtle (20%)', val: 0.2 },
                   { label: 'Standard (35%)', val: 0.35 },
-                  { label: 'Heavy (50%)', val: 0.5 },
-                ].map((op) => {
-                  const isSelected = watermarkOpacity === op.val;
+                  { label: 'High Security (50%)', val: 0.5 },
+                ].map((item) => {
+                  const isSelected = watermarkOpacity === item.val;
                   return (
                     <Pressable
-                      key={op.val}
+                      key={item.val}
                       onPress={() => {
                         triggerHaptic('light');
-                        setWatermarkOpacity(op.val);
+                        setWatermarkOpacity(item.val);
                       }}
-                      style={[styles.opacityPill, isSelected && styles.opacityPillActive]}
+                      style={[
+                        styles.opacityChip,
+                        isSelected && styles.opacityChipActive,
+                      ]}
                     >
                       <Text
                         style={[
-                          styles.opacityPillText,
-                          isSelected && styles.opacityPillTextActive,
+                          styles.opacityChipText,
+                          isSelected && styles.opacityChipTextActive,
                         ]}
                       >
-                        {op.label}
+                        {item.label}
                       </Text>
                     </Pressable>
                   );
@@ -361,15 +494,15 @@ export default function KycVerificationScreen() {
             </View>
           </View>
 
-          {/* ── Section 3: Live Watermarked Document Preview ── */}
+          {/* ── Section 4: Live Stamped Preview ── */}
           <View style={styles.sectionCard}>
             <View style={styles.sectionHeaderRow}>
               <View style={styles.sectionIconPill}>
                 <Text style={{ fontSize: 15 }}>👁️</Text>
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.sectionTitle}>3. Live Watermark & Redaction Preview</Text>
-                <Text style={styles.sectionSub}>Inspect tamper-proof stamp before saving</Text>
+                <Text style={styles.sectionTitle}>4. Live Stamped Watermark Preview</Text>
+                <Text style={styles.sectionSub}>Exact document rendering with anti-theft lattice</Text>
               </View>
             </View>
 
@@ -377,13 +510,16 @@ export default function KycVerificationScreen() {
               docType={selectedType}
               holderName={holderName}
               docNumber={docNumber}
+              dob={dob}
+              gender={gender}
+              imageUri={attachedImage || undefined}
               isMasked={maskAadhaarDigits}
               watermarkText={customWatermarkNote}
               watermarkOpacity={watermarkOpacity}
-              securityHash="AGY-SHA256-7E9B"
+              securityHash="AGY-SHA256-LIVE"
             />
 
-            {/* Stamp & Upload Button */}
+            {/* Submit & Stamp Button */}
             <Pressable
               onPress={handleUploadAndStamp}
               style={({ pressed }) => [
@@ -398,150 +534,186 @@ export default function KycVerificationScreen() {
                 style={StyleSheet.absoluteFill}
               />
               <Text style={styles.stampButtonText}>
-                🔒 Stamp Watermark & Submit to KYC Vault
+                🛡️ Stamp Watermark & Save to KYC Vault
               </Text>
             </Pressable>
           </View>
 
-          {/* ── Section 4: Watermarked Documents Vault ── */}
+          {/* ── Section 5: Verified Documents Vault Table ── */}
           <View style={styles.sectionCard}>
             <View style={styles.sectionHeaderRow}>
               <View style={styles.sectionIconPill}>
                 <Text style={{ fontSize: 15 }}>📁</Text>
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.sectionTitle}>Your Verified KYC Documents Vault</Text>
-                <Text style={styles.sectionSub}>
-                  {documents.length} document(s) stored with cryptographic hash
-                </Text>
+                <Text style={styles.sectionTitle}>Your Verified Credentials Vault ({documents.length})</Text>
+                <Text style={styles.sectionSub}>All uploaded and watermarked identity records</Text>
               </View>
             </View>
 
             {documents.length === 0 ? (
-              <View style={styles.emptyVault}>
-                <Text style={{ fontSize: 36 }}>📂</Text>
-                <Text style={styles.emptyVaultTitle}>No Documents Uploaded Yet</Text>
+              <View style={styles.emptyVaultBox}>
+                <Text style={{ fontSize: 32 }}>📭</Text>
+                <Text style={styles.emptyVaultTitle}>No Documents in Vault</Text>
                 <Text style={styles.emptyVaultSub}>
-                  Use the studio above to watermark and submit your government credentials.
+                  Upload your Aadhaar and Jyotish Degrees above to earn a verified Gold badge.
                 </Text>
               </View>
             ) : (
-              <View style={{ gap: 10 }}>
-                {documents.map((doc) => (
-                  <View key={doc.id} style={styles.vaultCard}>
-                    <View style={styles.vaultCardHeader}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                        <Text style={{ fontSize: 20 }}>
-                          {doc.docType.includes('aadhaar')
-                            ? '🇮🇳'
-                            : doc.docType === 'pan_card'
-                            ? '🪪'
-                            : doc.docType === 'jyotish_degree'
-                            ? '📜'
-                            : '🛂'}
-                        </Text>
-                        <View>
-                          <Text style={styles.vaultDocTitle}>
-                            {doc.docType === 'aadhaar_front'
-                              ? 'Aadhaar Card (Front)'
-                              : doc.docType === 'aadhaar_back'
-                              ? 'Aadhaar Card (Back)'
-                              : doc.docType === 'pan_card'
-                              ? 'PAN Card'
-                              : doc.docType === 'jyotish_degree'
-                              ? 'Vedic Jyotish Degree'
-                              : 'Passport'}
-                          </Text>
+              <View style={{ gap: 12 }}>
+                {documents.map((doc) => {
+                  const meta = DOC_TYPES.find((d) => d.id === doc.docType);
+                  return (
+                    <View key={doc.id} style={styles.vaultItemCard}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                        <Text style={{ fontSize: 24 }}>{meta?.icon || '📄'}</Text>
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.vaultDocTitle}>{meta?.label}</Text>
                           <Text style={styles.vaultDocNumber}>{doc.docNumberMasked}</Text>
+                          <Text style={styles.vaultDocMeta}>
+                            🔒 {doc.securityHash} · {doc.uploadedAt}
+                          </Text>
                         </View>
-                      </View>
 
-                      <View
-                        style={[
-                          styles.statusBadge,
-                          {
-                            backgroundColor:
-                              doc.status === 'verified' ? '#ECFDF5' : '#FFFBEB',
-                            borderColor:
-                              doc.status === 'verified' ? '#A7F3D0' : '#FDE68A',
-                          },
-                        ]}
-                      >
-                        <Text
+                        <View
                           style={[
-                            styles.statusBadgeText,
+                            styles.statusPill,
                             {
-                              color:
-                                doc.status === 'verified' ? '#059669' : '#D97706',
+                              backgroundColor:
+                                doc.status === 'verified'
+                                  ? '#ECFDF5'
+                                  : doc.status === 'rejected'
+                                  ? '#FEF2F2'
+                                  : '#FFFBEB',
+                              borderColor:
+                                doc.status === 'verified'
+                                  ? '#A7F3D0'
+                                  : doc.status === 'rejected'
+                                  ? '#FECACA'
+                                  : '#FDE68A',
                             },
                           ]}
                         >
-                          {doc.status === 'verified' ? '✅ VERIFIED' : '⏳ IN REVIEW'}
-                        </Text>
+                          <Text
+                            style={[
+                              styles.statusPillText,
+                              {
+                                color:
+                                  doc.status === 'verified'
+                                    ? '#059669'
+                                    : doc.status === 'rejected'
+                                    ? '#DC2626'
+                                    : '#D97706',
+                              },
+                            ]}
+                          >
+                            {doc.status === 'verified'
+                              ? '✅ VERIFIED'
+                              : doc.status === 'rejected'
+                              ? '❌ REJECTED'
+                              : '⏳ UNDER REVIEW'}
+                          </Text>
+                        </View>
+                      </View>
+
+                      {/* Action buttons */}
+                      <View style={styles.vaultActionsRow}>
+                        <Pressable
+                          onPress={() => setInspectDoc(doc)}
+                          style={styles.vaultInspectBtn}
+                        >
+                          <Text style={styles.vaultInspectText}>🔍 View & Inspect</Text>
+                        </Pressable>
+
+                        <Pressable
+                          onPress={() => handleDownloadCopy(doc)}
+                          style={styles.vaultDownloadBtn}
+                        >
+                          <Text style={styles.vaultDownloadText}>📥 Download Copy</Text>
+                        </Pressable>
+
+                        <Pressable
+                          onPress={() => handleRemoveDoc(doc.id, meta?.label || 'Document')}
+                          style={styles.vaultRemoveBtn}
+                        >
+                          <Text style={styles.vaultRemoveText}>🗑️</Text>
+                        </Pressable>
                       </View>
                     </View>
-
-                    <View style={styles.vaultMetaRow}>
-                      <Text style={styles.vaultMetaText}>📅 Stamped: {doc.uploadedAt}</Text>
-                      <Text style={styles.vaultHashText}>🔐 {doc.securityHash}</Text>
-                    </View>
-
-                    <View style={styles.vaultWatermarkNoteBox}>
-                      <Text style={styles.vaultWatermarkNote}>
-                        Watermark: "{doc.watermarkText}"
-                      </Text>
-                    </View>
-
-                    <View style={styles.vaultActionRow}>
-                      <Pressable
-                        onPress={() => {
-                          triggerHaptic('light');
-                          setSelectedType(doc.docType);
-                          setHolderName(doc.holderName);
-                        }}
-                        style={styles.previewBtn}
-                      >
-                        <Text style={styles.previewBtnText}>🔍 Inspect Watermark</Text>
-                      </Pressable>
-
-                      <Pressable
-                        onPress={() => handleRemoveDoc(doc.id, doc.holderName)}
-                        style={styles.deleteBtn}
-                      >
-                        <Text style={styles.deleteBtnText}>🗑️ Remove</Text>
-                      </Pressable>
-                    </View>
-                  </View>
-                ))}
+                  );
+                })}
               </View>
             )}
           </View>
 
-          {/* ── Section 5: Security & Anti-Theft FAQ ── */}
-          <View style={styles.faqCard}>
-            <Text style={styles.faqTitle}>🛡️ Why Watermark Your Government IDs?</Text>
+          {/* ── Section 6: Security & UIDAI Compliance FAQ ── */}
+          <View style={styles.sectionCard}>
+            <Text style={styles.faqHeader}>🛡️ Identity Security & UIDAI Guidelines FAQ</Text>
             <View style={styles.faqItem}>
-              <Text style={styles.faqQuestion}>1. Prevents Identity Theft & Misuse</Text>
-              <Text style={styles.faqAnswer}>
-                Watermarking ensures your Aadhaar, PAN, or certificates cannot be used to open unauthorized bank accounts, SIM cards, or loans elsewhere.
+              <Text style={styles.faqQ}>Why is watermarking required for Astrologers?</Text>
+              <Text style={styles.faqA}>
+                Watermarking stamps a non-removable purpose statement across the card. This ensures that even if someone intercepts your document, they cannot open bank accounts or apply for loans in your name.
               </Text>
             </View>
+
             <View style={styles.faqItem}>
-              <Text style={styles.faqQuestion}>2. 100% UIDAI & IT Act 2000 Compliant</Text>
-              <Text style={styles.faqAnswer}>
-                Our 8-digit Aadhaar masking redacts non-essential digits while validating the mandatory last 4 digits for astrologer KYC.
-              </Text>
-            </View>
-            <View style={styles.faqItem}>
-              <Text style={styles.faqQuestion}>3. SHA-256 Digital Fingerprint</Text>
-              <Text style={styles.faqAnswer}>
-                Each submission generates a unique cryptographic hash, guaranteeing the document cannot be tampered with or replaced without authorization.
+              <Text style={styles.faqQ}>What is UIDAI 8-digit masking?</Text>
+              <Text style={styles.faqA}>
+                Under official UIDAI circulars, sharing masked Aadhaar (displaying only the last 4 digits) is legally approved for verification while completely eliminating identity theft risks.
               </Text>
             </View>
           </View>
 
-          <View style={{ height: 30 }} />
+          <View style={{ height: 40 }} />
         </ScrollView>
+
+        {/* ── Fullscreen Magnified Inspection Modal ── */}
+        <Modal visible={!!inspectDoc} animationType="slide" transparent>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <View>
+                  <Text style={styles.modalTitle}>Credential Inspector</Text>
+                  <Text style={{ fontSize: 11, color: colors.textMuted }}>
+                    {inspectDoc?.docNumberMasked} · {inspectDoc?.securityHash}
+                  </Text>
+                </View>
+                <Pressable onPress={() => setInspectDoc(null)} style={styles.modalCloseBtn}>
+                  <Text style={{ fontSize: 16, fontWeight: '900', color: colors.text }}>✕</Text>
+                </Pressable>
+              </View>
+
+              {inspectDoc && (
+                <ScrollView contentContainerStyle={{ paddingVertical: 10 }}>
+                  <WatermarkedDocViewer
+                    docType={inspectDoc.docType}
+                    holderName={inspectDoc.holderName}
+                    docNumber={inspectDoc.docNumber}
+                    dob={inspectDoc.dob}
+                    gender={inspectDoc.gender}
+                    imageUri={inspectDoc.imageUri}
+                    isMasked={maskAadhaarDigits}
+                    watermarkText={inspectDoc.watermarkText}
+                    watermarkOpacity={inspectDoc.watermarkOpacity}
+                    securityHash={inspectDoc.securityHash}
+                    dateStamp={inspectDoc.uploadedAt}
+                  />
+                </ScrollView>
+              )}
+
+              <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
+                <Pressable
+                  onPress={() => {
+                    if (inspectDoc) handleDownloadCopy(inspectDoc);
+                  }}
+                  style={styles.modalExportBtn}
+                >
+                  <Text style={styles.modalExportText}>📥 Download Stamped PDF/Image</Text>
+                </Pressable>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </SafeAreaView>
     </GradientBackground>
   );
@@ -558,26 +730,36 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
     backgroundColor: '#ECFDF5',
-    borderColor: '#A7F3D0',
-    borderWidth: 1.5,
-    borderRadius: 14,
     padding: 12,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#A7F3D0',
+    shadowColor: '#059669',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 3,
   },
   toastText: {
-    flex: 1,
     fontSize: 12.5,
     fontWeight: '800',
     color: '#065F46',
+    flex: 1,
   },
 
   /* Hero Card */
   heroCard: {
     borderRadius: 20,
     padding: 16,
-    overflow: 'hidden',
     borderWidth: 1.5,
-    borderColor: '#334155',
+    borderColor: '#1E293B',
+    overflow: 'hidden',
     gap: 14,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4,
   },
   heroTopRow: {
     flexDirection: 'row',
@@ -588,7 +770,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: 'rgba(5, 150, 105, 0.2)',
+    backgroundColor: 'rgba(5, 150, 105, 0.18)',
     borderWidth: 1.5,
     borderColor: '#10B981',
     alignItems: 'center',
@@ -606,29 +788,28 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   verifiedBadge: {
-    backgroundColor: 'rgba(5, 150, 105, 0.25)',
+    backgroundColor: '#065F46',
     paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingVertical: 2.5,
     borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: '#10B981',
+    borderColor: '#34D399',
   },
   verifiedBadgeText: {
-    fontSize: 9,
+    fontSize: 8.5,
     fontWeight: '900',
-    color: '#34D399',
+    color: '#A7F3D0',
     letterSpacing: 0.5,
   },
-
   trustScoreBar: {
     backgroundColor: 'rgba(255, 255, 255, 0.06)',
     borderRadius: 12,
     padding: 10,
   },
   trustLabel: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#E2E8F0',
+    fontSize: 10.5,
+    fontWeight: '700',
+    color: '#94A3B8',
   },
   trustValue: {
     fontSize: 12,
@@ -647,7 +828,7 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
 
-  /* Section Card */
+  /* Section Cards */
   sectionCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
@@ -670,9 +851,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#F8FAFC',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
+    backgroundColor: '#ECFDF5',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -687,136 +866,191 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
 
-  /* Doc Type Pills */
+  /* Document Type Carousel */
   docTypeRow: {
-    gap: 8,
-    paddingVertical: 2,
+    gap: 10,
+    paddingVertical: 4,
   },
-  docTypePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#F8FAFC',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+  docTypeBtn: {
+    width: 140,
+    padding: 12,
     borderRadius: 14,
+    backgroundColor: '#F8FAFC',
     borderWidth: 1.5,
     borderColor: '#E2E8F0',
+    alignItems: 'center',
+    gap: 4,
   },
-  docTypePillActive: {
+  docTypeBtnActive: {
     backgroundColor: '#ECFDF5',
-    borderColor: '#059669',
+    borderColor: '#10B981',
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 3,
   },
-  docTypePillText: {
+  docTypeLabel: {
     fontSize: 12,
     fontWeight: '800',
-    color: '#334155',
+    color: '#1E293B',
+    textAlign: 'center',
+    marginTop: 2,
   },
-  docTypePillTextActive: {
+  docTypeLabelActive: {
     color: '#065F46',
     fontWeight: '900',
   },
-  docTypeDescText: {
-    fontSize: 9.5,
+  docTypeDesc: {
+    fontSize: 9,
     color: '#64748B',
-    marginTop: 1,
+    textAlign: 'center',
+    lineHeight: 12,
+  },
+  activeCheckPill: {
+    backgroundColor: '#059669',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginTop: 4,
+  },
+  activeCheckText: {
+    fontSize: 7.5,
+    fontWeight: '900',
+    color: '#FFFFFF',
   },
 
-  /* Input Groups */
+  /* Photo Attachment */
+  photoUploadRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#F8FAFC',
+    padding: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  photoThumbWrapper: {
+    width: 48,
+    height: 56,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    backgroundColor: '#FFFFFF',
+    overflow: 'hidden',
+  },
+  photoThumb: {
+    width: '100%',
+    height: '100%',
+  },
+  photoThumbPlaceholder: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarSampleBtn: {
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  avatarSampleBtnActive: {
+    borderColor: '#059669',
+  },
+  removePhotoBtn: {
+    backgroundColor: '#FEF2F2',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+  },
+
+  /* Form Inputs */
   inputGroup: {
-    gap: 6,
+    gap: 4,
   },
   inputLabel: {
-    fontSize: 10,
+    fontSize: 11.5,
     fontWeight: '800',
-    color: '#64748B',
-    letterSpacing: 0.5,
+    color: '#334155',
   },
   textInput: {
     backgroundColor: '#F8FAFC',
-    borderRadius: 12,
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: '#E2E8F0',
+    borderRadius: 10,
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingVertical: 9,
     fontSize: 13,
-    fontWeight: '700',
     color: '#0F172A',
   },
-  helperText: {
-    fontSize: 10,
-    color: '#64748B',
-    marginTop: 2,
-  },
 
-  /* UIDAI Security Toggle */
-  securityToggleCard: {
+  /* Switch Row */
+  switchRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F0FDF4',
-    padding: 12,
-    borderRadius: 14,
-    borderWidth: 1.5,
-    borderColor: '#BBF7D0',
-    gap: 10,
+    gap: 12,
+    paddingVertical: 4,
   },
-  toggleTitle: {
-    fontSize: 12,
-    fontWeight: '900',
-    color: '#166534',
+  switchTitle: {
+    fontSize: 12.5,
+    fontWeight: '800',
+    color: '#0F172A',
   },
-  toggleSub: {
-    fontSize: 10,
-    color: '#15803D',
-    marginTop: 2,
+  switchSub: {
+    fontSize: 10.5,
+    color: '#64748B',
+    lineHeight: 14,
   },
-  recomBadge: {
-    backgroundColor: '#DCFCE7',
-    paddingHorizontal: 5,
+  uidaiPill: {
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 6,
     paddingVertical: 1.5,
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: '#86EFAC',
+    borderColor: '#A7F3D0',
   },
-  recomBadgeText: {
+  uidaiPillText: {
     fontSize: 8,
     fontWeight: '900',
-    color: '#166534',
+    color: '#065F46',
   },
 
-  /* Opacity Row */
+  /* Opacity Chips */
   opacityRow: {
     flexDirection: 'row',
     gap: 8,
   },
-  opacityPill: {
+  opacityChip: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
     paddingVertical: 8,
-    borderRadius: 10,
+    borderRadius: 8,
+    backgroundColor: '#F1F5F9',
     alignItems: 'center',
-    justifyContent: 'center',
     borderWidth: 1,
     borderColor: '#E2E8F0',
   },
-  opacityPillActive: {
-    backgroundColor: '#EFF6FF',
-    borderColor: '#3B82F6',
+  opacityChipActive: {
+    backgroundColor: '#ECFDF5',
+    borderColor: '#059669',
   },
-  opacityPillText: {
-    fontSize: 11,
+  opacityChipText: {
+    fontSize: 10.5,
     fontWeight: '700',
-    color: '#475569',
+    color: '#64748B',
   },
-  opacityPillTextActive: {
-    color: '#1D4ED8',
+  opacityChipTextActive: {
+    color: '#065F46',
     fontWeight: '900',
   },
 
   /* Stamp Button */
   stampButton: {
-    height: 50,
-    borderRadius: 25,
+    height: 48,
+    borderRadius: 24,
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
@@ -825,152 +1059,176 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 3,
-    marginTop: 6,
+    marginTop: 4,
   },
   stampButtonText: {
-    fontSize: 14,
+    fontSize: 13.5,
     fontWeight: '900',
     color: '#FFFFFF',
     letterSpacing: 0.5,
   },
 
-  /* Vault */
-  emptyVault: {
+  /* Vault Cards */
+  emptyVaultBox: {
     alignItems: 'center',
     paddingVertical: 24,
     gap: 6,
   },
   emptyVaultTitle: {
     fontSize: 14,
-    fontWeight: '800',
-    color: '#334155',
+    fontWeight: '900',
+    color: '#0F172A',
   },
   emptyVaultSub: {
     fontSize: 11,
     color: '#64748B',
     textAlign: 'center',
-    maxWidth: 260,
+    maxWidth: 240,
+    lineHeight: 16,
   },
-  vaultCard: {
+  vaultItemCard: {
     backgroundColor: '#F8FAFC',
     borderRadius: 14,
     padding: 12,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    gap: 8,
-  },
-  vaultCardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: 10,
   },
   vaultDocTitle: {
     fontSize: 13,
-    fontWeight: '800',
+    fontWeight: '900',
     color: '#0F172A',
   },
   vaultDocNumber: {
-    fontSize: 11,
-    color: '#64748B',
-    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
-    fontWeight: '700',
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#2563EB',
+    fontFamily: Platform.OS === 'ios' ? 'Courier-Bold' : 'monospace',
+    marginTop: 1,
   },
-  statusBadge: {
+  vaultDocMeta: {
+    fontSize: 9.5,
+    color: '#64748B',
+    marginTop: 2,
+  },
+  statusPill: {
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: radius.pill,
     borderWidth: 1,
   },
-  statusBadgeText: {
+  statusPillText: {
     fontSize: 9,
     fontWeight: '900',
     letterSpacing: 0.5,
   },
-  vaultMetaRow: {
+  vaultActionsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  vaultMetaText: {
-    fontSize: 10,
-    color: '#64748B',
-    fontWeight: '600',
-  },
-  vaultHashText: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#D97706',
-    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
-  },
-  vaultWatermarkNoteBox: {
-    backgroundColor: '#F1F5F9',
-    padding: 8,
-    borderRadius: 8,
-  },
-  vaultWatermarkNote: {
-    fontSize: 9.5,
-    color: '#475569',
-    fontWeight: '600',
-    fontStyle: 'italic',
-  },
-  vaultActionRow: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
     gap: 8,
-    marginTop: 4,
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0',
+    paddingTop: 8,
   },
-  previewBtn: {
+  vaultInspectBtn: {
+    flex: 1,
     backgroundColor: '#EFF6FF',
-    paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
+    alignItems: 'center',
     borderWidth: 1,
     borderColor: '#BFDBFE',
   },
-  previewBtnText: {
+  vaultInspectText: {
     fontSize: 11,
     fontWeight: '800',
     color: '#2563EB',
   },
-  deleteBtn: {
-    backgroundColor: '#FEF2F2',
-    paddingHorizontal: 10,
+  vaultDownloadBtn: {
+    flex: 1,
+    backgroundColor: '#ECFDF5',
     paddingVertical: 6,
     borderRadius: 8,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+  },
+  vaultDownloadText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#059669',
+  },
+  vaultRemoveBtn: {
+    backgroundColor: '#FEF2F2',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
     borderColor: '#FECACA',
   },
-  deleteBtnText: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#DC2626',
+  vaultRemoveText: {
+    fontSize: 12,
   },
 
   /* FAQ */
-  faqCard: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: 18,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    gap: 12,
-  },
-  faqTitle: {
+  faqHeader: {
     fontSize: 13.5,
     fontWeight: '900',
     color: '#0F172A',
   },
   faqItem: {
     gap: 3,
+    paddingVertical: 4,
   },
-  faqQuestion: {
+  faqQ: {
     fontSize: 12,
     fontWeight: '800',
     color: '#1E293B',
   },
-  faqAnswer: {
+  faqA: {
     fontSize: 11,
     color: '#64748B',
     lineHeight: 16,
+  },
+
+  /* Modal */
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    padding: spacing.md,
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 22,
+    padding: 16,
+    gap: 12,
+    maxHeight: '90%',
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#0F172A',
+  },
+  modalCloseBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalExportBtn: {
+    flex: 1,
+    backgroundColor: '#059669',
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  modalExportText: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#FFFFFF',
   },
 });

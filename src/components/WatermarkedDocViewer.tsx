@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, Platform } from 'react-native';
+import { Image, StyleSheet, Text, View, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { DocType } from '../store/kycStore';
 import { colors, radius } from '../theme';
@@ -8,355 +8,786 @@ interface Props {
   docType: DocType;
   holderName: string;
   docNumber: string;
+  dob?: string;
+  gender?: string;
+  imageUri?: string;
   isMasked?: boolean;
-  watermarkText: string;
+  watermarkText?: string;
   watermarkOpacity?: number;
   securityHash?: string;
   dateStamp?: string;
+  scale?: number;
 }
 
 export function WatermarkedDocViewer({
   docType,
   holderName,
   docNumber,
+  dob = '15/08/1988',
+  gender = 'MALE / पुरुष',
+  imageUri,
   isMasked = true,
-  watermarkText,
+  watermarkText = 'FOR ASTROGURU VERIFICATION ONLY',
   watermarkOpacity = 0.35,
   securityHash = 'AGY-SHA256-7E9B',
   dateStamp,
+  scale = 1,
 }: Props) {
-  const getDocMeta = () => {
-    switch (docType) {
-      case 'aadhaar_front':
-        return {
-          title: 'GOVERNMENT OF INDIA',
-          sub: 'UNIQUE IDENTIFICATION AUTHORITY OF INDIA',
-          label: 'Aadhaar Card (Front)',
-          icon: '🇮🇳',
-          headerBg: ['#EA580C', '#FFFFFF', '#059669'],
-          cardBg: '#FFFDF9',
-          borderCol: '#FDBA74',
-          badgeText: 'AADHAAR',
-        };
-      case 'aadhaar_back':
-        return {
-          title: 'GOVERNMENT OF INDIA',
-          sub: 'ADDRESS & VERIFICATION DETAILS',
-          label: 'Aadhaar Card (Back)',
-          icon: '🇮🇳',
-          headerBg: ['#EA580C', '#FFFFFF', '#059669'],
-          cardBg: '#FFFDF9',
-          borderCol: '#FDBA74',
-          badgeText: 'AADHAAR BACK',
-        };
-      case 'pan_card':
-        return {
-          title: 'INCOME TAX DEPARTMENT',
-          sub: 'GOVERNMENT OF INDIA',
-          label: 'Permanent Account Number Card',
-          icon: '🇮🇳',
-          headerBg: ['#0284C7', '#0369A1'],
-          cardBg: '#F0F9FF',
-          borderCol: '#BAE6FD',
-          badgeText: 'PAN CARD',
-        };
-      case 'jyotish_degree':
-        return {
-          title: 'BHARATIYA VIDYA BHAVAN',
-          sub: 'COUNCIL OF VEDIC ASTROLOGY & JYOTISH SCIENCES',
-          label: 'Jyotish Acharya Degree Certificate',
-          icon: '📜',
-          headerBg: ['#D97706', '#B45309'],
-          cardBg: '#FFFBEB',
-          borderCol: '#FDE68A',
-          badgeText: 'DEGREE',
-        };
-      case 'passport':
-        return {
-          title: 'REPUBLIC OF INDIA',
-          sub: 'PASSPORT IDENTIFICATION PAGE',
-          label: 'Indian Passport',
-          icon: '🛂',
-          headerBg: ['#1E1B4B', '#312E81'],
-          cardBg: '#F8FAFC',
-          borderCol: '#CBD5E1',
-          badgeText: 'PASSPORT',
-        };
+  // Format masked / unmasked display number
+  const formatDocNumber = () => {
+    const raw = docNumber.replace(/\s+/g, '');
+    if (docType === 'aadhaar_front' || docType === 'aadhaar_back') {
+      if (isMasked) {
+        const last4 = raw.length >= 4 ? raw.slice(-4) : '9182';
+        return `XXXX  XXXX  ${last4}`;
+      } else {
+        const p1 = raw.slice(0, 4) || '5829';
+        const p2 = raw.slice(4, 8) || '4819';
+        const p3 = raw.slice(8, 12) || '9182';
+        return `${p1}  ${p2}  ${p3}`;
+      }
     }
+    if (docType === 'pan_card') {
+      if (isMasked) {
+        const last4 = raw.length >= 4 ? raw.slice(-4) : '9482Q';
+        return `••••••${last4}`;
+      }
+      return raw.toUpperCase() || 'ABCDE9482Q';
+    }
+    return docNumber || 'ICAS-JYOTISH-2015-882';
   };
 
-  const meta = getDocMeta();
-  const displayDocNum = isMasked && (docType === 'aadhaar_front' || docType === 'aadhaar_back')
-    ? (docNumber.length >= 4 ? `XXXX-XXXX-${docNumber.slice(-4)}` : 'XXXX-XXXX-4819')
-    : docNumber || '1234-5678-9012';
-
-  const effectiveDate = dateStamp || '2026/08/21 15:30 IST';
+  const displayNum = formatDocNumber();
+  const effectiveDate = dateStamp || '2026/08/21 17:30 IST';
+  const fullWatermark = `${watermarkText} · ${effectiveDate} · [${securityHash}]`;
 
   return (
-    <View style={[styles.cardContainer, { borderColor: meta.borderCol, backgroundColor: meta.cardBg }]}>
-      {/* ── Document Top Header ── */}
-      <View style={styles.cardHeader}>
-        <View style={styles.headerTitleRow}>
-          <Text style={{ fontSize: 20 }}>{meta.icon}</Text>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.govTitle}>{meta.title}</Text>
-            <Text style={styles.govSub}>{meta.sub}</Text>
+    <View style={[styles.cardOuterContainer, { transform: [{ scale }] }]}>
+      {/* ══════════════════════════════════════════════════
+          1. AADHAAR CARD (FRONT)
+         ══════════════════════════════════════════════════ */}
+      {docType === 'aadhaar_front' && (
+        <View style={[styles.baseCard, styles.aadhaarCard]}>
+          {/* Tricolor Header Bar */}
+          <View style={styles.tricolorBar}>
+            <View style={{ flex: 1, backgroundColor: '#FF9933' }} />
+            <View style={{ flex: 1, backgroundColor: '#FFFFFF' }} />
+            <View style={{ flex: 1, backgroundColor: '#138808' }} />
           </View>
-          <View style={styles.docBadge}>
-            <Text style={styles.docBadgeText}>{meta.badgeText}</Text>
-          </View>
-        </View>
-      </View>
 
-      {/* Tricolor divider strip for Indian Govt IDs */}
-      {(docType === 'aadhaar_front' || docType === 'aadhaar_back' || docType === 'pan_card') && (
-        <View style={styles.tricolorBar}>
-          <View style={{ flex: 1, backgroundColor: '#EA580C', height: 3 }} />
-          <View style={{ flex: 1, backgroundColor: '#FFFFFF', height: 3 }} />
-          <View style={{ flex: 1, backgroundColor: '#059669', height: 3 }} />
-        </View>
-      )}
-
-      {/* ── Document Body Information ── */}
-      <View style={styles.cardBody}>
-        <View style={styles.holderRow}>
-          {/* Avatar / Photo placeholder */}
-          <View style={styles.photoBox}>
-            <Text style={{ fontSize: 28 }}>👤</Text>
-            <View style={styles.photoVerifiedBadge}>
-              <Text style={{ fontSize: 8 }}>✅</Text>
+          {/* UIDAI Header */}
+          <View style={styles.aadhaarHeader}>
+            <View style={styles.emblemBox}>
+              <Text style={{ fontSize: 18 }}>🏛️</Text>
+            </View>
+            <View style={{ flex: 1, alignItems: 'center' }}>
+              <Text style={styles.govtIndiaHindi}>भारत सरकार</Text>
+              <Text style={styles.govtIndiaEng}>Government of India</Text>
+              <Text style={styles.uidaiSub}>Unique Identification Authority of India</Text>
+            </View>
+            <View style={styles.aadhaarLogoBox}>
+              <Text style={{ fontSize: 18 }}>☀️</Text>
             </View>
           </View>
 
-          {/* Details */}
-          <View style={{ flex: 1, gap: 4 }}>
-            <Text style={styles.fieldLabel}>NAME / धारक का नाम</Text>
-            <Text style={styles.holderNameText}>{holderName || 'Pandit Deepak Sharma'}</Text>
-
-            <Text style={[styles.fieldLabel, { marginTop: 4 }]}>
-              {docType.includes('aadhaar') ? 'AADHAAR NO. / आधार संख्या' : docType === 'pan_card' ? 'PAN NUMBER' : 'REGISTRATION NO.'}
-            </Text>
-            <View style={styles.docNumberRow}>
-              <Text style={styles.docNumberText}>{displayDocNum}</Text>
-              {isMasked && (docType === 'aadhaar_front' || docType === 'aadhaar_back') && (
-                <View style={styles.uidaiMaskBadge}>
-                  <Text style={styles.uidaiMaskText}>🛡️ UIDAI Masked</Text>
+          {/* Body: Photo + Details + QR */}
+          <View style={styles.aadhaarBody}>
+            {/* Photo frame */}
+            <View style={styles.photoContainer}>
+              {imageUri ? (
+                <Image source={{ uri: imageUri }} style={styles.holderPhoto} resizeMode="cover" />
+              ) : (
+                <View style={styles.photoPlaceholder}>
+                  <Text style={{ fontSize: 26 }}>👤</Text>
+                  <Text style={styles.photoSubText}>OFFICIAL PHOTO</Text>
                 </View>
               )}
             </View>
 
-            <Text style={[styles.fieldLabel, { marginTop: 4 }]}>DIGITAL KYC SIGNATURE</Text>
-            <Text style={styles.hashText}>{securityHash}</Text>
+            {/* Holder Information */}
+            <View style={styles.aadhaarDetailsCol}>
+              <Text style={styles.holderNameText}>{holderName || 'Pandit Deepak Sharma'}</Text>
+              <Text style={styles.aadhaarMetaText}>
+                जन्म तिथि / DOB: <Text style={styles.aadhaarMetaVal}>{dob}</Text>
+              </Text>
+              <Text style={styles.aadhaarMetaText}>
+                लिंग / Gender: <Text style={styles.aadhaarMetaVal}>{gender}</Text>
+              </Text>
+            </View>
+
+            {/* Simulated QR Code */}
+            <View style={styles.qrBox}>
+              <Text style={{ fontSize: 28 }}>🏁</Text>
+              <Text style={styles.qrCaption}>SECURE QR</Text>
+            </View>
+          </View>
+
+          {/* Big Aadhaar Number */}
+          <View style={styles.aadhaarNumberRow}>
+            <Text style={styles.aadhaarNumberText}>{displayNum}</Text>
+          </View>
+
+          {/* Aadhaar Bottom Tagline */}
+          <View style={styles.aadhaarFooter}>
+            <Text style={styles.aadhaarTagline}>मेरा आधार, मेरी पहचान</Text>
           </View>
         </View>
-      </View>
+      )}
 
-      {/* ── Security Watermark Overlay Layer (Diagonally Stamped) ── */}
+      {/* ══════════════════════════════════════════════════
+          2. AADHAAR CARD (BACK)
+         ══════════════════════════════════════════════════ */}
+      {docType === 'aadhaar_back' && (
+        <View style={[styles.baseCard, styles.aadhaarCard]}>
+          {/* Tricolor Header Bar */}
+          <View style={styles.tricolorBar}>
+            <View style={{ flex: 1, backgroundColor: '#FF9933' }} />
+            <View style={{ flex: 1, backgroundColor: '#FFFFFF' }} />
+            <View style={{ flex: 1, backgroundColor: '#138808' }} />
+          </View>
+
+          <View style={styles.aadhaarHeader}>
+            <Text style={{ fontSize: 18 }}>🏛️</Text>
+            <View style={{ flex: 1, alignItems: 'center' }}>
+              <Text style={styles.govtIndiaHindi}>भारतीय विशिष्ट पहचान प्राधिकरण</Text>
+              <Text style={styles.govtIndiaEng}>Unique Identification Authority of India</Text>
+            </View>
+            <Text style={{ fontSize: 18 }}>☀️</Text>
+          </View>
+
+          <View style={{ paddingHorizontal: 14, paddingVertical: 10, gap: 4 }}>
+            <Text style={styles.addressLabel}>पता / Address:</Text>
+            <Text style={styles.addressText}>
+              C/O: Pt. R.K. Sharma, House No. 42B, Shanti Vihar, Near Hanuman Mandir, Sector 14,
+              New Delhi, Delhi - 110001
+            </Text>
+          </View>
+
+          <View style={styles.aadhaarNumberRow}>
+            <Text style={styles.aadhaarNumberText}>{displayNum}</Text>
+          </View>
+
+          <View style={styles.aadhaarFooter}>
+            <Text style={styles.aadhaarTagline}>📞 1947 | help@uidai.gov.in | www.uidai.gov.in</Text>
+          </View>
+        </View>
+      )}
+
+      {/* ══════════════════════════════════════════════════
+          3. PAN CARD (INCOME TAX DEPARTMENT)
+         ══════════════════════════════════════════════════ */}
+      {docType === 'pan_card' && (
+        <View style={[styles.baseCard, styles.panCard]}>
+          <LinearGradient
+            colors={['#E0F2FE', '#BAE6FD']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={StyleSheet.absoluteFill}
+          />
+          {/* Header */}
+          <View style={styles.panHeader}>
+            <Text style={{ fontSize: 18 }}>🏛️</Text>
+            <View style={{ flex: 1, alignItems: 'center' }}>
+              <Text style={styles.panTitleHindi}>आयकर विभाग</Text>
+              <Text style={styles.panTitleEng}>INCOME TAX DEPARTMENT</Text>
+              <Text style={styles.panSub}>GOVT. OF INDIA</Text>
+            </View>
+            <View style={styles.hologramSeal}>
+              <Text style={{ fontSize: 16 }}>✨</Text>
+            </View>
+          </View>
+
+          {/* PAN Body */}
+          <View style={styles.panBody}>
+            <View style={styles.photoContainer}>
+              {imageUri ? (
+                <Image source={{ uri: imageUri }} style={styles.holderPhoto} resizeMode="cover" />
+              ) : (
+                <View style={styles.photoPlaceholder}>
+                  <Text style={{ fontSize: 24 }}>👤</Text>
+                </View>
+              )}
+            </View>
+
+            <View style={{ flex: 1, gap: 3 }}>
+              <Text style={styles.panLabel}>नाम / Name:</Text>
+              <Text style={styles.panValue}>{holderName.toUpperCase()}</Text>
+
+              <Text style={styles.panLabel}>पिता का नाम / Father's Name:</Text>
+              <Text style={styles.panValue}>PT. RAMESH SHARMA</Text>
+
+              <Text style={styles.panLabel}>जन्म की तारीख / Date of Birth:</Text>
+              <Text style={styles.panValue}>{dob}</Text>
+            </View>
+          </View>
+
+          {/* PAN Number Banner */}
+          <View style={styles.panNumberBanner}>
+            <Text style={styles.panNumberLabel}>Permanent Account Number Card</Text>
+            <Text style={styles.panNumberText}>{displayNum}</Text>
+          </View>
+        </View>
+      )}
+
+      {/* ══════════════════════════════════════════════════
+          4. JYOTISH DEGREE / CERTIFICATE
+         ══════════════════════════════════════════════════ */}
+      {docType === 'jyotish_degree' && (
+        <View style={[styles.baseCard, styles.degreeCard]}>
+          <LinearGradient
+            colors={['#FFFBEB', '#FEF3C7']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={StyleSheet.absoluteFill}
+          />
+          <View style={styles.degreeOrnamentalBorder}>
+            <View style={styles.degreeHeader}>
+              <Text style={{ fontSize: 22 }}>🕉️</Text>
+              <Text style={styles.degreeCouncilText}>
+                COUNCIL OF VEDIC ASTROLOGY & JYOTISH SCIENCES
+              </Text>
+              <Text style={styles.degreeSanskritText}>॥ विद्या ददाति विनयं ॥</Text>
+            </View>
+
+            <Text style={styles.degreeBodyTitle}>CERTIFICATE OF JYOTISH ACHARYA</Text>
+            <Text style={styles.degreeCertifyText}>
+              This is to certify that Vedic Scholar
+            </Text>
+            <Text style={styles.degreeHolderName}>{holderName.toUpperCase()}</Text>
+            <Text style={styles.degreeDesc}>
+              has successfully qualified with Highest Honors in Parashari Vedic Astrology, Kundli
+              Prashna & Planetary Dasha Shastra.
+            </Text>
+
+            <View style={styles.degreeFooterRow}>
+              <Text style={styles.degreeRegText}>Reg: {displayNum}</Text>
+              <View style={styles.goldSealBadge}>
+                <Text style={{ fontSize: 16 }}>🏵️</Text>
+                <Text style={styles.goldSealText}>VERIFIED SEAL</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      )}
+
+      {/* ══════════════════════════════════════════════════
+          5. PASSPORT IDENTIFICATION
+         ══════════════════════════════════════════════════ */}
+      {docType === 'passport' && (
+        <View style={[styles.baseCard, styles.passportCard]}>
+          <View style={styles.passportHeader}>
+            <Text style={{ fontSize: 20 }}>🛂</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.passportTitle}>PASSPORT / पासपोर्ट</Text>
+              <Text style={styles.passportSub}>REPUBLIC OF INDIA / भारत गणराज्य</Text>
+            </View>
+            <Text style={styles.passportType}>P &lt; IND</Text>
+          </View>
+
+          <View style={styles.aadhaarBody}>
+            <View style={styles.photoContainer}>
+              {imageUri ? (
+                <Image source={{ uri: imageUri }} style={styles.holderPhoto} resizeMode="cover" />
+              ) : (
+                <View style={styles.photoPlaceholder}>
+                  <Text style={{ fontSize: 24 }}>👤</Text>
+                </View>
+              )}
+            </View>
+
+            <View style={{ flex: 1, gap: 2 }}>
+              <Text style={styles.aadhaarMetaText}>
+                Surname: <Text style={styles.aadhaarMetaVal}>SHARMA</Text>
+              </Text>
+              <Text style={styles.aadhaarMetaText}>
+                Given Names: <Text style={styles.aadhaarMetaVal}>{holderName.toUpperCase()}</Text>
+              </Text>
+              <Text style={styles.aadhaarMetaText}>
+                Passport No: <Text style={[styles.aadhaarMetaVal, { color: '#0369A1' }]}>{displayNum}</Text>
+              </Text>
+              <Text style={styles.aadhaarMetaText}>
+                Nationality: <Text style={styles.aadhaarMetaVal}>INDIAN / भारतीय</Text>
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.mrzBox}>
+            <Text style={styles.mrzText}>
+              P&lt;INDSHARMA&lt;&lt;DEEPAK&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;
+            </Text>
+            <Text style={styles.mrzText}>
+              Z4819582&lt;2IND8808154M3208157&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;8
+            </Text>
+          </View>
+        </View>
+      )}
+
+      {/* ══════════════════════════════════════════════════
+          DIAGONAL ANTI-THEFT WATERMARK LATTICE OVERLAY
+         ══════════════════════════════════════════════════ */}
       <View style={[StyleSheet.absoluteFill, styles.watermarkOverlay]} pointerEvents="none">
-        {/* Lattice of diagonal watermark stamps */}
-        <View style={[styles.watermarkBand, { opacity: watermarkOpacity }]}>
-          <Text style={styles.watermarkText}>{watermarkText}</Text>
-        </View>
-        <View style={[styles.watermarkBand, { opacity: watermarkOpacity, marginTop: 40 }]}>
-          <Text style={styles.watermarkText}>{watermarkText}</Text>
-        </View>
-        <View style={[styles.watermarkBand, { opacity: watermarkOpacity, marginTop: 40 }]}>
-          <Text style={styles.watermarkText}>STAMPED: {effectiveDate} · {securityHash}</Text>
-        </View>
-        <View style={[styles.watermarkBand, { opacity: watermarkOpacity, marginTop: 40 }]}>
-          <Text style={styles.watermarkText}>NOT VALID FOR OTHER FINANCIAL/LEGAL PURPOSES</Text>
-        </View>
-      </View>
-
-      {/* ── Tamper-Proof Security Footer ── */}
-      <View style={styles.securityFooter}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-          <Text style={{ fontSize: 11 }}>🔒</Text>
-          <Text style={styles.securityFooterText}>
-            Digitally Stamped for AstroGuru · 256-Bit Encrypted
+        <View style={[styles.watermarkPattern, { opacity: watermarkOpacity }]}>
+          <Text style={styles.watermarkLine} numberOfLines={1}>
+            {fullWatermark}
+          </Text>
+          <Text style={styles.watermarkLine} numberOfLines={1}>
+            {fullWatermark}
+          </Text>
+          <Text style={styles.watermarkLine} numberOfLines={1}>
+            {fullWatermark}
+          </Text>
+          <Text style={styles.watermarkLine} numberOfLines={1}>
+            {fullWatermark}
+          </Text>
+          <Text style={styles.watermarkLine} numberOfLines={1}>
+            {fullWatermark}
           </Text>
         </View>
-        <Text style={styles.securityFooterHash}>{securityHash}</Text>
+      </View>
+
+      {/* ══════════════════════════════════════════════════
+          CRYPTO HASH & SECURITY TAMPER SEAL BADGE
+         ══════════════════════════════════════════════════ */}
+      <View style={styles.securitySealFooter}>
+        <View style={styles.hashChip}>
+          <Text style={{ fontSize: 11 }}>🔒</Text>
+          <Text style={styles.hashChipText}>{securityHash}</Text>
+        </View>
+        <View style={styles.uidaiCompliantBadge}>
+          <Text style={styles.uidaiCompliantText}>✓ UIDAI IT ACT 2000 WATERMARKED</Text>
+        </View>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  cardContainer: {
+  cardOuterContainer: {
     borderRadius: 18,
-    borderWidth: 1.5,
     overflow: 'hidden',
-    position: 'relative',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
     shadowRadius: 10,
-    elevation: 3,
-    marginVertical: 4,
+    elevation: 5,
+    position: 'relative',
   },
-  cardHeader: {
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+  baseCard: {
+    minHeight: 220,
     backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
-  },
-  headerTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  govTitle: {
-    fontSize: 10.5,
-    fontWeight: '900',
-    color: '#0F172A',
-    letterSpacing: 0.8,
-  },
-  govSub: {
-    fontSize: 8.5,
-    fontWeight: '700',
-    color: '#64748B',
-    marginTop: 1,
-  },
-  docBadge: {
-    backgroundColor: '#F1F5F9',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  docBadgeText: {
-    fontSize: 9,
-    fontWeight: '900',
-    color: '#334155',
-    letterSpacing: 0.5,
-  },
-  tricolorBar: {
-    flexDirection: 'row',
-    width: '100%',
-  },
-
-  cardBody: {
-    padding: 14,
-  },
-  holderRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 14,
-  },
-  photoBox: {
-    width: 68,
-    height: 78,
-    borderRadius: 10,
-    backgroundColor: '#E2E8F0',
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderRadius: 18,
+    overflow: 'hidden',
     borderWidth: 1.5,
     borderColor: '#CBD5E1',
-    position: 'relative',
-  },
-  photoVerifiedBadge: {
-    position: 'absolute',
-    bottom: -4,
-    right: -4,
-    backgroundColor: '#ECFDF5',
-    borderRadius: 8,
-    padding: 2,
-    borderWidth: 1,
-    borderColor: '#A7F3D0',
   },
 
-  fieldLabel: {
-    fontSize: 8.5,
+  /* Aadhaar Styling */
+  aadhaarCard: {
+    backgroundColor: '#FFFDF9',
+    borderColor: '#FDBA74',
+  },
+  tricolorBar: {
+    height: 4,
+    flexDirection: 'row',
+  },
+  aadhaarHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingTop: 8,
+    paddingBottom: 4,
+    gap: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#FED7AA',
+  },
+  emblemBox: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  aadhaarLogoBox: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  govtIndiaHindi: {
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#9A3412',
+  },
+  govtIndiaEng: {
+    fontSize: 10,
     fontWeight: '800',
+    color: '#1E293B',
+  },
+  uidaiSub: {
+    fontSize: 7.5,
+    fontWeight: '700',
     color: '#64748B',
-    letterSpacing: 0.5,
+  },
+  aadhaarBody: {
+    flexDirection: 'row',
+    padding: 12,
+    gap: 12,
+    alignItems: 'center',
+  },
+  photoContainer: {
+    width: 72,
+    height: 86,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: '#94A3B8',
+    backgroundColor: '#E2E8F0',
+    overflow: 'hidden',
+  },
+  holderPhoto: {
+    width: '100%',
+    height: '100%',
+  },
+  photoPlaceholder: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 2,
+  },
+  photoSubText: {
+    fontSize: 6.5,
+    fontWeight: '900',
+    color: '#64748B',
+  },
+  aadhaarDetailsCol: {
+    flex: 1,
+    gap: 3,
   },
   holderNameText: {
     fontSize: 14,
     fontWeight: '900',
     color: '#0F172A',
+    marginBottom: 2,
   },
-  docNumberRow: {
+  aadhaarMetaText: {
+    fontSize: 10,
+    color: '#64748B',
+    fontWeight: '700',
+  },
+  aadhaarMetaVal: {
+    color: '#0F172A',
+    fontWeight: '800',
+  },
+  qrBox: {
+    width: 58,
+    height: 68,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 2,
+  },
+  qrCaption: {
+    fontSize: 7,
+    fontWeight: '900',
+    color: '#64748B',
+  },
+  aadhaarNumberRow: {
+    backgroundColor: 'rgba(234, 88, 12, 0.08)',
+    paddingVertical: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: 'rgba(234, 88, 12, 0.2)',
+  },
+  aadhaarNumberText: {
+    fontSize: 17,
+    fontWeight: '900',
+    color: '#9A3412',
+    letterSpacing: 2,
+    fontFamily: Platform.OS === 'ios' ? 'Courier-Bold' : 'monospace',
+  },
+  aadhaarFooter: {
+    paddingVertical: 5,
+    alignItems: 'center',
+    backgroundColor: '#FFF7ED',
+  },
+  aadhaarTagline: {
+    fontSize: 9.5,
+    fontWeight: '800',
+    color: '#C2410C',
+  },
+  addressLabel: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: '#9A3412',
+  },
+  addressText: {
+    fontSize: 10.5,
+    color: '#1E293B',
+    lineHeight: 15,
+    fontWeight: '600',
+  },
+
+  /* PAN Card Styling */
+  panCard: {
+    backgroundColor: '#F0F9FF',
+    borderColor: '#7DD3FC',
+  },
+  panHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    flexWrap: 'wrap',
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#BAE6FD',
   },
-  docNumberText: {
-    fontSize: 13,
+  panTitleHindi: {
+    fontSize: 12,
     fontWeight: '900',
-    color: '#1E293B',
-    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
-    letterSpacing: 1,
+    color: '#0369A1',
   },
-  uidaiMaskBadge: {
-    backgroundColor: '#ECFDF5',
+  panTitleEng: {
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#0C4A6E',
+    letterSpacing: 0.5,
+  },
+  panSub: {
+    fontSize: 8,
+    fontWeight: '800',
+    color: '#0284C7',
+  },
+  hologramSeal: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#7DD3FC',
+  },
+  panBody: {
+    flexDirection: 'row',
+    padding: 12,
+    gap: 12,
+  },
+  panLabel: {
+    fontSize: 8.5,
+    color: '#0369A1',
+    fontWeight: '700',
+  },
+  panValue: {
+    fontSize: 11,
+    color: '#0F172A',
+    fontWeight: '900',
+  },
+  panNumberBanner: {
+    backgroundColor: '#0284C7',
+    paddingVertical: 6,
+    alignItems: 'center',
+  },
+  panNumberLabel: {
+    fontSize: 8,
+    fontWeight: '800',
+    color: '#BAE6FD',
+    textTransform: 'uppercase',
+  },
+  panNumberText: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: 2,
+    fontFamily: Platform.OS === 'ios' ? 'Courier-Bold' : 'monospace',
+  },
+
+  /* Jyotish Degree Styling */
+  degreeCard: {
+    backgroundColor: '#FFFBEB',
+    borderColor: '#FDE68A',
+    padding: 10,
+  },
+  degreeOrnamentalBorder: {
+    borderWidth: 2,
+    borderColor: '#D97706',
+    borderRadius: 12,
+    padding: 12,
+    alignItems: 'center',
+    gap: 6,
+  },
+  degreeHeader: {
+    alignItems: 'center',
+    gap: 2,
+  },
+  degreeCouncilText: {
+    fontSize: 9,
+    fontWeight: '900',
+    color: '#92400E',
+    textAlign: 'center',
+    letterSpacing: 0.5,
+  },
+  degreeSanskritText: {
+    fontSize: 10,
+    fontWeight: '900',
+    color: '#B45309',
+  },
+  degreeBodyTitle: {
+    fontSize: 12.5,
+    fontWeight: '900',
+    color: '#78350F',
+    letterSpacing: 0.5,
+    marginTop: 2,
+  },
+  degreeCertifyText: {
+    fontSize: 9,
+    color: '#92400E',
+    fontStyle: 'italic',
+  },
+  degreeHolderName: {
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#451A03',
+  },
+  degreeDesc: {
+    fontSize: 8.5,
+    color: '#78350F',
+    textAlign: 'center',
+    lineHeight: 12,
+    paddingHorizontal: 8,
+  },
+  degreeFooterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginTop: 4,
+    borderTopWidth: 1,
+    borderTopColor: '#FDE68A',
+    paddingTop: 6,
+  },
+  degreeRegText: {
+    fontSize: 9,
+    color: '#92400E',
+    fontWeight: '800',
+    fontFamily: Platform.OS === 'ios' ? 'Courier-Bold' : 'monospace',
+  },
+  goldSealBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#FEF3C7',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#A7F3D0',
+    borderColor: '#F59E0B',
   },
-  uidaiMaskText: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: '#059669',
-  },
-  hashText: {
-    fontSize: 9,
-    fontWeight: '700',
-    color: '#64748B',
-    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+  goldSealText: {
+    fontSize: 8,
+    fontWeight: '900',
+    color: '#B45309',
   },
 
-  /* ── Watermark Layer ── */
-  watermarkOverlay: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-    zIndex: 10,
+  /* Passport Styling */
+  passportCard: {
+    backgroundColor: '#F8FAFC',
+    borderColor: '#CBD5E1',
   },
-  watermarkBand: {
-    transform: [{ rotate: '-22deg' }],
-    backgroundColor: 'rgba(239, 68, 68, 0.08)',
-    borderWidth: 1.5,
-    borderColor: '#DC2626',
-    borderStyle: 'dashed',
-    paddingVertical: 3,
-    paddingHorizontal: 20,
-    borderRadius: 4,
+  passportHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    padding: 10,
+    backgroundColor: '#0F172A',
+    gap: 8,
   },
-  watermarkText: {
-    fontSize: 9.5,
+  passportTitle: {
+    fontSize: 11,
     fontWeight: '900',
-    color: '#B91C1C',
-    letterSpacing: 1.2,
+    color: '#FFFFFF',
+  },
+  passportSub: {
+    fontSize: 8,
+    color: '#94A3B8',
+  },
+  passportType: {
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#F59E0B',
+    fontFamily: Platform.OS === 'ios' ? 'Courier-Bold' : 'monospace',
+  },
+  mrzBox: {
+    backgroundColor: '#F1F5F9',
+    padding: 6,
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#CBD5E1',
+  },
+  mrzText: {
+    fontSize: 8,
+    fontFamily: Platform.OS === 'ios' ? 'Courier-Bold' : 'monospace',
+    color: '#0F172A',
+    letterSpacing: 1,
+  },
+
+  /* Watermark Lattice Overlay */
+  watermarkOverlay: {
+    zIndex: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  watermarkPattern: {
+    width: '180%',
+    height: '180%',
+    transform: [{ rotate: '-24deg' }],
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  watermarkLine: {
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#DC2626',
+    letterSpacing: 1.5,
     textTransform: 'uppercase',
   },
 
-  /* ── Security Footer ── */
-  securityFooter: {
+  /* Cryptographic Footer Seal */
+  securitySealFooter: {
+    position: 'absolute',
+    bottom: 6,
+    left: 8,
+    right: 8,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#0F172A',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    zIndex: 20,
   },
-  securityFooterText: {
-    fontSize: 8.5,
-    fontWeight: '700',
-    color: '#94A3B8',
+  hashChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(15, 23, 42, 0.85)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
   },
-  securityFooterHash: {
-    fontSize: 8.5,
-    fontWeight: '800',
-    color: '#F59E0B',
-    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+  hashChipText: {
+    fontSize: 9,
+    fontWeight: '900',
+    color: '#34D399',
+    fontFamily: Platform.OS === 'ios' ? 'Courier-Bold' : 'monospace',
+  },
+  uidaiCompliantBadge: {
+    backgroundColor: 'rgba(5, 150, 105, 0.9)',
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  uidaiCompliantText: {
+    fontSize: 8,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: 0.3,
   },
 });
