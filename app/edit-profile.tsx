@@ -190,12 +190,33 @@ export default function EditProfileScreen() {
               </View>
             )}
 
-            {/* ── Section 1: Spiritual Avatar Selector ── */}
-            <View style={styles.sectionCard}>
-              <Text style={styles.sectionTitle}>Choose Your Spiritual Avatar</Text>
-              <Text style={styles.sectionDesc}>Select a sacred symbol to represent your soul presence</Text>
+            {/* ── Section 1: Compact Spiritual Avatar Selector ── */}
+            <View style={styles.avatarSectionCard}>
+              <View style={styles.avatarHeroRow}>
+                <View style={styles.mainAvatarCircle}>
+                  <LinearGradient
+                    colors={['#FEF3C7', '#FDE68A']}
+                    style={StyleSheet.absoluteFill}
+                  />
+                  <Text style={{ fontSize: 34 }}>{selectedAvatar}</Text>
+                  <View style={styles.avatarEditBadge}>
+                    <Text style={{ fontSize: 9 }}>✨</Text>
+                  </View>
+                </View>
 
-              <View style={styles.avatarGrid}>
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Text style={styles.sectionTitle}>Spiritual Avatar</Text>
+                  <Text style={styles.sectionDesc}>Tap any sacred symbol below to change</Text>
+                </View>
+              </View>
+
+              {/* Horizontal / Compact Avatar Row */}
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.avatarScrollRow}
+                style={{ flexGrow: 0 }}
+              >
                 {SPIRITUAL_AVATARS.map((av) => {
                   const isSelected = selectedAvatar === av;
                   return (
@@ -205,13 +226,13 @@ export default function EditProfileScreen() {
                         triggerHaptic('light');
                         setSelectedAvatar(av);
                       }}
-                      style={[styles.avatarCell, isSelected && styles.avatarCellActive]}
+                      style={[styles.avatarMiniCell, isSelected && styles.avatarMiniCellActive]}
                     >
-                      <Text style={{ fontSize: 26 }}>{av}</Text>
+                      <Text style={{ fontSize: 20 }}>{av}</Text>
                     </Pressable>
                   );
                 })}
-              </View>
+              </ScrollView>
             </View>
 
             {/* ── Section 2: Personal Information ── */}
@@ -626,29 +647,75 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 
-  /* Avatar Grid */
-  avatarGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    justifyContent: 'center',
+  /* Compact Avatar Section */
+  avatarSectionCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 22,
+    padding: 14,
+    borderWidth: 1.5,
+    borderColor: 'rgba(226, 232, 240, 0.9)',
+    shadowColor: '#CBD5E1',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 3,
+    gap: 12,
   },
-  avatarCell: {
-    width: (width - 72) / 6,
-    height: 52,
-    borderRadius: 14,
+  avatarHeroRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  mainAvatarCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#F59E0B',
+    position: 'relative',
+    overflow: 'visible',
+    shadowColor: '#D97706',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  avatarEditBadge: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    backgroundColor: '#D97706',
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
+  },
+  avatarScrollRow: {
+    gap: 8,
+    paddingVertical: 2,
+    alignItems: 'center',
+  },
+  avatarMiniCell: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: '#F8FAFC',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
     borderColor: '#E2E8F0',
   },
-  avatarCellActive: {
+  avatarMiniCellActive: {
     backgroundColor: '#FFFBEB',
     borderColor: '#D97706',
     borderWidth: 2,
     shadowColor: '#D97706',
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 2,
   },
