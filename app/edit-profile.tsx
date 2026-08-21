@@ -193,12 +193,14 @@ export default function EditProfileScreen() {
             {/* ── Section 1: Compact Spiritual Avatar Selector ── */}
             <View style={styles.avatarSectionCard}>
               <View style={styles.avatarHeroRow}>
-                <View style={styles.mainAvatarCircle}>
-                  <LinearGradient
-                    colors={['#FEF3C7', '#FDE68A']}
-                    style={StyleSheet.absoluteFill}
-                  />
-                  <Text style={{ fontSize: 34 }}>{selectedAvatar}</Text>
+                <View style={styles.mainAvatarWrapper}>
+                  <View style={styles.mainAvatarInner}>
+                    <LinearGradient
+                      colors={['#FEF3C7', '#FDE68A']}
+                      style={[StyleSheet.absoluteFill, { borderRadius: 30 }]}
+                    />
+                    <Text style={{ fontSize: 32 }}>{selectedAvatar}</Text>
+                  </View>
                   <View style={styles.avatarEditBadge}>
                     <Text style={{ fontSize: 9 }}>✨</Text>
                   </View>
@@ -666,7 +668,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
   },
-  mainAvatarCircle: {
+  mainAvatarWrapper: {
+    width: 62,
+    height: 62,
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mainAvatarInner: {
     width: 60,
     height: 60,
     borderRadius: 30,
@@ -674,8 +683,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 2,
     borderColor: '#F59E0B',
-    position: 'relative',
-    overflow: 'visible',
+    overflow: 'hidden',
+    backgroundColor: '#FEF3C7',
     shadowColor: '#D97706',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
