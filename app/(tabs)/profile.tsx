@@ -219,6 +219,7 @@ export default function Profile() {
               <View>
                 <SectionHeader title="🛠️ Acharya Tools" />
                 <Card padded={false}>
+                  <Row icon="🪪" label="Govt ID & Watermark KYC Vault" onPress={() => router.push('/acharya/kyc-verification')} accent={colors.teal} />
                   <Row icon="📋" label="Manage Consultation Profile" onPress={() => router.push('/acharya/consultation-profile')} />
                   <Row icon="📜" label="Certifications & Degrees" onPress={() => router.push('/acharya/certifications')} />
                   <Row icon="💬" label="Client Reviews & Testimonials" onPress={() => router.push('/acharya/reviews')} />
@@ -351,6 +352,7 @@ export default function Profile() {
                 <SectionHeader title="⚙️ Account & Settings" />
                 <Card padded={false}>
                   <Row icon="✏️" label="Edit Profile & Birth Details" onPress={() => router.push('/edit-profile')} accent={colors.teal} />
+                  <Row icon="🪪" label="Govt ID & Watermark KYC Vault" onPress={() => router.push('/acharya/kyc-verification')} accent={colors.teal} />
                   <Row icon="🚀" label={`Upgrade / Update App (v${currentVersion})`} onPress={() => triggerUpdateModal()} accent={colors.teal} />
                   <Row icon="👑" label={isVip ? `AstroVIP — ${vipPlanId} (Active)` : 'Get AstroVIP Pass'} onPress={() => router.push('/vip')} accent={colors.gold} />
                   <Row icon="📄" label="10-Page Kundli PDF Export" onPress={() => router.push('/kundli-pdf')} />

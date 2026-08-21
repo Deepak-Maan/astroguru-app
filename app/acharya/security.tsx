@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Alert, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GradientBackground } from '../../src/components/GradientBackground';
 import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { colors, radius, spacing, typography } from '../../src/theme';
 
 export default function Security() {
+  const router = useRouter();
   const [currPass, setCurrPass] = useState('');
   const [newPass, setNewPass] = useState('');
   const [confirmPass, setConfirmPass] = useState('');
@@ -49,6 +51,32 @@ export default function Security() {
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
         <ScreenHeader title="Security & Privacy Vault" subtitle="Account security & data preferences" />
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+
+          {/* ── Aadhaar & Govt ID Watermark KYC Vault ── */}
+          <Text style={styles.sectionTitle}>🪪 Identity & KYC Security</Text>
+          <Pressable
+            onPress={() => router.push('/acharya/kyc-verification' as any)}
+            style={({ pressed }) => [
+              styles.kycCard,
+              pressed && { opacity: 0.9, transform: [{ scale: 0.985 }] },
+            ]}
+          >
+            <View style={styles.kycIconCircle}>
+              <Text style={{ fontSize: 22 }}>🛡️</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Text style={styles.kycCardTitle}>Aadhaar & Govt ID Watermarker</Text>
+                <View style={styles.kycBadge}>
+                  <Text style={styles.kycBadgeText}>ANTI-THEFT</Text>
+                </View>
+              </View>
+              <Text style={styles.kycCardSub}>
+                UIDAI 8-digit masked verification & tamper-proof watermark lattice studio.
+              </Text>
+            </View>
+            <Text style={{ fontSize: 18, color: '#059669', fontWeight: '900' }}>→</Text>
+          </Pressable>
 
           {/* Change Password */}
           <Text style={styles.sectionTitle}>🔒 Change Password</Text>
@@ -134,6 +162,54 @@ export default function Security() {
 const styles = StyleSheet.create({
   scroll: { padding: spacing.lg, gap: spacing.md, paddingBottom: 40 },
   sectionTitle: { fontSize: 15, fontWeight: '800', color: colors.text },
+  kycCard: {
+    backgroundColor: '#ECFDF5',
+    borderRadius: radius.lg,
+    padding: 14,
+    borderWidth: 1.5,
+    borderColor: '#A7F3D0',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    shadowColor: '#059669',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  kycIconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#6EE7B7',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  kycCardTitle: {
+    fontSize: 13.5,
+    fontWeight: '900',
+    color: '#065F46',
+  },
+  kycCardSub: {
+    fontSize: 10.5,
+    color: '#047857',
+    marginTop: 2,
+    lineHeight: 15,
+  },
+  kycBadge: {
+    backgroundColor: '#059669',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  kycBadgeText: {
+    fontSize: 8.5,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
+  },
   card: {
     backgroundColor: '#FFFFFF', borderRadius: radius.lg, padding: spacing.md, gap: spacing.sm,
     borderWidth: 1, borderColor: 'rgba(191,219,254,0.5)',

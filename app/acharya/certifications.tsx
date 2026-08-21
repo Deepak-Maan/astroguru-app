@@ -47,6 +47,31 @@ export default function Certifications() {
             <Text style={styles.infoSub}>Verified credentials boost your profile trust score and appear with a ✅ badge to seekers.</Text>
           </View>
 
+          {/* ── Aadhaar & Govt ID Watermarking Banner ── */}
+          <Pressable
+            onPress={() => router.push('/acharya/kyc-verification' as any)}
+            style={({ pressed }) => [
+              styles.kycBanner,
+              pressed && { opacity: 0.9, transform: [{ scale: 0.985 }] },
+            ]}
+          >
+            <View style={styles.kycBannerIconRing}>
+              <Text style={{ fontSize: 20 }}>🛡️</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Text style={styles.kycBannerTitle}>Aadhaar & Govt ID Watermarking</Text>
+                <View style={styles.newBadge}>
+                  <Text style={styles.newBadgeText}>SECURE</Text>
+                </View>
+              </View>
+              <Text style={styles.kycBannerSub}>
+                Stamp anti-theft watermarks & UIDAI 8-digit masks on your ID cards before uploading.
+              </Text>
+            </View>
+            <Text style={{ fontSize: 18, color: '#059669', fontWeight: '900' }}>→</Text>
+          </Pressable>
+
           {certs.map((cert) => (
             <View key={cert.id} style={[styles.certCard, { borderLeftColor: cert.verified ? colors.teal : '#F59E0B' }]}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -121,6 +146,54 @@ const styles = StyleSheet.create({
   infoCard: {
     backgroundColor: 'rgba(5,150,105,0.08)', borderRadius: radius.lg, padding: spacing.md,
     borderWidth: 1, borderColor: 'rgba(5,150,105,0.2)', gap: 4,
+  },
+  kycBanner: {
+    backgroundColor: '#ECFDF5',
+    borderRadius: radius.lg,
+    padding: 14,
+    borderWidth: 1.5,
+    borderColor: '#A7F3D0',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    shadowColor: '#059669',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  kycBannerIconRing: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#6EE7B7',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  kycBannerTitle: {
+    fontSize: 13.5,
+    fontWeight: '900',
+    color: '#065F46',
+  },
+  kycBannerSub: {
+    fontSize: 10.5,
+    color: '#047857',
+    marginTop: 2,
+    lineHeight: 15,
+  },
+  newBadge: {
+    backgroundColor: '#059669',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  newBadgeText: {
+    fontSize: 8.5,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
   },
   infoTitle: { fontSize: 14, fontWeight: '800', color: colors.teal },
   infoSub: { fontSize: 12, color: colors.textMuted, fontWeight: '500', lineHeight: 18 },
