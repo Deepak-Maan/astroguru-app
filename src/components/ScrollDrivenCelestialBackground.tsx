@@ -508,68 +508,70 @@ export function ScrollDrivenCelestialBackground({
         style={StyleSheet.absoluteFill}
       />
 
-      {/* 2. Multi-Stop Shiftable Atmospheric Aura Caustics */}
-      <div
-        ref={auraLayerRef as any}
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          pointerEvents: 'none',
-          zIndex: 0,
-          transition: 'opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
-        }}
-      >
-        {/* Dawn Phase Aura (Top/Hero) */}
+      {/* 2. Multi-Stop Shiftable Atmospheric Aura Caustics (Web) */}
+      {Platform.OS === 'web' && (
         <div
+          ref={auraLayerRef as any}
           style={{
             position: 'absolute',
-            top: '-120px',
-            right: '-120px',
-            width: '520px',
-            height: '520px',
-            borderRadius: '50%',
-            backgroundColor: 'rgba(212, 175, 55, 0.12)',
-            filter: 'blur(110px)',
-            opacity: activePhase === 'dawn' ? 1 : 0.35,
-            transition: 'opacity 0.8s ease',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            pointerEvents: 'none',
+            zIndex: 0,
+            transition: 'opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
           }}
-        />
+        >
+          {/* Dawn Phase Aura (Top/Hero) */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '-120px',
+              right: '-120px',
+              width: '520px',
+              height: '520px',
+              borderRadius: '50%',
+              backgroundColor: 'rgba(212, 175, 55, 0.12)',
+              filter: 'blur(110px)',
+              opacity: activePhase === 'dawn' ? 1 : 0.35,
+              transition: 'opacity 0.8s ease',
+            }}
+          />
 
-        {/* Periwinkle & Lavender Phase Aura (Mid/Birth Chart) */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '35%',
-            left: '-140px',
-            width: '580px',
-            height: '580px',
-            borderRadius: '50%',
-            backgroundColor: 'rgba(129, 140, 248, 0.14)',
-            filter: 'blur(120px)',
-            opacity: activePhase === 'periwinkle' ? 1 : 0.4,
-            transition: 'opacity 0.8s ease',
-          }}
-        />
+          {/* Periwinkle & Lavender Phase Aura (Mid/Birth Chart) */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '35%',
+              left: '-140px',
+              width: '580px',
+              height: '580px',
+              borderRadius: '50%',
+              backgroundColor: 'rgba(129, 140, 248, 0.14)',
+              filter: 'blur(120px)',
+              opacity: activePhase === 'periwinkle' ? 1 : 0.4,
+              transition: 'opacity 0.8s ease',
+            }}
+          />
 
-        {/* Rose Quartz Phase Aura (Bottom/Compatibility) */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '-160px',
-            right: '10%',
-            width: '540px',
-            height: '540px',
-            borderRadius: '50%',
-            backgroundColor: 'rgba(244, 114, 182, 0.13)',
-            filter: 'blur(115px)',
-            opacity: activePhase === 'rosequartz' ? 1 : 0.3,
-            transition: 'opacity 0.8s ease',
-          }}
-        />
-      </div>
+          {/* Rose Quartz Phase Aura (Bottom/Compatibility) */}
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '-160px',
+              right: '10%',
+              width: '540px',
+              height: '540px',
+              borderRadius: '50%',
+              backgroundColor: 'rgba(244, 114, 182, 0.13)',
+              filter: 'blur(115px)',
+              opacity: activePhase === 'rosequartz' ? 1 : 0.3,
+              transition: 'opacity 0.8s ease',
+            }}
+          />
+        </div>
+      )}
 
       {/* 3. Three.js WebGL Interactive 3D Canvas (Web) */}
       {Platform.OS === 'web' && (

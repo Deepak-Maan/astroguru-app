@@ -156,7 +156,7 @@ export default function Home() {
         />
 
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-          <div ref={contentContainerRef as any} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <View style={{ gap: 14 }}>
             {/* Live Planetary Transit & Shubh Muhurta Ticker Ribbon */}
             <View style={[styles.transitRibbon, { className: 'stagger-card' } as any]}>
               <LinearGradient
@@ -479,7 +479,7 @@ export default function Home() {
                   ))}
               </View>
             </View>
-          </div>
+          </View>
         </ScrollView>
       </SafeAreaView>
     </GradientBackground>

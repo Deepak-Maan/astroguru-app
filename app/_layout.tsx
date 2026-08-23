@@ -46,7 +46,9 @@ class RootErrorBoundary extends Component<Props, State> {
         <View style={styles.errorContainer}>
           <Text style={{ fontSize: 44, marginBottom: 12 }}>🪐</Text>
           <Text style={styles.errorTitle}>AstroGuru Recovery Mode</Text>
-          <Text style={styles.errorDesc}>A component encountered an issue. Tap below to reload seamlessly.</Text>
+          <Text style={styles.errorDesc}>
+            {this.state.errorText ? `Issue: ${this.state.errorText}` : 'A component encountered an issue. Tap below to reload seamlessly.'}
+          </Text>
           <Pressable
             onPress={() => this.setState({ hasError: false, errorText: '' })}
             style={styles.retryBtn}
