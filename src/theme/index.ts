@@ -170,10 +170,17 @@ export const typography = {
     fontFamily: SANS_FONT,
   },
   small: {
+    fontSize: 11,
+    fontWeight: '600' as const,
+    letterSpacing: 0.3,
+    color: colors.textMuted,
+    fontFamily: SANS_FONT,
+  },
+  tiny: {
     fontSize: 10,
-    fontWeight: '500' as const,
-    letterSpacing: 0.4,
-    color: colors.textFaint,
+    fontWeight: '700' as const,
+    letterSpacing: 0.3,
+    color: colors.textMuted,
     fontFamily: SANS_FONT,
   },
 };
