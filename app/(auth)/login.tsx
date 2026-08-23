@@ -1078,20 +1078,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    paddingVertical: 9,
-    borderRadius: 12,
+    paddingVertical: 10,
+    borderRadius: radius.pill,
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderWidth: 1.5,
-    borderColor: 'rgba(212, 175, 55, 0.22)',
+    borderColor: 'rgba(212, 175, 55, 0.25)',
     shadowColor: '#64748B',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
     elevation: 2,
+    backdropFilter: 'blur(12px)' as any,
   },
   socialBtnText: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '800',
     color: '#0F172A',
   },
 
@@ -1117,26 +1118,27 @@ const styles = StyleSheet.create({
   subTabRow: {
     flexDirection: 'row',
     backgroundColor: 'rgba(241, 245, 249, 0.85)',
-    borderRadius: radius.sm,
-    padding: 2.5,
-    borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.15)',
+    borderRadius: radius.pill,
+    padding: 3,
+    borderWidth: 1.5,
+    borderColor: 'rgba(212, 175, 55, 0.2)',
   },
   subTabBtn: {
     flex: 1,
-    paddingVertical: 6,
+    paddingVertical: 7,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 6,
+    borderRadius: radius.pill,
   },
   subTabBtnActive: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.35)',
-    shadowColor: '#64748B',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 3,
+    shadowColor: '#D4AF37',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 2,
   },
   subTabBtnText: {
     fontSize: 11.5,
@@ -1144,8 +1146,8 @@ const styles = StyleSheet.create({
     color: '#64748B',
   },
   subTabBtnTextActive: {
-    color: '#B8902A',
-    fontWeight: '800',
+    color: '#0F172A',
+    fontWeight: '900',
   },
 
   /* Banners */
@@ -1183,69 +1185,48 @@ const styles = StyleSheet.create({
   },
 
   /* Form Fields */
-  formFields: {
-    gap: 10,
+  fieldWrapper: {
+    gap: 2,
   },
-  inputGroup: {
-    gap: 3.5,
-  },
-  inputLabel: {
+  floatingLabel: {
     fontSize: 9.5,
-    fontWeight: '800',
-    color: '#475569',
-    letterSpacing: 0.6,
-  },
-  otpLabelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  debugOtpLink: {
-    fontSize: 10,
-    fontWeight: '800',
+    fontWeight: '900',
     color: '#B8902A',
-    textDecorationLine: 'underline',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
   },
-  strengthLabel: {
-    fontSize: 9,
-    fontWeight: '800',
-  },
-  inputWrapper: {
+  inputBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    height: 42,
-    borderRadius: 12,
+    height: 44,
+    borderRadius: radius.pill,
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderWidth: 1.5,
     borderColor: 'rgba(212, 175, 55, 0.25)',
+    paddingHorizontal: 14,
     gap: 8,
   },
-  inputWrapperFocused: {
+  inputBoxFocused: {
     borderColor: '#D4AF37',
-    backgroundColor: '#FFFFFF',
     shadowColor: '#D4AF37',
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+  },
+  inputBoxError: {
+    borderColor: '#F43F5E',
   },
   inputIcon: {
     fontSize: 14,
   },
-  phonePrefix: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: '#B8902A',
-  },
   textInput: {
     flex: 1,
-    fontSize: 13.5,
+    fontSize: 13,
     color: '#0F172A',
     fontWeight: '600',
-    paddingVertical: 0,
-    outlineStyle: 'none' as any,
+    padding: 0,
   },
-  validCheck: {
+  validCheckBadge: {
     width: 20,
     height: 20,
     borderRadius: 10,
@@ -1274,17 +1255,19 @@ const styles = StyleSheet.create({
 
   /* Submit Button */
   submitBtn: {
-    height: 46,
+    height: 48,
     borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
     marginTop: 3,
     shadowColor: '#D4AF37',
-    shadowOffset: { width: 0, height: 3 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.35,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowRadius: 10,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.7)',
   },
   submitBtnText: {
     fontSize: 13.5,

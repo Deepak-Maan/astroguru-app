@@ -202,12 +202,13 @@ export function AstrologerCard({ astrologer: a, onPress, compact = false }: Prop
         <View style={styles.actionButtonsRow}>
           <View style={styles.consultBtn}>
             <LinearGradient
-              colors={a.online ? ['#059669', '#047857'] : ['#D97706', '#B45309']}
+              colors={a.online ? ['#D4AF37', '#F5D77F'] : ['#E2E8F0', '#CBD5E1']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={StyleSheet.absoluteFill}
             />
-            <Text style={styles.consultBtnText}>
+            <View style={styles.btnTopGlint} pointerEvents="none" />
+            <Text style={[styles.consultBtnText, !a.online && { color: '#64748B' }]}>
               {a.online ? '💬 Consult Now' : '📞 Join Queue'}
             </Text>
           </View>
@@ -220,20 +221,20 @@ export function AstrologerCard({ astrologer: a, onPress, compact = false }: Prop
 const styles = StyleSheet.create({
   /* ── Compact Carousel Card ── */
   compact: {
-    width: 108,
-    backgroundColor: 'rgba(18, 20, 42, 0.85)',
-    borderRadius: 18,
+    width: 112,
+    backgroundColor: 'rgba(255, 255, 255, 0.88)',
+    borderRadius: 20,
     padding: 10,
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    shadowColor: '#000000',
+    borderColor: 'rgba(212, 175, 55, 0.25)',
+    shadowColor: '#64748B',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
+    shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 3,
     gap: 4,
-    backdropFilter: 'blur(12px)' as any,
+    backdropFilter: 'blur(16px) saturate(180%)' as any,
   },
   compactAvatarWrap: {
     marginBottom: 2,
@@ -241,19 +242,21 @@ const styles = StyleSheet.create({
   compactName: {
     fontSize: 12,
     fontWeight: '800',
-    color: '#F8FAFC',
+    color: '#0F172A',
     textAlign: 'center',
   },
   compactSpecialtyPill: {
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-    paddingHorizontal: 6,
-    paddingVertical: 1.5,
+    backgroundColor: 'rgba(241, 245, 249, 0.85)',
+    paddingHorizontal: 7,
+    paddingVertical: 2,
     borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.18)',
   },
   compactSpecialtyText: {
     fontSize: 9,
     fontWeight: '700',
-    color: '#94A3B8',
+    color: '#64748B',
   },
   compactRatingRow: {
     flexDirection: 'row',
@@ -262,26 +265,26 @@ const styles = StyleSheet.create({
   },
   compactRatingStar: {
     fontSize: 10,
-    color: '#F5D77F',
+    color: '#B8902A',
   },
   compactRatingText: {
     fontSize: 10.5,
     fontWeight: '800',
-    color: '#F8FAFC',
+    color: '#0F172A',
   },
   compactPriceBadge: {
-    backgroundColor: 'rgba(212, 175, 55, 0.15)',
-    paddingHorizontal: 6,
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 7,
     paddingVertical: 2,
-    borderRadius: 4,
+    borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.3)',
+    borderColor: '#FDE68A',
     marginTop: 2,
   },
   compactPriceText: {
     fontSize: 10,
     fontWeight: '900',
-    color: '#F5D77F',
+    color: '#B45309',
   },
 
   /* ── Full Astrologer Card ── */
@@ -535,8 +538,19 @@ const styles = StyleSheet.create({
     shadowColor: '#D4AF37',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.35,
-    shadowRadius: 6,
+    shadowRadius: 8,
     elevation: 3,
+    position: 'relative',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.65)',
+  },
+  btnTopGlint: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 1.5,
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
   },
   consultBtnText: {
     color: '#0F172A',

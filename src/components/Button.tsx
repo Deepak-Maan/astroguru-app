@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   ActivityIndicator,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -8,6 +9,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 import { colors, radius, spacing, typography } from '../theme';
 
 type Variant = 'primary' | 'gold' | 'outline' | 'ghost' | 'danger';
@@ -25,7 +27,7 @@ interface Props {
   fullWidth?: boolean;
 }
 
-const heights: Record<Size, number> = { sm: 36, md: 44, lg: 50 };
+const heights: Record<Size, number> = { sm: 38, md: 46, lg: 52 };
 const fontSizes: Record<Size, number> = { sm: 13, md: 14.5, lg: 15.5 };
 
 export function Button({
@@ -42,10 +44,20 @@ export function Button({
   const isFlat = variant === 'outline' || variant === 'ghost' || variant === 'danger';
   const inactive = disabled || loading;
 
+  const handlePress = () => {
+    if (inactive) return;
+    try {
+      if (Platform.OS !== 'web') {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+    } catch (_) {}
+    if (onPress) onPress();
+  };
+
   const content = (
     <View style={styles.inner}>
       {loading ? (
-        <ActivityIndicator size="small" color={isFlat ? colors.text : colors.white} />
+        <ActivityIndicator size="small" color={isFlat ? '#0F172A' : '#0F172A'} />
       ) : (
         <>
           {icon}
@@ -53,9 +65,9 @@ export function Button({
             style={[
               styles.label,
               { fontSize: fontSizes[size] },
-              variant === 'outline' && { color: colors.text },
-              variant === 'ghost' && { color: colors.textMuted },
-              variant === 'danger' && { color: colors.danger },
+              variant === 'outline' && { color: '#0F172A' },
+              variant === 'ghost' && { color: '#475569' },
+              variant === 'danger' && { color: '#DC2626' },
             ]}
             numberOfLines={1}
           >
@@ -70,7 +82,7 @@ export function Button({
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ disabled: inactive }}
-      onPress={inactive ? undefined : onPress}
+      onPress={handlePress}
       style={({ pressed }) => [
         styles.base,
         { height: heights[size] },
@@ -81,14 +93,17 @@ export function Button({
         style,
       ]}
     >
+      {/* Top Specular Light Reflection Glint */}
+      <View style={styles.topGlint} pointerEvents="none" />
+
       {isFlat ? (
         content
       ) : (
         <LinearGradient
           colors={
             variant === 'gold'
-              ? ['#D4AF37', '#E6CA65', '#B8902A']
-              : ['#D4AF37', '#E6CA65']
+              ? ['#E6CA65', '#D4AF37', '#B8902A']
+              : ['#D4AF37', '#F5D77F', '#E6CA65']
           }
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
@@ -106,11 +121,23 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     overflow: 'hidden',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.65)',
     shadowColor: '#D4AF37',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    elevation: 3,
+    shadowOpacity: 0.32,
+    shadowRadius: 12,
+    elevation: 4,
+    position: 'relative',
+  },
+  topGlint: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 1.5,
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    zIndex: 2,
   },
   gradient: { flex: 1, justifyContent: 'center' },
   inner: {
@@ -119,22 +146,37 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: spacing.xs + 2,
     paddingHorizontal: spacing.lg,
+    zIndex: 3,
   },
-  label: { ...typography.h3, color: '#0F172A', fontWeight: '900', letterSpacing: 0.2 },
+  label: { ...typography.h3, color: '#0F172A', fontWeight: '900', letterSpacing: 0.3 },
   outline: {
     borderWidth: 1.5,
     borderColor: 'rgba(212, 175, 55, 0.35)',
     backgroundColor: 'rgba(255, 255, 255, 0.88)',
-    backdropFilter: 'blur(12px)' as any,
+    backdropFilter: 'blur(16px)' as any,
     shadowColor: '#64748B',
-    shadowOpacity: 0.08,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  ghost: { backgroundColor: 'transparent', elevation: 0, shadowOpacity: 0 },
-  danger: {
+  ghost: {
+    backgroundColor: 'rgba(241, 245, 249, 0.75)',
     borderWidth: 1,
-    borderColor: 'rgba(239, 68, 68, 0.35)',
-    backgroundColor: 'rgba(239, 68, 68, 0.10)',
+    borderColor: 'rgba(212, 175, 55, 0.2)',
+    shadowOpacity: 0,
+    elevation: 0,
   },
-  pressed: { opacity: 0.90, transform: [{ scale: 0.985 }] },
+  danger: {
+    borderWidth: 1.5,
+    borderColor: 'rgba(239, 68, 68, 0.4)',
+    backgroundColor: '#FEE2E2',
+    shadowColor: '#EF4444',
+    shadowOpacity: 0.15,
+  },
+  pressed: {
+    opacity: 0.9,
+    transform: [{ scale: 0.98 }],
+  },
   disabled: { opacity: 0.45 },
 });

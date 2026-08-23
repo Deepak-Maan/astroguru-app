@@ -47,9 +47,11 @@ export function Chip({ label, selected = false, onPress, style, tone = 'default'
         style,
       ]}
     >
+      {/* Top Specular Glint */}
+      <View style={styles.topGlint} pointerEvents="none" />
       {selected && (
         <LinearGradient
-          colors={['#D4AF37', '#E6CA65']}
+          colors={['#D4AF37', '#F5D77F']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={StyleSheet.absoluteFill}
@@ -59,7 +61,7 @@ export function Chip({ label, selected = false, onPress, style, tone = 'default'
         style={[
           styles.label,
           selected && { color: '#0F172A', fontWeight: '900' },
-          !selected && tone !== 'default' && { color: accent, fontWeight: '700' },
+          !selected && tone !== 'default' && { color: accent, fontWeight: '800' },
         ]}
         numberOfLines={1}
       >
@@ -74,7 +76,7 @@ export function Chip({ label, selected = false, onPress, style, tone = 'default'
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
-      style={({ pressed }) => [pressed && { opacity: 0.85, transform: [{ scale: 0.96 }] }]}
+      style={({ pressed }) => [pressed && { opacity: 0.88, transform: [{ scale: 0.96 }] }]}
     >
       {container}
     </Pressable>
@@ -88,30 +90,40 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     backgroundColor: 'rgba(255, 255, 255, 0.88)',
     borderWidth: 1.5,
-    borderColor: 'rgba(212, 175, 55, 0.22)',
+    borderColor: 'rgba(212, 175, 55, 0.25)',
     overflow: 'hidden',
     alignSelf: 'flex-start',
     flexShrink: 0,
-    backdropFilter: 'blur(12px)' as any,
+    backdropFilter: 'blur(16px) saturate(180%)' as any,
     shadowColor: '#64748B',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
     elevation: 2,
+    position: 'relative',
+  },
+  topGlint: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 1.2,
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    zIndex: 2,
   },
   chipSelected: {
     borderColor: '#D4AF37',
     shadowColor: '#D4AF37',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 4,
   },
   label: {
-    ...typography.captionBold,
+    ...typography.small,
     color: '#0F172A',
     fontWeight: '700',
-    fontSize: 12.5,
-    letterSpacing: 0.3,
+    fontSize: 12,
+    zIndex: 3,
   },
 });
