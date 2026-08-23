@@ -276,50 +276,53 @@ export function ScrollDrivenCelestialBackground({
       // Parallax animations on Floating Glass Cards
       if (floatingGlassRef.current) {
         const floatCards = floatingGlassRef.current.querySelectorAll('.floating-glass-node');
-        floatCards.forEach((card, i) => {
-          const speed = parseFloat(card.getAttribute('data-speed') || '1');
-          const rotDir = i % 2 === 0 ? 1 : -1;
+        if (floatCards && floatCards.length > 0) {
+          floatCards.forEach((card, i) => {
+            const speed = parseFloat(card.getAttribute('data-speed') || '1');
+            const rotDir = i % 2 === 0 ? 1 : -1;
 
-          gsap.to(card, {
-            y: -180 * speed,
-            rotationX: 15 * rotDir * speed,
-            rotationY: 20 * rotDir * speed,
-            rotationZ: 10 * rotDir * speed,
-            opacity: gsap.utils.interpolate([0.85, 1, 0.7]),
-            scrollTrigger: {
-              trigger: document.body,
-              start: 'top top',
-              end: 'bottom bottom',
-              scrub: 1.2,
-            },
+            gsap.to(card, {
+              y: -180 * speed,
+              rotationX: 15 * rotDir * speed,
+              rotationY: 20 * rotDir * speed,
+              rotationZ: 10 * rotDir * speed,
+              opacity: gsap.utils.interpolate([0.85, 1, 0.7]),
+              scrollTrigger: {
+                trigger: document.body,
+                start: 'top top',
+                end: 'bottom bottom',
+                scrub: 1.2,
+              },
+            });
           });
-        });
-      }
-      // Universal scroll capture for window and nested React Native ScrollViews
-      const onScrollCaptured = (e: Event) => {
-        const target = e.target as HTMLElement | Window | Document;
-        let p = 0;
-        if (target === window || target === document) {
-          const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-          p = maxScroll > 0 ? window.scrollY / maxScroll : 0;
-        } else if (target && (target as HTMLElement).scrollHeight) {
-          const el = target as HTMLElement;
-          const maxScroll = el.scrollHeight - el.clientHeight;
-          p = maxScroll > 0 ? el.scrollTop / maxScroll : 0;
         }
-        p = Math.min(Math.max(p, 0), 1);
-        scrollTarget.progress = p;
-        scrollProgRef.current.value = p;
-        if (p < 0.33) setActivePhase('dawn');
-        else if (p < 0.66) setActivePhase('periwinkle');
-        else setActivePhase('rosequartz');
-
-        ScrollTrigger.update();
-      };
-
-      window.addEventListener('scroll', onScrollCaptured, { passive: true, capture: true });
-      document.addEventListener('scroll', onScrollCaptured, { passive: true, capture: true });
+      }
     };
+
+    // Universal scroll capture for window and nested React Native ScrollViews
+    const onScrollCaptured = (e: Event) => {
+      const target = e.target as HTMLElement | Window | Document;
+      let p = 0;
+      if (target === window || target === document) {
+        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+        p = maxScroll > 0 ? window.scrollY / maxScroll : 0;
+      } else if (target && (target as HTMLElement).scrollHeight) {
+        const el = target as HTMLElement;
+        const maxScroll = el.scrollHeight - el.clientHeight;
+        p = maxScroll > 0 ? el.scrollTop / maxScroll : 0;
+      }
+      p = Math.min(Math.max(p, 0), 1);
+      scrollTarget.progress = p;
+      scrollProgRef.current.value = p;
+      if (p < 0.33) setActivePhase('dawn');
+      else if (p < 0.66) setActivePhase('periwinkle');
+      else setActivePhase('rosequartz');
+
+      ScrollTrigger.update();
+    };
+
+    window.addEventListener('scroll', onScrollCaptured, { passive: true, capture: true });
+    document.addEventListener('scroll', onScrollCaptured, { passive: true, capture: true });
 
     setupScrollTrigger();
 
@@ -342,11 +345,11 @@ export function ScrollDrivenCelestialBackground({
 
     // 6. 60FPS WebGL Render Loop with Damped Inertia
     let animationFrameId: number;
-    const clock = new THREE.Clock();
+    const startTime = performance.now();
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
-      const elapsed = clock.getElapsedTime();
+      const elapsed = (performance.now() - startTime) * 0.001;
 
       // Mouse parallax damping
       mouseX += (targetMouseX - mouseX) * 0.05;

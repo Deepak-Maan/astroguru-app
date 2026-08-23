@@ -97,7 +97,7 @@ export function SpatialGlassCard({
         ]}
       >
         {/* Realistic top-edge specular glass highlight */}
-        <View style={styles.topSpecularEdge} pointerEvents="none" />
+        <View style={[styles.topSpecularEdge, { pointerEvents: 'none' as any }]} />
 
         {/* Specular Radial Cursor Highlight on Web */}
         {Platform.OS === 'web' && (
@@ -129,7 +129,7 @@ export function SpatialGlassCard({
       style={[...containerStyle, tiltStyle as any]}
     >
       {/* Realistic top-edge specular glass highlight */}
-      <View style={styles.topSpecularEdge} pointerEvents="none" />
+      <View style={[styles.topSpecularEdge, { pointerEvents: 'none' as any }]} />
 
       {Platform.OS === 'web' && (
         <div

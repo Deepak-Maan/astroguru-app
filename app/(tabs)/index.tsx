@@ -80,18 +80,21 @@ export default function Home() {
   // ── GSAP Staggered Entrance Micro-Interactions (Web) ──
   useEffect(() => {
     if (Platform.OS === 'web' && typeof document !== 'undefined') {
-      const ctx = gsap.context(() => {
-        gsap.from('.stagger-card', {
-          y: 20,
-          opacity: 0,
-          duration: 0.6,
-          stagger: 0.08,
-          ease: 'power3.out',
-          clearProps: 'all',
-        });
-      }, contentContainerRef);
+      const timer = setTimeout(() => {
+        const cards = document.querySelectorAll('[data-stagger-card="true"]');
+        if (cards && cards.length > 0) {
+          gsap.from(cards, {
+            y: 20,
+            opacity: 0,
+            duration: 0.6,
+            stagger: 0.08,
+            ease: 'power3.out',
+            clearProps: 'all',
+          });
+        }
+      }, 50);
 
-      return () => ctx.revert();
+      return () => clearTimeout(timer);
     }
   }, []);
 
@@ -205,7 +208,7 @@ export default function Home() {
             </Pressable>
 
             {/* YOUR SKY AT BIRTH 3D/2D Celestial Hero Chakra */}
-            <View style={{ className: 'stagger-card' } as any}>
+            <View dataSet={{ staggerCard: 'true' }}>
               <RashiChakra
                 kundli={kundli}
                 onPress={() => router.push(kundli ? '/(tabs)/kundli' : '/(onboarding)/birth-details')}
@@ -213,7 +216,7 @@ export default function Home() {
             </View>
 
             {/* Daily 3D Horoscope Hero Card with Embossed Zodiac Sphere */}
-            <View style={{ className: 'stagger-card' } as any}>
+            <View dataSet={{ staggerCard: 'true' }}>
               <DailyHoroscopeHero
                 selectedRashi={rashi}
                 onSelectRashi={(newRashi) => setRashiIndex(RASHIS.findIndex((r) => r.id === newRashi.id))}
@@ -221,7 +224,7 @@ export default function Home() {
             </View>
 
             {/* Energy & Transit Metrics Widget */}
-            <View style={{ className: 'stagger-card' } as any}>
+            <View dataSet={{ staggerCard: 'true' }}>
               <EnergyTransitMetrics />
             </View>
 
@@ -276,7 +279,7 @@ export default function Home() {
             {/* Today's Reading Card */}
             <Pressable
               onPress={() => router.push('/(tabs)/horoscope')}
-              style={{ className: 'stagger-card' } as any}
+              dataSet={{ staggerCard: 'true' }}
             >
               <View style={styles.todayCard}>
                 <View style={styles.todayRule} />
@@ -311,7 +314,7 @@ export default function Home() {
             </Pressable>
 
             {/* 🪐 Live Celestial Graha Radar Widget */}
-            <View style={[styles.grahaRadarCard, { className: 'stagger-card' } as any]}>
+            <View style={styles.grahaRadarCard} dataSet={{ staggerCard: 'true' }}>
               <View style={styles.grahaRadarHeader}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                   <View style={styles.livePulseDot} />
@@ -357,7 +360,7 @@ export default function Home() {
             </View>
 
             {/* 8-Grid Super App Quick Actions */}
-            <View style={{ className: 'stagger-card' } as any}>
+            <View dataSet={{ staggerCard: 'true' }}>
               <SectionHeader title="✨ Vedic Astro Services" subtitle="Instant consultations & spiritual tools" />
               <View style={styles.quickGrid}>
                 {quickActions.map(({ icon, label, href, bg, border, badge }) => (
@@ -385,7 +388,8 @@ export default function Home() {
             {/* Today's Daily Panchang & Muhurta Radar Card */}
             <Pressable
               onPress={() => router.push('/panchang')}
-              style={({ pressed }) => [{ className: 'stagger-card' } as any, pressed && { opacity: 0.88 }]}
+              dataSet={{ staggerCard: 'true' }}
+              style={({ pressed }) => [pressed && { opacity: 0.88 }]}
             >
               <View style={styles.panchangCard}>
                 <View style={styles.panchangTopRow}>
@@ -415,7 +419,8 @@ export default function Home() {
             {/* Dedicated Numerology Grid */}
             <Pressable
               onPress={() => router.push('/numerology')}
-              style={({ pressed }) => [{ className: 'stagger-card' } as any, pressed && { opacity: 0.88 }]}
+              dataSet={{ staggerCard: 'true' }}
+              style={({ pressed }) => [pressed && { opacity: 0.88 }]}
             >
               <View style={styles.numerologyBanner}>
                 <View style={styles.numBadgeCircle}>
@@ -435,7 +440,7 @@ export default function Home() {
             </Pressable>
 
             {/* Astrologers Online Carousel */}
-            <View style={{ className: 'stagger-card' } as any}>
+            <View dataSet={{ staggerCard: 'true' }}>
               <SectionHeader
                 title={t('astrologersOnline')}
                 subtitle={`${featured.length} Acharyas online now`}

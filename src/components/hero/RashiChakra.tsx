@@ -56,7 +56,7 @@ export function RashiChakra({ kundli, onPress }: Props) {
       <View style={styles.specularEdge} />
 
       {/* Right-Side Cosmic Mandala & Orbit Graphic */}
-      <View style={styles.mandalaContainer} pointerEvents="none">
+      <View style={[styles.mandalaContainer, { pointerEvents: 'none' as any }]}>
         {/* Outer Orbit Rings */}
         <View style={styles.orbitOuter} />
         <View style={styles.orbitMid} />

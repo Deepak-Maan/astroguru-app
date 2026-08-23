@@ -48,7 +48,7 @@ export function Chip({ label, selected = false, onPress, style, tone = 'default'
       ]}
     >
       {/* Top Specular Glint */}
-      <View style={styles.topGlint} pointerEvents="none" />
+      <View style={[styles.topGlint, { pointerEvents: 'none' as any }]} />
       {selected && (
         <LinearGradient
           colors={['#D4AF37', '#F5D77F']}

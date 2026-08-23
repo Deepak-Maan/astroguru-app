@@ -2,7 +2,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { WalletTransaction } from '../types';
-import { useAuthStore } from './authStore';
 
 export interface UserWalletData {
   balance: number;
@@ -46,6 +45,8 @@ export const useWalletStore = create<WalletState>()(
 
       getActiveUserId: () => {
         try {
+          // Lazy require to avoid top-level require cycle
+          const { useAuthStore } = require('./authStore');
           const authUser = useAuthStore.getState()?.user;
           if (authUser?.id) return authUser.id.toString();
           if (authUser?.email) return authUser.email.toLowerCase().trim();

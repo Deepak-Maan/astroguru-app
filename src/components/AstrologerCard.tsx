@@ -207,7 +207,7 @@ export function AstrologerCard({ astrologer: a, onPress, compact = false }: Prop
               end={{ x: 1, y: 0 }}
               style={StyleSheet.absoluteFill}
             />
-            <View style={styles.btnTopGlint} pointerEvents="none" />
+            <View style={[styles.btnTopGlint, { pointerEvents: 'none' as any }]} />
             <Text style={[styles.consultBtnText, !a.online && { color: '#64748B' }]}>
               {a.online ? '💬 Consult Now' : '📞 Join Queue'}
             </Text>

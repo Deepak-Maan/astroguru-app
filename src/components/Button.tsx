@@ -94,7 +94,7 @@ export function Button({
       ]}
     >
       {/* Top Specular Light Reflection Glint */}
-      <View style={styles.topGlint} pointerEvents="none" />
+      <View style={[styles.topGlint, { pointerEvents: 'none' as any }]} />
 
       {isFlat ? (
         content

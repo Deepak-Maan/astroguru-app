@@ -1,6 +1,17 @@
 import { Platform } from 'react-native';
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, signInWithPopup, GoogleAuthProvider, ConfirmationResult } from 'firebase/auth';
+import {
+  getAuth,
+  initializeAuth,
+  browserLocalPersistence,
+  indexedDBLocalPersistence,
+  inMemoryPersistence,
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+  signInWithPopup,
+  GoogleAuthProvider,
+  ConfirmationResult,
+} from 'firebase/auth';
 import { getDatabase, ref, set as dbSet, onValue, push as dbPush, serverTimestamp } from 'firebase/database';
 
 const firebaseConfig = {
@@ -16,7 +27,20 @@ const firebaseConfig = {
 
 // Initialize Firebase App
 export const firebaseApp = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-export const firebaseAuth = getAuth(firebaseApp);
+
+export const firebaseAuth = (() => {
+  try {
+    if (Platform.OS === 'web') {
+      return initializeAuth(firebaseApp, {
+        persistence: [browserLocalPersistence, inMemoryPersistence],
+      });
+    }
+    return getAuth(firebaseApp);
+  } catch (_) {
+    return getAuth(firebaseApp);
+  }
+})();
+
 export const firebaseDb = getDatabase(firebaseApp);
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
