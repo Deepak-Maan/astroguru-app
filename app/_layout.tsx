@@ -1,5 +1,5 @@
 import React, { useEffect, Component, ErrorInfo, ReactNode } from 'react';
-import { StyleSheet, Text, View, Pressable } from 'react-native';
+import { StyleSheet, Text, View, Pressable, Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Stack } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -67,6 +67,18 @@ export default function RootLayout() {
   const autoCheckAndFetchOnStartup = useUpdateStore((s) => s.autoCheckAndFetchOnStartup);
 
   useEffect(() => {
+    // Inject Ethereal Celestial Typography (Marcellus + Manrope) on Web
+    if (Platform.OS === 'web' && typeof document !== 'undefined') {
+      const fontId = 'astroguru-ethereal-fonts';
+      if (!document.getElementById(fontId)) {
+        const link = document.createElement('link');
+        link.id = fontId;
+        link.rel = 'stylesheet';
+        link.href = 'https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&family=Marcellus&display=swap';
+        document.head.appendChild(link);
+      }
+    }
+
     try {
       loadSettings();
     } catch (_) {}

@@ -123,78 +123,86 @@ export const radius = {
   pill: 999,
 } as const;
 
-// Fonts: Serif display for mystic headlines & Plus Jakarta Sans / Inter for UI
-const SERIF_FONT = Platform.OS === 'web' ? 'Cinzel, "Cormorant Garamond", Playfair, Georgia, serif' : undefined;
-const SANS_FONT = Platform.OS === 'web' ? '"Plus Jakarta Sans", Inter, -apple-system, system-ui, sans-serif' : undefined;
+// Fonts: Option 4 "Ethereal Celestial Grace" (Marcellus display with Manrope body)
+const SERIF_FONT = Platform.OS === 'web' ? 'Marcellus, Cinzel, "Cormorant Garamond", Georgia, serif' : undefined;
+const SANS_FONT = Platform.OS === 'web' ? 'Manrope, "Plus Jakarta Sans", -apple-system, system-ui, sans-serif' : undefined;
 
 export const typography = {
   display: {
     fontSize: 32,
     fontWeight: '800' as const,
-    letterSpacing: 0.8,
+    letterSpacing: 0.9,
+    lineHeight: 38,
     color: colors.text,
     fontFamily: SERIF_FONT,
   },
   h1: {
     fontSize: 24,
-    fontWeight: '700' as const,
-    letterSpacing: 0.4,
+    fontWeight: '800' as const,
+    letterSpacing: 0.5,
+    lineHeight: 30,
     color: colors.text,
     fontFamily: SERIF_FONT,
   },
   h2: {
     fontSize: 20,
     fontWeight: '700' as const,
-    letterSpacing: 0.3,
+    letterSpacing: 0.4,
+    lineHeight: 26,
     color: colors.text,
     fontFamily: SERIF_FONT,
   },
   h3: {
     fontSize: 16,
-    fontWeight: '600' as const,
-    letterSpacing: 0.2,
+    fontWeight: '700' as const,
+    letterSpacing: 0.3,
+    lineHeight: 22,
     color: colors.text,
     fontFamily: SERIF_FONT,
   },
   body: {
     fontSize: 14,
-    fontWeight: '400' as const,
-    lineHeight: 21,
+    fontWeight: '500' as const,
+    lineHeight: 22,
+    letterSpacing: 0.15,
     color: colors.text,
     fontFamily: SANS_FONT,
   },
   bodyBold: {
     fontSize: 14,
-    fontWeight: '600' as const,
-    lineHeight: 21,
+    fontWeight: '700' as const,
+    lineHeight: 22,
+    letterSpacing: 0.15,
     color: colors.text,
     fontFamily: SANS_FONT,
   },
   caption: {
     fontSize: 12,
-    fontWeight: '400' as const,
-    lineHeight: 16,
+    fontWeight: '500' as const,
+    lineHeight: 17,
+    letterSpacing: 0.2,
     color: colors.textMuted,
     fontFamily: SANS_FONT,
   },
   captionBold: {
     fontSize: 12,
-    fontWeight: '600' as const,
-    lineHeight: 16,
+    fontWeight: '700' as const,
+    lineHeight: 17,
+    letterSpacing: 0.2,
     color: colors.textMuted,
     fontFamily: SANS_FONT,
   },
   small: {
     fontSize: 11,
-    fontWeight: '600' as const,
-    letterSpacing: 0.3,
+    fontWeight: '700' as const,
+    letterSpacing: 0.35,
     color: colors.textMuted,
     fontFamily: SANS_FONT,
   },
   tiny: {
     fontSize: 10,
-    fontWeight: '700' as const,
-    letterSpacing: 0.3,
+    fontWeight: '800' as const,
+    letterSpacing: 0.4,
     color: colors.textMuted,
     fontFamily: SANS_FONT,
   },
