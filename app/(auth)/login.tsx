@@ -187,19 +187,27 @@ export default function LoginScreen() {
 
   const passStrength = getPasswordStrength(password);
 
-  // ── Launch Celestial Overlay ──
+  // ── Launch Celestial Overlay & Route Session ──
   const launchSessionWithOverlay = (user: any, route: '/(tabs)' | '/admin' = '/(tabs)') => {
     triggerHaptic('success');
+    setUserSession(user);
     setPendingUser(user);
     setTargetRoute(route);
     setShowOverlay(true);
+
+    // Guaranteed navigation fallback
+    setTimeout(() => {
+      setShowOverlay(false);
+      router.replace(route);
+    }, 1250);
   };
 
   const handleOverlayComplete = () => {
+    setShowOverlay(false);
     if (pendingUser) {
       setUserSession(pendingUser);
-      router.replace(targetRoute);
     }
+    router.replace(targetRoute);
   };
 
   // ── Handlers ──
@@ -921,8 +929,9 @@ export default function LoginScreen() {
       {showOverlay && (
         <AnimatedAuthOverlay
           visible={showOverlay}
-          user={pendingUser}
-          onAnimationComplete={handleOverlayComplete}
+          type="login"
+          message={`Welcome, ${pendingUser?.name || 'Seeker'}!`}
+          onFinished={handleOverlayComplete}
         />
       )}
     </View>
