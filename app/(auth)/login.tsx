@@ -1,5 +1,5 @@
 /**
- * AstroGuru — Modern Split-Screen Login & Registration (Zero-Scroll Viewport Fitted)
+ * AstroGuru — Modern Split-Screen Login & Registration (Comfortable Medium Size, Zero-Scroll)
  * Powered by Three.js 3D Celestial Armillary Showcase, Frosted Spatial Glassmorphism,
  * One-Click Google & Apple OAuth, Staggered Tab Morphing, and Micro-Interaction Form Validation.
  */
@@ -39,7 +39,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 function GoogleIcon() {
   return (
-    <Svg width={16} height={16} viewBox="0 0 24 24">
+    <Svg width={18} height={18} viewBox="0 0 24 24">
       <Path
         fill="#EA4335"
         d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.3 9 5 12 5z"
@@ -62,7 +62,7 @@ function GoogleIcon() {
 
 function AppleIcon() {
   return (
-    <Svg width={16} height={16} viewBox="0 0 24 24" fill="#FFFFFF">
+    <Svg width={18} height={18} viewBox="0 0 24 24" fill="#FFFFFF">
       <Path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.85c.66-.82 1.11-1.96.99-3.1-.96.04-2.18.65-2.85 1.44-.59.68-1.11 1.83-.97 2.95 1.08.08 2.18-.56 2.83-1.29z" />
     </Svg>
   );
@@ -608,13 +608,13 @@ export default function LoginScreen() {
                 {/* Form Error / Info Banners */}
                 {!!error && (
                   <View style={styles.errorBanner}>
-                    <Text style={{ fontSize: 11 }}>⚠️</Text>
+                    <Text style={{ fontSize: 12 }}>⚠️</Text>
                     <Text style={styles.errorBannerText} numberOfLines={1}>{error}</Text>
                   </View>
                 )}
                 {!!infoMessage && (
                   <View style={styles.infoBanner}>
-                    <Text style={{ fontSize: 11 }}>ℹ️</Text>
+                    <Text style={{ fontSize: 12 }}>ℹ️</Text>
                     <Text style={styles.infoBannerText} numberOfLines={1}>{infoMessage}</Text>
                   </View>
                 )}
@@ -772,7 +772,7 @@ export default function LoginScreen() {
                             hitSlop={8}
                             style={{ paddingHorizontal: 4 }}
                           >
-                            <Text style={{ fontSize: 13 }}>{showPassword ? '👁️' : '👁️‍🗨️'}</Text>
+                            <Text style={{ fontSize: 14 }}>{showPassword ? '👁️' : '👁️‍🗨️'}</Text>
                           </Pressable>
                         </View>
 
@@ -969,21 +969,21 @@ const styles = StyleSheet.create({
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.lg,
   },
   authColumnDesktop: {
     flex: 1,
-    maxWidth: 520,
-    paddingHorizontal: spacing.lg,
+    maxWidth: 540,
+    paddingHorizontal: spacing.xl,
   },
 
   /* Frosted Glass Card */
   glassCard: {
     width: '100%',
-    maxWidth: 440,
+    maxWidth: 470,
     backgroundColor: 'rgba(18, 20, 42, 0.88)',
-    borderRadius: 20,
-    padding: 16,
+    borderRadius: 22,
+    padding: 20,
     borderWidth: 1.5,
     borderColor: 'rgba(212, 175, 55, 0.25)',
     shadowColor: '#000000',
@@ -993,7 +993,7 @@ const styles = StyleSheet.create({
     elevation: 8,
     overflow: 'hidden',
     position: 'relative',
-    gap: 10,
+    gap: 12,
     backdropFilter: 'blur(16px)' as any,
   },
   specularEdge: {
@@ -1010,13 +1010,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: 'rgba(7, 8, 15, 0.6)',
     borderRadius: radius.pill,
-    padding: 3,
+    padding: 3.5,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   tabBtn: {
     flex: 1,
-    paddingVertical: 7,
+    paddingVertical: 8,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: radius.pill,
@@ -1030,7 +1030,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   tabBtnText: {
-    fontSize: 11.5,
+    fontSize: 12.5,
     fontWeight: '700',
     color: '#94A3B8',
   },
@@ -1041,41 +1041,41 @@ const styles = StyleSheet.create({
 
   /* Header */
   cardHeader: {
-    gap: 2,
+    gap: 3,
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: 21,
     fontWeight: '900',
     color: '#F8FAFC',
     letterSpacing: 0.3,
     fontFamily: Platform.OS === 'web' ? 'Cinzel, Georgia, serif' : undefined,
   },
   cardSubtitle: {
-    fontSize: 11.5,
+    fontSize: 12.5,
     color: '#94A3B8',
-    lineHeight: 16,
+    lineHeight: 17,
     fontWeight: '500',
   },
 
   /* Social Auth */
   socialButtonsRow: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 10,
   },
   socialBtn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 8,
+    gap: 8,
+    paddingVertical: 9,
     borderRadius: 12,
     backgroundColor: 'rgba(255, 255, 255, 0.06)',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   socialBtnText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '700',
     color: '#F8FAFC',
   },
@@ -1084,7 +1084,7 @@ const styles = StyleSheet.create({
   dividerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
   },
   dividerLine: {
     flex: 1,
@@ -1092,7 +1092,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
   },
   dividerText: {
-    fontSize: 8.5,
+    fontSize: 9,
     fontWeight: '800',
     color: '#64748B',
     letterSpacing: 0.8,
@@ -1103,13 +1103,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: 'rgba(255, 255, 255, 0.04)',
     borderRadius: radius.sm,
-    padding: 2,
+    padding: 2.5,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   subTabBtn: {
     flex: 1,
-    paddingVertical: 5,
+    paddingVertical: 6,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 6,
@@ -1120,7 +1120,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(212, 175, 55, 0.35)',
   },
   subTabBtnText: {
-    fontSize: 11,
+    fontSize: 11.5,
     fontWeight: '700',
     color: '#94A3B8',
   },
@@ -1134,7 +1134,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    padding: 7,
+    padding: 8,
     borderRadius: 8,
     backgroundColor: 'rgba(244, 63, 94, 0.12)',
     borderWidth: 1,
@@ -1142,7 +1142,7 @@ const styles = StyleSheet.create({
   },
   errorBannerText: {
     flex: 1,
-    fontSize: 10.5,
+    fontSize: 11,
     fontWeight: '700',
     color: '#FB7185',
   },
@@ -1150,7 +1150,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    padding: 7,
+    padding: 8,
     borderRadius: 8,
     backgroundColor: 'rgba(56, 189, 248, 0.12)',
     borderWidth: 1,
@@ -1158,20 +1158,20 @@ const styles = StyleSheet.create({
   },
   infoBannerText: {
     flex: 1,
-    fontSize: 10.5,
+    fontSize: 11,
     fontWeight: '700',
     color: '#38BDF8',
   },
 
   /* Form Fields */
   formFields: {
-    gap: 8,
+    gap: 10,
   },
   inputGroup: {
-    gap: 3,
+    gap: 3.5,
   },
   inputLabel: {
-    fontSize: 8.5,
+    fontSize: 9.5,
     fontWeight: '800',
     color: '#94A3B8',
     letterSpacing: 0.6,
@@ -1182,25 +1182,25 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   debugOtpLink: {
-    fontSize: 9.5,
+    fontSize: 10,
     fontWeight: '800',
     color: '#F5D77F',
     textDecorationLine: 'underline',
   },
   strengthLabel: {
-    fontSize: 8.5,
+    fontSize: 9,
     fontWeight: '800',
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
-    height: 38,
-    borderRadius: 10,
+    paddingHorizontal: 12,
+    height: 42,
+    borderRadius: 12,
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
-    gap: 6,
+    gap: 8,
   },
   inputWrapperFocused: {
     borderColor: '#D4AF37',
@@ -1211,25 +1211,25 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
   },
   inputIcon: {
-    fontSize: 13,
+    fontSize: 14,
   },
   phonePrefix: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '800',
     color: '#F5D77F',
   },
   textInput: {
     flex: 1,
-    fontSize: 12.5,
+    fontSize: 13.5,
     color: '#F8FAFC',
     fontWeight: '600',
     paddingVertical: 0,
     outlineStyle: 'none' as any,
   },
   validCheck: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     backgroundColor: 'rgba(16, 185, 129, 0.2)',
     borderWidth: 1,
     borderColor: '#10B981',
@@ -1237,30 +1237,30 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   validCheckText: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '900',
     color: '#34D399',
   },
   strengthBarContainer: {
-    height: 2.5,
-    borderRadius: 1.25,
+    height: 3,
+    borderRadius: 1.5,
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
     marginTop: 3,
     overflow: 'hidden',
   },
   strengthBarFill: {
     height: '100%',
-    borderRadius: 1.25,
+    borderRadius: 1.5,
   },
 
   /* Submit Button */
   submitBtn: {
-    height: 42,
+    height: 46,
     borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
-    marginTop: 2,
+    marginTop: 3,
     shadowColor: '#D4AF37',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.4,
@@ -1268,7 +1268,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   submitBtnText: {
-    fontSize: 12.5,
+    fontSize: 13.5,
     fontWeight: '900',
     color: '#07080F',
     letterSpacing: 0.4,
@@ -1278,11 +1278,11 @@ const styles = StyleSheet.create({
   demoSection: {
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.08)',
-    paddingTop: 8,
+    paddingTop: 10,
     gap: 6,
   },
   demoSectionTitle: {
-    fontSize: 8,
+    fontSize: 8.5,
     fontWeight: '900',
     color: '#64748B',
     letterSpacing: 0.8,
@@ -1290,25 +1290,25 @@ const styles = StyleSheet.create({
   },
   demoButtonsRow: {
     flexDirection: 'row',
-    gap: 6,
+    gap: 8,
   },
   demoRoleBtn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
-    paddingVertical: 5,
-    borderRadius: 8,
+    gap: 5,
+    paddingVertical: 6,
+    borderRadius: 9,
     backgroundColor: 'rgba(212, 175, 55, 0.1)',
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.3)',
   },
   demoRoleIcon: {
-    fontSize: 11,
+    fontSize: 12,
   },
   demoRoleLabel: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '800',
     color: '#F5D77F',
   },

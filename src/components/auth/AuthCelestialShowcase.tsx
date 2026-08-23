@@ -84,7 +84,7 @@ export function AuthCelestialShowcase({ style }: Props) {
     starGeometry.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
 
     const starMaterial = new THREE.PointsMaterial({
-      size: 0.042,
+      size: 0.044,
       vertexColors: true,
       transparent: true,
       opacity: 0.85,
@@ -99,7 +99,7 @@ export function AuthCelestialShowcase({ style }: Props) {
     celestialGroup.position.set(0, 0, 0);
 
     // Outer Brass Ecliptic Ring
-    const eclipticGeo = new THREE.TorusGeometry(2.2, 0.022, 16, 100);
+    const eclipticGeo = new THREE.TorusGeometry(2.25, 0.024, 16, 100);
     const eclipticMat = new THREE.MeshBasicMaterial({
       color: 0xd4af37,
       transparent: true,
@@ -111,7 +111,7 @@ export function AuthCelestialShowcase({ style }: Props) {
     celestialGroup.add(eclipticMesh);
 
     // Inner Sacred 20-sided Icosahedron Mandala Core
-    const coreGeo = new THREE.IcosahedronGeometry(1.5, 2);
+    const coreGeo = new THREE.IcosahedronGeometry(1.55, 2);
     const coreMat = new THREE.MeshBasicMaterial({
       color: 0x8b5cf6,
       wireframe: true,
@@ -122,7 +122,7 @@ export function AuthCelestialShowcase({ style }: Props) {
     celestialGroup.add(coreMesh);
 
     // Cyan Horizon Orbit Ring
-    const gyroGeo = new THREE.TorusGeometry(1.9, 0.012, 16, 80);
+    const gyroGeo = new THREE.TorusGeometry(1.95, 0.014, 16, 80);
     const gyroMat = new THREE.MeshBasicMaterial({
       color: 0x38bdf8,
       transparent: true,
@@ -134,7 +134,7 @@ export function AuthCelestialShowcase({ style }: Props) {
     celestialGroup.add(gyroMesh);
 
     // Center Golden Sun Core
-    const sunGeo = new THREE.SphereGeometry(0.32, 32, 32);
+    const sunGeo = new THREE.SphereGeometry(0.34, 32, 32);
     const sunMat = new THREE.MeshBasicMaterial({
       color: 0xf5d77f,
       wireframe: true,
@@ -280,10 +280,10 @@ export function AuthCelestialShowcase({ style }: Props) {
           {/* Badge 1: Live Sky Astronomical Status */}
           <View style={styles.glassStatCard}>
             <View style={styles.statIconRing}>
-              <Text style={{ fontSize: 16 }}>🪐</Text>
+              <Text style={{ fontSize: 18 }}>🪐</Text>
             </View>
-            <View style={{ flex: 1, gap: 1 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+            <View style={{ flex: 1, gap: 2 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                 <View style={styles.livePulseDot} />
                 <Text style={styles.statHeader}>LIVE CELESTIAL EPHEMERIS</Text>
               </View>
@@ -301,7 +301,7 @@ export function AuthCelestialShowcase({ style }: Props) {
             <View style={styles.quoteMark}>
               <Text style={styles.quoteMarkText}>“</Text>
             </View>
-            <View style={{ flex: 1, gap: 1 }}>
+            <View style={{ flex: 1, gap: 2 }}>
               <Text style={styles.sanskritVerse}>॥ यत्पिण्डे तद्ब्रह्माण्डे ॥</Text>
               <Text style={styles.quoteTranslation} numberOfLines={2}>
                 “As is the microcosm of the human spirit, so is the macrocosm of the universe.”
@@ -324,7 +324,7 @@ export function AuthCelestialShowcase({ style }: Props) {
             <View style={styles.syncDivider} />
             <View style={styles.syncItem}>
               <Text style={styles.syncIcon}>📜</Text>
-              <Text style={styles.syncText}>10-Page Kundli</Text>
+              <Text style={styles.syncText}>10-Page Kundli Engine</Text>
             </View>
           </View>
         </View>
@@ -343,7 +343,7 @@ const styles = StyleSheet.create({
   },
   foregroundLayer: {
     flex: 1,
-    padding: spacing.lg,
+    padding: spacing.xl,
     justifyContent: 'space-between',
     zIndex: 2,
   },
@@ -351,94 +351,94 @@ const styles = StyleSheet.create({
   /* Atmospheric Nebulae */
   nebulaGlowGold: {
     position: 'absolute',
-    top: -60,
-    left: -60,
-    width: 320,
-    height: 320,
-    borderRadius: 160,
+    top: -70,
+    left: -70,
+    width: 350,
+    height: 350,
+    borderRadius: 175,
     backgroundColor: 'rgba(212, 175, 55, 0.15)',
-    filter: 'blur(80px)' as any,
+    filter: 'blur(85px)' as any,
   },
   nebulaGlowPurple: {
     position: 'absolute',
-    bottom: -80,
-    right: -80,
-    width: 340,
-    height: 340,
-    borderRadius: 170,
+    bottom: -90,
+    right: -90,
+    width: 380,
+    height: 380,
+    borderRadius: 190,
     backgroundColor: 'rgba(139, 92, 246, 0.18)',
-    filter: 'blur(90px)' as any,
+    filter: 'blur(95px)' as any,
   },
   nebulaGlowCyan: {
     position: 'absolute',
     top: '35%',
     left: '25%',
-    width: 260,
-    height: 260,
-    borderRadius: 130,
+    width: 280,
+    height: 280,
+    borderRadius: 140,
     backgroundColor: 'rgba(56, 189, 248, 0.10)',
-    filter: 'blur(70px)' as any,
+    filter: 'blur(75px)' as any,
   },
 
   /* Brand Cluster */
   brandCluster: {
-    gap: 6,
-    maxWidth: 440,
+    gap: 8,
+    maxWidth: 480,
   },
   brandPill: {
     alignSelf: 'flex-start',
-    paddingHorizontal: 10,
-    paddingVertical: 3.5,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
     borderRadius: radius.pill,
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.4)',
     overflow: 'hidden',
   },
   brandPillText: {
-    fontSize: 8.5,
+    fontSize: 9,
     fontWeight: '900',
     color: '#F5D77F',
     letterSpacing: 0.8,
   },
   brandTitle: {
-    fontSize: 34,
+    fontSize: 38,
     fontWeight: '900',
     color: '#F8FAFC',
     letterSpacing: 0.5,
     fontFamily: Platform.OS === 'web' ? 'Cinzel, Georgia, serif' : undefined,
   },
   brandTagline: {
-    fontSize: 12.5,
+    fontSize: 13.5,
     color: '#94A3B8',
-    lineHeight: 18,
+    lineHeight: 20,
     fontWeight: '500',
   },
 
   /* Floating Badges Cluster */
   badgesCluster: {
-    gap: 8,
-    maxWidth: 440,
+    gap: 10,
+    maxWidth: 480,
   },
   glassStatCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    padding: 10,
-    borderRadius: 14,
+    gap: 12,
+    padding: 12,
+    borderRadius: 16,
     backgroundColor: 'rgba(18, 20, 42, 0.82)',
     borderWidth: 1.5,
     borderColor: 'rgba(212, 175, 55, 0.28)',
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.5,
-    shadowRadius: 10,
+    shadowRadius: 12,
     elevation: 3,
     backdropFilter: 'blur(16px)' as any,
   },
   statIconRing: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: 'rgba(212, 175, 55, 0.15)',
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.35)',
@@ -452,18 +452,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#10B981',
   },
   statHeader: {
-    fontSize: 8,
+    fontSize: 8.5,
     fontWeight: '900',
     color: '#F5D77F',
     letterSpacing: 0.6,
   },
   statValue: {
-    fontSize: 11.5,
+    fontSize: 12.5,
     fontWeight: '800',
     color: '#F8FAFC',
   },
   statSub: {
-    fontSize: 10,
+    fontSize: 10.5,
     color: '#38BDF8',
     fontWeight: '600',
   },
@@ -471,48 +471,48 @@ const styles = StyleSheet.create({
   /* Sacred Quote Card */
   glassQuoteCard: {
     flexDirection: 'row',
-    gap: 10,
-    padding: 10,
-    borderRadius: 14,
+    gap: 12,
+    padding: 12,
+    borderRadius: 16,
     backgroundColor: 'rgba(26, 26, 58, 0.82)',
     borderWidth: 1.5,
     borderColor: 'rgba(139, 92, 246, 0.3)',
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.5,
-    shadowRadius: 10,
+    shadowRadius: 12,
     elevation: 3,
     backdropFilter: 'blur(16px)' as any,
   },
   quoteMark: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: 'rgba(139, 92, 246, 0.2)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   quoteMarkText: {
-    fontSize: 16,
+    fontSize: 18,
     color: '#A78BFA',
     fontWeight: '900',
-    lineHeight: 20,
+    lineHeight: 22,
   },
   sanskritVerse: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '900',
     color: '#F5D77F',
     letterSpacing: 0.4,
   },
   quoteTranslation: {
-    fontSize: 10.5,
+    fontSize: 11.5,
     color: '#E2E8F0',
     fontStyle: 'italic',
-    lineHeight: 15,
+    lineHeight: 16,
     fontWeight: '500',
   },
   quoteSource: {
-    fontSize: 9,
+    fontSize: 9.5,
     color: '#94A3B8',
     fontWeight: '700',
   },
@@ -528,13 +528,13 @@ const styles = StyleSheet.create({
   syncItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 5,
   },
   syncIcon: {
-    fontSize: 11,
+    fontSize: 12,
   },
   syncText: {
-    fontSize: 9.5,
+    fontSize: 10,
     color: '#94A3B8',
     fontWeight: '600',
   },
