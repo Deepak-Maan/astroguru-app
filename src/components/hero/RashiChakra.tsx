@@ -1,10 +1,7 @@
 /**
- * RashiChakra — Mystical Spatial Celestial Hero
- *
- * Luxury obsidian glass card featuring glowing celestial zodiac mandala,
- * navagraha planetary orbs, lagna degree markers, and instant Kundli chart launcher.
+ * RashiChakra — Luxury 3D Crystalline Natal Chart Hero & Insights
  */
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Dimensions,
   Platform,
@@ -14,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 import { colors, radius, spacing, typography } from '../../theme';
 import { Kundli } from '../../types';
 import { RASHIS } from '../../data/rashis';
@@ -27,31 +25,34 @@ interface Props {
 }
 
 export function RashiChakra({ kundli, onPress }: Props) {
+  const [transitDrawerOpen, setTransitDrawerOpen] = useState(false);
+  const [insightDrawerOpen, setInsightDrawerOpen] = useState(false);
+
   const lagna = kundli ? RASHIS[kundli.lagnaIndex] : null;
   const moon = kundli ? RASHIS[kundli.moonRashiIndex] : null;
   const nakshatra = kundli ? NAKSHATRAS[kundli.moonNakshatraIndex] : null;
   const lagnaDeg = (kundli?.lagnaLongitude ?? 0) % 30;
   const degLabel = `${Math.floor(lagnaDeg)}°${String(Math.floor((lagnaDeg % 1) * 60)).padStart(2, '0')}′`;
 
+  const triggerHaptic = () => {
+    try {
+      if (Platform.OS !== 'web') {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+    } catch (_) {}
+  };
+
   return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={kundli ? 'Open Kundli Chart' : 'Add Birth Details to generate Kundli'}
-      style={({ pressed }) => [
-        styles.cardContainer,
-        pressed && { opacity: 0.92, transform: [{ scale: 0.985 }] },
-      ]}
-    >
-      {/* Ultra-Clear Crystal Light Gradient */}
+    <View style={styles.cardContainer}>
+      {/* Crystalline Glass Background */}
       <LinearGradient
-        colors={['rgba(255, 255, 255, 0.92)', 'rgba(255, 255, 255, 0.82)', 'rgba(254, 249, 240, 0.90)']}
+        colors={['rgba(255, 255, 255, 0.88)', 'rgba(255, 255, 255, 0.72)']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={StyleSheet.absoluteFill}
       />
 
-      {/* Top Specular Gold Edge Light */}
+      {/* Top Specular Edge Highlight */}
       <View style={styles.specularEdge} />
 
       {/* Right-Side Cosmic Mandala & Orbit Graphic */}
@@ -78,27 +79,22 @@ export function RashiChakra({ kundli, onPress }: Props) {
         {/* Center Sacred Chakra Centerpiece */}
         <View style={styles.chakraCenter}>
           <LinearGradient
-            colors={['#D4AF37', '#B8902A', '#8B5CF6']}
+            colors={['#D4AF37', '#F5D77F']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={StyleSheet.absoluteFill}
           />
           <Text style={styles.chakraCenterIcon}>{kundli ? '🕉️' : '✨'}</Text>
         </View>
-
-        {/* Glowing Constellation Star Particles */}
-        <View style={[styles.starDot, { top: 20, right: 30, backgroundColor: '#D4AF37' }]} />
-        <View style={[styles.starDot, { top: 80, right: 15, backgroundColor: '#38BDF8', width: 4, height: 4 }]} />
-        <View style={[styles.starDot, { top: 120, right: 80, backgroundColor: '#A78BFA' }]} />
       </View>
 
       {/* Left-Side Content Details */}
-      <View style={styles.contentCol}>
+      <Pressable onPress={onPress} style={styles.contentCol}>
         {/* Top Eyebrow Badge */}
         <View style={styles.eyebrowRow}>
           <View style={styles.eyebrowBadge}>
             <LinearGradient
-              colors={['rgba(212, 175, 55, 0.2)', 'rgba(139, 92, 246, 0.15)']}
+              colors={['rgba(212, 175, 55, 0.18)', 'rgba(253, 230, 138, 0.25)']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={StyleSheet.absoluteFill}
@@ -119,7 +115,7 @@ export function RashiChakra({ kundli, onPress }: Props) {
               {lagna.sanskrit} <Text style={styles.headlineLight}>({lagna.english})</Text>
             </Text>
             <Text style={styles.subtext}>
-              Chandra in <Text style={{ color: colors.goldSoft, fontWeight: '700' }}>{moon?.sanskrit}</Text> · {nakshatra?.name} Pada {kundli.moonPada}
+              Chandra in <Text style={{ color: '#B8902A', fontWeight: '800' }}>{moon?.sanskrit}</Text> · {nakshatra?.name} Pada {kundli.moonPada}
             </Text>
           </>
         ) : (
@@ -144,42 +140,89 @@ export function RashiChakra({ kundli, onPress }: Props) {
           </View>
         </View>
 
-        {/* Bottom Call-To-Action Row */}
-        <View style={styles.ctaRow}>
-          <View style={styles.ctaBtn}>
-            <LinearGradient
-              colors={['#D4AF37', '#B8902A', '#D97706']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={StyleSheet.absoluteFill}
-            />
-            <Text style={styles.ctaBtnText}>
-              {kundli ? 'View Full Kundli & Dasha ›' : 'Start Chart Now ›'}
-            </Text>
-          </View>
+        {/* Primary Chart Launcher Button */}
+        <View style={styles.ctaBtn}>
+          <LinearGradient
+            colors={['#D4AF37', '#F5D77F']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={StyleSheet.absoluteFill}
+          />
+          <Text style={styles.ctaBtnText}>
+            {kundli ? 'View Full Kundli & Dasha ›' : 'Start Chart Now ›'}
+          </Text>
         </View>
-      </View>
-    </Pressable>
+      </Pressable>
+
+      {/* Expandable Accordion Drawers for Transits & Astro Insights */}
+      {kundli && (
+        <View style={styles.accordionContainer}>
+          {/* Drawer 1: Planetary Transits */}
+          <Pressable
+            onPress={() => {
+              triggerHaptic();
+              setTransitDrawerOpen(!transitDrawerOpen);
+            }}
+            style={styles.accordionHeader}
+          >
+            <Text style={styles.accordionTitle}>🪐 Live Planetary Transits</Text>
+            <Text style={styles.accordionArrow}>{transitDrawerOpen ? '▲' : '▼'}</Text>
+          </Pressable>
+          {transitDrawerOpen && (
+            <View style={styles.accordionContent}>
+              <Text style={styles.drawerInsightText}>
+                • <Text style={{ fontWeight: '800', color: '#B8902A' }}>Jupiter Transit:</Text> Benefic aspect on 5th House (Wisdom & Progeny).
+              </Text>
+              <Text style={styles.drawerInsightText}>
+                • <Text style={{ fontWeight: '800', color: '#B8902A' }}>Saturn Sade Sati:</Text> Neutral phase · No immediate obstacles.
+              </Text>
+            </View>
+          )}
+
+          {/* Drawer 2: Astrological Insights */}
+          <Pressable
+            onPress={() => {
+              triggerHaptic();
+              setInsightDrawerOpen(!insightDrawerOpen);
+            }}
+            style={styles.accordionHeader}
+          >
+            <Text style={styles.accordionTitle}>✨ Key Astrological Insights</Text>
+            <Text style={styles.accordionArrow}>{insightDrawerOpen ? '▲' : '▼'}</Text>
+          </Pressable>
+          {insightDrawerOpen && (
+            <View style={styles.accordionContent}>
+              <Text style={styles.drawerInsightText}>
+                • <Text style={{ fontWeight: '800', color: '#059669' }}>Favorable Muhurta:</Text> Abhijit Muhurta between 11:45 AM and 12:30 PM.
+              </Text>
+              <Text style={styles.drawerInsightText}>
+                • <Text style={{ fontWeight: '800', color: '#7C3AED' }}>Recommended Sadhana:</Text> Gayatri Mantra chant 108x at sunrise.
+              </Text>
+            </View>
+          )}
+        </View>
+      )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   cardContainer: {
-    borderRadius: 24,
-    padding: 18,
-    backgroundColor: 'rgba(18, 20, 42, 0.85)',
-    borderWidth: 1.5,
-    borderColor: 'rgba(212, 175, 55, 0.28)',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.7,
-    shadowRadius: 20,
-    elevation: 8,
+    borderRadius: radius.xl,
+    padding: spacing.lg,
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.9)',
+    borderBottomColor: 'rgba(212, 175, 55, 0.35)',
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.12,
+    shadowRadius: 45,
+    elevation: 5,
     overflow: 'hidden',
-    minHeight: 185,
-    justifyContent: 'center',
     position: 'relative',
-    backdropFilter: 'blur(16px)' as any,
+    backdropFilter: 'blur(22px) saturate(190%)' as any,
+    gap: 12,
   },
   specularEdge: {
     position: 'absolute',
@@ -187,7 +230,12 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 1.5,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 1.0)',
+    boxShadow: 'inset 0 1.5px 2px rgba(255, 255, 255, 1.0)' as any,
+  },
+  contentCol: {
+    gap: 8,
+    zIndex: 2,
   },
 
   /* Right-side Mandala & Planet Orbs Graphic */
@@ -199,6 +247,7 @@ const styles = StyleSheet.create({
     height: 210,
     alignItems: 'center',
     justifyContent: 'center',
+    zIndex: 1,
   },
   orbitOuter: {
     position: 'absolute',
@@ -232,74 +281,42 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: 'rgba(18, 20, 42, 0.9)',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 6,
-    elevation: 3,
     borderWidth: 1.5,
-  },
-  planetSun: {
-    top: 15,
-    right: 70,
-    borderColor: '#D4AF37',
-  },
-  planetMoon: {
-    bottom: 30,
-    right: 35,
-    borderColor: '#38BDF8',
-  },
-  planetJupiter: {
-    top: 90,
-    left: 20,
-    borderColor: '#A78BFA',
-  },
-  planetMars: {
-    bottom: 25,
-    left: 45,
-    borderColor: '#F43F5E',
-  },
-  planetOrbText: {
-    fontSize: 14,
-  },
-
-  /* Sacred Center Chakra */
-  chakraCenter: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderColor: 'rgba(212, 175, 55, 0.35)',
     shadowColor: '#D4AF37',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.6,
-    shadowRadius: 12,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  planetOrbText: { fontSize: 13 },
+  planetSun: { top: 12, right: 90 },
+  planetMoon: { bottom: 25, right: 35 },
+  planetJupiter: { top: 85, right: 8 },
+  planetMars: { bottom: 50, right: 140 },
+
+  /* Chakra Center */
+  chakraCenter: {
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    alignItems: 'center',
+    justifyContent: 'center',
     overflow: 'hidden',
-    borderWidth: 1.5,
-    borderColor: '#F5D77F',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    shadowColor: '#D4AF37',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 6,
   },
-  chakraCenterIcon: {
-    fontSize: 22,
-  },
+  chakraCenterIcon: { fontSize: 24 },
 
-  starDot: {
-    position: 'absolute',
-    width: 3,
-    height: 3,
-    borderRadius: 1.5,
-    opacity: 0.8,
-  },
-
-  /* Content Column */
-  contentCol: {
-    zIndex: 2,
-    maxWidth: '68%',
-    gap: 6,
-  },
+  /* Eyebrow Badge */
   eyebrowRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -309,31 +326,31 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.4)',
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.3)',
   },
   eyebrowText: {
-    fontSize: 8.5,
+    fontSize: 9.5,
     fontWeight: '900',
-    color: colors.goldSoft,
+    color: '#B8902A',
     letterSpacing: 0.8,
   },
   liveLagnaBadge: {
-    backgroundColor: 'rgba(56, 189, 248, 0.15)',
-    paddingHorizontal: 7,
-    paddingVertical: 2.5,
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
     borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: 'rgba(56, 189, 248, 0.4)',
+    borderColor: '#FDE68A',
   },
   liveLagnaText: {
-    fontSize: 8,
+    fontSize: 9.5,
     fontWeight: '900',
-    color: '#38BDF8',
-    letterSpacing: 0.5,
+    color: '#B45309',
   },
 
+  /* Titles */
   headline: {
     fontSize: 20,
     fontWeight: '900',
@@ -342,55 +359,101 @@ const styles = StyleSheet.create({
     fontFamily: Platform.OS === 'web' ? 'Cinzel, Georgia, serif' : undefined,
   },
   headlineLight: {
-    color: '#B8902A',
-    fontWeight: '700',
     fontSize: 16,
+    fontWeight: '700',
+    color: '#64748B',
   },
   subtext: {
     fontSize: 11.5,
     color: '#475569',
+    fontWeight: '600',
     lineHeight: 16,
-    fontWeight: '500',
+    maxWidth: '70%',
   },
 
+  /* Feature Pills */
   featuresRow: {
     flexDirection: 'row',
     gap: 6,
-    marginTop: 2,
+    marginVertical: 2,
   },
   featurePill: {
     backgroundColor: 'rgba(241, 245, 249, 0.85)',
-    paddingHorizontal: 7,
+    paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 6,
+    borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.22)',
+    borderColor: 'rgba(212, 175, 55, 0.18)',
   },
   featurePillText: {
-    fontSize: 9.5,
-    color: '#334155',
-    fontWeight: '700',
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#0F172A',
   },
 
-  ctaRow: {
-    marginTop: 6,
-  },
+  /* Primary CTA */
   ctaBtn: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 14,
-    paddingVertical: 7,
+    paddingVertical: 9,
+    paddingHorizontal: 16,
     borderRadius: radius.pill,
+    alignSelf: 'flex-start',
     overflow: 'hidden',
     shadowColor: '#D4AF37',
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.35,
+    shadowOpacity: 0.28,
     shadowRadius: 8,
     elevation: 3,
+    marginTop: 4,
   },
   ctaBtnText: {
     fontSize: 11.5,
     fontWeight: '900',
     color: '#0F172A',
-    letterSpacing: 0.4,
+    letterSpacing: 0.2,
+  },
+
+  /* Accordion Drawers */
+  accordionContainer: {
+    marginTop: 4,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(212, 175, 55, 0.18)',
+    paddingTop: 8,
+    gap: 6,
+    zIndex: 2,
+  },
+  accordionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(241, 245, 249, 0.75)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.15)',
+  },
+  accordionTitle: {
+    fontSize: 11.5,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  accordionArrow: {
+    fontSize: 10,
+    color: '#B8902A',
+    fontWeight: '800',
+  },
+  accordionContent: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    padding: 8,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.12)',
+    gap: 3,
+  },
+  drawerInsightText: {
+    fontSize: 10.5,
+    color: '#334155',
+    lineHeight: 15,
+    fontWeight: '500',
   },
 });

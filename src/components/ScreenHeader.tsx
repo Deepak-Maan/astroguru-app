@@ -127,7 +127,28 @@ export function ScreenHeader({
             )}
           </Pressable>
 
-          {/* Luxury Metallic Wallet Button */}
+          {/* Luxury Metallic Get Reading CTA / Wallet Button */}
+          {showWallet && (
+            <Pressable
+              onPress={() => {
+                triggerHaptic();
+                router.push('/instant-consult');
+              }}
+              accessibilityRole="button"
+              accessibilityLabel="Get Reading"
+              style={({ pressed }) => [styles.getReadingBtn, pressed && { opacity: 0.88, transform: [{ scale: 0.96 }] }]}
+            >
+              <LinearGradient
+                colors={['#D4AF37', '#F5D77F']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={StyleSheet.absoluteFill}
+              />
+              <Text style={styles.getReadingIcon}>✨</Text>
+              <Text style={styles.getReadingText}>Get Reading</Text>
+            </Pressable>
+          )}
+
           {showWallet && (
             <Pressable
               onPress={() => {
@@ -282,6 +303,31 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 9,
     fontWeight: '900',
+  },
+
+  /* Get Reading CTA */
+  getReadingBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 11,
+    paddingVertical: 7,
+    borderRadius: radius.pill,
+    overflow: 'hidden',
+    shadowColor: '#D4AF37',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  getReadingIcon: {
+    fontSize: 12,
+  },
+  getReadingText: {
+    fontSize: 11.5,
+    color: '#0F172A',
+    fontWeight: '900',
+    letterSpacing: 0.3,
   },
 
   /* Wallet Button */

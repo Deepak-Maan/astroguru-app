@@ -31,12 +31,19 @@ export const colors = {
   bgCosmic: '#FDFBF7', // Opal Pearl Morning Dawn
 
   // Ultra-Clear Crystalline Glassmorphic Surfaces
-  card: 'rgba(255, 255, 255, 0.82)', // Ultra-Clear Crystal Glass
+  card: 'rgba(255, 255, 255, 0.85)', // Ultra-Clear Crystal Glass (0.85 to 0.65)
   cardSolid: '#FFFFFF',
   cardElevated: 'rgba(255, 255, 255, 0.94)',
-  cardBorder: 'rgba(212, 175, 55, 0.20)', // Subtle Starlight Gold Rim
+  cardBorder: 'rgba(255, 255, 255, 0.9)', // Clean Glass Border
+  cardBorderBottom: 'rgba(212, 175, 55, 0.3)', // Gold bottom accent rim
   cardBorderGold: 'rgba(212, 175, 55, 0.42)',
   cardGlowBorder: '#D4AF37',
+
+  // Soft Dawn Iridescence Glows
+  glowGold: '#FDE68A',
+  glowLavender: '#E9D5FF',
+  glowSky: '#BAE6FD',
+  glowRose: '#FBCFE8',
 
   // Spatial Light Shadows
   shadowLight: 'rgba(100, 116, 139, 0.12)',
@@ -46,12 +53,14 @@ export const colors = {
   gradientTop: '#FDFBF7',
   gradientMid: '#F8FAFC',
   gradientBottom: '#F1F5F9',
-  auroraA: '#E0E7FF', // Morning Dawn Lavender
-  auroraB: '#FEF3C7', // Starlight Champagne Gold
+  auroraA: '#E9D5FF', // Mystic Lavender
+  auroraB: '#FDE68A', // Champagne Gold
+  auroraC: '#BAE6FD', // Sky Blue
+  auroraD: '#FBCFE8', // Rose
 
   // High-End Celestial Accents
   gold: '#D4AF37', // Imperial Starlight Gold
-  goldSoft: '#E6CA65', // Luminous Champagne Gold
+  goldSoft: '#F5D77F', // Metallic Gold Highlight
   goldDark: '#B8902A', // Antique Temple Gold
   saffron: '#D97706',
   rose: '#F472B6', // Celestial Rose Quartz
@@ -62,8 +71,9 @@ export const colors = {
 
   // Deep Celestial High-Contrast Typography (WCAG AAA)
   text: '#0F172A', // Deep Celestial Navy
-  textMuted: '#475569', // Slate Lavender Muted
-  textFaint: '#64748B', // Soft Morning Slate
+  textHeading: '#1E1B4B', // Deepest Navy
+  textMuted: '#64748B', // Slate Lavender
+  textFaint: '#94A3B8', // Soft Morning Slate
   textGold: '#B8902A', // Rich Temple Gold for text
 
   // Status Cues
@@ -81,13 +91,18 @@ export const colors = {
 
 export const gradients = {
   screen: [colors.gradientTop, colors.gradientMid, colors.gradientBottom] as const,
-  aurora: [colors.auroraA, colors.auroraB] as const,
-  gold: [colors.gold, colors.goldSoft] as const,
+  aurora: [colors.auroraA, colors.auroraB, colors.auroraC, colors.auroraD] as const,
+  gold: ['#D4AF37', '#F5D77F'] as const, // Imperial Gold Metallic
+  goldRich: ['#E6CA65', '#D4AF37', '#B8902A'] as const,
   nebula: ['#FDFBF7', '#F8FAFC', '#EEF2F6'] as const,
-  soft: ['rgba(255, 255, 255, 0.92)', 'rgba(255, 255, 255, 0.78)'] as const,
-  card: ['rgba(255, 255, 255, 0.88)', 'rgba(255, 255, 255, 0.78)'] as const,
-  cta: ['#D4AF37', '#B8902A'] as const,
+  glass: ['rgba(255, 255, 255, 0.85)', 'rgba(255, 255, 255, 0.65)'] as const,
+  glassElevated: ['rgba(255, 255, 255, 0.94)', 'rgba(255, 255, 255, 0.82)'] as const,
+  card: ['rgba(255, 255, 255, 0.88)', 'rgba(255, 255, 255, 0.72)'] as const,
+  cta: ['#D4AF37', '#F5D77F'] as const,
   cyanGlow: ['#0284C7', '#818CF8'] as const,
+  gaugeLove: ['#F472B6', '#E11D48'] as const,
+  gaugeCareer: ['#D4AF37', '#F5D77F'] as const,
+  gaugeEnergy: ['#38BDF8', '#818CF8'] as const,
 };
 
 export const spacing = {
@@ -108,9 +123,9 @@ export const radius = {
   pill: 999,
 } as const;
 
-// Fonts: Serif for mystic headlines & sans-serif for crisp readings
-const SERIF_FONT = Platform.OS === 'web' ? 'Cinzel, "Cormorant Garamond", Georgia, serif' : undefined;
-const SANS_FONT = Platform.OS === 'web' ? 'Inter, -apple-system, system-ui, sans-serif' : undefined;
+// Fonts: Serif display for mystic headlines & Plus Jakarta Sans / Inter for UI
+const SERIF_FONT = Platform.OS === 'web' ? 'Cinzel, "Cormorant Garamond", Playfair, Georgia, serif' : undefined;
+const SANS_FONT = Platform.OS === 'web' ? '"Plus Jakarta Sans", Inter, -apple-system, system-ui, sans-serif' : undefined;
 
 export const typography = {
   display: {

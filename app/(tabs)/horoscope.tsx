@@ -7,6 +7,8 @@ import { Card } from '../../src/components/Card';
 import { Chip } from '../../src/components/Chip';
 import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { SectionHeader } from '../../src/components/SectionHeader';
+import { DailyHoroscopeHero } from '../../src/components/hero/DailyHoroscopeHero';
+import { EnergyTransitMetrics } from '../../src/components/widgets/EnergyTransitMetrics';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { HoroscopePeriod } from '../../src/types';
 import { RASHIS } from '../../src/data/rashis';
@@ -255,10 +257,23 @@ export default function Horoscope() {
             ))}
           </View>
 
+          {/* 3D Daily Horoscope Hero Card with Embossed Zodiac Sphere */}
+          <View style={{ marginHorizontal: spacing.lg }}>
+            <DailyHoroscopeHero
+              selectedRashi={rashi}
+              onSelectRashi={(newRashi) => setSign(newRashi.index)}
+            />
+          </View>
+
+          {/* Energy & Transit Metrics Widget */}
+          <View style={{ marginHorizontal: spacing.lg }}>
+            <EnergyTransitMetrics />
+          </View>
+
           {/* 🎙️ AI VOICE HOROSCOPE AUDIO READER BANNER */}
           <Pressable onPress={handleToggleVoiceAudio} style={({ pressed }) => [pressed && { opacity: 0.9 }]}>
             <LinearGradient
-              colors={isSpeaking ? ['#D97706', '#B45309'] : ['#0F172A', '#1E293B']}
+              colors={isSpeaking ? ['#D4AF37', '#F5D77F'] : ['rgba(255, 255, 255, 0.9)', 'rgba(255, 255, 255, 0.75)']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={{
@@ -269,10 +284,10 @@ export default function Horoscope() {
                 alignItems: 'center',
                 gap: spacing.md,
                 borderWidth: 1.5,
-                borderColor: isSpeaking ? '#F59E0B' : 'rgba(217,119,6,0.4)',
-                shadowColor: '#D97706',
+                borderColor: isSpeaking ? '#D4AF37' : 'rgba(212, 175, 55, 0.3)',
+                shadowColor: '#D4AF37',
                 shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.4,
+                shadowOpacity: 0.25,
                 shadowRadius: 8,
                 elevation: 4,
               }}
@@ -282,7 +297,9 @@ export default function Horoscope() {
                   width: 44,
                   height: 44,
                   borderRadius: 22,
-                  backgroundColor: 'rgba(255,255,255,0.15)',
+                  backgroundColor: '#FEF3C7',
+                  borderWidth: 1.5,
+                  borderColor: '#FDE68A',
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
@@ -291,25 +308,25 @@ export default function Horoscope() {
               </View>
 
               <View style={{ flex: 1 }}>
-                <Text style={{ ...typography.h3, color: '#FFFFFF', fontSize: 14, fontWeight: '800' }}>
+                <Text style={{ ...typography.h3, color: '#0F172A', fontSize: 14, fontWeight: '800' }}>
                   {isSpeaking ? 'Reading Audio Rashifal…' : `Listen to ${rashi.sanskrit} Voice Audio`}
                 </Text>
-                <Text style={{ ...typography.tiny, color: 'rgba(255,255,255,0.75)', marginTop: 2, fontWeight: '600' }}>
+                <Text style={{ ...typography.tiny, color: '#64748B', marginTop: 2, fontWeight: '600' }}>
                   {isSpeaking ? 'Tap to Pause Speech Engine' : 'AI Voice Reader · 1-Tap Rashifal Synthesis'}
                 </Text>
               </View>
 
               <View
                 style={{
-                  backgroundColor: 'rgba(255,255,255,0.2)',
+                  backgroundColor: isSpeaking ? '#0F172A' : '#FEF3C7',
                   borderRadius: radius.pill,
                   paddingHorizontal: 12,
                   paddingVertical: 6,
                   borderWidth: 1,
-                  borderColor: 'rgba(255,255,255,0.3)',
+                  borderColor: isSpeaking ? '#0F172A' : '#FDE68A',
                 }}
               >
-                <Text style={{ ...typography.tiny, color: '#FFFFFF', fontWeight: '800' }}>
+                <Text style={{ ...typography.tiny, color: isSpeaking ? '#FFFFFF' : '#B45309', fontWeight: '900' }}>
                   {isSpeaking ? 'PAUSE' : 'PLAY ▶'}
                 </Text>
               </View>
@@ -317,7 +334,7 @@ export default function Horoscope() {
           </Pressable>
 
           {/* Main reading card */}
-          <Card>
+          <Card style={{ marginHorizontal: spacing.lg }}>
             <View style={styles.readingHead}>
               <View style={styles.readingGlyphCircle}>
                 <Text style={styles.readingGlyph}>{rashi.glyph}</Text>

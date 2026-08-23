@@ -26,6 +26,8 @@ import { SectionHeader } from '../../src/components/SectionHeader';
 import { AstrologerCard } from '../../src/components/AstrologerCard';
 import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { RashiChakra } from '../../src/components/hero/RashiChakra';
+import { DailyHoroscopeHero } from '../../src/components/hero/DailyHoroscopeHero';
+import { EnergyTransitMetrics } from '../../src/components/widgets/EnergyTransitMetrics';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { useUserStore } from '../../src/store/userStore';
 import { useAuthStore } from '../../src/store/authStore';
@@ -208,6 +210,19 @@ export default function Home() {
                 kundli={kundli}
                 onPress={() => router.push(kundli ? '/(tabs)/kundli' : '/(onboarding)/birth-details')}
               />
+            </View>
+
+            {/* Daily 3D Horoscope Hero Card with Embossed Zodiac Sphere */}
+            <View style={{ className: 'stagger-card' } as any}>
+              <DailyHoroscopeHero
+                selectedRashi={rashi}
+                onSelectRashi={(newRashi) => setRashiIndex(RASHIS.findIndex((r) => r.id === newRashi.id))}
+              />
+            </View>
+
+            {/* Energy & Transit Metrics Widget */}
+            <View style={{ className: 'stagger-card' } as any}>
+              <EnergyTransitMetrics />
             </View>
 
             {/* Daily Cosmic Rewards & Navagraha Chakra Banner */}
