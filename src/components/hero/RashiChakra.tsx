@@ -43,9 +43,9 @@ export function RashiChakra({ kundli, onPress }: Props) {
         pressed && { opacity: 0.92, transform: [{ scale: 0.985 }] },
       ]}
     >
-      {/* Deep Obsidian & Nebula Gradient */}
+      {/* Ultra-Clear Crystal Light Gradient */}
       <LinearGradient
-        colors={['rgba(26, 26, 58, 0.85)', 'rgba(18, 20, 42, 0.92)', 'rgba(11, 13, 23, 0.98)']}
+        colors={['rgba(255, 255, 255, 0.92)', 'rgba(255, 255, 255, 0.82)', 'rgba(254, 249, 240, 0.90)']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={StyleSheet.absoluteFill}
@@ -337,18 +337,18 @@ const styles = StyleSheet.create({
   headline: {
     fontSize: 20,
     fontWeight: '900',
-    color: colors.text,
+    color: '#0F172A',
     letterSpacing: 0.3,
     fontFamily: Platform.OS === 'web' ? 'Cinzel, Georgia, serif' : undefined,
   },
   headlineLight: {
-    color: colors.goldSoft,
+    color: '#B8902A',
     fontWeight: '700',
     fontSize: 16,
   },
   subtext: {
     fontSize: 11.5,
-    color: colors.textMuted,
+    color: '#475569',
     lineHeight: 16,
     fontWeight: '500',
   },
@@ -359,16 +359,16 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   featurePill: {
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    backgroundColor: 'rgba(241, 245, 249, 0.85)',
     paddingHorizontal: 7,
     paddingVertical: 3,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: 'rgba(212, 175, 55, 0.22)',
   },
   featurePillText: {
     fontSize: 9.5,
-    color: colors.text,
+    color: '#334155',
     fontWeight: '700',
   },
 
@@ -383,14 +383,14 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     shadowColor: '#D4AF37',
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.35,
     shadowRadius: 8,
     elevation: 3,
   },
   ctaBtnText: {
     fontSize: 11.5,
     fontWeight: '900',
-    color: '#0B0D17',
+    color: '#0F172A',
     letterSpacing: 0.4,
   },
 });

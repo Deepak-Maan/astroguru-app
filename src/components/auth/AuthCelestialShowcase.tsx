@@ -227,7 +227,7 @@ export function AuthCelestialShowcase({ style }: Props) {
     <View style={[styles.showcaseContainer, style]}>
       {/* Background Gradient */}
       <LinearGradient
-        colors={['#07080F', '#0B0D17', '#121428', '#1A1A3A']}
+        colors={['#FDFBF7', '#F8FAFC', '#F1F5F9', '#EFF6FF']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={StyleSheet.absoluteFill}
@@ -356,7 +356,7 @@ const styles = StyleSheet.create({
     width: 350,
     height: 350,
     borderRadius: 175,
-    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    backgroundColor: 'rgba(212, 175, 55, 0.08)',
     filter: 'blur(85px)' as any,
   },
   nebulaGlowPurple: {
@@ -366,7 +366,7 @@ const styles = StyleSheet.create({
     width: 380,
     height: 380,
     borderRadius: 190,
-    backgroundColor: 'rgba(139, 92, 246, 0.18)',
+    backgroundColor: 'rgba(129, 140, 248, 0.08)',
     filter: 'blur(95px)' as any,
   },
   nebulaGlowCyan: {
@@ -376,7 +376,7 @@ const styles = StyleSheet.create({
     width: 280,
     height: 280,
     borderRadius: 140,
-    backgroundColor: 'rgba(56, 189, 248, 0.10)',
+    backgroundColor: 'rgba(244, 114, 182, 0.06)',
     filter: 'blur(75px)' as any,
   },
 
@@ -391,25 +391,25 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.4)',
+    borderColor: 'rgba(212, 175, 55, 0.35)',
     overflow: 'hidden',
   },
   brandPillText: {
     fontSize: 9,
     fontWeight: '900',
-    color: '#F5D77F',
+    color: '#B8902A',
     letterSpacing: 0.8,
   },
   brandTitle: {
     fontSize: 38,
     fontWeight: '900',
-    color: '#F8FAFC',
+    color: '#0F172A',
     letterSpacing: 0.5,
     fontFamily: Platform.OS === 'web' ? 'Cinzel, Georgia, serif' : undefined,
   },
   brandTagline: {
     fontSize: 13.5,
-    color: '#94A3B8',
+    color: '#475569',
     lineHeight: 20,
     fontWeight: '500',
   },
@@ -425,12 +425,12 @@ const styles = StyleSheet.create({
     gap: 12,
     padding: 12,
     borderRadius: 16,
-    backgroundColor: 'rgba(18, 20, 42, 0.82)',
+    backgroundColor: 'rgba(255, 255, 255, 0.88)',
     borderWidth: 1.5,
-    borderColor: 'rgba(212, 175, 55, 0.28)',
-    shadowColor: '#000000',
+    borderColor: 'rgba(212, 175, 55, 0.22)',
+    shadowColor: '#64748B',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
+    shadowOpacity: 0.1,
     shadowRadius: 12,
     elevation: 3,
     backdropFilter: 'blur(16px)' as any,
@@ -439,9 +439,9 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    backgroundColor: 'rgba(212, 175, 55, 0.12)',
     borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.35)',
+    borderColor: 'rgba(212, 175, 55, 0.3)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -454,17 +454,17 @@ const styles = StyleSheet.create({
   statHeader: {
     fontSize: 8.5,
     fontWeight: '900',
-    color: '#F5D77F',
+    color: '#B8902A',
     letterSpacing: 0.6,
   },
   statValue: {
     fontSize: 12.5,
     fontWeight: '800',
-    color: '#F8FAFC',
+    color: '#0F172A',
   },
   statSub: {
     fontSize: 10.5,
-    color: '#38BDF8',
+    color: '#0284C7',
     fontWeight: '600',
   },
 
@@ -474,12 +474,12 @@ const styles = StyleSheet.create({
     gap: 12,
     padding: 12,
     borderRadius: 16,
-    backgroundColor: 'rgba(26, 26, 58, 0.82)',
+    backgroundColor: 'rgba(255, 255, 255, 0.88)',
     borderWidth: 1.5,
-    borderColor: 'rgba(139, 92, 246, 0.3)',
-    shadowColor: '#000000',
+    borderColor: 'rgba(129, 140, 248, 0.25)',
+    shadowColor: '#64748B',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
+    shadowOpacity: 0.1,
     shadowRadius: 12,
     elevation: 3,
     backdropFilter: 'blur(16px)' as any,
@@ -488,32 +488,32 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+    backgroundColor: 'rgba(129, 140, 248, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   quoteMarkText: {
     fontSize: 18,
-    color: '#A78BFA',
+    color: '#6366F1',
     fontWeight: '900',
     lineHeight: 22,
   },
   sanskritVerse: {
     fontSize: 13,
     fontWeight: '900',
-    color: '#F5D77F',
+    color: '#B8902A',
     letterSpacing: 0.4,
   },
   quoteTranslation: {
     fontSize: 11.5,
-    color: '#E2E8F0',
+    color: '#334155',
     fontStyle: 'italic',
     lineHeight: 16,
     fontWeight: '500',
   },
   quoteSource: {
     fontSize: 9.5,
-    color: '#94A3B8',
+    color: '#64748B',
     fontWeight: '700',
   },
 
@@ -535,12 +535,12 @@ const styles = StyleSheet.create({
   },
   syncText: {
     fontSize: 10,
-    color: '#94A3B8',
+    color: '#64748B',
     fontWeight: '600',
   },
   syncDivider: {
     width: 1,
     height: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: 'rgba(100, 116, 139, 0.2)',
   },
 });

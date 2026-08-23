@@ -49,7 +49,7 @@ export function Chip({ label, selected = false, onPress, style, tone = 'default'
     >
       {selected && (
         <LinearGradient
-          colors={[accent + 'EE', accent + 'CC']}
+          colors={['#D4AF37', '#E6CA65']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={StyleSheet.absoluteFill}
@@ -58,7 +58,7 @@ export function Chip({ label, selected = false, onPress, style, tone = 'default'
       <Text
         style={[
           styles.label,
-          selected && { color: colors.white, fontWeight: '800' },
+          selected && { color: '#0F172A', fontWeight: '900' },
           !selected && tone !== 'default' && { color: accent, fontWeight: '700' },
         ]}
         numberOfLines={1}
@@ -74,7 +74,7 @@ export function Chip({ label, selected = false, onPress, style, tone = 'default'
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
-      style={({ pressed }) => [pressed && { opacity: 0.75 }]}
+      style={({ pressed }) => [pressed && { opacity: 0.85, transform: [{ scale: 0.96 }] }]}
     >
       {container}
     </Pressable>
@@ -84,28 +84,34 @@ export function Chip({ label, selected = false, onPress, style, tone = 'default'
 const styles = StyleSheet.create({
   chip: {
     paddingHorizontal: spacing.md,
-    paddingVertical: 6,
+    paddingVertical: 7,
     borderRadius: radius.pill,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(255, 255, 255, 0.88)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(212, 175, 55, 0.22)',
     overflow: 'hidden',
     alignSelf: 'flex-start',
     flexShrink: 0,
-    backdropFilter: 'blur(8px)' as any,
+    backdropFilter: 'blur(12px)' as any,
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
   },
   chipSelected: {
-    borderColor: 'rgba(212, 175, 55, 0.45)',
+    borderColor: '#D4AF37',
     shadowColor: '#D4AF37',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
     elevation: 4,
   },
   label: {
-    ...typography.tiny,
-    color: '#94A3B8',
+    ...typography.captionBold,
+    color: '#0F172A',
     fontWeight: '700',
+    fontSize: 12.5,
     letterSpacing: 0.3,
   },
 });

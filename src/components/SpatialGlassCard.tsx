@@ -44,18 +44,18 @@ export function SpatialGlassCard({
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
 
-    const rotateX = -((y - centerY) / centerY) * 7.5;
-    const rotateY = ((x - centerX) / centerX) * 7.5;
+    const rotateX = -((y - centerY) / centerY) * 6;
+    const rotateY = ((x - centerX) / centerX) * 6;
 
     setTiltStyle({
-      transform: `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) scale3d(1.015, 1.015, 1.015)`,
+      transform: `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) scale3d(1.012, 1.012, 1.012)`,
       transition: 'transform 0.08s ease-out',
     });
 
     setShinePos({
       x: (x / rect.width) * 100,
       y: (y / rect.height) * 100,
-      opacity: 0.18,
+      opacity: 0.22,
     });
   };
 
@@ -96,6 +96,9 @@ export function SpatialGlassCard({
           pressed && styles.pressed,
         ]}
       >
+        {/* Realistic top-edge specular glass highlight */}
+        <View style={styles.topSpecularEdge} pointerEvents="none" />
+
         {/* Specular Radial Cursor Highlight on Web */}
         {Platform.OS === 'web' && (
           <div
@@ -107,7 +110,7 @@ export function SpatialGlassCard({
               bottom: 0,
               borderRadius: 'inherit',
               pointerEvents: 'none',
-              background: `radial-gradient(circle at ${shinePos.x}% ${shinePos.y}%, rgba(212, 175, 55, ${shinePos.opacity}), transparent 65%)`,
+              background: `radial-gradient(circle at ${shinePos.x}% ${shinePos.y}%, rgba(212, 175, 55, ${shinePos.opacity}), transparent 60%)`,
               transition: 'opacity 0.25s ease',
               zIndex: 1,
             }}
@@ -125,6 +128,9 @@ export function SpatialGlassCard({
       onMouseLeave={handleMouseLeave as any}
       style={[...containerStyle, tiltStyle as any]}
     >
+      {/* Realistic top-edge specular glass highlight */}
+      <View style={styles.topSpecularEdge} pointerEvents="none" />
+
       {Platform.OS === 'web' && (
         <div
           style={{
@@ -135,7 +141,7 @@ export function SpatialGlassCard({
             bottom: 0,
             borderRadius: 'inherit',
             pointerEvents: 'none',
-            background: `radial-gradient(circle at ${shinePos.x}% ${shinePos.y}%, rgba(212, 175, 55, ${shinePos.opacity}), transparent 65%)`,
+            background: `radial-gradient(circle at ${shinePos.x}% ${shinePos.y}%, rgba(212, 175, 55, ${shinePos.opacity}), transparent 60%)`,
             transition: 'opacity 0.25s ease',
             zIndex: 1,
           }}
@@ -148,46 +154,55 @@ export function SpatialGlassCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: 'rgba(18, 20, 42, 0.78)',
+    backgroundColor: 'rgba(255, 255, 255, 0.82)',
     borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.65,
-    shadowRadius: 20,
-    elevation: 6,
+    borderColor: 'rgba(212, 175, 55, 0.18)',
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.10,
+    shadowRadius: 28,
+    elevation: 4,
     overflow: 'hidden',
     position: 'relative',
-    backdropFilter: 'blur(16px)' as any,
+    backdropFilter: 'blur(20px) saturate(180%)' as any,
     willChange: 'transform' as any,
   },
+  topSpecularEdge: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 1.5,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    zIndex: 2,
+  },
   cardBorderGold: {
-    borderColor: 'rgba(212, 175, 55, 0.28)',
+    borderColor: 'rgba(212, 175, 55, 0.38)',
   },
   cardGlow: {
-    borderColor: 'rgba(212, 175, 55, 0.45)',
+    borderColor: '#D4AF37',
     shadowColor: 'rgba(212, 175, 55, 0.35)',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.6,
-    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.30,
+    shadowRadius: 18,
   },
   cardElevated: {
-    backgroundColor: 'rgba(26, 26, 58, 0.85)',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.8,
-    shadowRadius: 24,
-    elevation: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.14,
+    shadowRadius: 32,
+    elevation: 8,
   },
   inner: {
     flex: 1,
-    zIndex: 2,
+    zIndex: 3,
   },
   padded: {
     padding: spacing.lg,
   },
   pressed: {
-    opacity: 0.9,
+    opacity: 0.92,
     transform: [{ scale: 0.985 }],
   },
 });

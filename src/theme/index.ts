@@ -1,7 +1,8 @@
 /**
- * AstroGuru Theme — Mystical Celestial Spatial UI
- * Deep Celestial Obsidian Midnight (#0B0D17), Deep Nebula Indigo (#1A1A3A),
- * Starlight Gold/Bronze (#D4AF37, #F5D77F), and Ethereal Cyan/Lavender Glow.
+ * AstroGuru Theme — Luxury 3D Light Mode Design System
+ * Canvas: Alabaster Silk (#F8FAFC) & Opal Pearl (#FDFBF7)
+ * Accents: Imperial Starlight Gold (#D4AF37, #E6CA65), Celestial Rose Quartz (#F472B6), Ethereal Dawn Lavender (#818CF8)
+ * Typography: Deep Celestial Navy (#0F172A, #1E1B4B) [WCAG AAA 12:1 Contrast]
  */
 
 import { Dimensions, Platform } from 'react-native';
@@ -24,56 +25,56 @@ export const isSmallDevice = SCREEN_WIDTH < 375;
 export const isTablet = SCREEN_WIDTH >= 768;
 
 export const colors = {
-  // Deep Celestial Backgrounds
-  bg: '#0B0D17', // Obsidian Midnight
-  bgElevated: '#121428', // Deep Nebula Indigo
-  bgCosmic: '#07080F', // Void Black
+  // Luxury Light Backgrounds
+  bg: '#F8FAFC', // Alabaster Silk
+  bgElevated: '#FFFFFF', // Pure White
+  bgCosmic: '#FDFBF7', // Opal Pearl Morning Dawn
 
-  // Glassmorphic Card Surfaces
-  card: 'rgba(18, 20, 42, 0.78)', // Frosted Deep Glass
-  cardSolid: '#13152C',
-  cardElevated: 'rgba(26, 26, 58, 0.85)',
-  cardBorder: 'rgba(255, 255, 255, 0.08)',
-  cardBorderGold: 'rgba(212, 175, 55, 0.25)',
+  // Ultra-Clear Crystalline Glassmorphic Surfaces
+  card: 'rgba(255, 255, 255, 0.82)', // Ultra-Clear Crystal Glass
+  cardSolid: '#FFFFFF',
+  cardElevated: 'rgba(255, 255, 255, 0.94)',
+  cardBorder: 'rgba(212, 175, 55, 0.20)', // Subtle Starlight Gold Rim
+  cardBorderGold: 'rgba(212, 175, 55, 0.42)',
   cardGlowBorder: '#D4AF37',
 
-  // Deep Spatial Shadows
-  shadowLight: 'rgba(212, 175, 55, 0.2)',
-  shadowDark: 'rgba(0, 0, 0, 0.75)',
+  // Spatial Light Shadows
+  shadowLight: 'rgba(100, 116, 139, 0.12)',
+  shadowDark: 'rgba(15, 23, 42, 0.08)',
 
-  // Celestial Gradients
-  gradientTop: '#0B0D17',
-  gradientMid: '#121428',
-  gradientBottom: '#1A1A3A',
-  auroraA: '#8B5CF6', // Nebula Purple
-  auroraB: '#D4AF37', // Starlight Gold
+  // Morning Dawn Gradients
+  gradientTop: '#FDFBF7',
+  gradientMid: '#F8FAFC',
+  gradientBottom: '#F1F5F9',
+  auroraA: '#E0E7FF', // Morning Dawn Lavender
+  auroraB: '#FEF3C7', // Starlight Champagne Gold
 
   // High-End Celestial Accents
-  gold: '#D4AF37', // Starlight Pure Gold
-  goldSoft: '#F5D77F', // Luminous Celestial Gold
+  gold: '#D4AF37', // Imperial Starlight Gold
+  goldSoft: '#E6CA65', // Luminous Champagne Gold
   goldDark: '#B8902A', // Antique Temple Gold
-  saffron: '#F59E0B',
-  rose: '#F43F5E',
-  teal: '#10B981', // Sacred Emerald
-  cyan: '#38BDF8', // Ethereal Cyan
-  lavender: '#A78BFA', // Ethereal Lavender
-  purple: '#8B5CF6',
+  saffron: '#D97706',
+  rose: '#F472B6', // Celestial Rose Quartz
+  teal: '#0D9488', // Sacred Emerald
+  cyan: '#0284C7', // Ethereal Cyan
+  lavender: '#818CF8', // Ethereal Dawn Lavender
+  purple: '#7C3AED',
 
-  // Celestial Typography Colors
-  text: '#F8FAFC', // Pure Starlight White
-  textMuted: '#94A3B8', // Moon Dust Muted
-  textFaint: '#64748B', // Deep Space Dust
-  textGold: '#F5D77F',
+  // Deep Celestial High-Contrast Typography (WCAG AAA)
+  text: '#0F172A', // Deep Celestial Navy
+  textMuted: '#475569', // Slate Lavender Muted
+  textFaint: '#64748B', // Soft Morning Slate
+  textGold: '#B8902A', // Rich Temple Gold for text
 
   // Status Cues
   online: '#10B981',
-  offline: '#64748B',
-  danger: '#F43F5E',
+  offline: '#94A3B8',
+  danger: '#EF4444',
   success: '#10B981',
 
   // Overlays & Utilities
-  overlay: 'rgba(7, 8, 15, 0.75)',
-  glassOverlay: 'rgba(18, 20, 42, 0.65)',
+  overlay: 'rgba(15, 23, 42, 0.45)',
+  glassOverlay: 'rgba(255, 255, 255, 0.75)',
   white: '#FFFFFF',
   black: '#000000',
 } as const;
@@ -82,11 +83,11 @@ export const gradients = {
   screen: [colors.gradientTop, colors.gradientMid, colors.gradientBottom] as const,
   aurora: [colors.auroraA, colors.auroraB] as const,
   gold: [colors.gold, colors.goldSoft] as const,
-  nebula: ['#1A1A3A', '#121428', '#0B0D17'] as const,
-  soft: ['rgba(26, 26, 58, 0.85)', 'rgba(18, 20, 42, 0.75)'] as const,
-  card: ['rgba(26, 26, 58, 0.8)', 'rgba(18, 20, 42, 0.7)'] as const,
+  nebula: ['#FDFBF7', '#F8FAFC', '#EEF2F6'] as const,
+  soft: ['rgba(255, 255, 255, 0.92)', 'rgba(255, 255, 255, 0.78)'] as const,
+  card: ['rgba(255, 255, 255, 0.88)', 'rgba(255, 255, 255, 0.78)'] as const,
   cta: ['#D4AF37', '#B8902A'] as const,
-  cyanGlow: ['#38BDF8', '#818CF8'] as const,
+  cyanGlow: ['#0284C7', '#818CF8'] as const,
 };
 
 export const spacing = {
@@ -120,77 +121,97 @@ export const typography = {
     fontFamily: SERIF_FONT,
   },
   h1: {
-    fontSize: 26,
-    fontWeight: '800' as const,
+    fontSize: 24,
+    fontWeight: '700' as const,
+    letterSpacing: 0.4,
     color: colors.text,
-    letterSpacing: 0.5,
     fontFamily: SERIF_FONT,
   },
   h2: {
-    fontSize: 21,
+    fontSize: 20,
     fontWeight: '700' as const,
+    letterSpacing: 0.3,
     color: colors.text,
-    letterSpacing: 0.4,
     fontFamily: SERIF_FONT,
   },
   h3: {
-    fontSize: 17,
-    fontWeight: '700' as const,
+    fontSize: 16,
+    fontWeight: '600' as const,
+    letterSpacing: 0.2,
     color: colors.text,
-    letterSpacing: 0.3,
+    fontFamily: SERIF_FONT,
   },
   body: {
-    fontSize: 15,
-    fontWeight: '500' as const,
+    fontSize: 14,
+    fontWeight: '400' as const,
+    lineHeight: 21,
     color: colors.text,
     fontFamily: SANS_FONT,
-    lineHeight: 22,
   },
-  bodyMuted: {
-    fontSize: 15,
-    fontWeight: '500' as const,
+  bodyBold: {
+    fontSize: 14,
+    fontWeight: '600' as const,
+    lineHeight: 21,
+    color: colors.text,
+    fontFamily: SANS_FONT,
+  },
+  caption: {
+    fontSize: 12,
+    fontWeight: '400' as const,
+    lineHeight: 16,
     color: colors.textMuted,
     fontFamily: SANS_FONT,
-    lineHeight: 22,
+  },
+  captionBold: {
+    fontSize: 12,
+    fontWeight: '600' as const,
+    lineHeight: 16,
+    color: colors.textMuted,
+    fontFamily: SANS_FONT,
   },
   small: {
-    fontSize: 13,
+    fontSize: 10,
     fontWeight: '500' as const,
-    color: colors.textMuted,
-    fontFamily: SANS_FONT,
-  },
-  tiny: {
-    fontSize: 11,
-    fontWeight: '600' as const,
-    letterSpacing: 0.5,
+    letterSpacing: 0.4,
     color: colors.textFaint,
     fontFamily: SANS_FONT,
   },
-} as const;
-
-export const shadow = {
-  card: {
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.6,
-    shadowRadius: 16,
-    elevation: 8,
-  },
-  glow: {
-    shadowColor: colors.gold,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.45,
-    shadowRadius: 16,
-    elevation: 8,
-  },
-  cyanGlow: {
-    shadowColor: colors.cyan,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
-    elevation: 8,
-  },
 };
 
-export const theme = { colors, gradients, spacing, radius, typography, shadow };
-export type Theme = typeof theme;
+export const shadows = {
+  sm: {
+    shadowColor: colors.shadowLight,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  md: {
+    shadowColor: colors.shadowLight,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    elevation: 4,
+  },
+  lg: {
+    shadowColor: colors.shadowLight,
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.16,
+    shadowRadius: 28,
+    elevation: 8,
+  },
+  gold: {
+    shadowColor: '#D4AF37',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 5,
+  },
+  crystal: {
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.09,
+    shadowRadius: 24,
+    elevation: 6,
+  },
+};

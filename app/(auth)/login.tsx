@@ -400,7 +400,7 @@ export default function LoginScreen() {
     <View style={styles.rootContainer}>
       {/* Background Cosmic Gradient */}
       <LinearGradient
-        colors={['#07080F', '#0B0D17', '#121428']}
+        colors={['#FDFBF7', '#F8FAFC', '#EFF6FF']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={StyleSheet.absoluteFill}
@@ -943,7 +943,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: '100%',
     maxHeight: '100%',
-    backgroundColor: '#07080F',
+    backgroundColor: '#F8FAFC',
     overflow: 'hidden',
   },
   safeArea: {
@@ -991,20 +991,20 @@ const styles = StyleSheet.create({
   glassCard: {
     width: '100%',
     maxWidth: 470,
-    backgroundColor: 'rgba(18, 20, 42, 0.88)',
+    backgroundColor: 'rgba(255, 255, 255, 0.90)',
     borderRadius: 22,
     padding: 20,
     borderWidth: 1.5,
     borderColor: 'rgba(212, 175, 55, 0.25)',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.75,
-    shadowRadius: 20,
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.12,
+    shadowRadius: 24,
     elevation: 8,
     overflow: 'hidden',
     position: 'relative',
     gap: 12,
-    backdropFilter: 'blur(16px)' as any,
+    backdropFilter: 'blur(20px) saturate(180%)' as any,
   },
   specularEdge: {
     position: 'absolute',
@@ -1012,17 +1012,17 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 1.5,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
   },
 
   /* Main Tab Bar */
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(7, 8, 15, 0.6)',
+    backgroundColor: 'rgba(241, 245, 249, 0.85)',
     borderRadius: radius.pill,
     padding: 3.5,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: 'rgba(212, 175, 55, 0.22)',
   },
   tabBtn: {
     flex: 1,
@@ -1042,10 +1042,10 @@ const styles = StyleSheet.create({
   tabBtnText: {
     fontSize: 12.5,
     fontWeight: '700',
-    color: '#94A3B8',
+    color: '#64748B',
   },
   tabBtnTextActive: {
-    color: '#07080F',
+    color: '#0F172A',
     fontWeight: '900',
   },
 
@@ -1056,13 +1056,13 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 21,
     fontWeight: '900',
-    color: '#F8FAFC',
+    color: '#0F172A',
     letterSpacing: 0.3,
     fontFamily: Platform.OS === 'web' ? 'Cinzel, Georgia, serif' : undefined,
   },
   cardSubtitle: {
     fontSize: 12.5,
-    color: '#94A3B8',
+    color: '#64748B',
     lineHeight: 17,
     fontWeight: '500',
   },
@@ -1080,14 +1080,19 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingVertical: 9,
     borderRadius: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(212, 175, 55, 0.22)',
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
   },
   socialBtnText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#F8FAFC',
+    color: '#0F172A',
   },
 
   /* Divider */
@@ -1099,7 +1104,7 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(212, 175, 55, 0.18)',
   },
   dividerText: {
     fontSize: 9,
@@ -1111,11 +1116,11 @@ const styles = StyleSheet.create({
   /* Sub Tab */
   subTabRow: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    backgroundColor: 'rgba(241, 245, 249, 0.85)',
     borderRadius: radius.sm,
     padding: 2.5,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    borderColor: 'rgba(212, 175, 55, 0.15)',
   },
   subTabBtn: {
     flex: 1,
@@ -1125,17 +1130,21 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   subTabBtnActive: {
-    backgroundColor: 'rgba(212, 175, 55, 0.18)',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: 'rgba(212, 175, 55, 0.35)',
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
   },
   subTabBtnText: {
     fontSize: 11.5,
     fontWeight: '700',
-    color: '#94A3B8',
+    color: '#64748B',
   },
   subTabBtnTextActive: {
-    color: '#F5D77F',
+    color: '#B8902A',
     fontWeight: '800',
   },
 
@@ -1146,7 +1155,7 @@ const styles = StyleSheet.create({
     gap: 6,
     padding: 8,
     borderRadius: 8,
-    backgroundColor: 'rgba(244, 63, 94, 0.12)',
+    backgroundColor: 'rgba(244, 63, 94, 0.10)',
     borderWidth: 1,
     borderColor: 'rgba(244, 63, 94, 0.35)',
   },
@@ -1154,7 +1163,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 11,
     fontWeight: '700',
-    color: '#FB7185',
+    color: '#E11D48',
   },
   infoBanner: {
     flexDirection: 'row',
@@ -1162,15 +1171,15 @@ const styles = StyleSheet.create({
     gap: 6,
     padding: 8,
     borderRadius: 8,
-    backgroundColor: 'rgba(56, 189, 248, 0.12)',
+    backgroundColor: 'rgba(2, 132, 199, 0.10)',
     borderWidth: 1,
-    borderColor: 'rgba(56, 189, 248, 0.35)',
+    borderColor: 'rgba(2, 132, 199, 0.35)',
   },
   infoBannerText: {
     flex: 1,
     fontSize: 11,
     fontWeight: '700',
-    color: '#38BDF8',
+    color: '#0284C7',
   },
 
   /* Form Fields */
@@ -1183,7 +1192,7 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 9.5,
     fontWeight: '800',
-    color: '#94A3B8',
+    color: '#475569',
     letterSpacing: 0.6,
   },
   otpLabelRow: {
@@ -1194,7 +1203,7 @@ const styles = StyleSheet.create({
   debugOtpLink: {
     fontSize: 10,
     fontWeight: '800',
-    color: '#F5D77F',
+    color: '#B8902A',
     textDecorationLine: 'underline',
   },
   strengthLabel: {
@@ -1207,17 +1216,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     height: 42,
     borderRadius: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(212, 175, 55, 0.25)',
     gap: 8,
   },
   inputWrapperFocused: {
     borderColor: '#D4AF37',
-    backgroundColor: 'rgba(212, 175, 55, 0.06)',
+    backgroundColor: '#FFFFFF',
     shadowColor: '#D4AF37',
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.3,
     shadowRadius: 6,
   },
   inputIcon: {
@@ -1226,12 +1235,12 @@ const styles = StyleSheet.create({
   phonePrefix: {
     fontSize: 13,
     fontWeight: '800',
-    color: '#F5D77F',
+    color: '#B8902A',
   },
   textInput: {
     flex: 1,
     fontSize: 13.5,
-    color: '#F8FAFC',
+    color: '#0F172A',
     fontWeight: '600',
     paddingVertical: 0,
     outlineStyle: 'none' as any,
@@ -1240,7 +1249,7 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
     borderWidth: 1,
     borderColor: '#10B981',
     alignItems: 'center',
@@ -1249,12 +1258,12 @@ const styles = StyleSheet.create({
   validCheckText: {
     fontSize: 11,
     fontWeight: '900',
-    color: '#34D399',
+    color: '#059669',
   },
   strengthBarContainer: {
     height: 3,
     borderRadius: 1.5,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(100, 116, 139, 0.15)',
     marginTop: 3,
     overflow: 'hidden',
   },
@@ -1273,21 +1282,21 @@ const styles = StyleSheet.create({
     marginTop: 3,
     shadowColor: '#D4AF37',
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.35,
     shadowRadius: 8,
     elevation: 3,
   },
   submitBtnText: {
     fontSize: 13.5,
     fontWeight: '900',
-    color: '#07080F',
+    color: '#0F172A',
     letterSpacing: 0.4,
   },
 
   /* Demo Switcher */
   demoSection: {
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.08)',
+    borderTopColor: 'rgba(212, 175, 55, 0.18)',
     paddingTop: 10,
     gap: 6,
   },
@@ -1310,9 +1319,13 @@ const styles = StyleSheet.create({
     gap: 5,
     paddingVertical: 6,
     borderRadius: 9,
-    backgroundColor: 'rgba(212, 175, 55, 0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(212, 175, 55, 0.32)',
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
   },
   demoRoleIcon: {
     fontSize: 12,
@@ -1320,6 +1333,6 @@ const styles = StyleSheet.create({
   demoRoleLabel: {
     fontSize: 11,
     fontWeight: '800',
-    color: '#F5D77F',
+    color: '#B8902A',
   },
 });

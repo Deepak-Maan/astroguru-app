@@ -87,8 +87,8 @@ export function Button({
         <LinearGradient
           colors={
             variant === 'gold'
-              ? [colors.gold, '#B8902A', colors.goldSoft]
-              : [colors.purple, '#6D28D9', '#4C1D95']
+              ? ['#D4AF37', '#E6CA65', '#B8902A']
+              : ['#D4AF37', '#E6CA65']
           }
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
@@ -106,11 +106,11 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     overflow: 'hidden',
     justifyContent: 'center',
-    shadowColor: '#000000',
+    shadowColor: '#D4AF37',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
+    shadowOpacity: 0.25,
     shadowRadius: 10,
-    elevation: 4,
+    elevation: 3,
   },
   gradient: { flex: 1, justifyContent: 'center' },
   inner: {
@@ -120,19 +120,21 @@ const styles = StyleSheet.create({
     gap: spacing.xs + 2,
     paddingHorizontal: spacing.lg,
   },
-  label: { ...typography.h3, color: colors.white, fontWeight: '800' },
+  label: { ...typography.h3, color: '#0F172A', fontWeight: '900', letterSpacing: 0.2 },
   outline: {
     borderWidth: 1.5,
     borderColor: 'rgba(212, 175, 55, 0.35)',
-    backgroundColor: 'rgba(18, 20, 42, 0.85)',
-    backdropFilter: 'blur(8px)' as any,
+    backgroundColor: 'rgba(255, 255, 255, 0.88)',
+    backdropFilter: 'blur(12px)' as any,
+    shadowColor: '#64748B',
+    shadowOpacity: 0.08,
   },
   ghost: { backgroundColor: 'transparent', elevation: 0, shadowOpacity: 0 },
   danger: {
     borderWidth: 1,
-    borderColor: 'rgba(244, 63, 94, 0.4)',
-    backgroundColor: 'rgba(244, 63, 94, 0.12)',
+    borderColor: 'rgba(239, 68, 68, 0.35)',
+    backgroundColor: 'rgba(239, 68, 68, 0.10)',
   },
-  pressed: { opacity: 0.88, transform: [{ scale: 0.98 }] },
+  pressed: { opacity: 0.90, transform: [{ scale: 0.985 }] },
   disabled: { opacity: 0.45 },
 });

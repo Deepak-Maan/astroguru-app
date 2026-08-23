@@ -195,7 +195,7 @@ export default function Consult() {
               >
                 {active && (
                   <LinearGradient
-                    colors={['#059669', '#047857']}
+                    colors={['#D4AF37', '#E6CA65']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={StyleSheet.absoluteFill}
@@ -227,7 +227,7 @@ export default function Consult() {
               >
                 {active && (
                   <LinearGradient
-                    colors={['#0F172A', '#1E1B4B']}
+                    colors={['#D4AF37', '#E6CA65']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={StyleSheet.absoluteFill}
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
   searchIcon: { fontSize: 16 },
   searchInput: {
     flex: 1,
-    color: '#1E1B4B',
+    color: '#0F172A',
     fontSize: 13.5,
     paddingVertical: 0,
     fontWeight: '700',
@@ -347,14 +347,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 18,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255, 255, 255, 0.88)',
     borderWidth: 1.5,
-    borderColor: 'rgba(226, 232, 240, 0.9)',
-    shadowColor: '#CBD5E1',
+    borderColor: 'rgba(212, 175, 55, 0.22)',
+    shadowColor: '#64748B',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.08,
     shadowRadius: 6,
     elevation: 2,
+    backdropFilter: 'blur(12px)' as any,
   },
   beaconWrap: {
     width: 20,
@@ -374,15 +375,15 @@ const styles = StyleSheet.create({
     width: 9,
     height: 9,
     borderRadius: 4.5,
-    backgroundColor: '#059669',
+    backgroundColor: '#0D9488',
   },
   onlineTitle: {
     fontSize: 12.5,
-    color: '#1E1B4B',
+    color: '#0F172A',
     fontWeight: '800',
   },
   onlineCount: {
-    color: '#059669',
+    color: '#0D9488',
     fontWeight: '900',
   },
   onlineSubtitle: {
@@ -402,7 +403,7 @@ const styles = StyleSheet.create({
   secureBadgeText: {
     fontSize: 9.5,
     fontWeight: '900',
-    color: '#047857',
+    color: '#0D9488',
   },
 
   /* Filter Chips */
@@ -419,31 +420,32 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderRadius: radius.pill,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255, 255, 255, 0.88)',
     borderWidth: 1.5,
-    borderColor: 'rgba(226, 232, 240, 0.9)',
+    borderColor: 'rgba(212, 175, 55, 0.22)',
     overflow: 'hidden',
-    shadowColor: '#CBD5E1',
+    shadowColor: '#64748B',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.08,
     shadowRadius: 4,
     elevation: 2,
+    backdropFilter: 'blur(10px)' as any,
   },
   filterChipActive: {
     borderColor: 'transparent',
-    shadowColor: '#059669',
+    shadowColor: '#D4AF37',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.35,
     shadowRadius: 6,
     elevation: 3,
   },
   filterChipText: {
-    color: '#475569',
+    color: '#0F172A',
     fontWeight: '800',
     fontSize: 12,
   },
   filterChipTextActive: {
-    color: '#FFFFFF',
+    color: '#0F172A',
     fontWeight: '900',
   },
 
@@ -464,11 +466,11 @@ const styles = StyleSheet.create({
   sortPills: {
     flexDirection: 'row',
     gap: 4,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: 'rgba(241, 245, 249, 0.85)',
     borderRadius: radius.pill,
     padding: 3,
     borderWidth: 1.5,
-    borderColor: 'rgba(226, 232, 240, 0.9)',
+    borderColor: 'rgba(212, 175, 55, 0.18)',
   },
   sortPill: {
     paddingVertical: 5,
@@ -477,9 +479,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   sortPillActive: {
-    shadowColor: '#0F172A',
+    shadowColor: '#D4AF37',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 2,
   },
@@ -489,7 +491,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
   },
   sortPillTextActive: {
-    color: '#FFFFFF',
+    color: '#0F172A',
     fontWeight: '900',
   },
 
@@ -502,7 +504,7 @@ const styles = StyleSheet.create({
   },
   note: {
     fontSize: 11,
-    color: '#94A3B8',
+    color: '#64748B',
     textAlign: 'center',
     marginTop: spacing.md,
     fontWeight: '600',

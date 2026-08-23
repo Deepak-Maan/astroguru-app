@@ -286,14 +286,14 @@ const styles = StyleSheet.create({
 
   /* ── Full Astrologer Card ── */
   card: {
-    backgroundColor: 'rgba(18, 20, 42, 0.85)',
+    backgroundColor: 'rgba(255, 255, 255, 0.88)',
     borderRadius: 20,
     padding: 14,
     borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    shadowColor: '#000000',
+    borderColor: 'rgba(212, 175, 55, 0.22)',
+    shadowColor: '#64748B',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.6,
+    shadowOpacity: 0.1,
     shadowRadius: 16,
     elevation: 4,
     gap: 10,
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 15,
     fontWeight: '900',
-    color: '#F8FAFC',
+    color: '#0F172A',
     flex: 1,
     letterSpacing: 0.2,
   },
@@ -419,17 +419,17 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   specChip: {
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    backgroundColor: 'rgba(241, 245, 249, 0.85)',
     paddingHorizontal: 9,
     paddingVertical: 4,
     borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: 'rgba(212, 175, 55, 0.20)',
   },
   specChipText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#E2E8F0',
+    color: '#334155',
   },
   metaRow: {
     flexDirection: 'row',
@@ -439,7 +439,7 @@ const styles = StyleSheet.create({
   },
   metaText: {
     fontSize: 11,
-    color: '#94A3B8',
+    color: '#64748B',
     fontWeight: '600',
     flex: 1,
   },
@@ -447,9 +447,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    backgroundColor: 'rgba(241, 245, 249, 0.85)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: 'rgba(212, 175, 55, 0.20)',
     paddingHorizontal: 8,
     paddingVertical: 3.5,
     borderRadius: radius.pill,
@@ -461,7 +461,7 @@ const styles = StyleSheet.create({
   audioIntroText: {
     fontSize: 10,
     fontWeight: '800',
-    color: '#94A3B8',
+    color: '#475569',
   },
   waveformBars: {
     flexDirection: 'row',
@@ -475,7 +475,7 @@ const styles = StyleSheet.create({
   },
   cardDivider: {
     height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(212, 175, 55, 0.12)',
   },
   cardFooter: {
     flexDirection: 'row',
@@ -494,32 +494,32 @@ const styles = StyleSheet.create({
   priceCurrent: {
     fontSize: 17,
     fontWeight: '900',
-    color: '#F8FAFC',
+    color: '#0F172A',
   },
   priceOriginal: {
     fontSize: 12,
-    color: '#64748B',
+    color: '#94A3B8',
     textDecorationLine: 'line-through',
     fontWeight: '600',
   },
   perMin: {
     fontSize: 11,
-    color: '#94A3B8',
+    color: '#64748B',
     fontWeight: '700',
   },
   offerBadge: {
-    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    backgroundColor: '#FEF3C7',
     paddingHorizontal: 5,
     paddingVertical: 1.5,
     borderRadius: 4,
     alignSelf: 'flex-start',
     borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.3)',
+    borderColor: '#FDE68A',
   },
   offerBadgeText: {
     fontSize: 8.5,
     fontWeight: '900',
-    color: '#F5D77F',
+    color: '#B45309',
     letterSpacing: 0.3,
   },
   actionButtonsRow: {
@@ -539,7 +539,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   consultBtnText: {
-    color: '#0B0D17',
+    color: '#0F172A',
     fontSize: 12.5,
     fontWeight: '900',
   },
