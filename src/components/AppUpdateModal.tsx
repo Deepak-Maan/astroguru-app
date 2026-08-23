@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
-import { Alert, Linking, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import { Linking, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, radius, spacing, typography } from '../theme';
 import { Button } from './Button';
 import { useUpdateStore } from '../store/updateStore';
-import { downloadAndInstallApk, launchNativeInstaller } from '../services/apkInstallerService';
 import { LIVE_DIRECT_APK_URL } from '../services/updates/inAppUpdateEngine';
 
 export function AppUpdateModal() {
@@ -20,69 +19,19 @@ export function AppUpdateModal() {
     speedKbps,
     isDownloading,
     isReadyToInstall,
-    updateType,
     downloadUrl,
     startDownload,
     installUpdate,
-    downloadDirectApk,
     dismissUpdate,
   } = useUpdateStore();
-
-  const [isApkDownloading, setIsApkDownloading] = useState(false);
-  const [apkProgress, setApkProgress] = useState(0);
-  const [downloadedApkUri, setDownloadedApkUri] = useState<string | null>(null);
 
   if (Platform.OS === 'web' || !updateAvailable) return null;
 
   const targetApkUrl = downloadUrl || LIVE_DIRECT_APK_URL;
 
-  const handleInAppApkInstall = async () => {
-    setIsApkDownloading(true);
-    setApkProgress(10);
-    setDownloadedApkUri(null);
-
-    try {
-      const res = await downloadAndInstallApk(targetApkUrl, (pct) => {
-        setApkProgress(pct);
-      });
-
-      setIsApkDownloading(false);
-      if (res.fileUri) {
-        setDownloadedApkUri(res.fileUri);
-      }
-
-      if (!res.success && res.error) {
-        Alert.alert(
-          'APK Ready to Install',
-          'Download complete. Tap "Open & Install APK" below, or download directly via browser.',
-          [
-            {
-              text: 'Open in Browser',
-              onPress: () => Linking.openURL(targetApkUrl),
-            },
-            {
-              text: 'OK',
-              style: 'cancel',
-            },
-          ]
-        );
-      }
-    } catch (e) {
-      setIsApkDownloading(false);
-      await Linking.openURL(targetApkUrl);
-    }
-  };
-
-  const handleLaunchPackageInstaller = async () => {
-    try {
-      if (downloadedApkUri) {
-        await launchNativeInstaller(downloadedApkUri, targetApkUrl);
-      } else {
-        await downloadAndInstallApk(targetApkUrl);
-      }
-    } catch (_) {
-      await Linking.openURL(targetApkUrl);
-    }
+  const formatBytes = (bytes: number) => {
+    if (!bytes || bytes <= 0) return '0 MB';
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
   return (
@@ -93,16 +42,16 @@ export function AppUpdateModal() {
             {/* Header Banner */}
             <View style={styles.header}>
               <LinearGradient
-                colors={['#D97706', '#E67E22']}
+                colors={['#D97706', '#E67E22', '#B45309']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={StyleSheet.absoluteFill}
               />
               <View style={styles.badgePill}>
-                <Text style={styles.badgeText}>✨ NEW VERSION v{latestVersion} READY</Text>
+                <Text style={styles.badgeText}>✨ NEW UPDATE READY</Text>
               </View>
               <Text style={{ fontSize: 36, marginVertical: 2 }}>🚀</Text>
-              <Text style={styles.headerTitle}>In-App App Installer</Text>
+              <Text style={styles.headerTitle}>AstroGuru Update Available</Text>
               <View style={styles.versionBadge}>
                 <Text style={styles.versionText}>
                   Current: v{currentVersion} ➔ <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>New: v{latestVersion}</Text>
@@ -112,10 +61,11 @@ export function AppUpdateModal() {
 
             {/* Release Notes */}
             <View style={styles.notesContainer}>
-              <Text style={styles.notesHeader}>🎁 What's New in Version {latestVersion}:</Text>
+              <Text style={styles.notesHeader}>🎁 What's New in v{latestVersion}:</Text>
               <ScrollView style={{ maxHeight: 150 }} contentContainerStyle={{ gap: 8 }} showsVerticalScrollIndicator={false}>
                 {releaseNotes.map((note, index) => (
                   <View key={index} style={styles.noteItem}>
+                    <Text style={styles.noteBullet}>•</Text>
                     <Text style={styles.noteText}>{note}</Text>
                   </View>
                 ))}
@@ -123,91 +73,96 @@ export function AppUpdateModal() {
             </View>
 
             {/* Download Progress Bar */}
-            {(isDownloading || isApkDownloading) && (
+            {isDownloading && (
               <View style={styles.progressBox}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Text style={styles.progressLabel}>
-                    {isApkDownloading
-                      ? '📥 Downloading APK Package…'
-                      : '⚡ Fetching Update Bundle…'}
+                    📥 Downloading APK from GitHub…
                   </Text>
                   <Text style={styles.progressPct}>
-                    {isApkDownloading ? apkProgress : downloadProgress}%
+                    {downloadProgress}%
                   </Text>
                 </View>
                 <View style={styles.track}>
                   <View
                     style={[
                       styles.bar,
-                      { width: `${isApkDownloading ? apkProgress : downloadProgress}%` },
+                      { width: `${downloadProgress}%` },
                     ]}
                   />
                 </View>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 }}>
+                  <Text style={styles.speedText}>
+                    {totalBytes > 0 ? `${formatBytes(downloadedBytes)} / ${formatBytes(totalBytes)}` : `${downloadProgress}% downloaded`}
+                  </Text>
+                  {speedKbps > 0 && (
+                    <Text style={styles.speedText}>
+                      ⚡ {(speedKbps / 1024).toFixed(1)} MB/s
+                    </Text>
+                  )}
+                </View>
+              </View>
+            )}
+
+            {/* Ready to Install Notification */}
+            {isReadyToInstall && !isDownloading && (
+              <View style={styles.readyCard}>
+                <Text style={styles.readyText}>
+                  ✅ APK Download Complete! Tap below to install seamlessly.
+                </Text>
               </View>
             )}
 
             {/* Actions */}
             <View style={styles.actionColumn}>
-              {isApkDownloading ? (
+              {isDownloading ? (
                 <Button
-                  label={`📥 Downloading APK (${apkProgress}%)…`}
+                  label={`📥 Downloading APK (${downloadProgress}%)…`}
                   variant="gold"
                   size="md"
                   disabled
                   loading
                 />
-              ) : isDownloading ? (
+              ) : isReadyToInstall ? (
                 <Button
-                  label={`⚡ Fetching Update (${downloadProgress}%)…`}
+                  label="📲 Install Update Now"
                   variant="gold"
                   size="md"
-                  disabled
-                  loading
+                  onPress={() => installUpdate()}
                 />
               ) : (
-                <>
-                  {Platform.OS === 'android' && downloadedApkUri ? (
-                    <Button
-                      label="📲 Open & Install Downloaded APK"
-                      variant="gold"
-                      size="md"
-                      onPress={handleLaunchPackageInstaller}
-                    />
-                  ) : Platform.OS === 'android' ? (
-                    <Button
-                      label="📥 In-App Download & Auto-Install APK"
-                      variant="gold"
-                      size="md"
-                      onPress={handleInAppApkInstall}
-                    />
-                  ) : null}
+                <Button
+                  label="📥 Download & Install Update"
+                  variant="gold"
+                  size="md"
+                  onPress={() => startDownload()}
+                />
+              )}
 
-                  <Button
-                    label="📥 Download & Install New Version"
-                    variant="gold"
-                    size="md"
-                    onPress={() => startDownload()}
-                  />
-                  <Button
-                    label="🌐 Direct APK Package Downloader"
-                    variant="outline"
-                    size="md"
-                    onPress={() => downloadDirectApk()}
-                  />
-                  {!isMandatory && (
-                    <Pressable
-                      onPress={dismissUpdate}
-                      style={({ pressed }) => [
-                        { paddingVertical: 6, alignItems: 'center' },
-                        pressed && { opacity: 0.7 },
-                      ]}
-                    >
-                      <Text style={{ ...typography.tiny, color: colors.textMuted, fontWeight: '700' }}>
-                        Remind Me Later
-                      </Text>
-                    </Pressable>
-                  )}
-                </>
+              <Pressable
+                onPress={() => Linking.openURL(targetApkUrl)}
+                style={({ pressed }) => [
+                  { paddingVertical: 4, alignItems: 'center' },
+                  pressed && { opacity: 0.7 },
+                ]}
+              >
+                <Text style={{ ...typography.tiny, color: colors.textGold, fontWeight: '800' }}>
+                  🌐 View on GitHub Releases
+                </Text>
+              </Pressable>
+
+              {!isMandatory && !isDownloading && (
+                <Pressable
+                  onPress={dismissUpdate}
+                  style={({ pressed }) => [
+                    { paddingVertical: 4, alignItems: 'center' },
+                    pressed && { opacity: 0.7 },
+                  ]}
+                >
+                  <Text style={{ ...typography.tiny, color: colors.textMuted, fontWeight: '700' }}>
+                    Remind Me Later
+                  </Text>
+                </Pressable>
               )}
             </View>
           </View>
@@ -291,14 +246,17 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     marginBottom: spacing.xs,
   },
-  noteItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+  noteBullet: {
+    ...typography.small,
+    color: colors.goldDark,
+    fontWeight: '900',
+    marginRight: 6,
   },
   noteText: {
     ...typography.small,
     color: colors.text,
     lineHeight: 18,
+    flex: 1,
   },
   progressBox: {
     paddingHorizontal: spacing.md,
@@ -311,7 +269,7 @@ const styles = StyleSheet.create({
   },
   progressPct: {
     ...typography.tiny,
-    color: colors.gold,
+    color: colors.goldDark,
     fontWeight: '900',
   },
   track: {
@@ -325,6 +283,26 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: colors.gold,
     borderRadius: 4,
+  },
+  speedText: {
+    fontSize: 10.5,
+    color: colors.textMuted,
+    fontWeight: '700',
+  },
+  readyCard: {
+    marginHorizontal: spacing.md,
+    marginTop: spacing.md,
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+    borderRadius: radius.md,
+    padding: spacing.sm,
+  },
+  readyText: {
+    ...typography.small,
+    color: '#047857',
+    fontWeight: '800',
+    textAlign: 'center',
   },
   actionColumn: {
     padding: spacing.md,

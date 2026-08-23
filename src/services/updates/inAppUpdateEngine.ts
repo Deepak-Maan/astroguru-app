@@ -1,11 +1,10 @@
 /**
  * AstroGuru Native In-App APK Downloader & Package Installer Engine
  * Direct .apk package streaming, progress tracking, and Android Intent package installation
- * Powered by GitHub Releases API (Deepak-Maan/astroguru-app).
+ * Powered by GitHub Releases API (https://github.com/Deepak-Maan/astroguru-app/releases).
  */
 
 import { Platform, Linking } from 'react-native';
-import * as Updates from 'expo-updates';
 import * as FileSystem from 'expo-file-system';
 import * as IntentLauncher from 'expo-intent-launcher';
 import * as Application from 'expo-application';
@@ -24,7 +23,7 @@ export interface InAppUpdateCheckResult {
   latestVersion: string;
   releaseNotes: string[];
   isMandatory: boolean;
-  type: 'apk' | 'ota';
+  type: 'apk';
   downloadUrl?: string;
 }
 
@@ -35,7 +34,7 @@ export const LIVE_DIRECT_APK_URL = `https://github.com/${GITHUB_OWNER}/${GITHUB_
 
 /**
  * Robust version comparison helper
- * Handles versionCode ('284' > '283') and semver ('2.8.4' > '2.8.3')
+ * Handles versionCode ('284' > '283') and semver ('2.8.5' > '2.8.4')
  */
 export function isRemoteVersionNewer(remoteVer: string, currentVer: string): boolean {
   if (!remoteVer || !currentVer) return false;
@@ -45,14 +44,14 @@ export function isRemoteVersionNewer(remoteVer: string, currentVer: string): boo
 
   if (cleanRemote === cleanCurrent) return false;
 
-  // Numeric versionCode check (e.g. "284" vs "283")
+  // Numeric versionCode check (e.g. "285" vs "284")
   const remoteNum = parseInt(cleanRemote, 10);
   const currentNum = parseInt(cleanCurrent, 10);
   if (!isNaN(remoteNum) && !isNaN(currentNum) && !cleanRemote.includes('.') && !cleanCurrent.includes('.')) {
     return remoteNum > currentNum;
   }
 
-  // Semver check (e.g. "2.8.4" vs "2.8.3")
+  // Semver check (e.g. "2.8.5" vs "2.8.4")
   const rParts = cleanRemote.split('.').map((p) => parseInt(p, 10) || 0);
   const cParts = cleanCurrent.split('.').map((p) => parseInt(p, 10) || 0);
 
@@ -72,18 +71,18 @@ class InAppUpdateEngine {
   private lastTimestamp: number = 0;
 
   /**
-   * Checks GitHub Releases for the latest APK build, falling back to EAS OTA channel.
+   * Checks GitHub Releases for the latest APK uploaded by the developer.
    */
   async checkForUpdate(currentVersion: string, fallbackVersion: string): Promise<InAppUpdateCheckResult> {
-    const currentCode = Application.nativeBuildVersion || '283';
-    const currentName = Application.nativeApplicationVersion || currentVersion || '2.8.3';
+    const currentCode = Application.nativeBuildVersion || '284';
+    const currentName = Application.nativeApplicationVersion || currentVersion || '2.8.4';
 
-    // 1. Primary: Query GitHub Releases API
+    // 1. Query GitHub Releases API
     try {
       const response = await fetch(GITHUB_API_LATEST_RELEASE, {
         headers: {
           Accept: 'application/vnd.github.v3+json',
-          'User-Agent': 'AstroGuru-App-Updater',
+          'User-Agent': 'AstroGuru-InApp-Updater',
         },
       });
 
@@ -92,72 +91,44 @@ class InAppUpdateEngine {
         const rawTag = data.tag_name || '';
         const cleanTag = rawTag.replace(/^v/i, '').trim();
 
-        // Check if remote version is newer than current app version
+        // Check if remote version from GitHub Release is newer
         const isNewer =
           isRemoteVersionNewer(cleanTag, currentCode) ||
           isRemoteVersionNewer(cleanTag, currentName);
 
-        // Find .apk asset download URL
+        // Find .apk asset download URL from release assets
         const apkAsset = data.assets?.find((asset: any) =>
           typeof asset.name === 'string' && asset.name.toLowerCase().endsWith('.apk')
         );
 
-        if (apkAsset && apkAsset.browser_download_url) {
-          const notes = data.body
-            ? data.body
-                .split('\n')
-                .map((line: string) => line.trim())
-                .filter((line: string) => line.length > 0)
-            : [
-                `✨ What's new in v${cleanTag}:`,
-                '• Performance enhancements and bug fixes.',
-                '• Upgraded AstroGuru features & smoother experience.',
-              ];
+        const downloadUrl = apkAsset?.browser_download_url || `${LIVE_DIRECT_APK_URL}/download/${rawTag || 'v' + cleanTag}/${apkAsset?.name || 'app-release.apk'}`;
 
-          return {
-            isAvailable: isNewer,
-            currentVersion: currentName,
-            latestVersion: cleanTag || fallbackVersion,
-            releaseNotes: notes,
-            isMandatory: false,
-            type: 'apk',
-            downloadUrl: apkAsset.browser_download_url,
-          };
-        }
+        const notes = data.body
+          ? data.body
+              .split('\n')
+              .map((line: string) => line.trim())
+              .filter((line: string) => line.length > 0)
+          : [
+              `✨ What's new in v${cleanTag}:`,
+              '• Performance optimizations & UI enhancements.',
+              '• Direct In-App APK update from GitHub Releases.',
+            ];
+
+        return {
+          isAvailable: isNewer,
+          currentVersion: currentName,
+          latestVersion: cleanTag || fallbackVersion,
+          releaseNotes: notes,
+          isMandatory: false,
+          type: 'apk',
+          downloadUrl: downloadUrl,
+        };
       }
     } catch (ghErr) {
       console.log('[InAppUpdateEngine] GitHub Releases check error:', ghErr);
     }
 
-    // 2. Secondary: Check EAS OTA Channel
-    try {
-      if (Platform.OS !== 'web' && Updates.isEnabled) {
-        const otaCheck = await Updates.checkForUpdateAsync();
-        if (otaCheck.isAvailable) {
-          try {
-            await Updates.fetchUpdateAsync();
-          } catch (fetchErr) {
-            console.log('[InAppUpdateEngine] OTA background pre-fetch note:', fetchErr);
-          }
-
-          return {
-            isAvailable: true,
-            currentVersion: currentName,
-            latestVersion: fallbackVersion,
-            releaseNotes: [
-              '🚀 AstroGuru Performance Update Ready',
-              '⚡ Instant JS bundle optimizations & fixes.',
-            ],
-            isMandatory: false,
-            type: 'ota',
-          };
-        }
-      }
-    } catch (err) {
-      console.log('[InAppUpdateEngine] OTA check:', err);
-    }
-
-    // 3. Up to date
+    // Up to date or offline
     return {
       isAvailable: false,
       currentVersion: currentName,
@@ -175,7 +146,7 @@ class InAppUpdateEngine {
     targetVersion: string,
     onProgress: (progress: UpdateDownloadProgress) => void,
     customApkUrl?: string
-  ): Promise<{ success: boolean; localUri?: string; type: 'apk' | 'ota' }> {
+  ): Promise<{ success: boolean; localUri?: string; type: 'apk' }> {
     const apkUrl = customApkUrl || LIVE_DIRECT_APK_URL;
 
     // Direct Native Android APK Download
@@ -239,63 +210,16 @@ class InAppUpdateEngine {
           }
         }
       } catch (err) {
-        console.warn('[InAppUpdateEngine] Direct APK download error, trying OTA fallback:', err);
+        console.warn('[InAppUpdateEngine] Direct APK download error:', err);
       }
     }
 
-    // OTA runtime update stream fallback
-    const totalBytes = 28 * 1024 * 1024;
-    let currentBytes = 0;
-
-    return new Promise(async (resolve) => {
-      const interval = setInterval(() => {
-        const step = Math.floor(Math.random() * (1500 * 1024)) + 800 * 1024;
-        currentBytes = Math.min(totalBytes, currentBytes + step);
-        const percentage = Math.min(95, Math.floor((currentBytes / totalBytes) * 100));
-
-        onProgress({
-          totalBytes,
-          downloadedBytes: currentBytes,
-          percentage,
-          speedKbps: Math.floor(Math.random() * 800) + 1800,
-        });
-
-        if (percentage >= 95) {
-          clearInterval(interval);
-        }
-      }, 100);
-
-      try {
-        if (Platform.OS !== 'web' && Updates.isEnabled) {
-          await Updates.fetchUpdateAsync();
-        } else {
-          await new Promise((r) => setTimeout(r, 1200));
-        }
-
-        clearInterval(interval);
-        onProgress({
-          totalBytes,
-          downloadedBytes: totalBytes,
-          percentage: 100,
-          speedKbps: 3200,
-        });
-        resolve({ success: true, type: 'ota' });
-      } catch (e) {
-        clearInterval(interval);
-        console.warn('[InAppUpdateEngine] OTA Fetch error:', e);
-        onProgress({
-          totalBytes,
-          downloadedBytes: totalBytes,
-          percentage: 100,
-        });
-        resolve({ success: true, type: 'ota' });
-      }
-    });
+    // Direct browser fallback for Web / non-Android
+    return { success: false, type: 'apk' };
   }
 
   /**
-   * Installs the downloaded package:
-   * Uses FileSystem content URI and IntentLauncher for seamless Android package installer launch.
+   * Installs the downloaded APK package via Android Package Installer Intent
    */
   async installDownloadedPackage(localUri?: string, customApkUrl?: string): Promise<boolean> {
     if (Platform.OS === 'android' && localUri) {
@@ -335,17 +259,7 @@ class InAppUpdateEngine {
       }
     }
 
-    // 3. If OTA update, reload JS bundle safely when requested by user
-    if (Platform.OS !== 'web' && Updates.isEnabled) {
-      try {
-        await Updates.reloadAsync();
-        return true;
-      } catch (e) {
-        console.warn('[InAppUpdateEngine] OTA Reload error:', e);
-      }
-    }
-
-    // 4. Direct browser APK link fallback
+    // Direct browser APK link fallback
     const targetUrl = customApkUrl || LIVE_DIRECT_APK_URL;
     try {
       await Linking.openURL(targetUrl);
