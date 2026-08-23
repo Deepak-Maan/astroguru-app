@@ -327,10 +327,11 @@ export default function LoginScreen() {
     setGoogleLoading(true);
     triggerHaptic('medium');
     try {
-      const user = await signInWithGoogle();
+      const res = await signInWithGoogle();
       setGoogleLoading(false);
-      if (user) {
-        launchSessionWithOverlay(user, '/(tabs)');
+      const userProfile = res?.user || res;
+      if (userProfile && (userProfile.id || userProfile.email)) {
+        launchSessionWithOverlay(userProfile, '/(tabs)');
       }
     } catch (e: any) {
       setGoogleLoading(false);
