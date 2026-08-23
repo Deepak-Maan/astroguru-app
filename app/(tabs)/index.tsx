@@ -1,10 +1,11 @@
 /**
- * AstroGuru — Ultra-Premium Vedic Astrological Super App Home Experience
- * Rebuilt with Nordic Frost luxury aesthetics, glassmorphic sheen, live transit ribbons,
- * interactive 432Hz Vedic audio player, and comprehensive Jyotish widgets.
+ * AstroGuru — Ultra-Premium Mystical Spatial Vedic Astrology Experience
+ * Rebuilt with Deep Celestial Dark Palette (#0B0D17 Obsidian Midnight, #1A1A3A Nebula Indigo),
+ * Starlight Gold (#D4AF37), GSAP Staggered Micro-Interactions, 3D WebGL Constellation Parallax,
+ * and Frosted Spatial Glassmorphism Cards.
  */
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   Dimensions,
@@ -19,6 +20,7 @@ import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import gsap from 'gsap';
 import { GradientBackground } from '../../src/components/GradientBackground';
 import { SectionHeader } from '../../src/components/SectionHeader';
 import { AstrologerCard } from '../../src/components/AstrologerCard';
@@ -49,6 +51,7 @@ export default function Home() {
   const { streakCount, astroCoins } = useRewardsStore();
 
   const [isPlayingMantra, setIsPlayingMantra] = useState(false);
+  const contentContainerRef = useRef<HTMLDivElement | null>(null);
 
   const signIndex = kundli?.moonRashiIndex ?? 0;
   const rashi = RASHIS[signIndex] || RASHIS[0];
@@ -72,6 +75,24 @@ export default function Home() {
     [profile?.date, displayName]
   );
 
+  // ── GSAP Staggered Entrance Micro-Interactions (Web) ──
+  useEffect(() => {
+    if (Platform.OS === 'web' && typeof document !== 'undefined') {
+      const ctx = gsap.context(() => {
+        gsap.from('.stagger-card', {
+          y: 20,
+          opacity: 0,
+          duration: 0.6,
+          stagger: 0.08,
+          ease: 'power3.out',
+          clearProps: 'all',
+        });
+      }, contentContainerRef);
+
+      return () => ctx.revert();
+    }
+  }, []);
+
   // If logging out or unauthenticated
   if (!isAuthenticated || !authUser) {
     return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
@@ -93,14 +114,14 @@ export default function Home() {
   }
 
   const quickActions = [
-    { icon: '🎡', label: 'Spin & Win', href: '/daily-rewards', bg: '#FEF3C7', border: '#FDE68A', badge: 'FREE' },
-    { icon: '🪐', label: 'Kundli', href: '/(tabs)/kundli', bg: '#FFEDD5', border: '#FED7AA', badge: '10-Pg' },
-    { icon: '🔮', label: '3D Tarot', href: '/daily-rewards', bg: '#F3E8FF', border: '#E9D5FF' },
-    { icon: '📿', label: '108 Japa', href: '/japa', bg: '#DCFCE7', border: '#BBF7D0', badge: 'Mala' },
-    { icon: '🔢', label: 'Numerology', href: '/numerology', bg: '#E0F2FE', border: '#BAE6FD' },
-    { icon: '💎', label: 'Gemstones', href: '/gemstone-finder', bg: '#FCE7F3', border: '#FBCFE8' },
-    { icon: '🏛️', label: 'Live Darshan', href: '/live-darshan', bg: '#FFF1F2', border: '#FFE4E6', badge: 'LIVE' },
-    { icon: '💬', label: 'Instant Chat', href: '/instant-consult', bg: '#EEF2FF', border: '#E0E7FF' },
+    { icon: '🎡', label: 'Spin & Win', href: '/daily-rewards', bg: 'rgba(212, 175, 55, 0.12)', border: 'rgba(212, 175, 55, 0.35)', badge: 'FREE' },
+    { icon: '🪐', label: 'Kundli', href: '/(tabs)/kundli', bg: 'rgba(56, 189, 248, 0.12)', border: 'rgba(56, 189, 248, 0.35)', badge: '10-Pg' },
+    { icon: '🔮', label: '3D Tarot', href: '/daily-rewards', bg: 'rgba(139, 92, 246, 0.12)', border: 'rgba(139, 92, 246, 0.35)' },
+    { icon: '📿', label: '108 Japa', href: '/japa', bg: 'rgba(16, 185, 129, 0.12)', border: 'rgba(16, 185, 129, 0.35)', badge: 'Mala' },
+    { icon: '🔢', label: 'Numerology', href: '/numerology', bg: 'rgba(56, 189, 248, 0.12)', border: 'rgba(56, 189, 248, 0.35)' },
+    { icon: '💎', label: 'Gemstones', href: '/gemstone-finder', bg: 'rgba(244, 63, 94, 0.12)', border: 'rgba(244, 63, 94, 0.35)' },
+    { icon: '🏛️', label: 'Live Darshan', href: '/live-darshan', bg: 'rgba(212, 175, 55, 0.12)', border: 'rgba(212, 175, 55, 0.35)', badge: 'LIVE' },
+    { icon: '💬', label: 'Instant Chat', href: '/instant-consult', bg: 'rgba(139, 92, 246, 0.12)', border: 'rgba(139, 92, 246, 0.35)' },
   ];
 
   const today = new Date().toLocaleDateString('en-GB', {
@@ -130,295 +151,315 @@ export default function Home() {
         />
 
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-          {/* Live Planetary Transit & Shubh Muhurta Ticker Ribbon */}
-          <View style={styles.transitRibbon}>
-            <LinearGradient
-              colors={['#FFFBEB', '#F0FDF4']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={StyleSheet.absoluteFill}
-            />
-            <View style={styles.livePulseDot} />
-            <Text style={styles.transitText} numberOfLines={1}>
-              <Text style={{ fontWeight: '900', color: '#D97706' }}>🪐 SHUBH MUHURTA:</Text> Abhijit Muhurta Active (11:45 AM - 12:30 PM) · Moon in {rashi.sanskrit}
-            </Text>
-          </View>
-
-          {/* Daily Vedic Shloka Mantra Audio Player */}
-          <Pressable
-            onPress={toggleMantra}
-            style={({ pressed }) => [styles.shlokaPill, pressed && { opacity: 0.88, transform: [{ scale: 0.99 }] }]}
-          >
-            <View style={styles.shlokaLeft}>
-              <View style={styles.shlokaIconRing}>
-                <Text style={styles.shlokaSoundIcon}>{isPlayingMantra ? '🔊' : '🕉️'}</Text>
-              </View>
-              <View style={{ flex: 1 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <Text style={styles.shlokaTitle}>Daily Vedic Shloka · 432Hz</Text>
-                  {isPlayingMantra ? (
-                    <View style={styles.playingBadge}>
-                      <Text style={styles.playingBadgeText}>PLAYING ▂▃▅</Text>
-                    </View>
-                  ) : (
-                    <View style={styles.tapToPlayBadge}>
-                      <Text style={styles.tapToPlayBadgeText}>TAP TO LISTEN</Text>
-                    </View>
-                  )}
-                </View>
-                <Text style={styles.shlokaSub} numberOfLines={1}>
-                  ॐ भूर्भुवः स्वः तत्सवितुर्वरेण्यं भर्गो देवस्य धीमहि धियो यो नः प्रचोदयात्
-                </Text>
-              </View>
-            </View>
-            <View style={[styles.shlokaPlayBtn, isPlayingMantra && styles.shlokaPauseBtn]}>
-              <Text style={styles.shlokaPlayText}>{isPlayingMantra ? '❚❚ Pause' : '▶ Gayatri'}</Text>
-            </View>
-          </Pressable>
-
-          {/* YOUR SKY AT BIRTH 3D/2D Celestial Hero Chakra */}
-          <RashiChakra
-            kundli={kundli}
-            onPress={() => router.push(kundli ? '/(tabs)/kundli' : '/(onboarding)/birth-details')}
-          />
-
-          {/* Daily Cosmic Rewards & Navagraha Chakra Banner */}
-          <Pressable
-            onPress={() => router.push('/daily-rewards')}
-            style={({ pressed }) => [pressed && { opacity: 0.88, transform: [{ scale: 0.98 }] }]}
-          >
-            <View style={styles.rewardsBanner}>
+          <div ref={contentContainerRef as any} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {/* Live Planetary Transit & Shubh Muhurta Ticker Ribbon */}
+            <View style={[styles.transitRibbon, { className: 'stagger-card' } as any]}>
               <LinearGradient
-                colors={['#1E1B4B', '#2E1065', '#0F172A']}
+                colors={['rgba(212, 175, 55, 0.15)', 'rgba(56, 189, 248, 0.08)']}
                 start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
+                end={{ x: 1, y: 0 }}
                 style={StyleSheet.absoluteFill}
               />
-              <View style={styles.rewardsFlameBox}>
-                <LinearGradient
-                  colors={['#F59E0B', '#EA580C']}
-                  style={StyleSheet.absoluteFill}
-                />
-                <Text style={{ fontSize: 24 }}>🔥</Text>
-              </View>
-              <View style={{ flex: 1, gap: 3 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <Text style={styles.rewardsBannerTag}>COSMIC REWARDS</Text>
-                  <View style={styles.rewardsStreakPill}>
-                    <Text style={styles.rewardsStreakPillText}>{streakCount}D Streak</Text>
-                  </View>
-                  <View style={styles.rewardsCoinsHeaderPill}>
-                    <Text style={{ fontSize: 10 }}>🪙</Text>
-                    <Text style={styles.rewardsCoinsText}>{astroCoins}</Text>
-                  </View>
-                </View>
-                <Text style={styles.rewardsBannerTitle}>Daily Rewards & Navagraha Spin 🎡</Text>
-                <Text style={styles.rewardsBannerSub}>
-                  Spin wheel for wallet cash · Draw 3D Tarot · Prescribe Sadhana
-                </Text>
-              </View>
-              <View style={styles.rewardsActionBtn}>
-                <LinearGradient
-                  colors={[colors.saffron, colors.gold]}
-                  style={StyleSheet.absoluteFill}
-                />
-                <Text style={styles.rewardsActionText}>Play ›</Text>
-              </View>
-            </View>
-          </Pressable>
-
-          {/* Today's Reading Card */}
-          <Pressable onPress={() => router.push('/(tabs)/horoscope')}>
-            <View style={styles.todayCard}>
-              <View style={styles.todayRule} />
-              <View style={{ flex: 1, gap: 10 }}>
-                <View style={styles.todayTop}>
-                  <View style={styles.purpleIconBox}>
-                    <Text style={{ fontSize: 16 }}>🔮</Text>
-                  </View>
-                  <Text style={styles.todayLabel}>
-                    TODAY'S HOROSCOPE • {rashi.sanskrit.toUpperCase()}
-                  </Text>
-                  <View style={styles.moodBadge}>
-                    <Text style={styles.todayMood}>{reading.mood}% Positive</Text>
-                  </View>
-                </View>
-
-                <Text style={styles.todayText} numberOfLines={3}>
-                  {reading.summary || "Venus softens the mood around you today. Trust your intuition in key financial and relationship decisions. Recovery multiplies tomorrow's output."}
-                </Text>
-
-                <View style={styles.todayFooter}>
-                  <View style={styles.luckyPill}>
-                    <Text style={styles.luckyPillText}>Lucky #{reading.luckyNumber}</Text>
-                  </View>
-                  <View style={styles.silverPill}>
-                    <Text style={styles.silverPillText}>{reading.luckyColor}</Text>
-                  </View>
-                  <Text style={styles.readMore}>Full Forecast →</Text>
-                </View>
-              </View>
-            </View>
-          </Pressable>
-
-          {/* 🪐 Live Celestial Graha Radar Widget */}
-          <View style={styles.grahaRadarCard}>
-            <View style={styles.grahaRadarHeader}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <View style={styles.livePulseDot} />
-                <Text style={styles.grahaRadarTitle}>LIVE CELESTIAL GRAHA RADAR</Text>
-              </View>
-              <Text style={styles.grahaRadarSub}>Current Transits vs Your Chart</Text>
+              <View style={styles.livePulseDot} />
+              <Text style={styles.transitText} numberOfLines={1}>
+                <Text style={{ fontWeight: '900', color: colors.goldSoft }}>🪐 SHUBH MUHURTA:</Text> Abhijit Muhurta Active (11:45 AM - 12:30 PM) · Moon in {rashi.sanskrit}
+              </Text>
             </View>
 
-            <View style={styles.grahaPillGrid}>
-              <View style={styles.grahaTransitPill}>
-                <Text style={{ fontSize: 14 }}>🪐</Text>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.grahaPillName}>Brihaspati (Jupiter) in 11th</Text>
-                  <Text style={styles.grahaPillEffect}>High financial & network gains active</Text>
-                </View>
-                <View style={styles.auspiciousBadge}>
-                  <Text style={styles.auspiciousBadgeText}>+85% BENEFIC</Text>
-                </View>
-              </View>
-
-              <View style={styles.grahaTransitPill}>
-                <Text style={{ fontSize: 14 }}>✨</Text>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.grahaPillName}>Shukra (Venus) in 5th</Text>
-                  <Text style={styles.grahaPillEffect}>Romantic bliss & creative clarity</Text>
-                </View>
-                <View style={styles.auspiciousBadge}>
-                  <Text style={styles.auspiciousBadgeText}>+92% HARMONY</Text>
-                </View>
-              </View>
-
-              <View style={styles.grahaTransitPill}>
-                <Text style={{ fontSize: 14 }}>🛡️</Text>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.grahaPillName}>Shani (Saturn) in 10th</Text>
-                  <Text style={styles.grahaPillEffect}>Disciplined career elevation & stability</Text>
-                </View>
-                <View style={[styles.auspiciousBadge, { backgroundColor: '#FEF3C7', borderColor: '#FDE68A' }]}>
-                  <Text style={[styles.auspiciousBadgeText, { color: '#B45309' }]}>KARMA SHIELD</Text>
-                </View>
-              </View>
-            </View>
-          </View>
-
-          {/* 8-Grid Super App Quick Actions */}
-          <View>
-            <SectionHeader title="✨ Vedic Astro Services" subtitle="Instant consultations & spiritual tools" />
-            <View style={styles.quickGrid}>
-              {quickActions.map(({ icon, label, href, bg, border, badge }) => (
-                <Pressable
-                  key={label}
-                  onPress={() => router.push(href as never)}
-                  style={({ pressed }) => [
-                    styles.quickCell,
-                    { backgroundColor: bg, borderColor: border },
-                    pressed && { opacity: 0.75, transform: [{ scale: 0.95 }] },
-                  ]}
-                >
-                  {badge && (
-                    <View style={styles.quickBadge}>
-                      <Text style={styles.quickBadgeText}>{badge}</Text>
-                    </View>
-                  )}
-                  <Text style={styles.quickIcon}>{icon}</Text>
-                  <Text style={styles.quickLabel}>{label}</Text>
-                </Pressable>
-              ))}
-            </View>
-          </View>
-
-          {/* Today's Daily Panchang & Muhurta Radar Card */}
-          <Pressable onPress={() => router.push('/panchang')} style={({ pressed }) => [pressed && { opacity: 0.88 }]}>
-            <View style={styles.panchangCard}>
-              <View style={styles.panchangTopRow}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <Text style={{ fontSize: 16 }}>🌅</Text>
-                  <Text style={styles.panchangTitle}>Daily Panchang & Muhurta</Text>
-                </View>
-                <Text style={styles.panchangLink}>View Calendar →</Text>
-              </View>
-              <View style={styles.panchangGrid}>
-                <View style={styles.panchangCol}>
-                  <Text style={styles.panchangLabel}>TITHI</Text>
-                  <Text style={styles.panchangVal}>Shukla Dashami</Text>
-                </View>
-                <View style={styles.panchangCol}>
-                  <Text style={styles.panchangLabel}>NAKSHATRA</Text>
-                  <Text style={styles.panchangVal}>Pushya Nakshatra</Text>
-                </View>
-                <View style={styles.panchangCol}>
-                  <Text style={styles.panchangLabel}>RAHU KAAL</Text>
-                  <Text style={[styles.panchangVal, { color: '#E11D48' }]}>4:30 PM - 6:00 PM</Text>
-                </View>
-              </View>
-            </View>
-          </Pressable>
-
-          {/* Dedicated Numerology Grid */}
-          <Pressable onPress={() => router.push('/numerology')} style={({ pressed }) => [pressed && { opacity: 0.88 }]}>
-            <View style={styles.numerologyBanner}>
-              <View style={styles.numBadgeCircle}>
-                <Text style={styles.numBadgeVal}>{numerology.lifePathNumber}</Text>
-              </View>
-              <View style={{ flex: 1, gap: 1 }}>
-                <Text style={styles.numBannerTag}>🔢 VEDIC NUMEROLOGY GRID</Text>
-                <Text style={styles.numBannerTitle}>
-                  Life Path #{numerology.lifePathNumber} · Personal Year {numerology.personalYear2026}
-                </Text>
-                <Text style={styles.numBannerSub} numberOfLines={1}>
-                  📜 Past Life: {numerology.pastLifeInsight.pastLifeRole} · 🔮 2026-2030 Timeline
-                </Text>
-              </View>
-              <Text style={styles.numBannerArrow}>›</Text>
-            </View>
-          </Pressable>
-
-          {/* Astrologers Online Carousel */}
-          <View>
-            <SectionHeader
-              title={t('astrologersOnline')}
-              subtitle={`${featured.length} Acharyas online now`}
-              actionLabel="See all"
-              onAction={() => router.push('/(tabs)/consult')}
-            />
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingRight: spacing.lg, gap: 12 }}
+            {/* Daily Vedic Shloka Mantra Audio Player */}
+            <Pressable
+              onPress={toggleMantra}
+              style={({ pressed }) => [
+                styles.shlokaPill,
+                { className: 'stagger-card' } as any,
+                pressed && { opacity: 0.88, transform: [{ scale: 0.99 }] },
+              ]}
             >
-              {featured.map((a) => (
-                <AstrologerCard
-                  key={a.id}
-                  astrologer={a}
-                  compact
-                  onPress={() => router.push(`/astrologer/${a.id}`)}
-                />
-              ))}
-            </ScrollView>
-          </View>
+              <View style={styles.shlokaLeft}>
+                <View style={styles.shlokaIconRing}>
+                  <Text style={styles.shlokaSoundIcon}>{isPlayingMantra ? '🔊' : '🕉️'}</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Text style={styles.shlokaTitle}>Daily Vedic Shloka · 432Hz</Text>
+                    {isPlayingMantra ? (
+                      <View style={styles.playingBadge}>
+                        <Text style={styles.playingBadgeText}>PLAYING ▂▃▅</Text>
+                      </View>
+                    ) : (
+                      <View style={styles.tapToPlayBadge}>
+                        <Text style={styles.tapToPlayBadgeText}>TAP TO LISTEN</Text>
+                      </View>
+                    )}
+                  </View>
+                  <Text style={styles.shlokaSub} numberOfLines={1}>
+                    ॐ भूर्भुवः स्वः तत्सवितुर्वरेण्यं भर्गो देवस्य धीमहि धियो यो नः प्रचोदयात्
+                  </Text>
+                </View>
+              </View>
+              <View style={[styles.shlokaPlayBtn, isPlayingMantra && styles.shlokaPauseBtn]}>
+                <Text style={styles.shlokaPlayText}>{isPlayingMantra ? '❚❚ Pause' : '▶ Gayatri'}</Text>
+              </View>
+            </Pressable>
 
-          {/* Top Rated Acharyas */}
-          <View>
-            <SectionHeader title={t('topRated')} subtitle="Highest rated Vedic Masters this month" />
-            <View style={{ gap: 12 }}>
-              {[...ASTROLOGERS]
-                .sort((x, y) => y.rating - x.rating)
-                .slice(0, 3)
-                .map((a) => (
+            {/* YOUR SKY AT BIRTH 3D/2D Celestial Hero Chakra */}
+            <View style={{ className: 'stagger-card' } as any}>
+              <RashiChakra
+                kundli={kundli}
+                onPress={() => router.push(kundli ? '/(tabs)/kundli' : '/(onboarding)/birth-details')}
+              />
+            </View>
+
+            {/* Daily Cosmic Rewards & Navagraha Chakra Banner */}
+            <Pressable
+              onPress={() => router.push('/daily-rewards')}
+              style={({ pressed }) => [
+                { className: 'stagger-card' } as any,
+                pressed && { opacity: 0.88, transform: [{ scale: 0.98 }] },
+              ]}
+            >
+              <View style={styles.rewardsBanner}>
+                <LinearGradient
+                  colors={['rgba(26, 26, 58, 0.9)', 'rgba(18, 20, 42, 0.95)']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={StyleSheet.absoluteFill}
+                />
+                <View style={styles.rewardsFlameBox}>
+                  <LinearGradient
+                    colors={['#D4AF37', '#EA580C']}
+                    style={StyleSheet.absoluteFill}
+                  />
+                  <Text style={{ fontSize: 22 }}>🔥</Text>
+                </View>
+                <View style={{ flex: 1, gap: 3 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Text style={styles.rewardsBannerTag}>COSMIC REWARDS</Text>
+                    <View style={styles.rewardsStreakPill}>
+                      <Text style={styles.rewardsStreakPillText}>{streakCount}D Streak</Text>
+                    </View>
+                    <View style={styles.rewardsCoinsHeaderPill}>
+                      <Text style={{ fontSize: 10 }}>🪙</Text>
+                      <Text style={styles.rewardsCoinsText}>{astroCoins}</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.rewardsBannerTitle}>Daily Rewards & Navagraha Spin 🎡</Text>
+                  <Text style={styles.rewardsBannerSub}>
+                    Spin wheel for wallet cash · Draw 3D Tarot · Prescribe Sadhana
+                  </Text>
+                </View>
+                <View style={styles.rewardsActionBtn}>
+                  <LinearGradient
+                    colors={['#D4AF37', '#B8902A']}
+                    style={StyleSheet.absoluteFill}
+                  />
+                  <Text style={styles.rewardsActionText}>Play ›</Text>
+                </View>
+              </View>
+            </Pressable>
+
+            {/* Today's Reading Card */}
+            <Pressable
+              onPress={() => router.push('/(tabs)/horoscope')}
+              style={{ className: 'stagger-card' } as any}
+            >
+              <View style={styles.todayCard}>
+                <View style={styles.todayRule} />
+                <View style={{ flex: 1, gap: 10 }}>
+                  <View style={styles.todayTop}>
+                    <View style={styles.purpleIconBox}>
+                      <Text style={{ fontSize: 16 }}>🔮</Text>
+                    </View>
+                    <Text style={styles.todayLabel}>
+                      TODAY'S HOROSCOPE • {rashi.sanskrit.toUpperCase()}
+                    </Text>
+                    <View style={styles.moodBadge}>
+                      <Text style={styles.todayMood}>{reading.mood}% Positive</Text>
+                    </View>
+                  </View>
+
+                  <Text style={styles.todayText} numberOfLines={3}>
+                    {reading.summary || "Venus softens the celestial mood today. Trust your intuition in key financial and relationship decisions. Recovery multiplies tomorrow's output."}
+                  </Text>
+
+                  <View style={styles.todayFooter}>
+                    <View style={styles.luckyPill}>
+                      <Text style={styles.luckyPillText}>Lucky #{reading.luckyNumber}</Text>
+                    </View>
+                    <View style={styles.silverPill}>
+                      <Text style={styles.silverPillText}>{reading.luckyColor}</Text>
+                    </View>
+                    <Text style={styles.readMore}>Full Forecast →</Text>
+                  </View>
+                </View>
+              </View>
+            </Pressable>
+
+            {/* 🪐 Live Celestial Graha Radar Widget */}
+            <View style={[styles.grahaRadarCard, { className: 'stagger-card' } as any]}>
+              <View style={styles.grahaRadarHeader}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <View style={styles.livePulseDot} />
+                  <Text style={styles.grahaRadarTitle}>LIVE CELESTIAL GRAHA RADAR</Text>
+                </View>
+                <Text style={styles.grahaRadarSub}>Current Transits vs Your Chart</Text>
+              </View>
+
+              <View style={styles.grahaPillGrid}>
+                <View style={styles.grahaTransitPill}>
+                  <Text style={{ fontSize: 14 }}>🪐</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.grahaPillName}>Brihaspati (Jupiter) in 11th</Text>
+                    <Text style={styles.grahaPillEffect}>High financial & network gains active</Text>
+                  </View>
+                  <View style={styles.auspiciousBadge}>
+                    <Text style={styles.auspiciousBadgeText}>+85% BENEFIC</Text>
+                  </View>
+                </View>
+
+                <View style={styles.grahaTransitPill}>
+                  <Text style={{ fontSize: 14 }}>✨</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.grahaPillName}>Shukra (Venus) in 5th</Text>
+                    <Text style={styles.grahaPillEffect}>Romantic bliss & creative clarity</Text>
+                  </View>
+                  <View style={styles.auspiciousBadge}>
+                    <Text style={styles.auspiciousBadgeText}>+92% HARMONY</Text>
+                  </View>
+                </View>
+
+                <View style={styles.grahaTransitPill}>
+                  <Text style={{ fontSize: 14 }}>🛡️</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.grahaPillName}>Shani (Saturn) in 10th</Text>
+                    <Text style={styles.grahaPillEffect}>Disciplined career elevation & stability</Text>
+                  </View>
+                  <View style={[styles.auspiciousBadge, { backgroundColor: 'rgba(212, 175, 55, 0.15)', borderColor: 'rgba(212, 175, 55, 0.35)' }]}>
+                    <Text style={[styles.auspiciousBadgeText, { color: colors.goldSoft }]}>KARMA SHIELD</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+
+            {/* 8-Grid Super App Quick Actions */}
+            <View style={{ className: 'stagger-card' } as any}>
+              <SectionHeader title="✨ Vedic Astro Services" subtitle="Instant consultations & spiritual tools" />
+              <View style={styles.quickGrid}>
+                {quickActions.map(({ icon, label, href, bg, border, badge }) => (
+                  <Pressable
+                    key={label}
+                    onPress={() => router.push(href as never)}
+                    style={({ pressed }) => [
+                      styles.quickCell,
+                      { backgroundColor: bg, borderColor: border },
+                      pressed && { opacity: 0.75, transform: [{ scale: 0.95 }] },
+                    ]}
+                  >
+                    {badge && (
+                      <View style={styles.quickBadge}>
+                        <Text style={styles.quickBadgeText}>{badge}</Text>
+                      </View>
+                    )}
+                    <Text style={styles.quickIcon}>{icon}</Text>
+                    <Text style={styles.quickLabel}>{label}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+
+            {/* Today's Daily Panchang & Muhurta Radar Card */}
+            <Pressable
+              onPress={() => router.push('/panchang')}
+              style={({ pressed }) => [{ className: 'stagger-card' } as any, pressed && { opacity: 0.88 }]}
+            >
+              <View style={styles.panchangCard}>
+                <View style={styles.panchangTopRow}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <Text style={{ fontSize: 16 }}>🌅</Text>
+                    <Text style={styles.panchangTitle}>Daily Panchang & Muhurta</Text>
+                  </View>
+                  <Text style={styles.panchangLink}>View Calendar →</Text>
+                </View>
+                <View style={styles.panchangGrid}>
+                  <View style={styles.panchangCol}>
+                    <Text style={styles.panchangLabel}>TITHI</Text>
+                    <Text style={styles.panchangVal}>Shukla Dashami</Text>
+                  </View>
+                  <View style={styles.panchangCol}>
+                    <Text style={styles.panchangLabel}>NAKSHATRA</Text>
+                    <Text style={styles.panchangVal}>Pushya Nakshatra</Text>
+                  </View>
+                  <View style={styles.panchangCol}>
+                    <Text style={styles.panchangLabel}>RAHU KAAL</Text>
+                    <Text style={[styles.panchangVal, { color: '#F43F5E' }]}>4:30 PM - 6:00 PM</Text>
+                  </View>
+                </View>
+              </View>
+            </Pressable>
+
+            {/* Dedicated Numerology Grid */}
+            <Pressable
+              onPress={() => router.push('/numerology')}
+              style={({ pressed }) => [{ className: 'stagger-card' } as any, pressed && { opacity: 0.88 }]}
+            >
+              <View style={styles.numerologyBanner}>
+                <View style={styles.numBadgeCircle}>
+                  <Text style={styles.numBadgeVal}>{numerology.lifePathNumber}</Text>
+                </View>
+                <View style={{ flex: 1, gap: 1 }}>
+                  <Text style={styles.numBannerTag}>🔢 VEDIC NUMEROLOGY GRID</Text>
+                  <Text style={styles.numBannerTitle}>
+                    Life Path #{numerology.lifePathNumber} · Personal Year {numerology.personalYear2026}
+                  </Text>
+                  <Text style={styles.numBannerSub} numberOfLines={1}>
+                    📜 Past Life: {numerology.pastLifeInsight.pastLifeRole} · 🔮 2026-2030 Timeline
+                  </Text>
+                </View>
+                <Text style={styles.numBannerArrow}>›</Text>
+              </View>
+            </Pressable>
+
+            {/* Astrologers Online Carousel */}
+            <View style={{ className: 'stagger-card' } as any}>
+              <SectionHeader
+                title={t('astrologersOnline')}
+                subtitle={`${featured.length} Acharyas online now`}
+                actionLabel="See all"
+                onAction={() => router.push('/(tabs)/consult')}
+              />
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingRight: spacing.lg, gap: 12 }}
+              >
+                {featured.map((a) => (
                   <AstrologerCard
                     key={a.id}
                     astrologer={a}
+                    compact
                     onPress={() => router.push(`/astrologer/${a.id}`)}
                   />
                 ))}
+              </ScrollView>
             </View>
-          </View>
+
+            {/* Top Rated Acharyas */}
+            <View style={{ className: 'stagger-card' } as any}>
+              <SectionHeader title={t('topRated')} subtitle="Highest rated Vedic Masters this month" />
+              <View style={{ gap: 12 }}>
+                {[...ASTROLOGERS]
+                  .sort((x, y) => y.rating - x.rating)
+                  .slice(0, 3)
+                  .map((a) => (
+                    <AstrologerCard
+                      key={a.id}
+                      astrologer={a}
+                      onPress={() => router.push(`/astrologer/${a.id}`)}
+                    />
+                  ))}
+              </View>
+            </View>
+          </div>
         </ScrollView>
       </SafeAreaView>
     </GradientBackground>
@@ -441,14 +482,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.35)',
+    borderColor: 'rgba(212, 175, 55, 0.35)',
+    backgroundColor: 'rgba(18, 20, 42, 0.85)',
     overflow: 'hidden',
     gap: 8,
-    shadowColor: '#F59E0B',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 2,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 3,
+    backdropFilter: 'blur(12px)' as any,
   },
   livePulseDot: {
     width: 8,
@@ -458,7 +501,7 @@ const styles = StyleSheet.create({
   },
   transitText: {
     fontSize: 12,
-    color: '#334155',
+    color: '#E2E8F0',
     fontWeight: '600',
     flex: 1,
   },
@@ -468,18 +511,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(18, 20, 42, 0.85)',
     borderRadius: 20,
     paddingVertical: 12,
     paddingHorizontal: 14,
     borderWidth: 1.5,
-    borderColor: 'rgba(5, 150, 105, 0.25)',
-    shadowColor: '#BFDBFE',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 10,
-    elevation: 3,
+    borderColor: 'rgba(212, 175, 55, 0.28)',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    elevation: 4,
     gap: 12,
+    backdropFilter: 'blur(16px)' as any,
   },
   shlokaLeft: {
     flexDirection: 'row',
@@ -488,10 +532,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   shlokaIconRing: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: 'rgba(5, 150, 105, 0.10)',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.3)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -501,55 +547,60 @@ const styles = StyleSheet.create({
   shlokaTitle: {
     fontSize: 13,
     fontWeight: '800',
-    color: '#1E1B4B',
+    color: '#F8FAFC',
+    letterSpacing: 0.2,
   },
   playingBadge: {
-    backgroundColor: 'rgba(5, 150, 105, 0.12)',
+    backgroundColor: 'rgba(16, 185, 129, 0.2)',
     paddingHorizontal: 6,
     paddingVertical: 1.5,
     borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.4)',
   },
   playingBadgeText: {
     fontSize: 8.5,
     fontWeight: '900',
-    color: '#059669',
+    color: '#34D399',
     letterSpacing: 0.5,
   },
   tapToPlayBadge: {
-    backgroundColor: 'rgba(217, 119, 6, 0.10)',
+    backgroundColor: 'rgba(212, 175, 55, 0.15)',
     paddingHorizontal: 6,
     paddingVertical: 1.5,
     borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.3)',
   },
   tapToPlayBadgeText: {
     fontSize: 8,
     fontWeight: '800',
-    color: '#D97706',
+    color: '#F5D77F',
   },
   shlokaSub: {
     fontSize: 11,
-    color: '#475569',
+    color: '#94A3B8',
     fontWeight: '500',
     marginTop: 2,
   },
   shlokaPlayBtn: {
-    backgroundColor: '#059669',
+    backgroundColor: '#D4AF37',
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderRadius: radius.pill,
-    shadowColor: '#059669',
+    shadowColor: '#D4AF37',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 2,
   },
   shlokaPauseBtn: {
-    backgroundColor: '#D97706',
+    backgroundColor: '#EA580C',
   },
   shlokaPlayText: {
     fontSize: 11.5,
-    fontWeight: '800',
-    color: '#FFFFFF',
+    fontWeight: '900',
+    color: '#0B0D17',
   },
 
   /* Cosmic Rewards Banner */
@@ -561,12 +612,13 @@ const styles = StyleSheet.create({
     gap: 12,
     overflow: 'hidden',
     borderWidth: 1.5,
-    borderColor: 'rgba(245, 158, 11, 0.4)',
-    shadowColor: '#1E1B4B',
+    borderColor: 'rgba(212, 175, 55, 0.35)',
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
+    shadowOpacity: 0.6,
+    shadowRadius: 14,
     elevation: 5,
+    backdropFilter: 'blur(16px)' as any,
   },
   rewardsFlameBox: {
     width: 44,
@@ -579,7 +631,7 @@ const styles = StyleSheet.create({
   rewardsBannerTag: {
     fontSize: 9,
     fontWeight: '900',
-    color: '#F59E0B',
+    color: '#F5D77F',
     letterSpacing: 1,
   },
   rewardsStreakPill: {
@@ -587,6 +639,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 1,
     borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(234, 88, 12, 0.4)',
   },
   rewardsStreakPillText: {
     fontSize: 9,
@@ -597,10 +651,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    backgroundColor: 'rgba(245, 158, 11, 0.2)',
+    backgroundColor: 'rgba(212, 175, 55, 0.2)',
     paddingHorizontal: 6,
     paddingVertical: 1,
     borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.35)',
   },
   rewardsCoinsText: {
     fontSize: 9.5,
@@ -610,11 +666,11 @@ const styles = StyleSheet.create({
   rewardsBannerTitle: {
     fontSize: 14,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: '#F8FAFC',
   },
   rewardsBannerSub: {
     fontSize: 10.5,
-    color: '#CBD5E1',
+    color: '#94A3B8',
     lineHeight: 14,
   },
   rewardsActionBtn: {
@@ -626,28 +682,29 @@ const styles = StyleSheet.create({
   rewardsActionText: {
     fontSize: 12,
     fontWeight: '900',
-    color: '#1E1B4B',
+    color: '#0B0D17',
   },
 
   /* Today's Reading Card */
   todayCard: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(18, 20, 42, 0.85)',
     borderRadius: 22,
     padding: spacing.md,
     borderWidth: 1.5,
-    borderColor: 'rgba(226, 232, 240, 0.9)',
-    shadowColor: '#CBD5E1',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-    elevation: 3,
+    borderColor: 'rgba(139, 92, 246, 0.3)',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.6,
+    shadowRadius: 14,
+    elevation: 4,
     gap: 12,
+    backdropFilter: 'blur(16px)' as any,
   },
   todayRule: {
     width: 4,
     borderRadius: 2,
-    backgroundColor: '#7C3AED',
+    backgroundColor: '#8B5CF6',
   },
   todayTop: {
     flexDirection: 'row',
@@ -658,31 +715,35 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 8,
-    backgroundColor: 'rgba(124, 58, 237, 0.10)',
+    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(139, 92, 246, 0.35)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   todayLabel: {
     fontSize: 11,
     fontWeight: '800',
-    color: '#7C3AED',
+    color: '#A78BFA',
     letterSpacing: 0.5,
     flex: 1,
   },
   moodBadge: {
-    backgroundColor: 'rgba(5, 150, 105, 0.10)',
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.35)',
   },
   todayMood: {
     fontSize: 10.5,
     fontWeight: '800',
-    color: '#059669',
+    color: '#34D399',
   },
   todayText: {
     fontSize: 12.5,
-    color: '#334155',
+    color: '#E2E8F0',
     lineHeight: 18,
     fontWeight: '500',
   },
@@ -693,31 +754,35 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   luckyPill: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor: 'rgba(212, 175, 55, 0.15)',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.3)',
   },
   luckyPillText: {
     fontSize: 10.5,
     fontWeight: '800',
-    color: '#B45309',
+    color: '#F5D77F',
   },
   silverPill: {
-    backgroundColor: '#F1F5F9',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   silverPillText: {
     fontSize: 10.5,
     fontWeight: '700',
-    color: '#475569',
+    color: '#CBD5E1',
   },
   readMore: {
     fontSize: 11.5,
     fontWeight: '800',
-    color: '#7C3AED',
+    color: '#A78BFA',
     marginLeft: 'auto',
   },
 
@@ -738,9 +803,10 @@ const styles = StyleSheet.create({
     gap: 6,
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 1,
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 2,
+    backdropFilter: 'blur(10px)' as any,
   },
   quickBadge: {
     position: 'absolute',
@@ -762,23 +828,24 @@ const styles = StyleSheet.create({
   quickLabel: {
     fontSize: 10.5,
     fontWeight: '700',
-    color: '#1E293B',
+    color: '#F8FAFC',
     textAlign: 'center',
   },
 
   /* Panchang Card */
   panchangCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(18, 20, 42, 0.85)',
     borderRadius: 20,
     padding: spacing.md,
     borderWidth: 1.5,
-    borderColor: 'rgba(245, 158, 11, 0.25)',
-    shadowColor: '#BFDBFE',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 8,
-    elevation: 3,
+    borderColor: 'rgba(212, 175, 55, 0.25)',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    elevation: 4,
     gap: 10,
+    backdropFilter: 'blur(16px)' as any,
   },
   panchangTopRow: {
     flexDirection: 'row',
@@ -788,19 +855,21 @@ const styles = StyleSheet.create({
   panchangTitle: {
     fontSize: 13,
     fontWeight: '800',
-    color: '#1E1B4B',
+    color: '#F8FAFC',
   },
   panchangLink: {
     fontSize: 11.5,
     fontWeight: '800',
-    color: '#059669',
+    color: '#F5D77F',
   },
   panchangGrid: {
     flexDirection: 'row',
     gap: 8,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
     borderRadius: 14,
     padding: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   panchangCol: {
     flex: 1,
@@ -815,93 +884,95 @@ const styles = StyleSheet.create({
   panchangVal: {
     fontSize: 11,
     fontWeight: '800',
-    color: '#1E293B',
+    color: '#F8FAFC',
   },
 
   /* Numerology Banner */
   numerologyBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(18, 20, 42, 0.85)',
     borderRadius: 20,
     padding: spacing.md,
     borderWidth: 1.5,
     borderColor: 'rgba(56, 189, 248, 0.3)',
-    shadowColor: '#BAE6FD',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    elevation: 4,
     gap: 12,
+    backdropFilter: 'blur(16px)' as any,
   },
   numBadgeCircle: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#E0F2FE',
-    borderWidth: 2,
-    borderColor: '#0284C7',
+    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+    borderWidth: 1.5,
+    borderColor: '#38BDF8',
     alignItems: 'center',
     justifyContent: 'center',
   },
   numBadgeVal: {
     fontSize: 20,
     fontWeight: '900',
-    color: '#0369A1',
+    color: '#38BDF8',
   },
   numBannerTag: {
     fontSize: 9.5,
     fontWeight: '900',
-    color: '#0284C7',
+    color: '#38BDF8',
     letterSpacing: 0.6,
   },
   numBannerTitle: {
     fontSize: 13,
     fontWeight: '800',
-    color: '#0F172A',
+    color: '#F8FAFC',
   },
   numBannerSub: {
     fontSize: 10.5,
-    color: '#64748B',
+    color: '#94A3B8',
     fontWeight: '500',
   },
   numBannerArrow: {
     fontSize: 20,
-    color: '#0284C7',
+    color: '#38BDF8',
     fontWeight: '700',
   },
 
   /* Graha Radar Widget Styles */
   grahaRadarCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(18, 20, 42, 0.85)',
     borderRadius: 22,
     padding: 16,
     borderWidth: 1.5,
-    borderColor: 'rgba(226, 232, 240, 0.9)',
-    shadowColor: '#CBD5E1',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-    elevation: 3,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.6,
+    shadowRadius: 14,
+    elevation: 4,
     gap: 12,
+    backdropFilter: 'blur(16px)' as any,
   },
   grahaRadarHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
+    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
     paddingBottom: 8,
   },
   grahaRadarTitle: {
     fontSize: 10.5,
     fontWeight: '900',
-    color: '#059669',
+    color: '#10B981',
     letterSpacing: 0.5,
   },
   grahaRadarSub: {
     fontSize: 9.5,
-    color: '#64748B',
+    color: '#94A3B8',
     fontWeight: '600',
   },
   grahaPillGrid: {
@@ -911,35 +982,35 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
     borderRadius: 12,
     padding: 10,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: 'rgba(255, 255, 255, 0.06)',
   },
   grahaPillName: {
     fontSize: 12,
     fontWeight: '800',
-    color: '#1E1B4B',
+    color: '#F8FAFC',
   },
   grahaPillEffect: {
     fontSize: 10,
-    color: '#64748B',
+    color: '#94A3B8',
     fontWeight: '500',
     marginTop: 1,
   },
   auspiciousBadge: {
-    backgroundColor: '#ECFDF5',
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
     paddingHorizontal: 7,
     paddingVertical: 2.5,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#A7F3D0',
+    borderColor: 'rgba(16, 185, 129, 0.35)',
   },
   auspiciousBadgeText: {
     fontSize: 9,
     fontWeight: '900',
-    color: '#059669',
+    color: '#34D399',
     letterSpacing: 0.3,
   },
 });
