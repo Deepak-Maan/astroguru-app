@@ -1,11 +1,15 @@
+/**
+ * AstroGuru — Modern Split-Screen Login & Registration Experience
+ * Powered by Three.js 3D Celestial Armillary Showcase, Frosted Spatial Glassmorphism,
+ * One-Click Google & Apple OAuth, Staggered Tab Morphing, and Micro-Interaction Form Validation.
+ */
+
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Dimensions,
   Easing,
-  Image,
   KeyboardAvoidingView,
-  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -18,9 +22,8 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
-import { GradientBackground } from '../../src/components/GradientBackground';
-import { Button } from '../../src/components/Button';
-import { Card } from '../../src/components/Card';
+import Svg, { Path } from 'react-native-svg';
+import { AuthCelestialShowcase } from '../../src/components/auth/AuthCelestialShowcase';
 import { AnimatedAuthOverlay } from '../../src/components/AnimatedAuthOverlay';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { useAuthStore } from '../../src/store/authStore';
@@ -32,38 +35,64 @@ import {
 } from '../../src/services/authService';
 import { signInWithGoogle } from '../../src/services/firebaseConfig';
 
-const { width } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-// 12 Sacred Zodiac Rashi Symbols for the outer rotating cosmic ring
-const ZODIAC_SYMBOLS = ['♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓'];
-const PLANETARY_GLYPHS = ['☉', '☽', '☿', '♀', '♂', '♃', '♄', '☊', '☋'];
+function GoogleIcon() {
+  return (
+    <Svg width={18} height={18} viewBox="0 0 24 24">
+      <Path
+        fill="#EA4335"
+        d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.3 9 5 12 5z"
+      />
+      <Path
+        fill="#4285F4"
+        d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.9z"
+      />
+      <Path
+        fill="#FBBC05"
+        d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3 0-.8.2-1.6.4-2.3L1.9 7.3C.7 9.7 0 12.3 0 15.2s.7 5.5 1.9 7.9l3.7-2.9z"
+      />
+      <Path
+        fill="#34A853"
+        d="M12 23.5c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.3-6.4-5.2L1.9 16.5C3.7 20.2 7.5 23.5 12 23.5z"
+      />
+    </Svg>
+  );
+}
+
+function AppleIcon() {
+  return (
+    <Svg width={18} height={18} viewBox="0 0 24 24" fill="#FFFFFF">
+      <Path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.85c.66-.82 1.11-1.96.99-3.1-.96.04-2.18.65-2.85 1.44-.59.68-1.11 1.83-.97 2.95 1.08.08 2.18-.56 2.83-1.29z" />
+    </Svg>
+  );
+}
 
 export default function LoginScreen() {
   const router = useRouter();
   const setUserSession = useAuthStore((s) => s.setUserSession);
 
-  // ── Framer-Motion / GSAP style Animated Values ──
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(30)).current;
-  const scaleAnim = useRef(new Animated.Value(0.92)).current;
-  const haloRotateAnim = useRef(new Animated.Value(0)).current;
-  const counterHaloAnim = useRef(new Animated.Value(0)).current;
-  const floatAnim = useRef(new Animated.Value(0)).current;
-  const tabSlideAnim = useRef(new Animated.Value(0)).current;
-  const pulseAura = useRef(new Animated.Value(1)).current;
+  // ── Responsive Width State ──
+  const [windowWidth, setWindowWidth] = useState(SCREEN_WIDTH);
+  const isDesktop = windowWidth >= 920;
 
-  // Overlay state
-  const [showOverlay, setShowOverlay] = useState(false);
-  const [pendingUser, setPendingUser] = useState<any | null>(null);
-  const [targetRoute, setTargetRoute] = useState<'/(tabs)' | '/admin'>('/(tabs)');
+  useEffect(() => {
+    const subscription = Dimensions.addEventListener('change', ({ window }) => {
+      setWindowWidth(window.width);
+    });
+    return () => subscription?.remove();
+  }, []);
 
-  // Input Focus States for GSAP Glow
-  const [focusedField, setFocusedField] = useState<string | null>(null);
+  // ── Main Auth Tab: 'login' | 'signup' | 'acharya' ──
+  const [activeTab, setActiveTab] = useState<'login' | 'signup' | 'acharya'>('login');
 
-  // Tab State: 'otp' | 'email'
+  // Sub-mode for Login: 'otp' | 'email'
   const [loginMode, setLoginMode] = useState<'otp' | 'email'>('otp');
 
-  // Mobile OTP States
+  // Focus tracking for active border glows
+  const [focusedField, setFocusedField] = useState<string | null>(null);
+
+  // ── Form Values ──
   const [phone, setPhone] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [otpCode, setOtpCode] = useState('');
@@ -71,38 +100,63 @@ export default function LoginScreen() {
   const [otpLoading, setOtpLoading] = useState(false);
   const [verifyLoading, setVerifyLoading] = useState(false);
 
-  // Email form states
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
+  // Sign Up Extra Fields
+  const [regName, setRegName] = useState('');
+  const [regDob, setRegDob] = useState('15/08/1995');
+
+  // Acharya Extra Fields
+  const [astroSpecialty, setAstroSpecialty] = useState('Vedic Astrology, Prashna Kundli');
+  const [astroExp, setAstroExp] = useState('10');
+  const [astroRate, setAstroRate] = useState('25');
+
+  // Status & Overlay
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [appleLoading, setAppleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
 
-  // ── New Seeker Sign Up Modal States ──
-  const [showSeekerSignUp, setShowSeekerSignUp] = useState(false);
-  const [regName, setRegName] = useState('');
-  const [regEmail, setRegEmail] = useState('');
-  const [regPhone, setRegPhone] = useState('');
-  const [regPassword, setRegPassword] = useState('');
-  const [regDob, setRegDob] = useState('15/08/1995');
-  const [regLoading, setRegLoading] = useState(false);
-  const [regError, setRegError] = useState<string | null>(null);
+  const [showOverlay, setShowOverlay] = useState(false);
+  const [pendingUser, setPendingUser] = useState<any | null>(null);
+  const [targetRoute, setTargetRoute] = useState<'/(tabs)' | '/admin'>('/(tabs)');
 
-  // ── New Astrologer / Acharya Registration Modal States ──
-  const [showAstroSignUp, setShowAstroSignUp] = useState(false);
-  const [astroName, setAstroName] = useState('');
-  const [astroEmail, setAstroEmail] = useState('');
-  const [astroPhone, setAstroPhone] = useState('');
-  const [astroPassword, setAstroPassword] = useState('');
-  const [astroSpecialty, setAstroSpecialty] = useState('Vedic Astrology, Kundli Prashna');
-  const [astroExp, setAstroExp] = useState('10');
-  const [astroRate, setAstroRate] = useState('25');
-  const [astroLang, setAstroLang] = useState('Hindi, English, Sanskrit');
-  const [astroLoading, setAstroLoading] = useState(false);
-  const [astroError, setAstroError] = useState<string | null>(null);
+  // ── Micro-Interaction Animations ──
+  const shakeAnim = useRef(new Animated.Value(0)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(20)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 500,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  const triggerShake = () => {
+    shakeAnim.setValue(0);
+    Animated.sequence([
+      Animated.timing(shakeAnim, { toValue: -10, duration: 50, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: 10, duration: 50, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: -8, duration: 50, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: 8, duration: 50, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: -4, duration: 50, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: 0, duration: 50, useNativeDriver: true }),
+    ]).start();
+  };
 
   const triggerHaptic = (type: 'light' | 'medium' | 'success' = 'light') => {
     try {
@@ -120,1348 +174,907 @@ export default function LoginScreen() {
     } catch (_) {}
   };
 
-  useEffect(() => {
-    // 1. Entrance Smooth Stagger
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 700,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 700,
-        easing: Easing.out(Easing.back(1.4)),
-        useNativeDriver: true,
-      }),
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 650,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
-    ]).start();
+  // ── Validation Helpers ──
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const isPhoneValid = /^[6-9]\d{9}$/.test(phone.replace(/\D/g, ''));
 
-    // 2. Perfectly Balanced GSAP-style Continuous Rotation (Clockwise Zodiac Ring)
-    const haloSpin = Animated.loop(
-      Animated.timing(haloRotateAnim, {
-        toValue: 1,
-        duration: 20000,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      })
-    );
-    haloSpin.start();
-
-    // 3. Counter-Rotating Inner Sacred Orbital Ring
-    const counterSpin = Animated.loop(
-      Animated.timing(counterHaloAnim, {
-        toValue: 1,
-        duration: 14000,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      })
-    );
-    counterSpin.start();
-
-    // 4. Floating Orb Levitation
-    const floating = Animated.loop(
-      Animated.sequence([
-        Animated.timing(floatAnim, {
-          toValue: -6,
-          duration: 2200,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-        }),
-        Animated.timing(floatAnim, {
-          toValue: 0,
-          duration: 2200,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    floating.start();
-
-    // 5. Subtle Golden Aura Breathing
-    const auraPulse = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAura, {
-          toValue: 1.15,
-          duration: 1600,
-          easing: Easing.inOut(Easing.quad),
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAura, {
-          toValue: 1,
-          duration: 1600,
-          easing: Easing.inOut(Easing.quad),
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    auraPulse.start();
-
-    return () => {
-      haloSpin.stop();
-      counterSpin.stop();
-      floating.stop();
-      auraPulse.stop();
-    };
-  }, []);
-
-  const switchTab = (mode: 'otp' | 'email') => {
-    triggerHaptic('light');
-    setLoginMode(mode);
-    setError(null);
-    Animated.spring(tabSlideAnim, {
-      toValue: mode === 'otp' ? 0 : 1,
-      useNativeDriver: true,
-      friction: 7,
-      tension: 50,
-    }).start();
+  const getPasswordStrength = (pass: string) => {
+    if (!pass) return { score: 0, label: '', color: '#64748B' };
+    if (pass.length < 6) return { score: 1, label: 'Weak', color: '#F43F5E' };
+    if (pass.length < 10 || !/[0-9]/.test(pass)) return { score: 2, label: 'Good', color: '#F59E0B' };
+    return { score: 3, label: 'Strong', color: '#10B981' };
   };
 
-  const triggerSuccessAnimation = (user: any, route: '/(tabs)' | '/admin' = '/(tabs)') => {
+  const passStrength = getPasswordStrength(password);
+
+  // ── Launch Celestial Overlay ──
+  const launchSessionWithOverlay = (user: any, route: '/(tabs)' | '/admin' = '/(tabs)') => {
     triggerHaptic('success');
     setPendingUser(user);
     setTargetRoute(route);
     setShowOverlay(true);
   };
 
-  const handleOverlayFinish = () => {
+  const handleOverlayComplete = () => {
     if (pendingUser) {
       setUserSession(pendingUser);
       router.replace(targetRoute);
     }
   };
 
-  // Handle 1-Tap Google Login
-  const handleGoogleLogin = async () => {
-    triggerHaptic('medium');
-    setGoogleLoading(true);
-    setError(null);
-
-    const res = await signInWithGoogle();
-    setGoogleLoading(false);
-
-    if (res.success && res.user) {
-      triggerSuccessAnimation(res.user, res.user.role === 'admin' ? '/admin' : '/(tabs)');
-    } else {
-      setError(res.error || 'Google Sign-In failed. Please try again.');
-    }
-  };
-
-  // Handle Send Mobile OTP
+  // ── Handlers ──
   const handleSendOtp = async () => {
-    if (!phone || phone.trim().length !== 10) {
-      setError('Please enter a valid 10-digit mobile number.');
-      triggerHaptic('medium');
+    const raw = phone.replace(/\D/g, '');
+    if (raw.length !== 10) {
+      setError('Please enter a valid 10-digit Indian mobile number');
+      triggerShake();
       return;
     }
-
-    triggerHaptic('light');
+    setError(null);
     setOtpLoading(true);
-    setError(null);
-    setInfoMessage(null);
+    triggerHaptic('medium');
 
-    const res = await sendMobileOtp(phone.trim());
+    const res = await sendMobileOtp(raw);
     setOtpLoading(false);
-
     if (res.success) {
-      triggerHaptic('success');
       setOtpSent(true);
-      setDebugOtp(res.otp);
-      setInfoMessage(res.message || `Verification code sent to +91 ${phone}`);
+      setDebugOtp(res.debugOtp || '123456');
+      setInfoMessage(`OTP sent to +91 ${raw}`);
     } else {
-      setError(res.message || 'Failed to send OTP code. Try again.');
+      setError(res.error || 'Failed to send OTP.');
+      triggerShake();
     }
   };
 
-  // Handle Verify Mobile OTP
   const handleVerifyOtp = async () => {
+    const rawPhone = phone.replace(/\D/g, '');
     if (!otpCode || otpCode.trim().length < 4) {
-      setError('Please enter the 6-digit verification code.');
-      triggerHaptic('medium');
+      setError('Please enter the 6-digit OTP code');
+      triggerShake();
       return;
     }
-
-    triggerHaptic('medium');
+    setError(null);
     setVerifyLoading(true);
-    setError(null);
-
-    const res = await verifyMobileOtp(phone.trim(), otpCode.trim());
-    setVerifyLoading(false);
-
-    if (res.success && res.user) {
-      triggerSuccessAnimation(res.user, res.user.role === 'admin' ? '/admin' : '/(tabs)');
-    } else {
-      setError(res.error || 'Invalid OTP code. Please check and try again.');
-    }
-  };
-
-  // Handle Email & Password Login
-  const handleEmailLogin = async () => {
-    if (!email.trim() || !email.includes('@')) {
-      setError('Please enter a valid email address.');
-      triggerHaptic('medium');
-      return;
-    }
-    if (!password) {
-      setError('Please enter your account password.');
-      triggerHaptic('medium');
-      return;
-    }
-
-    triggerHaptic('light');
-    setLoading(true);
-    setError(null);
-
-    const res = await loginWithEmailPassword(email, password);
-    setLoading(false);
-
-    if (res.success && res.user) {
-      triggerSuccessAnimation(res.user, res.user.role === 'admin' ? '/admin' : '/(tabs)');
-    } else {
-      setError(res.error || 'Login failed. Please check your credentials.');
-    }
-  };
-
-  // Handle New Seeker Sign Up Submission
-  const handleSeekerRegister = async () => {
-    if (!regName.trim()) {
-      setRegError('Please enter your full name.');
-      return;
-    }
-    if (!regEmail.trim() || !regEmail.includes('@')) {
-      setRegError('Please enter a valid email address.');
-      return;
-    }
-    if (!regPassword || regPassword.length < 6) {
-      setRegError('Password must be at least 6 characters.');
-      return;
-    }
-
-    setRegLoading(true);
-    setRegError(null);
-
-    const newUser = {
-      id: `usr_${Date.now()}`,
-      name: regName.trim(),
-      email: regEmail.trim().toLowerCase(),
-      phone: regPhone.trim() || '9876543210',
-      role: 'user' as const,
-      wallet: 200, // ₹200 Welcome Bonus!
-      createdAt: new Date().toISOString(),
-    };
-
-    setTimeout(() => {
-      setRegLoading(false);
-      setShowSeekerSignUp(false);
-      triggerSuccessAnimation(newUser, '/(tabs)');
-    }, 600);
-  };
-
-  // Handle New Astrologer Application Submission
-  const handleAstroRegister = async () => {
-    if (!astroName.trim()) {
-      setAstroError('Please enter your official Jyotishi name.');
-      return;
-    }
-    if (!astroEmail.trim() || !astroEmail.includes('@')) {
-      setAstroError('Please enter your professional email address.');
-      return;
-    }
-    if (!astroPassword || astroPassword.length < 6) {
-      setAstroError('Password must be at least 6 characters.');
-      return;
-    }
-
-    setAstroLoading(true);
-    setAstroError(null);
-
-    const newAstroUser = {
-      id: `astro_${Date.now()}`,
-      name: astroName.trim(),
-      email: astroEmail.trim().toLowerCase(),
-      phone: astroPhone.trim() || '9876543210',
-      role: 'astrologer' as const,
-      specialties: astroSpecialty.split(',').map((s) => s.trim()),
-      experienceYears: Number(astroExp) || 10,
-      pricePerMin: Number(astroRate) || 25,
-      languages: astroLang.split(',').map((l) => l.trim()),
-      wallet: 0,
-      createdAt: new Date().toISOString(),
-    };
-
-    setTimeout(() => {
-      setAstroLoading(false);
-      setShowAstroSignUp(false);
-      triggerSuccessAnimation(newAstroUser, '/(tabs)');
-    }, 600);
-  };
-
-  // Quick Demo Auto-Fill Helpers
-  const handleQuickLogin = async (type: 'user' | 'astro' | 'admin') => {
     triggerHaptic('medium');
-    setLoading(true);
-    setError(null);
-    let demoEmail = 'user@astroguru.app';
-    let demoPass = 'user123';
 
-    if (type === 'astro') {
-      demoEmail = 'acharya@astroguru.app';
-      demoPass = 'astro123';
-    } else if (type === 'admin') {
-      demoEmail = 'admin@astroguru.app';
-      demoPass = 'admin123';
-    }
-
-    setEmail(demoEmail);
-    setPassword(demoPass);
-    const res = await loginWithEmailPassword(demoEmail, demoPass);
-    setLoading(false);
-
+    const res = await verifyMobileOtp(rawPhone, otpCode.trim());
+    setVerifyLoading(false);
     if (res.success && res.user) {
-      triggerSuccessAnimation(res.user, res.user.role === 'admin' ? '/admin' : '/(tabs)');
+      launchSessionWithOverlay(res.user, '/(tabs)');
     } else {
-      const role = type === 'admin' ? 'admin' : type === 'astro' ? 'astrologer' : 'user';
-      const name = type === 'admin' ? 'Master Admin' : type === 'astro' ? 'Acharya Dev' : 'Astro Seeker';
-      triggerSuccessAnimation(
-        {
-          id: `usr_demo_${type}`,
-          name,
-          email: demoEmail,
-          role,
-          createdAt: '2026-01-01',
-        },
-        role === 'admin' ? '/admin' : '/(tabs)'
-      );
+      setError(res.error || 'Invalid OTP code.');
+      triggerShake();
     }
   };
 
-  const spinInterpolation = haloRotateAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
+  const handleEmailAuth = async () => {
+    setError(null);
+    if (!isEmailValid) {
+      setError('Please enter a valid email address.');
+      triggerShake();
+      return;
+    }
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters.');
+      triggerShake();
+      return;
+    }
 
-  const counterSpinInterpolation = counterHaloAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['360deg', '0deg'],
-  });
+    setLoading(true);
+    triggerHaptic('medium');
+
+    if (activeTab === 'login') {
+      const res = await loginWithEmailPassword(email.trim(), password);
+      setLoading(false);
+      if (res.success && res.user) {
+        const dest = res.user.role === 'admin' ? '/admin' : '/(tabs)';
+        launchSessionWithOverlay(res.user, dest);
+      } else {
+        setError(res.error || 'Login failed. Please check your credentials.');
+        triggerShake();
+      }
+    } else if (activeTab === 'signup') {
+      if (!regName.trim()) {
+        setError('Please enter your full name');
+        setLoading(false);
+        triggerShake();
+        return;
+      }
+      const res = await registerUserAccount({
+        name: regName.trim(),
+        email: email.trim(),
+        password: password,
+        phone: phone ? phone.replace(/\D/g, '') : undefined,
+        role: 'user',
+        dob: regDob,
+      });
+      setLoading(false);
+      if (res.success && res.user) {
+        launchSessionWithOverlay(res.user, '/(tabs)');
+      } else {
+        setError(res.error || 'Registration failed.');
+        triggerShake();
+      }
+    } else if (activeTab === 'acharya') {
+      if (!regName.trim()) {
+        setError('Please enter your Acharya/Jyotishi title & name');
+        setLoading(false);
+        triggerShake();
+        return;
+      }
+      const res = await registerUserAccount({
+        name: regName.trim(),
+        email: email.trim(),
+        password: password,
+        phone: phone ? phone.replace(/\D/g, '') : undefined,
+        role: 'astrologer',
+        specialties: astroSpecialty.split(',').map((s) => s.trim()),
+        experienceYears: parseInt(astroExp, 10) || 8,
+        pricePerMin: parseInt(astroRate, 10) || 25,
+      });
+      setLoading(false);
+      if (res.success && res.user) {
+        launchSessionWithOverlay(res.user, '/(tabs)');
+      } else {
+        setError(res.error || 'Acharya registration failed.');
+        triggerShake();
+      }
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setError(null);
+    setGoogleLoading(true);
+    triggerHaptic('medium');
+    try {
+      const user = await signInWithGoogle();
+      setGoogleLoading(false);
+      if (user) {
+        launchSessionWithOverlay(user, '/(tabs)');
+      }
+    } catch (e: any) {
+      setGoogleLoading(false);
+      setError(e.message || 'Google sign in was cancelled.');
+    }
+  };
+
+  const handleAppleSignIn = async () => {
+    setError(null);
+    setAppleLoading(true);
+    triggerHaptic('medium');
+    setTimeout(() => {
+      setAppleLoading(false);
+      // Demo Apple OAuth Profile
+      const demoAppleUser = {
+        id: 'usr_apple_demo',
+        name: 'Apple Seeker',
+        email: 'seeker.apple@astroguru.com',
+        role: 'user' as const,
+        avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150',
+      };
+      launchSessionWithOverlay(demoAppleUser, '/(tabs)');
+    }, 1200);
+  };
+
+  const handleDemoLogin = (role: 'user' | 'astrologer' | 'admin') => {
+    triggerHaptic('medium');
+    let demoUser;
+    if (role === 'user') {
+      demoUser = {
+        id: 'usr_priya_demo',
+        name: 'Priya Sharma',
+        email: 'priya.sharma@example.com',
+        role: 'user' as const,
+        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
+      };
+      launchSessionWithOverlay(demoUser, '/(tabs)');
+    } else if (role === 'astrologer') {
+      demoUser = {
+        id: '1',
+        name: 'Dr. Radha Raman Shastri',
+        email: 'radha.raman@astroguru.com',
+        role: 'astrologer' as const,
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+      };
+      launchSessionWithOverlay(demoUser, '/(tabs)');
+    } else {
+      demoUser = {
+        id: 'adm_master',
+        name: 'System Administrator',
+        email: 'admin@astroguru.com',
+        role: 'admin' as const,
+      };
+      launchSessionWithOverlay(demoUser, '/admin');
+    }
+  };
 
   return (
-    <GradientBackground>
-      <SafeAreaView style={{ flex: 1 }}>
-        <AnimatedAuthOverlay
-          visible={showOverlay}
-          type="login"
-          message={`Opening ${pendingUser?.name || 'AstroGuru'} workspace... ✨`}
-          onFinished={handleOverlayFinish}
-        />
+    <View style={styles.rootContainer}>
+      {/* Background Cosmic Gradient */}
+      <LinearGradient
+        colors={['#07080F', '#0B0D17', '#121428']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={StyleSheet.absoluteFill}
+      />
 
-        {/* ── Background Constellations & Floating Glyphs ── */}
-        <View style={styles.floatingGlyphContainer} pointerEvents="none">
-          {PLANETARY_GLYPHS.map((glyph, index) => (
-            <Animated.Text
-              key={index}
-              style={[
-                styles.cosmicGlyph,
-                {
-                  left: `${(index * 11 + 5) % 90}%`,
-                  top: `${(index * 13 + 8) % 85}%`,
-                  opacity: 0.18 + (index % 3) * 0.08,
-                  transform: [{ translateY: floatAnim }],
-                },
-              ]}
-            >
-              {glyph}
-            </Animated.Text>
-          ))}
-        </View>
-
+      <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
         <KeyboardAvoidingView
-          style={{ flex: 1 }}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={{ flex: 1 }}
         >
-          <ScrollView
-            contentContainerStyle={styles.scrollContainer}
-            showsVerticalScrollIndicator={false}
-          >
-            <Animated.View
-              style={[
-                styles.webWrapper,
-                {
-                  opacity: fadeAnim,
-                  transform: [
-                    { translateY: slideAnim },
-                    { scale: scaleAnim },
-                  ],
-                },
-              ]}
-            >
-              {/* ── PERFECT 3D DUAL-ROTATING SACRED CHAKRA LOGO ── */}
-              <View style={styles.hero}>
-                <View style={styles.logoStack}>
-                  {/* Layer 1: Outer Rotating Zodiac Symbols Mandala Ring (GSAP Clockwise) */}
-                  <Animated.View
-                    style={[
-                      styles.zodiacMandalaRing,
-                      { transform: [{ rotate: spinInterpolation }] },
-                    ]}
-                  >
-                    {ZODIAC_SYMBOLS.map((symbol, idx) => {
-                      const angle = (idx * 30 * Math.PI) / 180;
-                      const radius = 50;
-                      const x = radius * Math.cos(angle);
-                      const y = radius * Math.sin(angle);
-                      return (
-                        <Text
-                          key={idx}
-                          style={[
-                            styles.zodiacRashiChar,
-                            {
-                              transform: [{ translateX: x }, { translateY: y }],
-                            },
-                          ]}
-                        >
-                          {symbol}
-                        </Text>
-                      );
-                    })}
-                  </Animated.View>
+          <View style={[styles.mainLayout, isDesktop && styles.desktopSplitLayout]}>
+            {/* ── LEFT COLUMN: Visual 3D Showcase (Desktop) / Header (Mobile) ── */}
+            <View style={[styles.showcaseColumn, isDesktop && styles.showcaseColumnDesktop]}>
+              <AuthCelestialShowcase />
+            </View>
 
-                  {/* Layer 2: Counter-Rotating Dashed Golden Celestial Orbit (Counter-Clockwise) */}
-                  <Animated.View
-                    style={[
-                      styles.dashedOrbitRing,
-                      { transform: [{ rotate: counterSpinInterpolation }] },
-                    ]}
-                  >
-                    <View style={styles.orbitingStarDot} />
-                    <View style={styles.orbitingStarDotOpposite} />
-                  </Animated.View>
+            {/* ── RIGHT COLUMN: Auth Panel Glassmorphism ── */}
+            <View style={[styles.authColumn, isDesktop && styles.authColumnDesktop]}>
+              <ScrollView
+                contentContainerStyle={styles.authScroll}
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+              >
+                <Animated.View
+                  style={[
+                    styles.glassCard,
+                    {
+                      opacity: fadeAnim,
+                      transform: [{ translateY: slideAnim }, { translateX: shakeAnim }],
+                    },
+                  ]}
+                >
+                  {/* Top Specular Edge Glow */}
+                  <View style={styles.specularEdge} />
 
-                  {/* Layer 3: Breathing Golden Emerald Aura Glow */}
-                  <Animated.View
-                    style={[
-                      styles.auraGlow,
-                      { transform: [{ scale: pulseAura }] },
-                    ]}
-                  />
-
-                  {/* Layer 4: Floating Center Emblem with 3D Border */}
-                  <Animated.View
-                    style={[
-                      styles.logoInnerCircle,
-                      { transform: [{ translateY: floatAnim }] },
-                    ]}
-                  >
-                    <LinearGradient
-                      colors={['#10B981', '#F59E0B', '#D97706']}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                      style={styles.logoGradientBorder}
+                  {/* Segmented Main Mode Switcher: Log In / Sign Up / Acharya */}
+                  <View style={styles.tabContainer}>
+                    <Pressable
+                      onPress={() => {
+                        setActiveTab('login');
+                        setError(null);
+                        triggerHaptic('light');
+                      }}
+                      style={[styles.tabBtn, activeTab === 'login' && styles.tabBtnActive]}
                     >
-                      <Image
-                        source={require('../../assets/icon.png')}
-                        style={styles.logoImage}
-                        resizeMode="cover"
-                      />
-                    </LinearGradient>
-                  </Animated.View>
-                </View>
-
-                {/* Badge Tag */}
-                <View style={styles.badgePill}>
-                  <LinearGradient
-                    colors={['rgba(5, 150, 105, 0.15)', 'rgba(217, 119, 6, 0.15)']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={StyleSheet.absoluteFill}
-                  />
-                  <Text style={styles.badgeText}>✨ VEDIC ASTROLOGY & AI JYOTISH 🪐</Text>
-                </View>
-
-                <Text style={styles.brandTitle}>AstroGuru</Text>
-                <Text style={styles.brandSubtitle}>
-                  Connect to your cosmic destiny, live Kundli charts & verified Gurus
-                </Text>
-              </View>
-
-              {/* ── Ultra-Luxe Glassmorphic Card ── */}
-              <View style={styles.glassCardContainer}>
-                <LinearGradient
-                  colors={['#FFFFFF', '#F8FAFC']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={StyleSheet.absoluteFill}
-                />
-
-                {/* Top Specular Glass Highlight */}
-                <View style={styles.specularShine} />
-
-                {/* ── Framer-Motion Animated Tab Switcher ── */}
-                <View style={styles.tabTrack}>
-                  <Pressable
-                    onPress={() => switchTab('otp')}
-                    style={styles.tabSegment}
-                  >
-                    {loginMode === 'otp' && (
-                      <View style={styles.activeTabGlow}>
+                      {activeTab === 'login' && (
                         <LinearGradient
-                          colors={['#059669', '#10B981']}
+                          colors={['#D4AF37', '#B8902A']}
                           start={{ x: 0, y: 0 }}
                           end={{ x: 1, y: 0 }}
                           style={StyleSheet.absoluteFill}
                         />
-                      </View>
-                    )}
-                    <Text
-                      style={[
-                        styles.tabSegmentText,
-                        loginMode === 'otp' && styles.tabSegmentTextActive,
-                      ]}
-                    >
-                      📱 Mobile Instant OTP
-                    </Text>
-                  </Pressable>
+                      )}
+                      <Text
+                        style={[
+                          styles.tabBtnText,
+                          activeTab === 'login' && styles.tabBtnTextActive,
+                        ]}
+                      >
+                        Log In
+                      </Text>
+                    </Pressable>
 
-                  <Pressable
-                    onPress={() => switchTab('email')}
-                    style={styles.tabSegment}
-                  >
-                    {loginMode === 'email' && (
-                      <View style={styles.activeTabGlow}>
+                    <Pressable
+                      onPress={() => {
+                        setActiveTab('signup');
+                        setError(null);
+                        triggerHaptic('light');
+                      }}
+                      style={[styles.tabBtn, activeTab === 'signup' && styles.tabBtnActive]}
+                    >
+                      {activeTab === 'signup' && (
                         <LinearGradient
-                          colors={['#059669', '#10B981']}
+                          colors={['#D4AF37', '#B8902A']}
                           start={{ x: 0, y: 0 }}
                           end={{ x: 1, y: 0 }}
                           style={StyleSheet.absoluteFill}
                         />
-                      </View>
-                    )}
-                    <Text
-                      style={[
-                        styles.tabSegmentText,
-                        loginMode === 'email' && styles.tabSegmentTextActive,
+                      )}
+                      <Text
+                        style={[
+                          styles.tabBtnText,
+                          activeTab === 'signup' && styles.tabBtnTextActive,
+                        ]}
+                      >
+                        Sign Up
+                      </Text>
+                    </Pressable>
+
+                    <Pressable
+                      onPress={() => {
+                        setActiveTab('acharya');
+                        setError(null);
+                        triggerHaptic('light');
+                      }}
+                      style={[styles.tabBtn, activeTab === 'acharya' && styles.tabBtnActive]}
+                    >
+                      {activeTab === 'acharya' && (
+                        <LinearGradient
+                          colors={['#8B5CF6', '#6D28D9']}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 1, y: 0 }}
+                          style={StyleSheet.absoluteFill}
+                        />
+                      )}
+                      <Text
+                        style={[
+                          styles.tabBtnText,
+                          activeTab === 'acharya' && styles.tabBtnTextActive,
+                        ]}
+                      >
+                        👑 Acharya
+                      </Text>
+                    </Pressable>
+                  </View>
+
+                  {/* Header Title & Subtitle */}
+                  <View style={styles.cardHeader}>
+                    <Text style={styles.cardTitle}>
+                      {activeTab === 'login'
+                        ? 'Welcome Back 🙏'
+                        : activeTab === 'signup'
+                        ? 'Begin Your Cosmic Journey ✨'
+                        : 'Certified Acharya Portal 🪐'}
+                    </Text>
+                    <Text style={styles.cardSubtitle}>
+                      {activeTab === 'login'
+                        ? 'Enter your credentials to unlock your daily horoscope & birth sky.'
+                        : activeTab === 'signup'
+                        ? 'Create your free seeker account and receive instant ₹200 wallet bonus.'
+                        : 'Join India’s premier verified Vedic Jyotish consultation network.'}
+                    </Text>
+                  </View>
+
+                  {/* One-Click Social Auth Options */}
+                  <View style={styles.socialButtonsRow}>
+                    <Pressable
+                      onPress={handleGoogleSignIn}
+                      disabled={googleLoading}
+                      style={({ pressed }) => [
+                        styles.socialBtn,
+                        pressed && { opacity: 0.82, transform: [{ scale: 0.98 }] },
                       ]}
                     >
-                      📧 Email & Password
-                    </Text>
-                  </Pressable>
-                </View>
+                      <GoogleIcon />
+                      <Text style={styles.socialBtnText}>
+                        {googleLoading ? 'Connecting…' : 'Google'}
+                      </Text>
+                    </Pressable>
 
-                <View style={styles.cardContent}>
-                  {/* 1-Tap Google Sign In */}
-                  <Pressable
-                    onPress={handleGoogleLogin}
-                    disabled={googleLoading}
-                    style={({ pressed }) => [
-                      styles.googleBtn,
-                      pressed && { opacity: 0.88, transform: [{ scale: 0.985 }] },
-                    ]}
-                  >
-                    <View style={styles.googleIconBox}>
-                      <Text style={{ fontSize: 18 }}>🌐</Text>
-                    </View>
-                    <Text style={styles.googleBtnText}>
-                      {googleLoading ? 'Connecting Google Secure Cloud…' : 'Continue with Google'}
-                    </Text>
-                  </Pressable>
+                    <Pressable
+                      onPress={handleAppleSignIn}
+                      disabled={appleLoading}
+                      style={({ pressed }) => [
+                        styles.socialBtn,
+                        pressed && { opacity: 0.82, transform: [{ scale: 0.98 }] },
+                      ]}
+                    >
+                      <AppleIcon />
+                      <Text style={styles.socialBtnText}>
+                        {appleLoading ? 'Connecting…' : 'Apple'}
+                      </Text>
+                    </Pressable>
+                  </View>
 
-                  {/* Cosmic Divider */}
+                  {/* Divider */}
                   <View style={styles.dividerRow}>
                     <View style={styles.dividerLine} />
-                    <Text style={styles.dividerText}>or continue below</Text>
+                    <Text style={styles.dividerText}>OR WITH CREDENTIALS</Text>
                     <View style={styles.dividerLine} />
                   </View>
 
-                  {/* ── TAB 1: Mobile OTP Form ── */}
-                  {loginMode === 'otp' ? (
-                    <View style={styles.formGap}>
-                      <View style={styles.field}>
-                        <Text style={styles.label}>ENTER REGISTERED MOBILE NUMBER</Text>
-                        <View
+                  {/* Sub-Switch for Login: Mobile OTP vs Email */}
+                  {activeTab === 'login' && (
+                    <View style={styles.subTabRow}>
+                      <Pressable
+                        onPress={() => {
+                          setLoginMode('otp');
+                          setError(null);
+                        }}
+                        style={[
+                          styles.subTabBtn,
+                          loginMode === 'otp' && styles.subTabBtnActive,
+                        ]}
+                      >
+                        <Text
                           style={[
-                            styles.phoneInputRow,
-                            focusedField === 'phone' && styles.inputFocused,
+                            styles.subTabBtnText,
+                            loginMode === 'otp' && styles.subTabBtnTextActive,
                           ]}
                         >
-                          <View style={styles.countryCodeBadge}>
-                            <Text style={styles.countryFlag}>🇮🇳</Text>
-                            <Text style={styles.countryCodeText}>+91</Text>
-                          </View>
+                          📱 Mobile OTP
+                        </Text>
+                      </Pressable>
+                      <Pressable
+                        onPress={() => {
+                          setLoginMode('email');
+                          setError(null);
+                        }}
+                        style={[
+                          styles.subTabBtn,
+                          loginMode === 'email' && styles.subTabBtnActive,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.subTabBtnText,
+                            loginMode === 'email' && styles.subTabBtnTextActive,
+                          ]}
+                        >
+                          ✉️ Email & Password
+                        </Text>
+                      </Pressable>
+                    </View>
+                  )}
+
+                  {/* Form Error / Info Banners */}
+                  {!!error && (
+                    <View style={styles.errorBanner}>
+                      <Text style={{ fontSize: 13 }}>⚠️</Text>
+                      <Text style={styles.errorBannerText}>{error}</Text>
+                    </View>
+                  )}
+                  {!!infoMessage && (
+                    <View style={styles.infoBanner}>
+                      <Text style={{ fontSize: 13 }}>ℹ️</Text>
+                      <Text style={styles.infoBannerText}>{infoMessage}</Text>
+                    </View>
+                  )}
+
+                  {/* ── FORM INPUTS ── */}
+                  <View style={styles.formFields}>
+                    {/* Extra Name input for Sign Up / Acharya */}
+                    {activeTab !== 'login' && (
+                      <View style={styles.inputGroup}>
+                        <Text style={styles.inputLabel}>
+                          {activeTab === 'acharya' ? 'ACHARYA FULL TITLE & NAME' : 'YOUR FULL NAME'}
+                        </Text>
+                        <View
+                          style={[
+                            styles.inputWrapper,
+                            focusedField === 'regName' && styles.inputWrapperFocused,
+                          ]}
+                        >
+                          <Text style={styles.inputIcon}>{activeTab === 'acharya' ? '👑' : '👤'}</Text>
                           <TextInput
-                            value={phone}
-                            onFocus={() => setFocusedField('phone')}
+                            placeholder={activeTab === 'acharya' ? 'e.g. Acharya Raman Shastri' : 'e.g. Priya Sharma'}
+                            placeholderTextColor="#64748B"
+                            value={regName}
+                            onChangeText={setRegName}
+                            onFocus={() => setFocusedField('regName')}
                             onBlur={() => setFocusedField(null)}
-                            onChangeText={(t) => {
-                              setPhone(t.replace(/[^0-9]/g, ''));
-                              setError(null);
-                              setInfoMessage(null);
-                            }}
-                            placeholder="Enter 10-digit mobile number"
-                            placeholderTextColor={colors.textFaint}
-                            keyboardType="number-pad"
-                            maxLength={10}
-                            style={styles.phoneInput}
+                            style={styles.textInput}
                           />
-                          {phone.length === 10 && (
-                            <View style={styles.validCheck}>
-                              <Text style={{ fontSize: 13, color: '#059669', fontWeight: '900' }}>✓</Text>
+                        </View>
+                      </View>
+                    )}
+
+                    {/* Mobile OTP Input Mode (Login only) */}
+                    {activeTab === 'login' && loginMode === 'otp' ? (
+                      <>
+                        <View style={styles.inputGroup}>
+                          <Text style={styles.inputLabel}>PHONE NUMBER (+91)</Text>
+                          <View
+                            style={[
+                              styles.inputWrapper,
+                              focusedField === 'phone' && styles.inputWrapperFocused,
+                            ]}
+                          >
+                            <Text style={styles.phonePrefix}>+91</Text>
+                            <TextInput
+                              placeholder="98765 43210"
+                              placeholderTextColor="#64748B"
+                              keyboardType="phone-pad"
+                              maxLength={10}
+                              value={phone}
+                              onChangeText={setPhone}
+                              onFocus={() => setFocusedField('phone')}
+                              onBlur={() => setFocusedField(null)}
+                              style={styles.textInput}
+                            />
+                            {isPhoneValid && (
+                              <View style={styles.validCheck}>
+                                <Text style={styles.validCheckText}>✓</Text>
+                              </View>
+                            )}
+                          </View>
+                        </View>
+
+                        {otpSent && (
+                          <View style={styles.inputGroup}>
+                            <View style={styles.otpLabelRow}>
+                              <Text style={styles.inputLabel}>ENTER 6-DIGIT OTP</Text>
+                              {debugOtp && (
+                                <Pressable onPress={() => setOtpCode(debugOtp)}>
+                                  <Text style={styles.debugOtpLink}>Auto-fill: {debugOtp}</Text>
+                                </Pressable>
+                              )}
+                            </View>
+                            <View
+                              style={[
+                                styles.inputWrapper,
+                                focusedField === 'otp' && styles.inputWrapperFocused,
+                              ]}
+                            >
+                              <Text style={styles.inputIcon}>🔐</Text>
+                              <TextInput
+                                placeholder="• • • • • •"
+                                placeholderTextColor="#64748B"
+                                keyboardType="number-pad"
+                                maxLength={6}
+                                value={otpCode}
+                                onChangeText={setOtpCode}
+                                onFocus={() => setFocusedField('otp')}
+                                onBlur={() => setFocusedField(null)}
+                                style={[styles.textInput, { letterSpacing: 6, fontWeight: '900', fontSize: 18 }]}
+                              />
+                            </View>
+                          </View>
+                        )}
+                      </>
+                    ) : (
+                      /* Email & Password Input Mode */
+                      <>
+                        <View style={styles.inputGroup}>
+                          <Text style={styles.inputLabel}>EMAIL ADDRESS</Text>
+                          <View
+                            style={[
+                              styles.inputWrapper,
+                              focusedField === 'email' && styles.inputWrapperFocused,
+                            ]}
+                          >
+                            <Text style={styles.inputIcon}>✉️</Text>
+                            <TextInput
+                              placeholder="seeker@astroguru.com"
+                              placeholderTextColor="#64748B"
+                              keyboardType="email-address"
+                              autoCapitalize="none"
+                              value={email}
+                              onChangeText={setEmail}
+                              onFocus={() => setFocusedField('email')}
+                              onBlur={() => setFocusedField(null)}
+                              style={styles.textInput}
+                            />
+                            {isEmailValid && (
+                              <View style={styles.validCheck}>
+                                <Text style={styles.validCheckText}>✓</Text>
+                              </View>
+                            )}
+                          </View>
+                        </View>
+
+                        <View style={styles.inputGroup}>
+                          <View style={styles.otpLabelRow}>
+                            <Text style={styles.inputLabel}>PASSWORD</Text>
+                            {passStrength.label ? (
+                              <Text style={[styles.strengthLabel, { color: passStrength.color }]}>
+                                {passStrength.label}
+                              </Text>
+                            ) : null}
+                          </View>
+                          <View
+                            style={[
+                              styles.inputWrapper,
+                              focusedField === 'password' && styles.inputWrapperFocused,
+                            ]}
+                          >
+                            <Text style={styles.inputIcon}>🔒</Text>
+                            <TextInput
+                              placeholder="••••••••••••"
+                              placeholderTextColor="#64748B"
+                              secureTextEntry={!showPassword}
+                              value={password}
+                              onChangeText={setPassword}
+                              onFocus={() => setFocusedField('password')}
+                              onBlur={() => setFocusedField(null)}
+                              style={styles.textInput}
+                            />
+                            <Pressable
+                              onPress={() => setShowPassword(!showPassword)}
+                              hitSlop={8}
+                              style={{ paddingHorizontal: 4 }}
+                            >
+                              <Text style={{ fontSize: 14 }}>{showPassword ? '👁️' : '👁️‍🗨️'}</Text>
+                            </Pressable>
+                          </View>
+
+                          {/* Password Strength Meter Bar */}
+                          {password.length > 0 && (
+                            <View style={styles.strengthBarContainer}>
+                              <View
+                                style={[
+                                  styles.strengthBarFill,
+                                  {
+                                    width: `${(passStrength.score / 3) * 100}%`,
+                                    backgroundColor: passStrength.color,
+                                  },
+                                ]}
+                              />
                             </View>
                           )}
                         </View>
-                      </View>
 
-                      {otpSent && (
-                        <View style={styles.field}>
-                          <View style={styles.labelRow}>
-                            <Text style={styles.label}>ENTER 6-DIGIT VERIFICATION CODE</Text>
-                            {debugOtp && (
-                              <Pressable onPress={() => setOtpCode(debugOtp)}>
-                                <Text style={styles.autoFillHint}>Auto-fill ({debugOtp})</Text>
-                              </Pressable>
-                            )}
+                        {/* Acharya Extra Fields */}
+                        {activeTab === 'acharya' && (
+                          <View style={styles.inputGroup}>
+                            <Text style={styles.inputLabel}>EXPERTISE & RATE / MIN (₹)</Text>
+                            <View style={{ flexDirection: 'row', gap: 8 }}>
+                              <View style={[styles.inputWrapper, { flex: 2 }]}>
+                                <Text style={styles.inputIcon}>📜</Text>
+                                <TextInput
+                                  placeholder="Specialties"
+                                  placeholderTextColor="#64748B"
+                                  value={astroSpecialty}
+                                  onChangeText={setAstroSpecialty}
+                                  style={styles.textInput}
+                                />
+                              </View>
+                              <View style={[styles.inputWrapper, { flex: 1 }]}>
+                                <Text style={styles.inputIcon}>₹</Text>
+                                <TextInput
+                                  placeholder="Rate/m"
+                                  placeholderTextColor="#64748B"
+                                  keyboardType="numeric"
+                                  value={astroRate}
+                                  onChangeText={setAstroRate}
+                                  style={styles.textInput}
+                                />
+                              </View>
+                            </View>
                           </View>
-                          <TextInput
-                            value={otpCode}
-                            onFocus={() => setFocusedField('otp')}
-                            onBlur={() => setFocusedField(null)}
-                            onChangeText={(t) => {
-                              setOtpCode(t);
-                              setError(null);
-                            }}
-                            placeholder="• • • • • •"
-                            placeholderTextColor={colors.textFaint}
-                            keyboardType="number-pad"
-                            maxLength={6}
-                            style={[
-                              styles.textInput,
-                              styles.otpInput,
-                              focusedField === 'otp' && styles.inputFocused,
-                            ]}
-                          />
-                        </View>
-                      )}
+                        )}
+                      </>
+                    )}
 
-                      {!!infoMessage && (
-                        <View style={styles.infoBox}>
-                          <Text style={styles.infoText}>💬 {infoMessage}</Text>
-                        </View>
-                      )}
-
-                      {!!error && (
-                        <View style={styles.errorBox}>
-                          <Text style={styles.errorText}>⚠️ {error}</Text>
-                        </View>
-                      )}
-
-                      {!otpSent ? (
-                        <Button
-                          label={otpLoading ? 'Sending Secure OTP…' : 'Send Verification OTP →'}
-                          variant="gold"
-                          size="lg"
-                          loading={otpLoading}
-                          onPress={handleSendOtp}
-                          style={{ marginTop: spacing.xs }}
-                        />
-                      ) : (
-                        <Button
-                          label={verifyLoading ? 'Verifying OTP…' : 'Verify & Enter AstroGuru ⚡'}
-                          variant="gold"
-                          size="lg"
-                          loading={verifyLoading}
-                          onPress={handleVerifyOtp}
-                          style={{ marginTop: spacing.xs }}
-                        />
-                      )}
-                    </View>
-                  ) : (
-                    /* ── TAB 2: Email & Password Form ── */
-                    <View style={styles.formGap}>
-                      <View style={styles.field}>
-                        <Text style={styles.label}>EMAIL ADDRESS</Text>
-                        <TextInput
-                          value={email}
-                          onFocus={() => setFocusedField('email')}
-                          onBlur={() => setFocusedField(null)}
-                          onChangeText={(t) => {
-                            setEmail(t);
-                            setError(null);
-                          }}
-                          placeholder="your.email@example.com"
-                          placeholderTextColor={colors.textFaint}
-                          keyboardType="email-address"
-                          autoCapitalize="none"
-                          autoCorrect={false}
-                          style={[
-                            styles.textInput,
-                            focusedField === 'email' && styles.inputFocused,
-                          ]}
-                        />
-                      </View>
-
-                      <View style={styles.field}>
-                        <View style={styles.labelRow}>
-                          <Text style={styles.label}>ACCOUNT PASSWORD</Text>
-                          <Pressable onPress={() => setError('Password reset instructions sent to your email.')}>
-                            <Text style={styles.forgotLink}>Forgot?</Text>
-                          </Pressable>
-                        </View>
-                        <View style={styles.passwordWrap}>
-                          <TextInput
-                            value={password}
-                            onFocus={() => setFocusedField('password')}
-                            onBlur={() => setFocusedField(null)}
-                            onChangeText={(t) => {
-                              setPassword(t);
-                              setError(null);
-                            }}
-                            placeholder="••••••••"
-                            placeholderTextColor={colors.textFaint}
-                            secureTextEntry={!showPassword}
-                            style={[
-                              styles.textInput,
-                              styles.passwordInput,
-                              focusedField === 'password' && styles.inputFocused,
-                            ]}
-                          />
-                          <Pressable
-                            onPress={() => setShowPassword(!showPassword)}
-                            style={styles.eyeBtn}
-                          >
-                            <Text style={{ fontSize: 16 }}>{showPassword ? '👁️' : '🔒'}</Text>
-                          </Pressable>
-                        </View>
-                      </View>
-
-                      {!!error && (
-                        <View style={styles.errorBox}>
-                          <Text style={styles.errorText}>⚠️ {error}</Text>
-                        </View>
-                      )}
-
-                      <Button
-                        label={loading ? 'Authenticating…' : 'Sign In to Workspace ⚡'}
-                        variant="gold"
-                        size="lg"
-                        loading={loading}
-                        onPress={handleEmailLogin}
-                        style={{ marginTop: spacing.xs }}
+                    {/* Main Submit Action Button */}
+                    <Pressable
+                      onPress={
+                        activeTab === 'login' && loginMode === 'otp'
+                          ? otpSent
+                            ? handleVerifyOtp
+                            : handleSendOtp
+                          : handleEmailAuth
+                      }
+                      disabled={loading || otpLoading || verifyLoading}
+                      style={({ pressed }) => [
+                        styles.submitBtn,
+                        pressed && { opacity: 0.9, transform: [{ scale: 0.985 }] },
+                      ]}
+                    >
+                      <LinearGradient
+                        colors={
+                          activeTab === 'acharya'
+                            ? ['#8B5CF6', '#6D28D9']
+                            : ['#D4AF37', '#B8902A', '#EA580C']
+                        }
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                        style={StyleSheet.absoluteFill}
                       />
+                      <Text
+                        style={[
+                          styles.submitBtnText,
+                          activeTab === 'acharya' && { color: '#FFFFFF' },
+                        ]}
+                      >
+                        {loading || otpLoading || verifyLoading
+                          ? 'Consulting Ephemeris…'
+                          : activeTab === 'login' && loginMode === 'otp'
+                          ? otpSent
+                            ? 'Verify & Enter AstroGuru ›'
+                            : 'Send Secure 6-Digit OTP ›'
+                          : activeTab === 'login'
+                          ? 'Sign In to AstroGuru ›'
+                          : activeTab === 'signup'
+                          ? 'Create Account & Claim ₹200 ›'
+                          : 'Submit Acharya Application ›'}
+                      </Text>
+                    </Pressable>
+                  </View>
+
+                  {/* 1-Tap Quick Demo Role Switcher for Developer / Reviewer Testing */}
+                  <View style={styles.demoSection}>
+                    <Text style={styles.demoSectionTitle}>⚡ 1-TAP INSTANT DEMO SWITCHER</Text>
+                    <View style={styles.demoButtonsRow}>
+                      <Pressable
+                        onPress={() => handleDemoLogin('user')}
+                        style={({ pressed }) => [
+                          styles.demoRoleBtn,
+                          pressed && { opacity: 0.8 },
+                        ]}
+                      >
+                        <Text style={styles.demoRoleIcon}>👤</Text>
+                        <Text style={styles.demoRoleLabel}>Seeker</Text>
+                      </Pressable>
+
+                      <Pressable
+                        onPress={() => handleDemoLogin('astrologer')}
+                        style={({ pressed }) => [
+                          styles.demoRoleBtn,
+                          { borderColor: 'rgba(139, 92, 246, 0.35)', backgroundColor: 'rgba(139, 92, 246, 0.12)' },
+                          pressed && { opacity: 0.8 },
+                        ]}
+                      >
+                        <Text style={styles.demoRoleIcon}>👑</Text>
+                        <Text style={[styles.demoRoleLabel, { color: '#A78BFA' }]}>Acharya</Text>
+                      </Pressable>
+
+                      <Pressable
+                        onPress={() => handleDemoLogin('admin')}
+                        style={({ pressed }) => [
+                          styles.demoRoleBtn,
+                          { borderColor: 'rgba(244, 63, 94, 0.35)', backgroundColor: 'rgba(244, 63, 94, 0.12)' },
+                          pressed && { opacity: 0.8 },
+                        ]}
+                      >
+                        <Text style={styles.demoRoleIcon}>🛡️</Text>
+                        <Text style={[styles.demoRoleLabel, { color: '#FB7185' }]}>Admin</Text>
+                      </Pressable>
                     </View>
-                  )}
-                </View>
-              </View>
-
-              {/* ── NEW SEEKER & NEW ASTRO REGISTRATION ACTIONS ── */}
-              <View style={styles.newAccountCard}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <Text style={{ fontSize: 16 }}>🌟</Text>
-                  <Text style={styles.newAccountCardTitle}>New to AstroGuru?</Text>
-                </View>
-
-                <View style={styles.newAccountButtonsRow}>
-                  {/* Option 1: New Seeker */}
-                  <Pressable
-                    onPress={() => {
-                      triggerHaptic('light');
-                      setShowSeekerSignUp(true);
-                    }}
-                    style={({ pressed }) => [
-                      styles.newSeekerBtn,
-                      pressed && { opacity: 0.88, transform: [{ scale: 0.98 }] },
-                    ]}
-                  >
-                    <View style={styles.newBtnIconCircle}>
-                      <Text style={{ fontSize: 18 }}>✨</Text>
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.newSeekerBtnTitle}>New Seeker Sign Up</Text>
-                      <Text style={styles.newSeekerBtnSub}>Get ₹200 Free Wallet & Kundli</Text>
-                    </View>
-                    <Text style={{ fontSize: 16, color: '#059669', fontWeight: '900' }}>→</Text>
-                  </Pressable>
-
-                  {/* Option 2: New Astrologer */}
-                  <Pressable
-                    onPress={() => {
-                      triggerHaptic('light');
-                      setShowAstroSignUp(true);
-                    }}
-                    style={({ pressed }) => [
-                      styles.newAstroBtn,
-                      pressed && { opacity: 0.88, transform: [{ scale: 0.98 }] },
-                    ]}
-                  >
-                    <View style={styles.newBtnIconCircleAstro}>
-                      <Text style={{ fontSize: 18 }}>🧘</Text>
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.newAstroBtnTitle}>Join as Certified Acharya</Text>
-                      <Text style={styles.newAstroBtnSub}>Consult seekers & earn on platform</Text>
-                    </View>
-                    <Text style={{ fontSize: 16, color: '#D97706', fontWeight: '900' }}>→</Text>
-                  </Pressable>
-                </View>
-              </View>
-
-              {/* ── 1-Tap Quick Demo Role Portals ── */}
-              <View style={styles.quickAccessCard}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <Text style={{ fontSize: 14 }}>🚀</Text>
-                  <Text style={styles.quickAccessTitle}>1-Tap Demo Role Switcher</Text>
-                </View>
-
-                <View style={styles.quickRolesRow}>
-                  {/* Seeker */}
-                  <Pressable
-                    onPress={() => handleQuickLogin('user')}
-                    style={({ pressed }) => [
-                      styles.roleChip,
-                      styles.roleChipSeeker,
-                      pressed && { opacity: 0.85, transform: [{ scale: 0.97 }] },
-                    ]}
-                  >
-                    <Text style={{ fontSize: 20 }}>🔮</Text>
-                    <Text style={styles.roleChipTitle}>Astro Seeker</Text>
-                    <Text style={styles.roleChipSub}>user@astroguru</Text>
-                  </Pressable>
-
-                  {/* Acharya */}
-                  <Pressable
-                    onPress={() => handleQuickLogin('astro')}
-                    style={({ pressed }) => [
-                      styles.roleChip,
-                      styles.roleChipAcharya,
-                      pressed && { opacity: 0.85, transform: [{ scale: 0.97 }] },
-                    ]}
-                  >
-                    <Text style={{ fontSize: 20 }}>🧘</Text>
-                    <Text style={styles.roleChipTitle}>Acharya Dev</Text>
-                    <Text style={styles.roleChipSub}>acharya@astroguru</Text>
-                  </Pressable>
-
-                  {/* Admin */}
-                  <Pressable
-                    onPress={() => handleQuickLogin('admin')}
-                    style={({ pressed }) => [
-                      styles.roleChip,
-                      styles.roleChipAdmin,
-                      pressed && { opacity: 0.85, transform: [{ scale: 0.97 }] },
-                    ]}
-                  >
-                    <Text style={{ fontSize: 20 }}>⚡</Text>
-                    <Text style={styles.roleChipTitle}>Master Admin</Text>
-                    <Text style={styles.roleChipSub}>admin@astroguru</Text>
-                  </Pressable>
-                </View>
-              </View>
-
-              {/* ── Security Trust Badges ── */}
-              <View style={styles.securityTrustRow}>
-                <View style={styles.trustItem}>
-                  <Text style={{ fontSize: 13 }}>🔒</Text>
-                  <Text style={styles.trustText}>256-Bit Hardware Encrypted</Text>
-                </View>
-                <View style={styles.trustDivider} />
-                <View style={styles.trustItem}>
-                  <Text style={{ fontSize: 13 }}>🛡️</Text>
-                  <Text style={styles.trustText}>UIDAI & ISO 27001 Certified</Text>
-                </View>
-              </View>
-
-              {/* Terms Footer */}
-              <Text style={styles.footerNote}>
-                By signing in, you agree to AstroGuru's{' '}
-                <Text style={styles.footerLink}>Terms of Service</Text> &{' '}
-                <Text style={styles.footerLink}>Privacy Policy</Text>.
-              </Text>
-            </Animated.View>
-          </ScrollView>
+                  </View>
+                </Animated.View>
+              </ScrollView>
+            </View>
+          </View>
         </KeyboardAvoidingView>
-
-        {/* ══════════════════════════════════════════════════
-            MODAL 1: NEW SEEKER SIGN UP MODAL
-           ══════════════════════════════════════════════════ */}
-        <Modal visible={showSeekerSignUp} animationType="slide" transparent>
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalCard}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <View style={{ gap: 2 }}>
-                  <Text style={styles.modalTitle}>✨ New Seeker Registration</Text>
-                  <Text style={styles.modalSub}>Get ₹200 Free Wallet Balance + Free Kundli</Text>
-                </View>
-                <Pressable onPress={() => setShowSeekerSignUp(false)} style={styles.modalCloseBtn}>
-                  <Text style={{ fontSize: 16, fontWeight: '900', color: colors.text }}>✕</Text>
-                </Pressable>
-              </View>
-
-              <ScrollView style={{ maxHeight: 380 }} contentContainerStyle={{ gap: 10, paddingVertical: 4 }}>
-                <View style={styles.field}>
-                  <Text style={styles.label}>YOUR FULL NAME</Text>
-                  <TextInput
-                    value={regName}
-                    onChangeText={setRegName}
-                    placeholder="e.g. Priya Sharma"
-                    placeholderTextColor={colors.textFaint}
-                    style={styles.textInput}
-                  />
-                </View>
-
-                <View style={styles.field}>
-                  <Text style={styles.label}>EMAIL ADDRESS</Text>
-                  <TextInput
-                    value={regEmail}
-                    onChangeText={setRegEmail}
-                    placeholder="priya@gmail.com"
-                    placeholderTextColor={colors.textFaint}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    style={styles.textInput}
-                  />
-                </View>
-
-                <View style={styles.field}>
-                  <Text style={styles.label}>MOBILE NUMBER</Text>
-                  <TextInput
-                    value={regPhone}
-                    onChangeText={setRegPhone}
-                    placeholder="9876543210"
-                    placeholderTextColor={colors.textFaint}
-                    keyboardType="number-pad"
-                    maxLength={10}
-                    style={styles.textInput}
-                  />
-                </View>
-
-                <View style={styles.field}>
-                  <Text style={styles.label}>CREATE PASSWORD</Text>
-                  <TextInput
-                    value={regPassword}
-                    onChangeText={setRegPassword}
-                    placeholder="••••••••"
-                    placeholderTextColor={colors.textFaint}
-                    secureTextEntry
-                    style={styles.textInput}
-                  />
-                </View>
-
-                <View style={styles.field}>
-                  <Text style={styles.label}>DATE OF BIRTH</Text>
-                  <TextInput
-                    value={regDob}
-                    onChangeText={setRegDob}
-                    placeholder="DD/MM/YYYY"
-                    placeholderTextColor={colors.textFaint}
-                    style={styles.textInput}
-                  />
-                </View>
-
-                {!!regError && (
-                  <View style={styles.errorBox}>
-                    <Text style={styles.errorText}>⚠️ {regError}</Text>
-                  </View>
-                )}
-              </ScrollView>
-
-              <View style={{ flexDirection: 'row', gap: 10, marginTop: 6 }}>
-                <Button
-                  label="Cancel"
-                  variant="outline"
-                  size="md"
-                  style={{ flex: 1 }}
-                  onPress={() => setShowSeekerSignUp(false)}
-                />
-                <Button
-                  label={regLoading ? 'Creating Account…' : 'Complete Registration 🚀'}
-                  variant="gold"
-                  size="md"
-                  loading={regLoading}
-                  style={{ flex: 2 }}
-                  onPress={handleSeekerRegister}
-                />
-              </View>
-            </View>
-          </View>
-        </Modal>
-
-        {/* ══════════════════════════════════════════════════
-            MODAL 2: NEW ASTROLOGER / ACHARYA ONBOARDING MODAL
-           ══════════════════════════════════════════════════ */}
-        <Modal visible={showAstroSignUp} animationType="slide" transparent>
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalCard}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <View style={{ gap: 2 }}>
-                  <Text style={styles.modalTitle}>🧘 Join as Certified Acharya</Text>
-                  <Text style={styles.modalSub}>Consult Seekers & Earn 80% Consultation Revenue</Text>
-                </View>
-                <Pressable onPress={() => setShowAstroSignUp(false)} style={styles.modalCloseBtn}>
-                  <Text style={{ fontSize: 16, fontWeight: '900', color: colors.text }}>✕</Text>
-                </Pressable>
-              </View>
-
-              <ScrollView style={{ maxHeight: 380 }} contentContainerStyle={{ gap: 10, paddingVertical: 4 }}>
-                <View style={styles.field}>
-                  <Text style={styles.label}>JYOTISHI FULL NAME</Text>
-                  <TextInput
-                    value={astroName}
-                    onChangeText={setAstroName}
-                    placeholder="e.g. Acharya Ramesh Shastri"
-                    placeholderTextColor={colors.textFaint}
-                    style={styles.textInput}
-                  />
-                </View>
-
-                <View style={styles.field}>
-                  <Text style={styles.label}>PROFESSIONAL EMAIL</Text>
-                  <TextInput
-                    value={astroEmail}
-                    onChangeText={setAstroEmail}
-                    placeholder="ramesh.astrologer@gmail.com"
-                    placeholderTextColor={colors.textFaint}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    style={styles.textInput}
-                  />
-                </View>
-
-                <View style={styles.field}>
-                  <Text style={styles.label}>SPECIALTIES (COMMA SEPARATED)</Text>
-                  <TextInput
-                    value={astroSpecialty}
-                    onChangeText={setAstroSpecialty}
-                    placeholder="Vedic Astrology, Prashna, Nadi"
-                    placeholderTextColor={colors.textFaint}
-                    style={styles.textInput}
-                  />
-                </View>
-
-                <View style={{ flexDirection: 'row', gap: 10 }}>
-                  <View style={[styles.field, { flex: 1 }]}>
-                    <Text style={styles.label}>EXP (YEARS)</Text>
-                    <TextInput
-                      value={astroExp}
-                      onChangeText={setAstroExp}
-                      keyboardType="numeric"
-                      style={styles.textInput}
-                    />
-                  </View>
-
-                  <View style={[styles.field, { flex: 1 }]}>
-                    <Text style={styles.label}>RATE / MIN (₹)</Text>
-                    <TextInput
-                      value={astroRate}
-                      onChangeText={setAstroRate}
-                      keyboardType="numeric"
-                      style={styles.textInput}
-                    />
-                  </View>
-                </View>
-
-                <View style={styles.field}>
-                  <Text style={styles.label}>CREATE PASSWORD</Text>
-                  <TextInput
-                    value={astroPassword}
-                    onChangeText={setAstroPassword}
-                    placeholder="••••••••"
-                    placeholderTextColor={colors.textFaint}
-                    secureTextEntry
-                    style={styles.textInput}
-                  />
-                </View>
-
-                {!!astroError && (
-                  <View style={styles.errorBox}>
-                    <Text style={styles.errorText}>⚠️ {astroError}</Text>
-                  </View>
-                )}
-              </ScrollView>
-
-              <View style={{ flexDirection: 'row', gap: 10, marginTop: 6 }}>
-                <Button
-                  label="Cancel"
-                  variant="outline"
-                  size="md"
-                  style={{ flex: 1 }}
-                  onPress={() => setShowAstroSignUp(false)}
-                />
-                <Button
-                  label={astroLoading ? 'Applying…' : 'Submit Application 🧘'}
-                  variant="gold"
-                  size="md"
-                  loading={astroLoading}
-                  style={{ flex: 2 }}
-                  onPress={handleAstroRegister}
-                />
-              </View>
-            </View>
-          </View>
-        </Modal>
       </SafeAreaView>
-    </GradientBackground>
+
+      {/* Cosmic Launch Overlay Modal */}
+      {showOverlay && (
+        <AnimatedAuthOverlay
+          visible={showOverlay}
+          user={pendingUser}
+          onAnimationComplete={handleOverlayComplete}
+        />
+      )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  scrollContainer: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.xl,
-    alignItems: 'center',
-  },
-  webWrapper: {
-    width: '100%',
-    maxWidth: 440,
-    gap: 16,
-  },
-
-  /* Floating Glyphs */
-  floatingGlyphContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    overflow: 'hidden',
-  },
-  cosmicGlyph: {
-    position: 'absolute',
-    fontSize: 28,
-    color: '#D97706',
-    fontWeight: '800',
-  },
-
-  /* ── Hero & Balanced Dual Rotating Chakra ── */
-  hero: {
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 4,
-  },
-  logoStack: {
-    width: 120,
-    height: 120,
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-    marginBottom: 4,
-  },
-  zodiacMandalaRing: {
-    position: 'absolute',
-    width: 120,
-    height: 120,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  zodiacRashiChar: {
-    position: 'absolute',
-    fontSize: 12,
-    fontWeight: '900',
-    color: '#D97706',
-  },
-  dashedOrbitRing: {
-    position: 'absolute',
-    width: 98,
-    height: 98,
-    borderRadius: 49,
-    borderWidth: 1.5,
-    borderColor: 'rgba(5, 150, 105, 0.45)',
-    borderStyle: 'dashed',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  orbitingStarDot: {
-    position: 'absolute',
-    top: -4,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#F59E0B',
-    shadowColor: '#F59E0B',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  orbitingStarDotOpposite: {
-    position: 'absolute',
-    bottom: -4,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#10B981',
-    shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  auraGlow: {
-    position: 'absolute',
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: 'rgba(5, 150, 105, 0.22)',
-    shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.6,
-    shadowRadius: 20,
-    elevation: 8,
-  },
-  logoInnerCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#D97706',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 6,
-  },
-  logoGradientBorder: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    padding: 3,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logoImage: {
-    width: 66,
-    height: 66,
-    borderRadius: 33,
-  },
-  badgePill: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: 'rgba(5, 150, 105, 0.3)',
-    overflow: 'hidden',
-  },
-  badgeText: {
-    fontSize: 9.5,
-    fontWeight: '900',
-    color: '#047857',
-    letterSpacing: 1,
-  },
-  brandTitle: {
-    fontSize: 32,
-    fontWeight: '900',
-    color: '#0F172A',
-    letterSpacing: -0.5,
-    marginTop: 2,
-  },
-  brandSubtitle: {
-    fontSize: 12.5,
-    color: '#64748B',
-    textAlign: 'center',
-    lineHeight: 18,
-    fontWeight: '500',
-    paddingHorizontal: 10,
-  },
-
-  /* Glass Card */
-  glassCardContainer: {
-    borderRadius: 24,
-    borderWidth: 1.5,
-    borderColor: '#E2E8F0',
-    overflow: 'hidden',
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.08,
-    shadowRadius: 20,
-    elevation: 6,
-    backgroundColor: '#FFFFFF',
-  },
-  specularShine: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-  },
-
-  /* Tab Track */
-  tabTrack: {
-    flexDirection: 'row',
-    backgroundColor: '#F1F5F9',
-    margin: 8,
-    borderRadius: 16,
-    padding: 4,
-    position: 'relative',
-  },
-  tabSegment: {
+  rootContainer: {
     flex: 1,
-    paddingVertical: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 12,
-    position: 'relative',
-    overflow: 'hidden',
+    backgroundColor: '#07080F',
   },
-  activeTabGlow: {
+  mainLayout: {
+    flex: 1,
+    flexDirection: 'column',
+  },
+  desktopSplitLayout: {
+    flexDirection: 'row',
+  },
+
+  /* Left Showcase Column */
+  showcaseColumn: {
+    flex: 1,
+    minHeight: 280,
+  },
+  showcaseColumnDesktop: {
+    flex: 1.15,
+    minHeight: '100%',
+  },
+
+  /* Right Auth Column */
+  authColumn: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  authColumnDesktop: {
+    flex: 1,
+    maxWidth: 580,
+    paddingHorizontal: spacing.lg,
+  },
+  authScroll: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: spacing.md,
+    width: '100%',
+  },
+
+  /* Frosted Glass Card */
+  glassCard: {
+    width: '100%',
+    maxWidth: 480,
+    backgroundColor: 'rgba(18, 20, 42, 0.85)',
+    borderRadius: 24,
+    padding: spacing.xl,
+    borderWidth: 1.5,
+    borderColor: 'rgba(212, 175, 55, 0.25)',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.75,
+    shadowRadius: 24,
+    elevation: 8,
+    overflow: 'hidden',
+    position: 'relative',
+    gap: 16,
+    backdropFilter: 'blur(16px)' as any,
+  },
+  specularEdge: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    bottom: 0,
-    borderRadius: 12,
-    shadowColor: '#059669',
+    height: 1.5,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+  },
+
+  /* Main Tab Bar */
+  tabContainer: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(7, 8, 15, 0.6)',
+    borderRadius: radius.pill,
+    padding: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  tabBtn: {
+    flex: 1,
+    paddingVertical: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius.pill,
+    overflow: 'hidden',
+  },
+  tabBtnActive: {
+    shadowColor: '#D4AF37',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.35,
     shadowRadius: 6,
     elevation: 3,
   },
-  tabSegmentText: {
+  tabBtnText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#64748B',
-    zIndex: 2,
+    color: '#94A3B8',
   },
-  tabSegmentTextActive: {
-    color: '#FFFFFF',
+  tabBtnTextActive: {
+    color: '#07080F',
     fontWeight: '900',
   },
 
-  cardContent: {
-    padding: 16,
-    gap: 14,
+  /* Header */
+  cardHeader: {
+    gap: 4,
+  },
+  cardTitle: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#F8FAFC',
+    letterSpacing: 0.3,
+    fontFamily: Platform.OS === 'web' ? 'Cinzel, Georgia, serif' : undefined,
+  },
+  cardSubtitle: {
+    fontSize: 12.5,
+    color: '#94A3B8',
+    lineHeight: 18,
+    fontWeight: '500',
   },
 
-  /* Google Button */
-  googleBtn: {
+  /* Social Auth */
+  socialButtonsRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  socialBtn: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1.5,
-    borderColor: '#E2E8F0',
-    paddingVertical: 12,
+    gap: 8,
+    paddingVertical: 10,
     borderRadius: 14,
-    gap: 10,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
-  googleIconBox: {
-    width: 28,
-    height: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  googleBtnText: {
-    fontSize: 13.5,
-    fontWeight: '800',
-    color: '#1E293B',
+  socialBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#F8FAFC',
   },
 
   /* Divider */
@@ -1473,366 +1086,227 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
   },
   dividerText: {
-    fontSize: 11,
-    color: '#94A3B8',
-    fontWeight: '600',
-  },
-
-  /* Form */
-  formGap: {
-    gap: 12,
-  },
-  field: {
-    gap: 5,
-  },
-  labelRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  label: {
-    fontSize: 10.5,
-    fontWeight: '900',
-    color: '#475569',
-    letterSpacing: 0.5,
-  },
-  forgotLink: {
-    fontSize: 11,
+    fontSize: 9.5,
     fontWeight: '800',
-    color: colors.gold,
-  },
-  autoFillHint: {
-    fontSize: 10.5,
-    fontWeight: '800',
-    color: '#059669',
-  },
-
-  phoneInputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F8FAFC',
-    borderWidth: 1.5,
-    borderColor: '#E2E8F0',
-    borderRadius: 14,
-    paddingHorizontal: 10,
-    gap: 8,
-  },
-  countryCodeBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  countryFlag: {
-    fontSize: 14,
-  },
-  countryCodeText: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: '#0F172A',
-  },
-  phoneInput: {
-    flex: 1,
-    paddingVertical: 11,
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#0F172A',
-    letterSpacing: 0.5,
-  },
-  validCheck: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: '#ECFDF5',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#A7F3D0',
-  },
-
-  textInput: {
-    backgroundColor: '#F8FAFC',
-    borderWidth: 1.5,
-    borderColor: '#E2E8F0',
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 11,
-    fontSize: 13.5,
-    color: '#0F172A',
-    fontWeight: '600',
-  },
-  inputFocused: {
-    borderColor: '#10B981',
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-  },
-  otpInput: {
-    textAlign: 'center',
-    fontSize: 18,
-    fontWeight: '900',
-    letterSpacing: 6,
-    color: '#059669',
-    fontFamily: Platform.OS === 'ios' ? 'Courier-Bold' : 'monospace',
-  },
-
-  passwordWrap: {
-    position: 'relative',
-    justifyContent: 'center',
-  },
-  passwordInput: {
-    paddingRight: 45,
-  },
-  eyeBtn: {
-    position: 'absolute',
-    right: 12,
-    padding: 6,
-  },
-
-  infoBox: {
-    backgroundColor: '#EFF6FF',
-    padding: 10,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#BFDBFE',
-  },
-  infoText: {
-    fontSize: 11,
-    color: '#1D4ED8',
-    fontWeight: '700',
-  },
-  errorBox: {
-    backgroundColor: '#FEF2F2',
-    padding: 10,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#FECACA',
-  },
-  errorText: {
-    fontSize: 11.5,
-    color: '#DC2626',
-    fontWeight: '700',
-  },
-
-  /* ── New Account Register Action Card ── */
-  newAccountCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    gap: 10,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 1,
-  },
-  newAccountCardTitle: {
-    fontSize: 13,
-    fontWeight: '900',
-    color: '#0F172A',
-  },
-  newAccountButtonsRow: {
-    gap: 8,
-  },
-  newSeekerBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ECFDF5',
-    padding: 12,
-    borderRadius: 14,
-    borderWidth: 1.5,
-    borderColor: '#A7F3D0',
-    gap: 10,
-  },
-  newBtnIconCircle: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1.5,
-    borderColor: '#6EE7B7',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  newSeekerBtnTitle: {
-    fontSize: 13,
-    fontWeight: '900',
-    color: '#065F46',
-  },
-  newSeekerBtnSub: {
-    fontSize: 10.5,
-    color: '#047857',
-    fontWeight: '600',
-  },
-
-  newAstroBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFBEB',
-    padding: 12,
-    borderRadius: 14,
-    borderWidth: 1.5,
-    borderColor: '#FDE68A',
-    gap: 10,
-  },
-  newBtnIconCircleAstro: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1.5,
-    borderColor: '#FCD34D',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  newAstroBtnTitle: {
-    fontSize: 13,
-    fontWeight: '900',
-    color: '#78350F',
-  },
-  newAstroBtnSub: {
-    fontSize: 10.5,
-    color: '#92400E',
-    fontWeight: '600',
-  },
-
-  /* Quick Access Portals */
-  quickAccessCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    gap: 10,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 6,
-    elevation: 1,
-  },
-  quickAccessTitle: {
-    fontSize: 12,
-    fontWeight: '900',
-    color: '#1E293B',
-  },
-  quickRolesRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  roleChip: {
-    flex: 1,
-    padding: 10,
-    borderRadius: 12,
-    alignItems: 'center',
-    gap: 3,
-    borderWidth: 1.5,
-  },
-  roleChipSeeker: {
-    backgroundColor: '#F0FDF4',
-    borderColor: '#BBF7D0',
-  },
-  roleChipAcharya: {
-    backgroundColor: '#FFFBEB',
-    borderColor: '#FDE68A',
-  },
-  roleChipAdmin: {
-    backgroundColor: '#EFF6FF',
-    borderColor: '#BFDBFE',
-  },
-  roleChipTitle: {
-    fontSize: 11,
-    fontWeight: '900',
-    color: '#0F172A',
-    marginTop: 2,
-  },
-  roleChipSub: {
-    fontSize: 8.5,
     color: '#64748B',
-    fontWeight: '600',
+    letterSpacing: 0.8,
   },
 
-  /* Trust Footer */
-  securityTrustRow: {
+  /* Sub Tab */
+  subTabRow: {
     flexDirection: 'row',
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderRadius: radius.md,
+    padding: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  subTabBtn: {
+    flex: 1,
+    paddingVertical: 6,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F8FAFC',
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    gap: 12,
+    borderRadius: radius.sm,
   },
-  trustItem: {
+  subTabBtnActive: {
+    backgroundColor: 'rgba(212, 175, 55, 0.18)',
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.35)',
+  },
+  subTabBtnText: {
+    fontSize: 11.5,
+    fontWeight: '700',
+    color: '#94A3B8',
+  },
+  subTabBtnTextActive: {
+    color: '#F5D77F',
+    fontWeight: '800',
+  },
+
+  /* Banners */
+  errorBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
+    padding: 10,
+    borderRadius: 10,
+    backgroundColor: 'rgba(244, 63, 94, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(244, 63, 94, 0.35)',
   },
-  trustDivider: {
-    width: 1,
-    height: 16,
-    backgroundColor: '#CBD5E1',
+  errorBannerText: {
+    flex: 1,
+    fontSize: 11.5,
+    fontWeight: '700',
+    color: '#FB7185',
   },
-  trustText: {
+  infoBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    padding: 10,
+    borderRadius: 10,
+    backgroundColor: 'rgba(56, 189, 248, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(56, 189, 248, 0.35)',
+  },
+  infoBannerText: {
+    flex: 1,
+    fontSize: 11.5,
+    fontWeight: '700',
+    color: '#38BDF8',
+  },
+
+  /* Form Fields */
+  formFields: {
+    gap: 12,
+  },
+  inputGroup: {
+    gap: 4,
+  },
+  inputLabel: {
+    fontSize: 9.5,
+    fontWeight: '800',
+    color: '#94A3B8',
+    letterSpacing: 0.6,
+  },
+  otpLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  debugOtpLink: {
     fontSize: 10,
     fontWeight: '800',
-    color: '#475569',
+    color: '#F5D77F',
+    textDecorationLine: 'underline',
   },
-
-  footerNote: {
-    fontSize: 10.5,
-    color: '#94A3B8',
-    textAlign: 'center',
-    lineHeight: 16,
-    paddingHorizontal: 10,
-  },
-  footerLink: {
-    color: colors.gold,
+  strengthLabel: {
+    fontSize: 9.5,
     fontWeight: '800',
   },
-
-  /* Modal */
-  modalOverlay: {
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    height: 46,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    gap: 8,
+  },
+  inputWrapperFocused: {
+    borderColor: '#D4AF37',
+    backgroundColor: 'rgba(212, 175, 55, 0.06)',
+    shadowColor: '#D4AF37',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+  },
+  inputIcon: {
+    fontSize: 14,
+  },
+  phonePrefix: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#F5D77F',
+  },
+  textInput: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'center',
-    padding: spacing.md,
+    fontSize: 13.5,
+    color: '#F8FAFC',
+    fontWeight: '600',
+    paddingVertical: 0,
+    outlineStyle: 'none' as any,
   },
-  modalCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 22,
-    padding: 16,
-    gap: 12,
-    maxHeight: '90%',
-  },
-  modalTitle: {
-    fontSize: 16,
-    fontWeight: '900',
-    color: '#0F172A',
-  },
-  modalSub: {
-    fontSize: 11,
-    color: colors.textMuted,
-  },
-  modalCloseBtn: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#F1F5F9',
+  validCheck: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+    borderWidth: 1,
+    borderColor: '#10B981',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  validCheckText: {
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#34D399',
+  },
+  strengthBarContainer: {
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    marginTop: 4,
+    overflow: 'hidden',
+  },
+  strengthBarFill: {
+    height: '100%',
+    borderRadius: 1.5,
+  },
+
+  /* Submit Button */
+  submitBtn: {
+    height: 48,
+    borderRadius: radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    marginTop: 4,
+    shadowColor: '#D4AF37',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.45,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  submitBtnText: {
+    fontSize: 13.5,
+    fontWeight: '900',
+    color: '#07080F',
+    letterSpacing: 0.4,
+  },
+
+  /* Demo Switcher */
+  demoSection: {
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.08)',
+    paddingTop: 12,
+    gap: 8,
+  },
+  demoSectionTitle: {
+    fontSize: 9,
+    fontWeight: '900',
+    color: '#64748B',
+    letterSpacing: 0.8,
+    textAlign: 'center',
+  },
+  demoButtonsRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  demoRoleBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    paddingVertical: 7,
+    borderRadius: 10,
+    backgroundColor: 'rgba(212, 175, 55, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.3)',
+  },
+  demoRoleIcon: {
+    fontSize: 12,
+  },
+  demoRoleLabel: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#F5D77F',
   },
 });
