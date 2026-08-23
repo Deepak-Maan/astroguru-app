@@ -1,12 +1,14 @@
 /**
  * AstroGuru Native In-App APK Downloader & Package Installer Engine
- * Direct .apk package streaming, progress tracking, and Android Intent package installation.
+ * Direct .apk package streaming, progress tracking, and Android Intent package installation
+ * Powered by GitHub Releases API (Deepak-Maan/astroguru-app).
  */
 
 import { Platform, Linking } from 'react-native';
 import * as Updates from 'expo-updates';
 import * as FileSystem from 'expo-file-system';
 import * as IntentLauncher from 'expo-intent-launcher';
+import * as Application from 'expo-application';
 import * as Sharing from 'expo-sharing';
 
 export interface UpdateDownloadProgress {
@@ -23,9 +25,46 @@ export interface InAppUpdateCheckResult {
   releaseNotes: string[];
   isMandatory: boolean;
   type: 'apk' | 'ota';
+  downloadUrl?: string;
 }
 
-export const LIVE_DIRECT_APK_URL = 'https://expo.dev/artifacts/eas/XpNZmdH73j-HnhPEIjZ16YCDxdRfPjVA4dYLL2Y6oe8.apk';
+export const GITHUB_OWNER = 'Deepak-Maan';
+export const GITHUB_REPO = 'astroguru-app';
+export const GITHUB_API_LATEST_RELEASE = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/releases/latest`;
+export const LIVE_DIRECT_APK_URL = `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases`;
+
+/**
+ * Robust version comparison helper
+ * Handles versionCode ('284' > '283') and semver ('2.8.4' > '2.8.3')
+ */
+export function isRemoteVersionNewer(remoteVer: string, currentVer: string): boolean {
+  if (!remoteVer || !currentVer) return false;
+
+  const cleanRemote = remoteVer.trim().replace(/^v/i, '');
+  const cleanCurrent = currentVer.trim().replace(/^v/i, '');
+
+  if (cleanRemote === cleanCurrent) return false;
+
+  // Numeric versionCode check (e.g. "284" vs "283")
+  const remoteNum = parseInt(cleanRemote, 10);
+  const currentNum = parseInt(cleanCurrent, 10);
+  if (!isNaN(remoteNum) && !isNaN(currentNum) && !cleanRemote.includes('.') && !cleanCurrent.includes('.')) {
+    return remoteNum > currentNum;
+  }
+
+  // Semver check (e.g. "2.8.4" vs "2.8.3")
+  const rParts = cleanRemote.split('.').map((p) => parseInt(p, 10) || 0);
+  const cParts = cleanCurrent.split('.').map((p) => parseInt(p, 10) || 0);
+
+  for (let i = 0; i < Math.max(rParts.length, cParts.length); i++) {
+    const r = rParts[i] || 0;
+    const c = cParts[i] || 0;
+    if (r > c) return true;
+    if (r < c) return false;
+  }
+
+  return false;
+}
 
 class InAppUpdateEngine {
   private activeDownload: any = null;
@@ -33,16 +72,68 @@ class InAppUpdateEngine {
   private lastTimestamp: number = 0;
 
   /**
-   * Checks for both OTA updates and standalone binary version mismatches.
-   * NOTE: Does NOT abruptly reload the app on launch to prevent auto-close.
+   * Checks GitHub Releases for the latest APK build, falling back to EAS OTA channel.
    */
-  async checkForUpdate(currentVersion: string, latestVersion: string): Promise<InAppUpdateCheckResult> {
-    // 1. Check EAS OTA Channel
+  async checkForUpdate(currentVersion: string, fallbackVersion: string): Promise<InAppUpdateCheckResult> {
+    const currentCode = Application.nativeBuildVersion || '283';
+    const currentName = Application.nativeApplicationVersion || currentVersion || '2.8.3';
+
+    // 1. Primary: Query GitHub Releases API
+    try {
+      const response = await fetch(GITHUB_API_LATEST_RELEASE, {
+        headers: {
+          Accept: 'application/vnd.github.v3+json',
+          'User-Agent': 'AstroGuru-App-Updater',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const rawTag = data.tag_name || '';
+        const cleanTag = rawTag.replace(/^v/i, '').trim();
+
+        // Check if remote version is newer than current app version
+        const isNewer =
+          isRemoteVersionNewer(cleanTag, currentCode) ||
+          isRemoteVersionNewer(cleanTag, currentName);
+
+        // Find .apk asset download URL
+        const apkAsset = data.assets?.find((asset: any) =>
+          typeof asset.name === 'string' && asset.name.toLowerCase().endsWith('.apk')
+        );
+
+        if (apkAsset && apkAsset.browser_download_url) {
+          const notes = data.body
+            ? data.body
+                .split('\n')
+                .map((line: string) => line.trim())
+                .filter((line: string) => line.length > 0)
+            : [
+                `✨ What's new in v${cleanTag}:`,
+                '• Performance enhancements and bug fixes.',
+                '• Upgraded AstroGuru features & smoother experience.',
+              ];
+
+          return {
+            isAvailable: isNewer,
+            currentVersion: currentName,
+            latestVersion: cleanTag || fallbackVersion,
+            releaseNotes: notes,
+            isMandatory: false,
+            type: 'apk',
+            downloadUrl: apkAsset.browser_download_url,
+          };
+        }
+      }
+    } catch (ghErr) {
+      console.log('[InAppUpdateEngine] GitHub Releases check error:', ghErr);
+    }
+
+    // 2. Secondary: Check EAS OTA Channel
     try {
       if (Platform.OS !== 'web' && Updates.isEnabled) {
         const otaCheck = await Updates.checkForUpdateAsync();
         if (otaCheck.isAvailable) {
-          // Pre-fetch update in background safely
           try {
             await Updates.fetchUpdateAsync();
           } catch (fetchErr) {
@@ -51,17 +142,11 @@ class InAppUpdateEngine {
 
           return {
             isAvailable: true,
-            currentVersion,
-            latestVersion,
+            currentVersion: currentName,
+            latestVersion: fallbackVersion,
             releaseNotes: [
-              '🚀 Release v2.8.2: Ultra-Premium AstroGuru Experience',
-              '💳 AstroGold Luxury Metal Card & Instant 1-Tap UPI Wallet Recharge',
-              '🔥 7-Day Cosmic Retention Streak with Progressive Astro-Coins',
-              '🎡 6-Segment Navagraha Spin & Win Chakra (Direct Cash & Vouchers)',
-              '🃏 Mystical 3D Tarot Guidance Card of the Day with Sacred Affirmations',
-              '🪔 Sacred Sadhana & Remedy Diary with Real-Time Streak Tracker',
-              '⚡ Zero-Drop Live Consultation Auto-Recharge Drawer',
-              '🛡️ Enhanced Bank UTR Verification & Real-Time Ledger Passbook',
+              '🚀 AstroGuru Performance Update Ready',
+              '⚡ Instant JS bundle optimizations & fixes.',
             ],
             isMandatory: false,
             type: 'ota',
@@ -72,22 +157,12 @@ class InAppUpdateEngine {
       console.log('[InAppUpdateEngine] OTA check:', err);
     }
 
-    // 2. Version comparison
-    const isVersionNewer = currentVersion !== latestVersion;
+    // 3. Up to date
     return {
-      isAvailable: isVersionNewer,
-      currentVersion,
-      latestVersion,
-      releaseNotes: [
-        '🚀 Release v2.8.2: Ultra-Premium AstroGuru Experience',
-        '💳 AstroGold Luxury Metal Card & Instant 1-Tap UPI Wallet Recharge',
-        '🔥 7-Day Cosmic Retention Streak with Progressive Astro-Coins',
-        '🎡 6-Segment Navagraha Spin & Win Chakra (Direct Cash & Vouchers)',
-        '🃏 Mystical 3D Tarot Guidance Card of the Day with Sacred Affirmations',
-        '🪔 Sacred Sadhana & Remedy Diary with Real-Time Streak Tracker',
-        '⚡ Zero-Drop Live Consultation Auto-Recharge Drawer',
-        '🛡️ Enhanced Bank UTR Verification & Real-Time Ledger Passbook',
-      ],
+      isAvailable: false,
+      currentVersion: currentName,
+      latestVersion: currentName,
+      releaseNotes: ['You are using the latest version of AstroGuru.'],
       isMandatory: false,
       type: 'apk',
     };
@@ -107,7 +182,7 @@ class InAppUpdateEngine {
     if (Platform.OS === 'android') {
       try {
         const fsAny = FileSystem as any;
-        const targetDir = fsAny.documentDirectory || fsAny.cacheDirectory;
+        const targetDir = fsAny.cacheDirectory || fsAny.documentDirectory;
 
         if (targetDir && typeof fsAny.createDownloadResumable === 'function') {
           const fileName = `AstroGuru-v${targetVersion}.apk`;
@@ -128,7 +203,7 @@ class InAppUpdateEngine {
             localPath,
             {},
             (downloadProgress: any) => {
-              const total = downloadProgress.totalBytesExpectedToWrite || 38 * 1024 * 1024;
+              const total = downloadProgress.totalBytesExpectedToWrite || 40 * 1024 * 1024;
               const downloaded = downloadProgress.totalBytesWritten;
               const percentage = Math.min(100, Math.floor((downloaded / total) * 100));
 
@@ -138,7 +213,7 @@ class InAppUpdateEngine {
 
               if (timeDiff >= 0.5) {
                 const bytesDiff = downloaded - this.lastDownloadedBytes;
-                speedKbps = Math.max(100, Math.floor((bytesDiff / timeDiff) / 1024));
+                speedKbps = Math.max(100, Math.floor(bytesDiff / timeDiff / 1024));
                 this.lastDownloadedBytes = downloaded;
                 this.lastTimestamp = now;
               }
@@ -155,8 +230,8 @@ class InAppUpdateEngine {
           const result = await this.activeDownload.downloadAsync();
           if (result && result.uri) {
             onProgress({
-              totalBytes: 38 * 1024 * 1024,
-              downloadedBytes: 38 * 1024 * 1024,
+              totalBytes: 40 * 1024 * 1024,
+              downloadedBytes: 40 * 1024 * 1024,
               percentage: 100,
               speedKbps: 3500,
             });
@@ -220,26 +295,11 @@ class InAppUpdateEngine {
 
   /**
    * Installs the downloaded package:
-   * Uses expo-sharing / IntentLauncher for seamless Android package installer launch.
+   * Uses FileSystem content URI and IntentLauncher for seamless Android package installer launch.
    */
   async installDownloadedPackage(localUri?: string, customApkUrl?: string): Promise<boolean> {
     if (Platform.OS === 'android' && localUri) {
-      // 1. Try expo-sharing first
-      try {
-        const isAvailable = await Sharing.isAvailableAsync();
-        if (isAvailable) {
-          await Sharing.shareAsync(localUri, {
-            mimeType: 'application/vnd.android.package-archive',
-            dialogTitle: 'Install AstroGuru v2.8.2 Update',
-            UTI: 'com.android.package-archive',
-          });
-          return true;
-        }
-      } catch (shareErr) {
-        console.warn('[InAppUpdateEngine] expo-sharing fallback to intent:', shareErr);
-      }
-
-      // 2. IntentLauncher fallback
+      // 1. IntentLauncher VIEW with content:// URI
       try {
         const fsAny = FileSystem as any;
         const getContentUri = fsAny.getContentUriAsync || FileSystem.getContentUriAsync;
@@ -251,12 +311,27 @@ class InAppUpdateEngine {
 
         await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
           data: packageUri,
-          flags: 268435457,
+          flags: 1 | 268435456, // FLAG_GRANT_READ_URI_PERMISSION | FLAG_ACTIVITY_NEW_TASK
           type: 'application/vnd.android.package-archive',
         });
         return true;
       } catch (e: any) {
-        console.warn('[InAppUpdateEngine] Intent install warning:', e);
+        console.warn('[InAppUpdateEngine] Intent install fallback to Sharing:', e);
+      }
+
+      // 2. Sharing fallback
+      try {
+        const isAvailable = await Sharing.isAvailableAsync();
+        if (isAvailable) {
+          await Sharing.shareAsync(localUri, {
+            mimeType: 'application/vnd.android.package-archive',
+            dialogTitle: 'Install AstroGuru Update',
+            UTI: 'com.android.package-archive',
+          });
+          return true;
+        }
+      } catch (shareErr) {
+        console.warn('[InAppUpdateEngine] expo-sharing error:', shareErr);
       }
     }
 

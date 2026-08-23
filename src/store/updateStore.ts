@@ -6,7 +6,7 @@ import * as Updates from 'expo-updates';
 import { inAppUpdateEngine, UpdateDownloadProgress, LIVE_DIRECT_APK_URL } from '../services/updates/inAppUpdateEngine';
 import { getAppVersionFromFirebase, syncLatestAppVersionToFirebase } from '../services/firebaseRealtimeService';
 
-export const LATEST_RELEASE_VERSION = '2.8.3';
+export const LATEST_RELEASE_VERSION = '2.8.4';
 
 export interface UpdateInfo {
   currentVersion: string;
@@ -24,6 +24,7 @@ export interface UpdateInfo {
   lastCheckedTime: string | null;
   downloadedPackageUri: string | null;
   updateType: 'apk' | 'ota';
+  downloadUrl: string | null;
 }
 
 interface UpdateState extends UpdateInfo {
@@ -62,14 +63,45 @@ export const useUpdateStore = create<UpdateState>()(
       lastCheckedTime: null,
       downloadedPackageUri: null,
       updateType: 'apk',
+      downloadUrl: null,
 
       autoCheckAndFetchOnStartup: async () => {
         try {
           syncLatestAppVersionToFirebase(LATEST_RELEASE_VERSION, get().releaseNotes, LIVE_DIRECT_APK_URL);
         } catch (_) {}
 
-        // Pre-fetch OTA update in background safely (No abrupt restart on launch)
-        if (Platform.OS !== 'web' && Updates.isEnabled) {
+        if (Platform.OS === 'web') {
+          set({
+            currentVersion: LATEST_RELEASE_VERSION,
+            latestVersion: LATEST_RELEASE_VERSION,
+            updateAvailable: false,
+            isReadyToInstall: false,
+          });
+          return;
+        }
+
+        // Automatic GitHub Release Check on Startup
+        try {
+          const currentVer = get().currentVersion;
+          const result = await inAppUpdateEngine.checkForUpdate(currentVer, LATEST_RELEASE_VERSION);
+          if (result.isAvailable) {
+            set({
+              updateAvailable: true,
+              latestVersion: result.latestVersion,
+              releaseNotes: result.releaseNotes,
+              isMandatory: result.isMandatory,
+              updateType: result.type,
+              downloadUrl: result.downloadUrl || null,
+              lastCheckedTime: new Date().toISOString(),
+            });
+            return;
+          }
+        } catch (e) {
+          console.warn('[UpdateStore Startup GitHub Check]', e);
+        }
+
+        // Pre-fetch OTA update in background safely
+        if (Updates.isEnabled) {
           try {
             const check = await Updates.checkForUpdateAsync();
             if (check.isAvailable) {
@@ -86,75 +118,35 @@ export const useUpdateStore = create<UpdateState>()(
             console.log('[OTA Startup Note]', otaErr);
           }
         }
-
-        if (Platform.OS === 'web') {
-          set({
-            currentVersion: LATEST_RELEASE_VERSION,
-            latestVersion: LATEST_RELEASE_VERSION,
-            updateAvailable: false,
-            isReadyToInstall: false,
-          });
-          return;
-        }
-
-        try {
-          const remoteMeta = await getAppVersionFromFirebase();
-          if (remoteMeta && remoteMeta.latestVersion) {
-            set({
-              latestVersion: remoteMeta.latestVersion || LATEST_RELEASE_VERSION,
-              releaseNotes: remoteMeta.releaseNotes || get().releaseNotes,
-            });
-          }
-        } catch (e) {
-          console.warn('[UpdateStore Startup Check]', e);
-        }
       },
 
       checkForUpdates: async () => {
         set({ isChecking: true });
-
-        // Check EAS OTA first
-        if (Platform.OS !== 'web' && Updates.isEnabled) {
-          try {
-            const check = await Updates.checkForUpdateAsync();
-            if (check.isAvailable) {
-              await Updates.fetchUpdateAsync();
-              set({
-                isChecking: false,
-                updateAvailable: true,
-                latestVersion: LATEST_RELEASE_VERSION,
-                isReadyToInstall: true,
-                updateType: 'ota',
-                lastCheckedTime: new Date().toISOString(),
-              });
-              return { isNewAvailable: true, currentVersion: get().currentVersion, latestVersion: LATEST_RELEASE_VERSION };
-            }
-          } catch (e) {}
-        }
 
         const currentVer = get().currentVersion;
         try {
           const result = await inAppUpdateEngine.checkForUpdate(currentVer, LATEST_RELEASE_VERSION);
           set({
             isChecking: false,
-            updateAvailable: true,
+            updateAvailable: result.isAvailable,
             latestVersion: result.latestVersion,
             releaseNotes: result.releaseNotes,
             isMandatory: result.isMandatory,
             updateType: result.type,
+            downloadUrl: result.downloadUrl || null,
             lastCheckedTime: new Date().toISOString(),
           });
           return {
-            isNewAvailable: true,
+            isNewAvailable: result.isAvailable,
             currentVersion: currentVer,
             latestVersion: result.latestVersion,
           };
         } catch (e) {
-          set({ isChecking: false, updateAvailable: true });
+          set({ isChecking: false });
           return {
-            isNewAvailable: true,
+            isNewAvailable: false,
             currentVersion: currentVer,
-            latestVersion: LATEST_RELEASE_VERSION,
+            latestVersion: currentVer,
           };
         }
       },
@@ -178,6 +170,7 @@ export const useUpdateStore = create<UpdateState>()(
         set({ isDownloading: true, downloadProgress: 0 });
 
         try {
+          const apkUrl = get().downloadUrl || LIVE_DIRECT_APK_URL;
           const result = await inAppUpdateEngine.downloadUpdatePackage(
             get().latestVersion,
             (progress: UpdateDownloadProgress) => {
@@ -187,7 +180,8 @@ export const useUpdateStore = create<UpdateState>()(
                 totalBytes: progress.totalBytes,
                 speedKbps: progress.speedKbps || 0,
               });
-            }
+            },
+            apkUrl
           );
 
           set({
@@ -202,9 +196,9 @@ export const useUpdateStore = create<UpdateState>()(
       },
 
       installUpdate: async () => {
-        const { downloadedPackageUri } = get();
+        const { downloadedPackageUri, downloadUrl } = get();
         try {
-          await inAppUpdateEngine.installDownloadedPackage(downloadedPackageUri || undefined);
+          await inAppUpdateEngine.installDownloadedPackage(downloadedPackageUri || undefined, downloadUrl || undefined);
           set({ updateAvailable: false, isReadyToInstall: false });
         } catch (err) {
           console.warn('[Install Update Error]', err);
@@ -212,7 +206,8 @@ export const useUpdateStore = create<UpdateState>()(
       },
 
       downloadDirectApk: async () => {
-        await inAppUpdateEngine.openDirectBrowserDownload();
+        const { downloadUrl } = get();
+        await inAppUpdateEngine.openDirectBrowserDownload(downloadUrl || undefined);
       },
 
       dismissUpdate: () => {

@@ -5,8 +5,7 @@ import { colors, radius, spacing, typography } from '../theme';
 import { Button } from './Button';
 import { useUpdateStore } from '../store/updateStore';
 import { downloadAndInstallApk, launchNativeInstaller } from '../services/apkInstallerService';
-
-const DIRECT_APK_DOWNLOAD_URL = 'https://expo.dev/artifacts/eas/j1bujHIWY7tt-WYtbLaWl_7QWHO-sv1bGzeVuCuVNTU.apk';
+import { LIVE_DIRECT_APK_URL } from '../services/updates/inAppUpdateEngine';
 
 export function AppUpdateModal() {
   const {
@@ -22,6 +21,7 @@ export function AppUpdateModal() {
     isDownloading,
     isReadyToInstall,
     updateType,
+    downloadUrl,
     startDownload,
     installUpdate,
     downloadDirectApk,
@@ -34,13 +34,15 @@ export function AppUpdateModal() {
 
   if (Platform.OS === 'web' || !updateAvailable) return null;
 
+  const targetApkUrl = downloadUrl || LIVE_DIRECT_APK_URL;
+
   const handleInAppApkInstall = async () => {
     setIsApkDownloading(true);
     setApkProgress(10);
     setDownloadedApkUri(null);
 
     try {
-      const res = await downloadAndInstallApk(DIRECT_APK_DOWNLOAD_URL, (pct) => {
+      const res = await downloadAndInstallApk(targetApkUrl, (pct) => {
         setApkProgress(pct);
       });
 
@@ -56,7 +58,7 @@ export function AppUpdateModal() {
           [
             {
               text: 'Open in Browser',
-              onPress: () => Linking.openURL(DIRECT_APK_DOWNLOAD_URL),
+              onPress: () => Linking.openURL(targetApkUrl),
             },
             {
               text: 'OK',
@@ -67,19 +69,19 @@ export function AppUpdateModal() {
       }
     } catch (e) {
       setIsApkDownloading(false);
-      await Linking.openURL(DIRECT_APK_DOWNLOAD_URL);
+      await Linking.openURL(targetApkUrl);
     }
   };
 
   const handleLaunchPackageInstaller = async () => {
     try {
       if (downloadedApkUri) {
-        await launchNativeInstaller(downloadedApkUri, DIRECT_APK_DOWNLOAD_URL);
+        await launchNativeInstaller(downloadedApkUri, targetApkUrl);
       } else {
-        await downloadAndInstallApk(DIRECT_APK_DOWNLOAD_URL);
+        await downloadAndInstallApk(targetApkUrl);
       }
     } catch (_) {
-      await Linking.openURL(DIRECT_APK_DOWNLOAD_URL);
+      await Linking.openURL(targetApkUrl);
     }
   };
 
