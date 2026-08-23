@@ -827,16 +827,16 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   microLabel: {
-    fontSize: 9,
+    fontSize: 9.5,
     fontWeight: '800',
-    color: '#94A3B8',
+    color: '#475569',
     marginBottom: 2,
     textAlign: 'center',
   },
   slashDivider: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#CBD5E1',
+    color: '#94A3B8',
     marginTop: 12,
   },
   approxBtnText: {
@@ -862,8 +862,8 @@ const styles = StyleSheet.create({
     color: '#78350F',
   },
   selectedCityCoords: {
-    fontSize: 10,
-    fontWeight: '600',
+    fontSize: 10.5,
+    fontWeight: '700',
     color: '#B45309',
     marginTop: 2,
   },
@@ -912,14 +912,14 @@ const styles = StyleSheet.create({
     color: '#1E293B',
   },
   cityRowState: {
-    fontSize: 10.5,
-    color: '#64748B',
-    fontWeight: '500',
+    fontSize: 11,
+    color: '#475569',
+    fontWeight: '600',
   },
   citySelectArrow: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#94A3B8',
+    color: '#64748B',
   },
 
   /* Focus Card */

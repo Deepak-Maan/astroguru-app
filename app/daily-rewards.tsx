@@ -819,10 +819,11 @@ const styles = StyleSheet.create({
   },
   streakDescription: {
     ...typography.tiny,
-    color: '#CBD5E1',
-    fontSize: 11,
-    lineHeight: 15,
+    color: '#E2E8F0',
+    fontSize: 11.5,
+    lineHeight: 16,
     marginTop: 2,
+    fontWeight: '600',
   },
 
   milestoneTrack: {
@@ -869,8 +870,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(236, 72, 153, 0.25)',
     borderColor: '#EC4899',
   },
-  dayNodeText: { fontSize: 10, color: '#94A3B8', fontWeight: '800' },
-  dayNodeLabel: { fontSize: 9.5, color: '#CBD5E1', fontWeight: '700' },
+  dayNodeText: { fontSize: 10.5, color: '#FFFFFF', fontWeight: '900' },
+  dayNodeLabel: { fontSize: 10, color: '#FEF3C7', fontWeight: '800' },
 
   claimStreakBtn: {
     borderRadius: radius.pill,
@@ -1036,9 +1037,9 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
   },
   tarotBackMantra: {
-    fontSize: 10,
+    fontSize: 10.5,
     fontWeight: '800',
-    color: '#94A3B8',
+    color: '#E2E8F0',
     letterSpacing: 1.5,
     marginTop: 2,
   },
@@ -1065,7 +1066,7 @@ const styles = StyleSheet.create({
   },
   tarotCardSubText: {
     fontSize: 11,
-    color: '#CBD5E1',
+    color: '#E2E8F0',
     fontWeight: '600',
     marginTop: 1,
   },
@@ -1080,8 +1081,9 @@ const styles = StyleSheet.create({
   tarotKeywordText: { fontSize: 11, fontWeight: '800', color: '#F59E0B' },
   tarotMeaningText: {
     fontSize: 11.5,
-    color: '#E2E8F0',
+    color: '#F8FAFC',
     lineHeight: 16,
+    fontWeight: '600',
   },
   tarotAffirmationCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
@@ -1103,13 +1105,13 @@ const styles = StyleSheet.create({
   },
   indicatorPill: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     borderRadius: 8,
     padding: 6,
     alignItems: 'center',
   },
-  indicatorLabel: { fontSize: 9, color: '#94A3B8', fontWeight: '700' },
-  indicatorValue: { fontSize: 10, color: '#FFFFFF', fontWeight: '800', marginTop: 1 },
+  indicatorLabel: { fontSize: 9.5, color: '#E2E8F0', fontWeight: '800' },
+  indicatorValue: { fontSize: 10.5, color: '#FFFFFF', fontWeight: '900', marginTop: 1 },
   colorDot: { width: 8, height: 8, borderRadius: 4 },
 
   /* Sadhana Habit Section */
@@ -1138,18 +1140,23 @@ const styles = StyleSheet.create({
     backgroundColor: '#0F172A',
   },
   categoryFilterIcon: { fontSize: 12 },
-  categoryFilterText: { fontSize: 11, fontWeight: '700', color: '#64748B' },
+  categoryFilterText: { fontSize: 11, fontWeight: '700', color: '#475569' },
   categoryFilterTextActive: { color: '#FFFFFF' },
 
   remedyTaskCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#FFFFFF',
     padding: 12,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: '#E2E8F0',
     gap: 12,
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
   },
   remedyTaskCardDone: {
     backgroundColor: '#F0FDF4',
@@ -1171,14 +1178,14 @@ const styles = StyleSheet.create({
   },
   customCheckboxIcon: { color: '#FFFFFF', fontWeight: '900', fontSize: 14 },
   remedyTaskTitle: { fontSize: 13, fontWeight: '800', color: '#0F172A' },
-  remedyTaskTitleDone: { textDecorationLine: 'line-through', color: '#94A3B8' },
+  remedyTaskTitleDone: { textDecorationLine: 'line-through', color: '#64748B' },
   remedyMetaRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     marginTop: 3,
   },
-  remedyTimingText: { fontSize: 10.5, color: colors.textMuted, fontWeight: '600' },
+  remedyTimingText: { fontSize: 11, color: '#475569', fontWeight: '700' },
   remedyStreakPill: {
     backgroundColor: '#FEF3C7',
     paddingHorizontal: 6,
@@ -1187,7 +1194,7 @@ const styles = StyleSheet.create({
   },
   remedyStreakText: { fontSize: 9.5, fontWeight: '800', color: '#B45309' },
   deleteRemedyBtn: { padding: 4 },
-  deleteRemedyIcon: { color: '#94A3B8', fontSize: 13, fontWeight: '700' },
+  deleteRemedyIcon: { color: '#64748B', fontSize: 13, fontWeight: '700' },
 
   /* Modal Backdrop & Cards */
   modalBackdrop: {

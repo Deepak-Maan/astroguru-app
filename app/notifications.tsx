@@ -461,8 +461,8 @@ const styles = StyleSheet.create({
   },
   notifTime: {
     fontSize: 10.5,
-    color: '#94A3B8',
-    fontWeight: '600',
+    color: '#64748B',
+    fontWeight: '700',
   },
   actionPill: {
     backgroundColor: '#F8FAFC',

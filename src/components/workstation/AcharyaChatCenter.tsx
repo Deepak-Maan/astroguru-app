@@ -224,12 +224,12 @@ export function AcharyaChatCenter() {
           value={searchQuery}
           onChangeText={setSearchQuery}
           placeholder="Search by seeker name or topic..."
-          placeholderTextColor="#94A3B8"
+          placeholderTextColor="#64748B"
           style={styles.searchInput}
         />
         {!!searchQuery && (
           <Pressable onPress={() => setSearchQuery('')} hitSlop={8}>
-            <Text style={{ color: '#94A3B8', fontSize: 16 }}>✕</Text>
+            <Text style={{ color: '#475569', fontSize: 16, fontWeight: '800' }}>✕</Text>
           </Pressable>
         )}
       </View>

@@ -280,9 +280,9 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   time: {
-    fontSize: 10,
-    color: '#94A3B8',
-    fontWeight: '600',
+    fontSize: 10.5,
+    color: '#64748B',
+    fontWeight: '700',
   },
   timeUser: {
     color: 'rgba(255, 255, 255, 0.85)',

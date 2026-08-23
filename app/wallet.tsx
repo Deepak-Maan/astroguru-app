@@ -1013,9 +1013,9 @@ const styles = StyleSheet.create({
     color: '#047857',
   },
   basePackTag: {
-    fontSize: 10,
-    color: '#94A3B8',
-    fontWeight: '600',
+    fontSize: 10.5,
+    color: '#64748B',
+    fontWeight: '700',
     marginTop: 2,
   },
   packRightCol: {
@@ -1322,7 +1322,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   verifyModalTitle: { ...typography.h3, fontSize: 16, fontWeight: '900', color: '#0F172A' },
-  verifyCloseIcon: { fontSize: 16, fontWeight: '800', color: '#94A3B8', padding: 4 },
+  verifyCloseIcon: { fontSize: 16, fontWeight: '800', color: '#64748B', padding: 4 },
   intentSummaryBox: {
     backgroundColor: '#F8FAFC',
     borderRadius: 12,
@@ -1333,9 +1333,9 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0',
   },
   intentRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  intentLabel: { fontSize: 11, color: colors.textMuted },
+  intentLabel: { fontSize: 11, color: '#475569', fontWeight: '700' },
   intentVal: { fontSize: 11.5, fontWeight: '800', color: '#0F172A' },
-  utrPromptText: { fontSize: 11.5, color: colors.textMuted, lineHeight: 16, marginVertical: 4 },
+  utrPromptText: { fontSize: 11.5, color: '#334155', lineHeight: 16, marginVertical: 4, fontWeight: '600' },
   utrInput: {
     backgroundColor: '#F8FAFC',
     borderWidth: 1,

@@ -501,9 +501,9 @@ const styles = StyleSheet.create({
   },
   priceOriginal: {
     fontSize: 12,
-    color: '#94A3B8',
+    color: '#64748B',
     textDecorationLine: 'line-through',
-    fontWeight: '600',
+    fontWeight: '700',
   },
   perMin: {
     fontSize: 11,
