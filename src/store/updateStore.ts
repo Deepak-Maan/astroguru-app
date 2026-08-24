@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { inAppUpdateEngine, UpdateDownloadProgress, LIVE_DIRECT_APK_URL } from '../services/updates/inAppUpdateEngine';
 import { getAppVersionFromFirebase, syncLatestAppVersionToFirebase } from '../services/firebaseRealtimeService';
 
-export const LATEST_RELEASE_VERSION = '2.8.5';
+export const LATEST_RELEASE_VERSION = '2.8.6';
 
 export interface UpdateInfo {
   currentVersion: string;
