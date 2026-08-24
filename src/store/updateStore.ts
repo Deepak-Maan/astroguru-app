@@ -166,7 +166,7 @@ export const useUpdateStore = create<UpdateState>()(
 
       startDownload: async () => {
         if (get().isDownloading) return;
-        set({ isDownloading: true, downloadProgress: 0, downloadedPackageUri: null });
+        set({ isDownloading: true, downloadProgress: 1, downloadedPackageUri: null });
 
         try {
           const apkUrl = get().downloadUrl || LIVE_DIRECT_APK_URL;
@@ -193,33 +193,34 @@ export const useUpdateStore = create<UpdateState>()(
 
             // Automatically launch Android package installer
             if (Platform.OS === 'android') {
-              await inAppUpdateEngine.installDownloadedPackage(result.localUri, apkUrl);
+              await inAppUpdateEngine.installDownloadedPackage(result.localUri);
             }
           } else {
-            // Direct browser fallback if local download stream was interrupted
+            console.warn('[UpdateStore Download]', result?.error || 'Download failed');
             set({ isDownloading: false, downloadProgress: 0 });
-            await inAppUpdateEngine.openDirectBrowserDownload(apkUrl);
           }
         } catch (err: any) {
           console.warn('[UpdateStore Download Error]', err);
-          set({ isDownloading: false });
-          const apkUrl = get().downloadUrl || LIVE_DIRECT_APK_URL;
-          await inAppUpdateEngine.openDirectBrowserDownload(apkUrl);
+          set({ isDownloading: false, downloadProgress: 0 });
         }
       },
 
       installUpdate: async () => {
-        const { downloadedPackageUri, downloadUrl } = get();
-        try {
-          await inAppUpdateEngine.installDownloadedPackage(downloadedPackageUri || undefined, downloadUrl || undefined);
-        } catch (err) {
-          console.warn('[Install Update Error]', err);
+        const { downloadedPackageUri } = get();
+        if (downloadedPackageUri) {
+          try {
+            await inAppUpdateEngine.installDownloadedPackage(downloadedPackageUri);
+          } catch (err) {
+            console.warn('[Install Update Error]', err);
+          }
         }
       },
 
       downloadDirectApk: async () => {
         const { downloadUrl } = get();
-        await inAppUpdateEngine.openDirectBrowserDownload(downloadUrl || undefined);
+        if (downloadUrl) {
+          await get().startDownload();
+        }
       },
 
       dismissUpdate: () => {

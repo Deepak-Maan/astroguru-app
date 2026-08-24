@@ -139,23 +139,11 @@ export function AppUpdateModal() {
                 />
               )}
 
-              <Pressable
-                onPress={() => Linking.openURL(targetApkUrl)}
-                style={({ pressed }) => [
-                  { paddingVertical: 4, alignItems: 'center' },
-                  pressed && { opacity: 0.7 },
-                ]}
-              >
-                <Text style={{ ...typography.tiny, color: colors.textGold, fontWeight: '800' }}>
-                  🌐 View on GitHub Releases
-                </Text>
-              </Pressable>
-
               {!isMandatory && !isDownloading && (
                 <Pressable
                   onPress={dismissUpdate}
                   style={({ pressed }) => [
-                    { paddingVertical: 4, alignItems: 'center' },
+                    { paddingVertical: 6, alignItems: 'center' },
                     pressed && { opacity: 0.7 },
                   ]}
                 >

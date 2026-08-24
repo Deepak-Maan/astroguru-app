@@ -8,7 +8,6 @@ import { Platform, Linking } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import * as IntentLauncher from 'expo-intent-launcher';
 import * as Application from 'expo-application';
-import * as Sharing from 'expo-sharing';
 
 export interface UpdateDownloadProgress {
   totalBytes: number;
@@ -25,6 +24,7 @@ export interface InAppUpdateCheckResult {
   isMandatory: boolean;
   type: 'apk';
   downloadUrl?: string;
+  apkFileName?: string;
 }
 
 export const GITHUB_OWNER = 'Deepak-Maan';
@@ -34,7 +34,7 @@ export const LIVE_DIRECT_APK_URL = `https://github.com/${GITHUB_OWNER}/${GITHUB_
 
 /**
  * Robust version comparison helper
- * Handles versionCode ('284' > '283') and semver ('2.8.5' > '2.8.4')
+ * Handles versionCode ('286' > '285') and semver ('2.8.6' > '2.8.5')
  */
 export function isRemoteVersionNewer(remoteVer: string, currentVer: string): boolean {
   if (!remoteVer || !currentVer) return false;
@@ -44,14 +44,14 @@ export function isRemoteVersionNewer(remoteVer: string, currentVer: string): boo
 
   if (cleanRemote === cleanCurrent) return false;
 
-  // Numeric versionCode check (e.g. "285" vs "284")
+  // Numeric versionCode check (e.g. "286" vs "285")
   const remoteNum = parseInt(cleanRemote, 10);
   const currentNum = parseInt(cleanCurrent, 10);
   if (!isNaN(remoteNum) && !isNaN(currentNum) && !cleanRemote.includes('.') && !cleanCurrent.includes('.')) {
     return remoteNum > currentNum;
   }
 
-  // Semver check (e.g. "2.8.5" vs "2.8.4")
+  // Semver check (e.g. "2.8.6" vs "2.8.5")
   const rParts = cleanRemote.split('.').map((p) => parseInt(p, 10) || 0);
   const cParts = cleanCurrent.split('.').map((p) => parseInt(p, 10) || 0);
 
@@ -74,8 +74,8 @@ class InAppUpdateEngine {
    * Checks GitHub Releases for the latest APK uploaded by the developer.
    */
   async checkForUpdate(currentVersion: string, fallbackVersion: string): Promise<InAppUpdateCheckResult> {
-    const currentCode = Application.nativeBuildVersion || '284';
-    const currentName = Application.nativeApplicationVersion || currentVersion || '2.8.4';
+    const currentCode = Application.nativeBuildVersion || '286';
+    const currentName = Application.nativeApplicationVersion || currentVersion || '2.8.6';
 
     // 1. Query GitHub Releases API
     try {
@@ -101,7 +101,9 @@ class InAppUpdateEngine {
           typeof asset.name === 'string' && asset.name.toLowerCase().endsWith('.apk')
         );
 
-        const downloadUrl = apkAsset?.browser_download_url || `${LIVE_DIRECT_APK_URL}/download/${rawTag || 'v' + cleanTag}/${apkAsset?.name || 'app-release.apk'}`;
+        // Direct APK binary download URL
+        const downloadUrl = apkAsset?.browser_download_url || 
+          `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases/download/${rawTag || 'v' + cleanTag}/${apkAsset?.name || 'app-release.apk'}`;
 
         const notes = data.body
           ? data.body
@@ -122,6 +124,7 @@ class InAppUpdateEngine {
           isMandatory: false,
           type: 'apk',
           downloadUrl: downloadUrl,
+          apkFileName: apkAsset?.name || `AstroGuru-v${cleanTag}.apk`,
         };
       }
     } catch (ghErr) {
@@ -140,153 +143,147 @@ class InAppUpdateEngine {
   }
 
   /**
-   * Downloads the APK file directly with real-time percentage, byte counting, and transfer speed.
+   * Downloads the APK file directly in-app with real-time percentage and speed.
    */
   async downloadUpdatePackage(
     targetVersion: string,
     onProgress: (progress: UpdateDownloadProgress) => void,
     customApkUrl?: string
-  ): Promise<{ success: boolean; localUri?: string; type: 'apk' }> {
-    const apkUrl = customApkUrl || LIVE_DIRECT_APK_URL;
-
-    // Direct Native Android APK Download
-    if (Platform.OS === 'android') {
-      try {
-        const fsAny = FileSystem as any;
-        const targetDir = fsAny.cacheDirectory || fsAny.documentDirectory;
-
-        if (targetDir && typeof fsAny.createDownloadResumable === 'function') {
-          const fileName = `AstroGuru-v${targetVersion}.apk`;
-          const localPath = `${targetDir}${fileName}`;
-
-          try {
-            const info = await fsAny.getInfoAsync(localPath);
-            if (info.exists) {
-              await fsAny.deleteAsync(localPath, { idempotent: true });
-            }
-          } catch (_) {}
-
-          this.lastDownloadedBytes = 0;
-          this.lastTimestamp = Date.now();
-
-          this.activeDownload = fsAny.createDownloadResumable(
-            apkUrl,
-            localPath,
-            {},
-            (downloadProgress: any) => {
-              const total = downloadProgress.totalBytesExpectedToWrite || 40 * 1024 * 1024;
-              const downloaded = downloadProgress.totalBytesWritten;
-              const percentage = Math.min(100, Math.floor((downloaded / total) * 100));
-
-              const now = Date.now();
-              const timeDiff = (now - this.lastTimestamp) / 1000;
-              let speedKbps = 2400;
-
-              if (timeDiff >= 0.5) {
-                const bytesDiff = downloaded - this.lastDownloadedBytes;
-                speedKbps = Math.max(100, Math.floor(bytesDiff / timeDiff / 1024));
-                this.lastDownloadedBytes = downloaded;
-                this.lastTimestamp = now;
-              }
-
-              onProgress({
-                totalBytes: total,
-                downloadedBytes: downloaded,
-                percentage,
-                speedKbps,
-              });
-            }
-          );
-
-          const result = await this.activeDownload.downloadAsync();
-          if (result && result.uri) {
-            onProgress({
-              totalBytes: 40 * 1024 * 1024,
-              downloadedBytes: 40 * 1024 * 1024,
-              percentage: 100,
-              speedKbps: 3500,
-            });
-            return { success: true, localUri: result.uri, type: 'apk' };
-          }
-        }
-      } catch (err) {
-        console.warn('[InAppUpdateEngine] Direct APK download error:', err);
-      }
+  ): Promise<{ success: boolean; localUri?: string; type: 'apk'; error?: string }> {
+    if (Platform.OS !== 'android') {
+      return { success: false, type: 'apk', error: 'Platform not Android' };
     }
 
-    // Direct browser fallback for Web / non-Android
-    return { success: false, type: 'apk' };
+    const apkUrl = customApkUrl || LIVE_DIRECT_APK_URL;
+
+    try {
+      const fsAny = FileSystem as any;
+      const targetDir = fsAny.cacheDirectory || fsAny.documentDirectory;
+
+      if (!targetDir || typeof fsAny.createDownloadResumable !== 'function') {
+        return { success: false, type: 'apk', error: 'FileSystem not available' };
+      }
+
+      const fileName = `AstroGuru-v${targetVersion}.apk`;
+      const localPath = `${targetDir}${fileName}`;
+
+      // Clean existing old APK file
+      try {
+        const info = await fsAny.getInfoAsync(localPath);
+        if (info.exists) {
+          await fsAny.deleteAsync(localPath, { idempotent: true });
+        }
+      } catch (_) {}
+
+      this.lastDownloadedBytes = 0;
+      this.lastTimestamp = Date.now();
+
+      this.activeDownload = fsAny.createDownloadResumable(
+        apkUrl,
+        localPath,
+        {
+          headers: {
+            'Accept': 'application/octet-stream',
+            'User-Agent': 'AstroGuru-InApp-Downloader',
+          },
+        },
+        (downloadProgress: any) => {
+          const total = downloadProgress.totalBytesExpectedToWrite || 45 * 1024 * 1024;
+          const downloaded = downloadProgress.totalBytesWritten;
+          const percentage = Math.min(100, Math.max(1, Math.floor((downloaded / total) * 100)));
+
+          const now = Date.now();
+          const timeDiff = (now - this.lastTimestamp) / 1000;
+          let speedKbps = 2400;
+
+          if (timeDiff >= 0.4) {
+            const bytesDiff = downloaded - this.lastDownloadedBytes;
+            speedKbps = Math.max(100, Math.floor(bytesDiff / timeDiff / 1024));
+            this.lastDownloadedBytes = downloaded;
+            this.lastTimestamp = now;
+          }
+
+          onProgress({
+            totalBytes: total,
+            downloadedBytes: downloaded,
+            percentage,
+            speedKbps,
+          });
+        }
+      );
+
+      const result = await this.activeDownload.downloadAsync();
+      
+      if (result && result.uri) {
+        // Validate downloaded file size (must be an actual APK, not an error HTML string)
+        const fileInfo = await fsAny.getInfoAsync(result.uri);
+        if (fileInfo.exists && fileInfo.size > 1024 * 1024) {
+          onProgress({
+            totalBytes: fileInfo.size,
+            downloadedBytes: fileInfo.size,
+            percentage: 100,
+            speedKbps: 3500,
+          });
+          return { success: true, localUri: result.uri, type: 'apk' };
+        } else {
+          return { success: false, type: 'apk', error: 'Downloaded file is invalid or too small' };
+        }
+      }
+
+      return { success: false, type: 'apk', error: 'Download returned no URI' };
+    } catch (err: any) {
+      console.warn('[InAppUpdateEngine] Direct APK download error:', err);
+      return { success: false, type: 'apk', error: err?.message || 'Download error' };
+    }
   }
 
   /**
-   * Installs the downloaded APK package via Android Package Installer Intent
+   * Installs the downloaded APK package directly via Android Package Installer Intent
    */
-  async installDownloadedPackage(localUri?: string, customApkUrl?: string): Promise<boolean> {
-    const targetUrl = customApkUrl || LIVE_DIRECT_APK_URL;
-
-    if (Platform.OS === 'android' && localUri) {
-      // 1. Primary: IntentLauncher VIEW with content:// URI
-      try {
-        const fsAny = FileSystem as any;
-        const getContentUri = fsAny.getContentUriAsync || FileSystem.getContentUriAsync;
-
-        let packageUri = localUri;
-        if (typeof getContentUri === 'function') {
-          packageUri = await getContentUri(localUri);
-        }
-
-        await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
-          data: packageUri,
-          flags: 1 | 268435456, // FLAG_GRANT_READ_URI_PERMISSION | FLAG_ACTIVITY_NEW_TASK
-          type: 'application/vnd.android.package-archive',
-        });
-        return true;
-      } catch (e: any) {
-        console.warn('[InAppUpdateEngine] Intent install error, attempting fallback:', e);
-      }
-
-      // 2. Direct browser APK link fallback
-      try {
-        await Linking.openURL(targetUrl);
-        return true;
-      } catch (linkErr) {
-        console.warn('[InAppUpdateEngine] Fallback openURL failed:', linkErr);
-      }
-
-      // 3. Fallback: Sharing dialog with package installer UTI
-      try {
-        const isAvailable = await Sharing.isAvailableAsync();
-        if (isAvailable) {
-          await Sharing.shareAsync(localUri, {
-            mimeType: 'application/vnd.android.package-archive',
-            dialogTitle: 'Install AstroGuru Update',
-            UTI: 'com.android.package-archive',
-          });
-          return true;
-        }
-      } catch (shareErr) {
-        console.warn('[InAppUpdateEngine] expo-sharing error:', shareErr);
-      }
+  async installDownloadedPackage(localUri?: string): Promise<boolean> {
+    if (Platform.OS !== 'android' || !localUri) {
+      return false;
     }
 
-    // Direct browser APK link fallback
     try {
-      await Linking.openURL(targetUrl);
+      const fsAny = FileSystem as any;
+      const getContentUri = fsAny.getContentUriAsync || FileSystem.getContentUriAsync;
+
+      let packageUri = localUri;
+      if (typeof getContentUri === 'function') {
+        packageUri = await getContentUri(localUri);
+      }
+
+      // Launch native Android Package Installer directly
+      await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
+        data: packageUri,
+        flags: 1 | 268435456, // FLAG_GRANT_READ_URI_PERMISSION | FLAG_ACTIVITY_NEW_TASK
+        type: 'application/vnd.android.package-archive',
+      });
       return true;
-    } catch (err) {
-      console.warn('[InAppUpdateEngine] Fallback openURL failed:', err);
+    } catch (e: any) {
+      console.warn('[InAppUpdateEngine] Intent install error:', e);
+
+      // Prompt for unknown sources permission if restricted
+      try {
+        await IntentLauncher.startActivityAsync('android.settings.MANAGE_UNKNOWN_APP_SOURCES', {
+          data: 'package:com.astroguru.app',
+        });
+      } catch (_) {}
+
       return false;
     }
   }
 
-  async openDirectBrowserDownload(customApkUrl?: string): Promise<boolean> {
-    const targetUrl = customApkUrl || LIVE_DIRECT_APK_URL;
-    try {
-      await Linking.openURL(targetUrl);
-      return true;
-    } catch (err) {
-      console.warn('[InAppUpdateEngine] openDirectBrowserDownload failed:', err);
-      return false;
+  async openSettingsForInstallPermission(): Promise<void> {
+    if (Platform.OS === 'android') {
+      try {
+        await IntentLauncher.startActivityAsync('android.settings.MANAGE_UNKNOWN_APP_SOURCES', {
+          data: 'package:com.astroguru.app',
+        });
+      } catch (e) {
+        console.warn('[InAppUpdateEngine] Failed to open unknown sources settings:', e);
+      }
     }
   }
 }
