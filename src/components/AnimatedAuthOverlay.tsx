@@ -1,7 +1,16 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, Easing, Modal, StyleSheet, Text, View } from 'react-native';
+import {
+  Animated,
+  Dimensions,
+  Easing,
+  Modal,
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors, radius, spacing, typography } from '../theme';
+import { colors, radius, spacing } from '../theme';
 
 interface OverlayProps {
   visible: boolean;
@@ -10,130 +19,138 @@ interface OverlayProps {
   onFinished?: () => void;
 }
 
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
 export function AnimatedAuthOverlay({ visible, type, message, onFinished }: OverlayProps) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(0.4)).current;
-  const rotateCw = useRef(new Animated.Value(0)).current;
-  const rotateCcw = useRef(new Animated.Value(1)).current;
-  const pulseIcon = useRef(new Animated.Value(0.7)).current;
+  const scaleAnim = useRef(new Animated.Value(0.75)).current;
+  const rotateRing1 = useRef(new Animated.Value(0)).current;
+  const rotateRing2 = useRef(new Animated.Value(1)).current;
+  const rotateRays = useRef(new Animated.Value(0)).current;
+  const pulseCenter = useRef(new Animated.Value(0.85)).current;
   const progressWidth = useRef(new Animated.Value(0)).current;
-  const twistLogout = useRef(new Animated.Value(0)).current;
+  const shimmerAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (visible) {
       fadeAnim.setValue(0);
-      scaleAnim.setValue(type === 'logout' ? 1.1 : 0.4);
-      rotateCw.setValue(0);
-      rotateCcw.setValue(1);
-      pulseIcon.setValue(0.7);
+      scaleAnim.setValue(0.75);
+      rotateRing1.setValue(0);
+      rotateRing2.setValue(1);
+      rotateRays.setValue(0);
+      pulseCenter.setValue(0.85);
       progressWidth.setValue(0);
-      twistLogout.setValue(0);
+      shimmerAnim.setValue(0);
 
-      // 1. Clockwise outer ring spin
-      const spinCw = Animated.loop(
-        Animated.timing(rotateCw, {
+      // 1. Outer Ring Spin (Continuous)
+      const ring1Loop = Animated.loop(
+        Animated.timing(rotateRing1, {
           toValue: 1,
-          duration: type === 'logout' ? 1200 : 1600,
+          duration: 3500,
           easing: Easing.linear,
           useNativeDriver: true,
         })
       );
 
-      // 2. Counter-clockwise inner ring spin
-      const spinCcw = Animated.loop(
-        Animated.timing(rotateCcw, {
+      // 2. Inner Ring Reverse Spin
+      const ring2Loop = Animated.loop(
+        Animated.timing(rotateRing2, {
           toValue: 0,
-          duration: type === 'logout' ? 1000 : 1400,
+          duration: 2800,
           easing: Easing.linear,
           useNativeDriver: true,
         })
       );
 
-      spinCw.start();
-      spinCcw.start();
+      // 3. Radial Golden Rays Rotation
+      const raysLoop = Animated.loop(
+        Animated.timing(rotateRays, {
+          toValue: 1,
+          duration: 6000,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        })
+      );
 
-      // 3. Icon Breathing Pulse
-      const pulseLoop = Animated.loop(
+      // 4. Center Core Breathing Expansion
+      const centerPulseLoop = Animated.loop(
         Animated.sequence([
-          Animated.timing(pulseIcon, {
-            toValue: 1.25,
-            duration: 500,
+          Animated.timing(pulseCenter, {
+            toValue: 1.15,
+            duration: 450,
+            easing: Easing.out(Easing.ease),
             useNativeDriver: true,
           }),
-          Animated.timing(pulseIcon, {
-            toValue: 1,
-            duration: 500,
+          Animated.timing(pulseCenter, {
+            toValue: 0.95,
+            duration: 450,
+            easing: Easing.in(Easing.ease),
             useNativeDriver: true,
           }),
         ])
       );
-      pulseLoop.start();
 
-      // 4. Progress bar fill
+      // 5. Shimmer Wave
+      const shimmerLoop = Animated.loop(
+        Animated.timing(shimmerAnim, {
+          toValue: 1,
+          duration: 1000,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        })
+      );
+
+      ring1Loop.start();
+      ring2Loop.start();
+      raysLoop.start();
+      centerPulseLoop.start();
+      shimmerLoop.start();
+
+      // 6. Progress Fill
       Animated.timing(progressWidth, {
         toValue: 1,
-        duration: type === 'logout' ? 900 : 1100,
+        duration: 950,
+        easing: Easing.out(Easing.cubic),
         useNativeDriver: false,
       }).start();
 
-      // 5. Entrance / Exit Animations
-      if (type === 'logout') {
-        // Logout: Implosion twist dissolve animation
+      // 7. Modal Spring Entrance
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 220,
+          useNativeDriver: true,
+        }),
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          friction: 6,
+          tension: 90,
+          useNativeDriver: true,
+        }),
+      ]).start();
+
+      // 8. Exit Dissolve
+      const timer = setTimeout(() => {
         Animated.parallel([
           Animated.timing(fadeAnim, {
-            toValue: 1,
+            toValue: 0,
             duration: 200,
             useNativeDriver: true,
           }),
-          Animated.sequence([
-            Animated.timing(scaleAnim, {
-              toValue: 1.05,
-              duration: 200,
-              useNativeDriver: true,
-            }),
-            Animated.timing(scaleAnim, {
-              toValue: 0.85,
-              duration: 750,
-              useNativeDriver: true,
-            }),
-          ]),
-          Animated.timing(twistLogout, {
-            toValue: 1,
-            duration: 950,
+          Animated.timing(scaleAnim, {
+            toValue: 1.08,
+            duration: 200,
             useNativeDriver: true,
           }),
-        ]).start();
-      } else {
-        // Login / Signup: Cosmic Spring Entrance
-        Animated.parallel([
-          Animated.timing(fadeAnim, {
-            toValue: 1,
-            duration: 250,
-            useNativeDriver: true,
-          }),
-          Animated.spring(scaleAnim, {
-            toValue: 1,
-            friction: 5,
-            tension: 90,
-            useNativeDriver: true,
-          }),
-        ]).start();
-      }
-
-      // Auto finish after delay
-      const displayDuration = type === 'logout' ? 1050 : 1250;
-      const timer = setTimeout(() => {
-        Animated.timing(fadeAnim, {
-          toValue: 0,
-          duration: 220,
-          useNativeDriver: true,
-        }).start(() => {
-          spinCw.stop();
-          spinCcw.stop();
-          pulseLoop.stop();
+        ]).start(() => {
+          ring1Loop.stop();
+          ring2Loop.stop();
+          raysLoop.stop();
+          centerPulseLoop.stop();
+          shimmerLoop.stop();
           onFinished?.();
         });
-      }, displayDuration);
+      }, 1200);
 
       return () => clearTimeout(timer);
     }
@@ -141,55 +158,43 @@ export function AnimatedAuthOverlay({ visible, type, message, onFinished }: Over
 
   if (!visible) return null;
 
-  const spinCwDeg = rotateCw.interpolate({
+  const spin1Deg = rotateRing1.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '360deg'],
   });
 
-  const spinCcwDeg = rotateCcw.interpolate({
+  const spin2Deg = rotateRing2.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '360deg'],
   });
 
-  const logoutRotate = twistLogout.interpolate({
+  const raysDeg = rotateRays.interpolate({
     inputRange: [0, 1],
-    outputRange: ['0deg', '-18deg'],
+    outputRange: ['0deg', '360deg'],
   });
-
-  const getEmoji = () => {
-    if (type === 'login') return '✨';
-    if (type === 'signup') return '🌟';
-    return '🛡️';
-  };
-
-  const getTitle = () => {
-    if (type === 'login') return 'Cosmic Welcome!';
-    if (type === 'signup') return 'Lagna Chart Ready!';
-    return 'Session Secured';
-  };
-
-  const getDefaultSubtitle = () => {
-    if (type === 'login') return 'Aligning your birth chart & Grahas...';
-    if (type === 'signup') return 'Generating your 12-house natal chart...';
-    return 'Clearing credentials & locking vault...';
-  };
-
-  const getGradientColors = (): [string, string, string, string] => {
-    if (type === 'login') return [colors.teal, colors.gold, '#3B0764', colors.teal];
-    if (type === 'signup') return [colors.saffron, '#8B5CF6', colors.gold, colors.saffron];
-    return ['#EF4444', '#8B5CF6', '#3B0764', '#EF4444'];
-  };
-
-  const getReversedGradientColors = (): [string, string, string, string] => {
-    if (type === 'login') return [colors.teal, '#3B0764', colors.gold, colors.teal];
-    if (type === 'signup') return [colors.saffron, colors.gold, '#8B5CF6', colors.saffron];
-    return ['#EF4444', '#3B0764', '#8B5CF6', '#EF4444'];
-  };
 
   const progressPercent = progressWidth.interpolate({
     inputRange: [0, 1],
     outputRange: ['0%', '100%'],
   });
+
+  const getEmblem = () => {
+    if (type === 'logout') return '🛡️';
+    if (type === 'signup') return '👑';
+    return '🕉️';
+  };
+
+  const getTitle = () => {
+    if (type === 'logout') return 'Session Secured 🙏';
+    if (type === 'signup') return 'Welcome to the Sanctuary ✨';
+    return 'Cosmic Alignment Complete ✨';
+  };
+
+  const getSubtitle = () => {
+    if (type === 'logout') return 'Clearing credentials & locking sacred vault...';
+    if (type === 'signup') return 'Generating your 12-house Vedic birth chart...';
+    return 'Harmonizing your Grahas & Navamsha Kundli...';
+  };
 
   return (
     <Modal visible={visible} transparent animationType="none" statusBarTranslucent>
@@ -198,7 +203,6 @@ export function AnimatedAuthOverlay({ visible, type, message, onFinished }: Over
           styles.backdrop,
           {
             opacity: fadeAnim,
-            backgroundColor: type === 'logout' ? 'rgba(15, 23, 42, 0.82)' : 'rgba(15, 23, 42, 0.65)',
           },
         ]}
       >
@@ -206,59 +210,90 @@ export function AnimatedAuthOverlay({ visible, type, message, onFinished }: Over
           style={[
             styles.card,
             {
-              transform: [
-                { scale: scaleAnim },
-                { rotate: type === 'logout' ? logoutRotate : '0deg' },
-              ],
+              transform: [{ scale: scaleAnim }],
             },
           ]}
         >
-          {/* Dual Counter-Rotating Ring 1: Clockwise Outer */}
-          <Animated.View style={[styles.ringOuter, { transform: [{ rotate: spinCwDeg }] }]}>
-            <LinearGradient
-              colors={getGradientColors()}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={StyleSheet.absoluteFill}
-            />
-          </Animated.View>
+          {/* Specular Edge */}
+          <View style={styles.specularTop} />
 
-          {/* Dual Counter-Rotating Ring 2: Counter-Clockwise Inner */}
-          <Animated.View style={[styles.ringInner, { transform: [{ rotate: spinCcwDeg }] }]}>
-            <LinearGradient
-              colors={getReversedGradientColors()}
-              start={{ x: 1, y: 0 }}
-              end={{ x: 0, y: 1 }}
-              style={StyleSheet.absoluteFill}
-            />
-          </Animated.View>
-
-          <View style={styles.cardInner}>
-            {/* Animated Pulsing Central Icon */}
-            <Animated.View style={[styles.emojiWrap, { transform: [{ scale: pulseIcon }] }]}>
-              <Text style={styles.emoji}>{getEmoji()}</Text>
+          {/* Central Sacred Mandala Portal */}
+          <View style={styles.mandalaWrapper}>
+            {/* Ambient Radial Golden Ray Halo */}
+            <Animated.View
+              style={[
+                styles.raysHalo,
+                {
+                  transform: [{ rotate: raysDeg }],
+                },
+              ]}
+            >
+              <LinearGradient
+                colors={['rgba(212, 175, 55, 0.45)', 'rgba(245, 158, 11, 0.2)', 'transparent']}
+                start={{ x: 0.5, y: 0.5 }}
+                end={{ x: 1, y: 1 }}
+                style={StyleSheet.absoluteFill}
+              />
             </Animated.View>
 
-            <Text style={styles.title}>{getTitle()}</Text>
-            <Text style={styles.subtitle}>{message || getDefaultSubtitle()}</Text>
+            {/* Outer Astrological Dashed Orbit Ring */}
+            <Animated.View
+              style={[
+                styles.mandalaRing1,
+                {
+                  transform: [{ rotate: spin1Deg }],
+                },
+              ]}
+            />
 
-            {/* Glowing Shimmer Progress Bar */}
-            <View style={styles.pulseBarWrap}>
-              <Animated.View style={[styles.pulseBar, { width: progressPercent }]}>
-                <LinearGradient
-                  colors={
-                    type === 'logout'
-                      ? ['#EF4444', '#8B5CF6']
-                      : type === 'signup'
-                      ? [colors.saffron, colors.gold]
-                      : [colors.teal, colors.gold]
-                  }
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={StyleSheet.absoluteFill}
-                />
-              </Animated.View>
-            </View>
+            {/* Middle Planetary Dashed Ring */}
+            <Animated.View
+              style={[
+                styles.mandalaRing2,
+                {
+                  transform: [{ rotate: spin2Deg }],
+                },
+              ]}
+            />
+
+            {/* Inner Sacred Center Core */}
+            <Animated.View
+              style={[
+                styles.mandalaCore,
+                {
+                  transform: [{ scale: pulseCenter }],
+                },
+              ]}
+            >
+              <LinearGradient
+                colors={['#FDE68A', '#F59E0B', '#D97706']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={StyleSheet.absoluteFill}
+              />
+              <Text style={styles.emblemText}>{getEmblem()}</Text>
+            </Animated.View>
+          </View>
+
+          {/* Status Badge */}
+          <View style={styles.badgePill}>
+            <Text style={styles.badgeText}>VEDIC SANCTUARY AUTHENTICATED</Text>
+          </View>
+
+          {/* Title & Subtitle */}
+          <Text style={styles.titleText}>{getTitle()}</Text>
+          <Text style={styles.messageText}>{message || getSubtitle()}</Text>
+
+          {/* Shimmering Progress Bar */}
+          <View style={styles.progressTrack}>
+            <Animated.View style={[styles.progressBar, { width: progressPercent }]}>
+              <LinearGradient
+                colors={['#D4AF37', '#F5D77F', '#B8902A', '#EA580C']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={StyleSheet.absoluteFill}
+              />
+            </Animated.View>
           </View>
         </Animated.View>
       </Animated.View>
@@ -269,92 +304,127 @@ export function AnimatedAuthOverlay({ visible, type, message, onFinished }: Over
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
+    backgroundColor: 'rgba(6, 10, 18, 0.75)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: spacing.xl,
+    padding: spacing.lg,
   },
   card: {
     width: '100%',
-    maxWidth: 320,
-    borderRadius: 32,
-    padding: 4,
+    maxWidth: 360,
+    backgroundColor: 'rgba(255, 255, 255, 0.96)',
+    borderRadius: 28,
+    paddingVertical: 28,
+    paddingHorizontal: 22,
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: 'rgba(212, 175, 55, 0.45)',
+    shadowColor: '#D4AF37',
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.35,
+    shadowRadius: 30,
+    elevation: 16,
+    overflow: 'hidden',
     position: 'relative',
-    shadowColor: colors.teal,
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.6,
-    shadowRadius: 24,
-    elevation: 12,
   },
-  ringOuter: {
+  specularTop: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    bottom: 0,
-    borderRadius: 32,
-    overflow: 'hidden',
+    height: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
   },
-  ringInner: {
-    position: 'absolute',
-    top: 2,
-    left: 2,
-    right: 2,
-    bottom: 2,
-    borderRadius: 30,
-    overflow: 'hidden',
-    opacity: 0.85,
-  },
-  cardInner: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 28,
-    paddingVertical: spacing.xl + 4,
-    paddingHorizontal: spacing.lg,
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
-  emojiWrap: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#F8FAFC',
-    alignItems: 'center',
+  mandalaWrapper: {
+    width: 120,
+    height: 120,
     justifyContent: 'center',
-    marginBottom: 4,
+    alignItems: 'center',
+    position: 'relative',
+    marginBottom: 14,
+  },
+  raysHalo: {
+    position: 'absolute',
+    width: 116,
+    height: 116,
+    borderRadius: 58,
+    overflow: 'hidden',
+  },
+  mandalaRing1: {
+    position: 'absolute',
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    borderWidth: 1.8,
+    borderColor: '#D4AF37',
+    borderStyle: 'dashed',
+  },
+  mandalaRing2: {
+    position: 'absolute',
+    width: 86,
+    height: 86,
+    borderRadius: 43,
     borderWidth: 1.5,
-    borderColor: 'rgba(191, 219, 254, 0.8)',
-    shadowColor: '#BFDBFE',
+    borderColor: '#8B5CF6',
+    borderStyle: 'dashed',
+  },
+  mandalaCore: {
+    width: 62,
+    height: 62,
+    borderRadius: 31,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#F59E0B',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOpacity: 0.6,
+    shadowRadius: 10,
+    elevation: 6,
   },
-  emoji: {
-    fontSize: 34,
+  emblemText: {
+    fontSize: 30,
   },
-  title: {
-    fontSize: 22,
+  badgePill: {
+    backgroundColor: 'rgba(212, 175, 55, 0.14)',
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.40)',
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: radius.pill,
+    marginBottom: 8,
+  },
+  badgeText: {
+    fontSize: 9.5,
     fontWeight: '900',
-    color: '#1E1B4B',
+    color: '#B8902A',
+    letterSpacing: 1,
+  },
+  titleText: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#0F172A',
     textAlign: 'center',
     letterSpacing: 0.3,
+    fontFamily: Platform.OS === 'web' ? 'Marcellus, Cinzel, Georgia, serif' : undefined,
+    marginBottom: 4,
   },
-  subtitle: {
+  messageText: {
     fontSize: 13,
-    fontWeight: '600',
-    color: colors.textMuted,
+    color: '#475569',
     textAlign: 'center',
     lineHeight: 18,
-    paddingHorizontal: spacing.xs,
+    fontWeight: '600',
+    paddingHorizontal: 10,
+    marginBottom: 16,
   },
-  pulseBarWrap: {
-    width: 140,
-    height: 5,
-    borderRadius: 3,
+  progressTrack: {
+    width: 160,
+    height: 6,
     backgroundColor: '#E2E8F0',
-    marginTop: spacing.md,
+    borderRadius: 3,
     overflow: 'hidden',
   },
-  pulseBar: {
+  progressBar: {
     height: '100%',
     borderRadius: 3,
   },

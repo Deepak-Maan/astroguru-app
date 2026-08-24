@@ -24,6 +24,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import Svg, { Path } from 'react-native-svg';
 import { AuthCelestialShowcase } from '../../src/components/auth/AuthCelestialShowcase';
+import { AuthCosmicBackground } from '../../src/components/auth/AuthCosmicBackground';
 import { AnimatedAuthOverlay } from '../../src/components/AnimatedAuthOverlay';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { useAuthStore } from '../../src/store/authStore';
@@ -397,15 +398,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={styles.rootContainer}>
-      {/* Background Cosmic Gradient */}
-      <LinearGradient
-        colors={['#FDFBF7', '#F8FAFC', '#EFF6FF']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={StyleSheet.absoluteFill}
-      />
-
+    <AuthCosmicBackground style={styles.rootContainer}>
       <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -943,7 +936,7 @@ export default function LoginScreen() {
           onFinished={handleOverlayComplete}
         />
       )}
-    </View>
+    </AuthCosmicBackground>
   );
 }
 
