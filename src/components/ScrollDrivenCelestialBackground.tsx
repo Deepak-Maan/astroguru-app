@@ -739,17 +739,117 @@ export function ScrollDrivenCelestialBackground({
         </div>
       )}
 
-      {/* 5. Native Mobile Fallback Elements */}
+      {/* 5. Native Mobile Cosmic Planetarium Elements */}
       {Platform.OS !== 'web' && (
         <>
+          {/* Ambient Nebula Light Clouds */}
           <Animated.View
             style={[
-              styles.nativeAuraCircle,
+              styles.nativeNebulaCloud,
+              styles.nativeCloudGold,
               {
-                transform: [{ scale: auraScale }, { rotate: spin }],
+                transform: [{ scale: auraScale }],
               },
             ]}
           />
+          <Animated.View
+            style={[
+              styles.nativeNebulaCloud,
+              styles.nativeCloudLavender,
+              {
+                transform: [{ scale: auraScale }],
+              },
+            ]}
+          />
+
+          {/* Central Planetarium Golden Sun & Revolving Orbits */}
+          <View style={styles.nativePlanetariumCenter} pointerEvents="none">
+            {/* Sun Corona */}
+            <Animated.View
+              style={[
+                styles.nativeSunCorona,
+                {
+                  transform: [{ scale: auraScale }],
+                },
+              ]}
+            />
+            {/* Sun Core */}
+            <View style={styles.nativeSunCore}>
+              <LinearGradient
+                colors={['#FDE68A', '#F59E0B', '#D97706']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={StyleSheet.absoluteFill}
+              />
+              <Text style={{ fontSize: 24 }}>☀️</Text>
+            </View>
+
+            {/* Orbit 1: Golden Moon Orbit */}
+            <View style={styles.nativeOrbit1Track} />
+            <Animated.View
+              style={[
+                styles.nativeOrbitContainer1,
+                {
+                  transform: [{ rotate: spin }],
+                },
+              ]}
+            >
+              <View style={styles.nativePlanetMoon}>
+                <LinearGradient
+                  colors={['#FDE68A', '#F59E0B']}
+                  style={StyleSheet.absoluteFill}
+                />
+                <Text style={{ fontSize: 13 }}>🌙</Text>
+              </View>
+            </Animated.View>
+
+            {/* Orbit 2: Tilted Lavender Venus & Jupiter Orbit */}
+            <View style={styles.nativeOrbit2Track} />
+            <Animated.View
+              style={[
+                styles.nativeOrbitContainer2,
+                {
+                  transform: [{ rotate: spin }],
+                },
+              ]}
+            >
+              <View style={styles.nativePlanetVenus}>
+                <LinearGradient
+                  colors={['#C084FC', '#7C3AED']}
+                  style={StyleSheet.absoluteFill}
+                />
+                <Text style={{ fontSize: 12 }}>✨</Text>
+              </View>
+              <View style={styles.nativePlanetJupiter}>
+                <LinearGradient
+                  colors={['#FCD34D', '#D97706']}
+                  style={StyleSheet.absoluteFill}
+                />
+                <Text style={{ fontSize: 14 }}>🪐</Text>
+              </View>
+            </Animated.View>
+
+            {/* Orbit 3: Outer Sapphire Saturn Orbit */}
+            <View style={styles.nativeOrbit3Track} />
+            <Animated.View
+              style={[
+                styles.nativeOrbitContainer3,
+                {
+                  transform: [{ rotate: spin }],
+                },
+              ]}
+            >
+              <View style={styles.nativePlanetSaturn}>
+                <LinearGradient
+                  colors={['#38BDF8', '#0284C7']}
+                  style={StyleSheet.absoluteFill}
+                />
+                <Text style={{ fontSize: 12 }}>⭐</Text>
+              </View>
+            </Animated.View>
+          </View>
+
+          {/* Stardust Field */}
           <View style={StyleSheet.absoluteFill} pointerEvents="none">
             {fallbackStars.map((star) => (
               <Animated.View
@@ -790,17 +890,177 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
 
-  /* Native Mobile Fallback */
-  nativeAuraCircle: {
+  /* Native Mobile Planetarium */
+  nativeNebulaCloud: {
     position: 'absolute',
-    top: '25%',
-    left: '10%',
-    width: SCREEN_WIDTH * 0.8,
-    height: SCREEN_WIDTH * 0.8,
-    borderRadius: (SCREEN_WIDTH * 0.8) / 2,
-    borderWidth: 1,
-    borderColor: 'rgba(212, 175, 55, 0.15)',
+    borderRadius: 9999,
+  },
+  nativeCloudGold: {
+    width: SCREEN_WIDTH * 0.9,
+    height: SCREEN_WIDTH * 0.9,
+    top: -60,
+    left: -50,
+    backgroundColor: 'rgba(253, 230, 138, 0.35)',
+  },
+  nativeCloudLavender: {
+    width: SCREEN_WIDTH * 0.9,
+    height: SCREEN_WIDTH * 0.9,
+    bottom: -70,
+    right: -50,
+    backgroundColor: 'rgba(221, 214, 254, 0.35)',
+  },
+  nativePlanetariumCenter: {
+    position: 'absolute',
+    width: 580,
+    height: 580,
+    top: '35%',
+    left: '50%',
+    marginTop: -290,
+    marginLeft: -290,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  nativeSunCorona: {
+    position: 'absolute',
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(253, 230, 138, 0.32)',
+    shadowColor: '#F59E0B',
+    shadowOpacity: 0.6,
+    shadowRadius: 25,
+  },
+  nativeSunCore: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.85)',
+    shadowColor: '#F59E0B',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 14,
+    elevation: 6,
+    zIndex: 10,
+  },
+  nativeOrbit1Track: {
+    position: 'absolute',
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    borderWidth: 1.4,
+    borderColor: 'rgba(212, 175, 55, 0.20)',
     borderStyle: 'dashed',
+  },
+  nativeOrbitContainer1: {
+    position: 'absolute',
+    width: 220,
+    height: 220,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  nativePlanetMoon: {
+    position: 'absolute',
+    top: -14,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.85)',
+    shadowColor: '#F59E0B',
+    shadowOpacity: 0.5,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  nativeOrbit2Track: {
+    position: 'absolute',
+    width: 380,
+    height: 380,
+    borderRadius: 190,
+    borderWidth: 1.2,
+    borderColor: 'rgba(139, 92, 246, 0.18)',
+    borderStyle: 'dashed',
+    transform: [{ rotate: '25deg' }],
+  },
+  nativeOrbitContainer2: {
+    position: 'absolute',
+    width: 380,
+    height: 380,
+    justifyContent: 'center',
+    alignItems: 'center',
+    transform: [{ rotate: '25deg' }],
+  },
+  nativePlanetVenus: {
+    position: 'absolute',
+    top: -12,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.85)',
+    shadowColor: '#8B5CF6',
+    shadowOpacity: 0.5,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  nativePlanetJupiter: {
+    position: 'absolute',
+    bottom: -16,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.85)',
+    shadowColor: '#D97706',
+    shadowOpacity: 0.5,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  nativeOrbit3Track: {
+    position: 'absolute',
+    width: 520,
+    height: 520,
+    borderRadius: 260,
+    borderWidth: 1.1,
+    borderColor: 'rgba(56, 189, 248, 0.16)',
+    borderStyle: 'dashed',
+    transform: [{ rotate: '-15deg' }],
+  },
+  nativeOrbitContainer3: {
+    position: 'absolute',
+    width: 520,
+    height: 520,
+    justifyContent: 'center',
+    alignItems: 'center',
+    transform: [{ rotate: '-15deg' }],
+  },
+  nativePlanetSaturn: {
+    position: 'absolute',
+    right: -13,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.85)',
+    shadowColor: '#0284C7',
+    shadowOpacity: 0.5,
+    shadowRadius: 6,
+    elevation: 3,
   },
   nativeStar: {
     position: 'absolute',
