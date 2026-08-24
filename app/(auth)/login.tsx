@@ -433,6 +433,13 @@ export default function LoginScreen() {
                 {/* Top Specular Edge Glow */}
                 <View style={styles.specularEdge} />
 
+                {/* Brand Micro-Crest */}
+                <View style={styles.brandCrestRow}>
+                  <View style={styles.brandCrestPill}>
+                    <Text style={styles.brandCrestText}>✨ ASTROGURU • VEDIC SANCTUARY</Text>
+                  </View>
+                </View>
+
                 {/* Segmented Main Mode Switcher: Log In / Sign Up / Acharya */}
                 <View style={styles.tabContainer}>
                   <Pressable
@@ -632,14 +639,14 @@ export default function LoginScreen() {
                 <View style={styles.formFields}>
                   {/* Extra Name input for Sign Up / Acharya */}
                   {activeTab !== 'login' && (
-                    <View style={styles.inputGroup}>
-                      <Text style={styles.inputLabel}>
+                    <View style={styles.fieldWrapper}>
+                      <Text style={styles.floatingLabel}>
                         {activeTab === 'acharya' ? 'ACHARYA TITLE & NAME' : 'YOUR FULL NAME'}
                       </Text>
                       <View
                         style={[
-                          styles.inputWrapper,
-                          focusedField === 'regName' && styles.inputWrapperFocused,
+                          styles.inputBox,
+                          focusedField === 'regName' && styles.inputBoxFocused,
                         ]}
                       >
                         <Text style={styles.inputIcon}>{activeTab === 'acharya' ? '👑' : '👤'}</Text>
@@ -659,15 +666,17 @@ export default function LoginScreen() {
                   {/* Mobile OTP Input Mode (Login only) */}
                   {activeTab === 'login' && loginMode === 'otp' ? (
                     <>
-                      <View style={styles.inputGroup}>
-                        <Text style={styles.inputLabel}>PHONE NUMBER (+91)</Text>
+                      <View style={styles.fieldWrapper}>
+                        <Text style={styles.floatingLabel}>PHONE NUMBER (+91)</Text>
                         <View
                           style={[
-                            styles.inputWrapper,
-                            focusedField === 'phone' && styles.inputWrapperFocused,
+                            styles.inputBox,
+                            focusedField === 'phone' && styles.inputBoxFocused,
                           ]}
                         >
-                          <Text style={styles.phonePrefix}>+91</Text>
+                          <View style={styles.phonePrefixBadge}>
+                            <Text style={styles.phonePrefixText}>+91</Text>
+                          </View>
                           <TextInput
                             placeholder="98765 43210"
                             placeholderTextColor="#64748B"
@@ -680,7 +689,7 @@ export default function LoginScreen() {
                             style={styles.textInput}
                           />
                           {isPhoneValid && (
-                            <View style={styles.validCheck}>
+                            <View style={styles.validCheckBadge}>
                               <Text style={styles.validCheckText}>✓</Text>
                             </View>
                           )}
@@ -688,9 +697,9 @@ export default function LoginScreen() {
                       </View>
 
                       {otpSent && (
-                        <View style={styles.inputGroup}>
+                        <View style={styles.fieldWrapper}>
                           <View style={styles.otpLabelRow}>
-                            <Text style={styles.inputLabel}>ENTER 6-DIGIT OTP</Text>
+                            <Text style={styles.floatingLabel}>ENTER 6-DIGIT OTP</Text>
                             {debugOtp && (
                               <Pressable onPress={() => setOtpCode(debugOtp)}>
                                 <Text style={styles.debugOtpLink}>Auto-fill: {debugOtp}</Text>
@@ -699,8 +708,8 @@ export default function LoginScreen() {
                           </View>
                           <View
                             style={[
-                              styles.inputWrapper,
-                              focusedField === 'otp' && styles.inputWrapperFocused,
+                              styles.inputBox,
+                              focusedField === 'otp' && styles.inputBoxFocused,
                             ]}
                           >
                             <Text style={styles.inputIcon}>🔐</Text>
@@ -722,12 +731,12 @@ export default function LoginScreen() {
                   ) : (
                     /* Email & Password Input Mode */
                     <>
-                      <View style={styles.inputGroup}>
-                        <Text style={styles.inputLabel}>EMAIL ADDRESS</Text>
+                      <View style={styles.fieldWrapper}>
+                        <Text style={styles.floatingLabel}>EMAIL ADDRESS</Text>
                         <View
                           style={[
-                            styles.inputWrapper,
-                            focusedField === 'email' && styles.inputWrapperFocused,
+                            styles.inputBox,
+                            focusedField === 'email' && styles.inputBoxFocused,
                           ]}
                         >
                           <Text style={styles.inputIcon}>✉️</Text>
@@ -743,16 +752,16 @@ export default function LoginScreen() {
                             style={styles.textInput}
                           />
                           {isEmailValid && (
-                            <View style={styles.validCheck}>
+                            <View style={styles.validCheckBadge}>
                               <Text style={styles.validCheckText}>✓</Text>
                             </View>
                           )}
                         </View>
                       </View>
 
-                      <View style={styles.inputGroup}>
+                      <View style={styles.fieldWrapper}>
                         <View style={styles.otpLabelRow}>
-                          <Text style={styles.inputLabel}>PASSWORD</Text>
+                          <Text style={styles.floatingLabel}>PASSWORD</Text>
                           {passStrength.label ? (
                             <Text style={[styles.strengthLabel, { color: passStrength.color }]}>
                               {passStrength.label}
@@ -761,8 +770,8 @@ export default function LoginScreen() {
                         </View>
                         <View
                           style={[
-                            styles.inputWrapper,
-                            focusedField === 'password' && styles.inputWrapperFocused,
+                            styles.inputBox,
+                            focusedField === 'password' && styles.inputBoxFocused,
                           ]}
                         >
                           <Text style={styles.inputIcon}>🔒</Text>
@@ -803,10 +812,10 @@ export default function LoginScreen() {
 
                       {/* Acharya Extra Fields */}
                       {activeTab === 'acharya' && (
-                        <View style={styles.inputGroup}>
-                          <Text style={styles.inputLabel}>EXPERTISE & RATE / MIN (₹)</Text>
+                        <View style={styles.fieldWrapper}>
+                          <Text style={styles.floatingLabel}>EXPERTISE & RATE / MIN (₹)</Text>
                           <View style={{ flexDirection: 'row', gap: 6 }}>
-                            <View style={[styles.inputWrapper, { flex: 2 }]}>
+                            <View style={[styles.inputBox, { flex: 2 }]}>
                               <Text style={styles.inputIcon}>📜</Text>
                               <TextInput
                                 placeholder="Specialties"
@@ -816,7 +825,7 @@ export default function LoginScreen() {
                                 style={styles.textInput}
                               />
                             </View>
-                            <View style={[styles.inputWrapper, { flex: 1 }]}>
+                            <View style={[styles.inputBox, { flex: 1 }]}>
                               <Text style={styles.inputIcon}>₹</Text>
                               <TextInput
                                 placeholder="Rate/m"
@@ -903,7 +912,7 @@ export default function LoginScreen() {
                       ]}
                     >
                       <Text style={styles.demoRoleIcon}>👑</Text>
-                      <Text style={[styles.demoRoleLabel, { color: '#A78BFA' }]}>Acharya</Text>
+                      <Text style={[styles.demoRoleLabel, { color: '#7C3AED' }]}>Acharya</Text>
                     </Pressable>
 
                     <Pressable
@@ -915,7 +924,7 @@ export default function LoginScreen() {
                       ]}
                     >
                       <Text style={styles.demoRoleIcon}>🛡️</Text>
-                      <Text style={[styles.demoRoleLabel, { color: '#FB7185' }]}>Admin</Text>
+                      <Text style={[styles.demoRoleLabel, { color: '#E11D48' }]}>Admin</Text>
                     </Pressable>
                   </View>
                 </View>
@@ -991,11 +1000,11 @@ const styles = StyleSheet.create({
   glassCard: {
     width: '100%',
     maxWidth: 470,
-    backgroundColor: 'rgba(255, 255, 255, 0.90)',
-    borderRadius: 22,
-    padding: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+    borderRadius: 24,
+    padding: 22,
     borderWidth: 1.5,
-    borderColor: 'rgba(212, 175, 55, 0.25)',
+    borderColor: 'rgba(212, 175, 55, 0.30)',
     shadowColor: '#64748B',
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.12,
@@ -1013,6 +1022,24 @@ const styles = StyleSheet.create({
     right: 0,
     height: 1.5,
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
+  },
+  brandCrestRow: {
+    alignItems: 'center',
+    marginBottom: -4,
+  },
+  brandCrestPill: {
+    backgroundColor: 'rgba(212, 175, 55, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.35)',
+    paddingHorizontal: 12,
+    paddingVertical: 3.5,
+    borderRadius: radius.pill,
+  },
+  brandCrestText: {
+    fontSize: 9.5,
+    fontWeight: '900',
+    color: '#B8902A',
+    letterSpacing: 1,
   },
 
   /* Main Tab Bar */
@@ -1058,13 +1085,13 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     color: '#0F172A',
     letterSpacing: 0.3,
-    fontFamily: Platform.OS === 'web' ? 'Cinzel, Georgia, serif' : undefined,
+    fontFamily: Platform.OS === 'web' ? 'Marcellus, Cinzel, Georgia, serif' : undefined,
   },
   cardSubtitle: {
     fontSize: 12.5,
-    color: '#64748B',
+    color: '#475569',
     lineHeight: 17,
-    fontWeight: '500',
+    fontWeight: '600',
   },
 
   /* Social Auth */
@@ -1082,7 +1109,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderWidth: 1.5,
-    borderColor: 'rgba(212, 175, 55, 0.25)',
+    borderColor: 'rgba(212, 175, 55, 0.28)',
     shadowColor: '#64748B',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -1105,7 +1132,7 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: 'rgba(212, 175, 55, 0.18)',
+    backgroundColor: 'rgba(212, 175, 55, 0.22)',
   },
   dividerText: {
     fontSize: 9,
@@ -1185,14 +1212,36 @@ const styles = StyleSheet.create({
   },
 
   /* Form Fields */
+  formFields: {
+    gap: 10,
+  },
   fieldWrapper: {
-    gap: 2,
+    gap: 3,
   },
   floatingLabel: {
     fontSize: 9.5,
     fontWeight: '900',
     color: '#B8902A',
     letterSpacing: 0.8,
+    textTransform: 'uppercase',
+  },
+  otpLabelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  debugOtpLink: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#D97706',
+    backgroundColor: 'rgba(217, 119, 6, 0.12)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  strengthLabel: {
+    fontSize: 10,
+    fontWeight: '800',
     textTransform: 'uppercase',
   },
   inputBox: {
@@ -1202,7 +1251,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderWidth: 1.5,
-    borderColor: 'rgba(212, 175, 55, 0.25)',
+    borderColor: 'rgba(212, 175, 55, 0.28)',
     paddingHorizontal: 14,
     gap: 8,
   },
@@ -1213,8 +1262,16 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.35,
     shadowRadius: 8,
   },
-  inputBoxError: {
-    borderColor: '#F43F5E',
+  phonePrefixBadge: {
+    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: radius.pill,
+  },
+  phonePrefixText: {
+    fontSize: 12.5,
+    fontWeight: '900',
+    color: '#B8902A',
   },
   inputIcon: {
     fontSize: 14,
@@ -1260,7 +1317,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
-    marginTop: 3,
+    marginTop: 4,
     shadowColor: '#D4AF37',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.35,
@@ -1300,7 +1357,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 5,
-    paddingVertical: 6,
+    paddingVertical: 7,
     borderRadius: 9,
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderWidth: 1.5,
