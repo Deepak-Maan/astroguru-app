@@ -10,7 +10,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Circle, Line, Path, Polygon, Rect } from 'react-native-svg';
+import Svg, { Circle, Ellipse, G, Line, Path } from 'react-native-svg';
 import { seededRandom } from '../../utils';
 
 interface Props {
@@ -20,66 +20,92 @@ interface Props {
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-const ZODIAC_SYMBOLS = [
-  { char: '♈', name: 'Aries', x: '12%', y: '18%', color: '#D4AF37', delay: 0 },
-  { char: '♉', name: 'Taurus', x: '85%', y: '22%', color: '#818CF8', delay: 400 },
-  { char: '♊', name: 'Gemini', x: '18%', y: '45%', color: '#38BDF8', delay: 800 },
-  { char: '♋', name: 'Cancer', x: '82%', y: '48%', color: '#F472B6', delay: 1200 },
-  { char: '♌', name: 'Leo', x: '10%', y: '72%', color: '#F59E0B', delay: 600 },
-  { char: '♍', name: 'Virgo', x: '86%', y: '75%', color: '#34D399', delay: 1000 },
-  { char: '♎', name: 'Libra', x: '25%', y: '88%', color: '#D4AF37', delay: 200 },
-  { char: '♏', name: 'Scorpio', x: '75%', y: '88%', color: '#A78BFA', delay: 700 },
-  { char: '♐', name: 'Sagittarius', x: '50%', y: '12%', color: '#F59E0B', delay: 900 },
-  { char: '♑', name: 'Capricorn', x: '50%', y: '92%', color: '#38BDF8', delay: 1100 },
-];
-
-function useConstellationStars(count = 36) {
+function usePlanetariumStars(count = 50) {
   return useMemo(() => {
-    const rnd = seededRandom(777111);
+    const rnd = seededRandom(888999);
     return Array.from({ length: count }, (_, i) => ({
-      id: `c-star-${i}`,
-      x: rnd() * 100,
-      y: rnd() * 100,
-      size: rnd() < 0.25 ? 3.8 : rnd() < 0.6 ? 2.4 : 1.5,
-      color: rnd() < 0.4 ? '#D4AF37' : rnd() < 0.7 ? '#818CF8' : '#38BDF8',
-      opacity: 0.3 + rnd() * 0.5,
+      id: `p-star-${i}`,
+      top: `${rnd() * 100}%`,
+      left: `${rnd() * 100}%`,
+      size: rnd() < 0.2 ? 3.6 : rnd() < 0.5 ? 2.4 : 1.4,
+      color: rnd() < 0.35 ? '#D4AF37' : rnd() < 0.65 ? '#818CF8' : '#38BDF8',
+      opacity: 0.25 + rnd() * 0.55,
+      delay: rnd() * 3000,
     }));
   }, [count]);
 }
 
 export function AuthCosmicBackground({ children, style }: Props) {
-  const stars = useConstellationStars();
+  const stars = usePlanetariumStars();
 
-  // Animation Refs
-  const gridRotate = useRef(new Animated.Value(0)).current;
-  const gridScale = useRef(new Animated.Value(0.95)).current;
-  const floatDrift = useRef(new Animated.Value(0)).current;
-  const meteorAnim = useRef(new Animated.Value(0)).current;
-  const auroraPulse = useRef(new Animated.Value(0)).current;
-  const runePulse = useRef(new Animated.Value(0)).current;
+  // Animation Loop Values
+  const orbit1Anim = useRef(new Animated.Value(0)).current;
+  const orbit2Anim = useRef(new Animated.Value(0)).current;
+  const orbit3Anim = useRef(new Animated.Value(0)).current;
+  const sunPulse = useRef(new Animated.Value(0.9)).current;
+  const auraWave = useRef(new Animated.Value(0)).current;
+  const starlightTwinkle = useRef(new Animated.Value(0.4)).current;
 
   useEffect(() => {
-    // 1. Slow Sacred Geometry Grid Rotation (60s)
-    const gridRotateLoop = Animated.loop(
-      Animated.timing(gridRotate, {
+    // 1. Inner Orbit Revolution (14s)
+    const orbit1Loop = Animated.loop(
+      Animated.timing(orbit1Anim, {
         toValue: 1,
-        duration: 60000,
+        duration: 14000,
         easing: Easing.linear,
         useNativeDriver: true,
       })
     );
 
-    // 2. Sacred Grid Breathing Scale (8s)
-    const gridScaleLoop = Animated.loop(
+    // 2. Middle Orbit Revolution (22s)
+    const orbit2Loop = Animated.loop(
+      Animated.timing(orbit2Anim, {
+        toValue: 1,
+        duration: 22000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    );
+
+    // 3. Outer Orbit Revolution (32s)
+    const orbit3Loop = Animated.loop(
+      Animated.timing(orbit3Anim, {
+        toValue: 1,
+        duration: 32000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    );
+
+    // 4. Central Golden Sun Breathing Corona (4s)
+    const sunLoop = Animated.loop(
       Animated.sequence([
-        Animated.timing(gridScale, {
-          toValue: 1.06,
+        Animated.timing(sunPulse, {
+          toValue: 1.15,
+          duration: 2000,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+        Animated.timing(sunPulse, {
+          toValue: 0.9,
+          duration: 2000,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+
+    // 5. Harmonic Aurora Wave (8s)
+    const auraLoop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(auraWave, {
+          toValue: 1,
           duration: 4000,
           easing: Easing.inOut(Easing.sin),
           useNativeDriver: true,
         }),
-        Animated.timing(gridScale, {
-          toValue: 0.95,
+        Animated.timing(auraWave, {
+          toValue: 0,
           duration: 4000,
           easing: Easing.inOut(Easing.sin),
           useNativeDriver: true,
@@ -87,338 +113,234 @@ export function AuthCosmicBackground({ children, style }: Props) {
       ])
     );
 
-    // 3. Floating Zodiac Rune Drift (5s)
-    const floatLoop = Animated.loop(
+    // 6. Starlight Breathing
+    const twinkleLoop = Animated.loop(
       Animated.sequence([
-        Animated.timing(floatDrift, {
+        Animated.timing(starlightTwinkle, {
           toValue: 1,
-          duration: 2500,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-        }),
-        Animated.timing(floatDrift, {
-          toValue: 0,
-          duration: 2500,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-        }),
-      ])
-    );
-
-    // 4. Shooting Star Meteor Streaks (every 4.5s)
-    const meteorLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(meteorAnim, {
-          toValue: 1,
-          duration: 1400,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-        Animated.delay(3200),
-        Animated.timing(meteorAnim, {
-          toValue: 0,
-          duration: 0,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-
-    // 5. Aurora Harmonic Wave Breathing (7s)
-    const auroraLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(auroraPulse, {
-          toValue: 1,
-          duration: 3500,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-        }),
-        Animated.timing(auroraPulse, {
-          toValue: 0,
-          duration: 3500,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-        }),
-      ])
-    );
-
-    // 6. Rune Glow Pulse (2.8s)
-    const runeLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(runePulse, {
-          toValue: 1,
-          duration: 1400,
+          duration: 1800,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
-        Animated.timing(runePulse, {
-          toValue: 0,
-          duration: 1400,
+        Animated.timing(starlightTwinkle, {
+          toValue: 0.35,
+          duration: 1800,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
       ])
     );
 
-    gridRotateLoop.start();
-    gridScaleLoop.start();
-    floatLoop.start();
-    meteorLoop.start();
-    auroraLoop.start();
-    runeLoop.start();
+    orbit1Loop.start();
+    orbit2Loop.start();
+    orbit3Loop.start();
+    sunLoop.start();
+    auraLoop.start();
+    twinkleLoop.start();
 
     return () => {
-      gridRotateLoop.stop();
-      gridScaleLoop.stop();
-      floatLoop.stop();
-      meteorLoop.stop();
-      auroraLoop.stop();
-      runeLoop.stop();
+      orbit1Loop.stop();
+      orbit2Loop.stop();
+      orbit3Loop.stop();
+      sunLoop.stop();
+      auraLoop.stop();
+      twinkleLoop.stop();
     };
   }, []);
 
-  const gridRotateDeg = gridRotate.interpolate({
+  // Orbit Rotation Angles
+  const orbit1Deg = orbit1Anim.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '360deg'],
   });
 
-  const floatY = floatDrift.interpolate({
+  const orbit2Deg = orbit2Anim.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, -14],
+    outputRange: ['0deg', '-360deg'],
   });
 
-  const meteorTranslateX = meteorAnim.interpolate({
+  const orbit3Deg = orbit3Anim.interpolate({
     inputRange: [0, 1],
-    outputRange: [-100, SCREEN_WIDTH + 150],
+    outputRange: ['0deg', '360deg'],
   });
 
-  const meteorTranslateY = meteorAnim.interpolate({
+  const auraShiftY = auraWave.interpolate({
     inputRange: [0, 1],
-    outputRange: [-50, SCREEN_HEIGHT * 0.45],
+    outputRange: [0, -35],
   });
 
-  const meteorOpacity = meteorAnim.interpolate({
-    inputRange: [0, 0.15, 0.7, 1],
-    outputRange: [0, 0.9, 0.8, 0],
-  });
-
-  const auroraScale = auroraPulse.interpolate({
+  const auraShiftX = auraWave.interpolate({
     inputRange: [0, 1],
-    outputRange: [1, 1.15],
-  });
-
-  const runeGlow = runePulse.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.65, 1],
+    outputRange: [0, 25],
   });
 
   return (
     <View style={[styles.container, style]}>
-      {/* ── Layer 1: Ethereal Canvas Gradient ── */}
+      {/* ── Base Celestial Canvas Gradient ── */}
       <LinearGradient
-        colors={['#FCFAF6', '#F8FAFC', '#F0F4F8', '#EFF6FF']}
+        colors={['#FCFAF6', '#F8FAFC', '#F1F5F9', '#EFF6FF']}
         locations={[0, 0.3, 0.7, 1]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={StyleSheet.absoluteFill}
       />
 
-      {/* ── Layer 2: Harmonic Aurora Waves ── */}
+      {/* ── Layer 1: Ambient Luminous Cosmic Nebula Clouds ── */}
       <Animated.View
         style={[
-          styles.auroraOrb,
-          styles.auroraGold,
+          styles.nebulaCloud,
+          styles.cloudGold,
           {
-            transform: [{ scale: auroraScale }],
+            transform: [{ translateX: auraShiftX }, { translateY: auraShiftY }],
           },
         ]}
       />
       <Animated.View
         style={[
-          styles.auroraOrb,
-          styles.auroraLavender,
+          styles.nebulaCloud,
+          styles.cloudAmethyst,
           {
-            transform: [{ scale: auroraScale }],
+            transform: [{ translateX: auraShiftY }, { translateY: auraShiftX }],
           },
         ]}
       />
       <Animated.View
         style={[
-          styles.auroraOrb,
-          styles.auroraCyan,
+          styles.nebulaCloud,
+          styles.cloudCyan,
           {
-            transform: [{ scale: auroraScale }],
+            transform: [{ translateY: auraShiftY }],
           },
         ]}
       />
 
-      {/* ── Layer 3: Sacred Geometric Kundli Astrological Matrix Web ── */}
-      <Animated.View
-        style={[
-          styles.gridContainer,
-          {
-            transform: [{ rotate: gridRotateDeg }, { scale: gridScale }],
-          },
-        ]}
-        pointerEvents="none"
-      >
-        <Svg width={640} height={640} viewBox="0 0 640 640" style={styles.svgGrid}>
-          {/* Outer Kundli Diamond */}
-          <Polygon
-            points="320,40 600,320 320,600 40,320"
-            fill="none"
-            stroke="rgba(212, 175, 55, 0.22)"
-            strokeWidth="1.5"
-            strokeDasharray="6,6"
-          />
-          {/* Inner Kundli Cross Lines */}
-          <Line
-            x1="40"
-            y1="320"
-            x2="600"
-            y2="320"
-            stroke="rgba(212, 175, 55, 0.16)"
-            strokeWidth="1.2"
-          />
-          <Line
-            x1="320"
-            y1="40"
-            x2="320"
-            y2="600"
-            stroke="rgba(212, 175, 55, 0.16)"
-            strokeWidth="1.2"
-          />
-          {/* Diagonal Square */}
-          <Rect
-            x="140"
-            y="140"
-            width="360"
-            height="360"
-            fill="none"
-            stroke="rgba(139, 92, 246, 0.18)"
-            strokeWidth="1.2"
-            strokeDasharray="4,4"
-          />
-          {/* Sacred Center Concentric Circles */}
-          <Circle
-            cx="320"
-            cy="320"
-            r="190"
-            fill="none"
-            stroke="rgba(212, 175, 55, 0.20)"
-            strokeWidth="1.4"
-          />
-          <Circle
-            cx="320"
-            cy="320"
-            r="110"
-            fill="none"
-            stroke="rgba(56, 189, 248, 0.22)"
-            strokeWidth="1.2"
-            strokeDasharray="3,3"
-          />
-          <Circle
-            cx="320"
-            cy="320"
-            r="45"
-            fill="none"
-            stroke="rgba(212, 175, 55, 0.35)"
-            strokeWidth="1.6"
-          />
-          {/* Center 8-Ray Star Crosses */}
-          <Line
-            x1="180"
-            y1="180"
-            x2="460"
-            y2="460"
-            stroke="rgba(212, 175, 55, 0.14)"
-            strokeWidth="1"
-          />
-          <Line
-            x1="180"
-            y1="460"
-            x2="460"
-            y2="180"
-            stroke="rgba(212, 175, 55, 0.14)"
-            strokeWidth="1"
-          />
-        </Svg>
-      </Animated.View>
-
-      {/* ── Layer 4: Floating Zodiac Runes with Starlight Aura ── */}
-      {ZODIAC_SYMBOLS.map((item, idx) => (
+      {/* ── Layer 2: Central Sacred Sun Planetarium Core ── */}
+      <View style={styles.planetariumCenter} pointerEvents="none">
+        {/* Sun Corona Outer Flare */}
         <Animated.View
-          key={idx}
           style={[
-            styles.runeBadge,
+            styles.sunCoronaOuter,
             {
-              top: item.y as any,
-              left: item.x as any,
-              transform: [{ translateY: floatY }],
-              opacity: runeGlow,
+              transform: [{ scale: sunPulse }],
             },
           ]}
-          pointerEvents="none"
+        />
+
+        {/* Sun Corona Inner Core */}
+        <Animated.View
+          style={[
+            styles.sunCoreGlow,
+            {
+              transform: [{ scale: sunPulse }],
+            },
+          ]}
         >
-          <View
-            style={[
-              styles.runePill,
-              {
-                borderColor: `${item.color}55`,
-                backgroundColor: 'rgba(255, 255, 255, 0.85)',
-                shadowColor: item.color,
-              },
-            ]}
-          >
-            <Text style={[styles.runeChar, { color: item.color }]}>{item.char}</Text>
+          <LinearGradient
+            colors={['#FDE68A', '#F59E0B', '#D97706']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={StyleSheet.absoluteFill}
+          />
+          <Text style={styles.sunSymbol}>☀️</Text>
+        </Animated.View>
+
+        {/* ── Layer 3: Orbit 1 (Inner Gold Orbit with Moon & Mercury) ── */}
+        <View style={[styles.orbitTrack, styles.orbit1Track]} />
+        <Animated.View
+          style={[
+            styles.orbitRevolvingContainer,
+            styles.orbit1Container,
+            {
+              transform: [{ rotate: orbit1Deg }],
+            },
+          ]}
+        >
+          {/* Planet 1: Golden Chandra Moon */}
+          <View style={[styles.planetOrb, styles.planetMoon]}>
+            <LinearGradient
+              colors={['#FDE68A', '#F59E0B']}
+              style={StyleSheet.absoluteFill}
+            />
+            <Text style={styles.planetIcon}>🌙</Text>
           </View>
         </Animated.View>
-      ))}
 
-      {/* ── Layer 5: Shooting Star Meteor Streak ── */}
-      <Animated.View
-        style={[
-          styles.meteorWrapper,
-          {
-            transform: [{ translateX: meteorTranslateX }, { translateY: meteorTranslateY }],
-            opacity: meteorOpacity,
-          },
-        ]}
-        pointerEvents="none"
-      >
-        <LinearGradient
-          colors={['transparent', 'rgba(212, 175, 55, 0.5)', '#FFFFFF']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.meteorTail}
-        />
-        <View style={styles.meteorHead} />
-      </Animated.View>
+        {/* ── Layer 4: Orbit 2 (Middle Tilted Periwinkle Orbit with Venus & Jupiter) ── */}
+        <View style={[styles.orbitTrack, styles.orbit2Track]} />
+        <Animated.View
+          style={[
+            styles.orbitRevolvingContainer,
+            styles.orbit2Container,
+            {
+              transform: [{ rotate: orbit2Deg }],
+            },
+          ]}
+        >
+          {/* Planet 2: Amethyst Shukra Venus */}
+          <View style={[styles.planetOrb, styles.planetVenus]}>
+            <LinearGradient
+              colors={['#C084FC', '#7C3AED']}
+              style={StyleSheet.absoluteFill}
+            />
+            <Text style={styles.planetIcon}>✨</Text>
+          </View>
 
-      {/* ── Layer 6: Micro Constellation Star Points ── */}
-      <View style={StyleSheet.absoluteFill} pointerEvents="none">
+          {/* Planet 3: Golden Guru Jupiter */}
+          <View style={[styles.planetOrb, styles.planetJupiter]}>
+            <LinearGradient
+              colors={['#FCD34D', '#D97706']}
+              style={StyleSheet.absoluteFill}
+            />
+            <Text style={styles.planetIcon}>🪐</Text>
+          </View>
+        </Animated.View>
+
+        {/* ── Layer 5: Orbit 3 (Outer Cosmic Sapphire Orbit with Saturn) ── */}
+        <View style={[styles.orbitTrack, styles.orbit3Track]} />
+        <Animated.View
+          style={[
+            styles.orbitRevolvingContainer,
+            styles.orbit3Container,
+            {
+              transform: [{ rotate: orbit3Deg }],
+            },
+          ]}
+        >
+          {/* Planet 4: Sapphire Shani Saturn */}
+          <View style={[styles.planetOrb, styles.planetSaturn]}>
+            <LinearGradient
+              colors={['#38BDF8', '#0284C7']}
+              style={StyleSheet.absoluteFill}
+            />
+            <Text style={styles.planetIcon}>⭐</Text>
+          </View>
+        </Animated.View>
+      </View>
+
+      {/* ── Layer 6: Sparkling Micro-Stardust Galaxy ── */}
+      <Animated.View style={[StyleSheet.absoluteFill, { opacity: starlightTwinkle }]} pointerEvents="none">
         {stars.map((s) => (
           <View
             key={s.id}
             style={[
-              styles.constellationDot,
+              styles.starNode,
               {
-                top: `${s.y}%`,
-                left: `${s.x}%`,
+                top: s.top as any,
+                left: s.left as any,
                 width: s.size,
                 height: s.size,
                 borderRadius: s.size / 2,
                 backgroundColor: s.color,
-                opacity: s.opacity,
                 shadowColor: s.color,
                 shadowOpacity: 0.9,
-                shadowRadius: s.size * 2,
+                shadowRadius: s.size * 2.5,
               },
             ]}
           />
         ))}
-      </View>
+      </Animated.View>
 
-      {/* Children Form Layout */}
+      {/* Form Content Layer */}
       {children}
     </View>
   );
@@ -431,106 +353,170 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
 
-  /* Aurora Orbs */
-  auroraOrb: {
+  /* Nebula Light Clouds */
+  nebulaCloud: {
     position: 'absolute',
     borderRadius: 9999,
     filter: Platform.OS === 'web' ? 'blur(80px)' : undefined,
   },
-  auroraGold: {
-    width: Math.min(SCREEN_WIDTH * 0.9, 440),
-    height: Math.min(SCREEN_WIDTH * 0.9, 440),
-    top: -80,
-    left: -60,
-    backgroundColor: 'rgba(253, 230, 138, 0.42)',
-  },
-  auroraLavender: {
+  cloudGold: {
     width: Math.min(SCREEN_WIDTH * 0.95, 460),
     height: Math.min(SCREEN_WIDTH * 0.95, 460),
-    bottom: -90,
-    right: -70,
-    backgroundColor: 'rgba(221, 214, 254, 0.42)',
+    top: -90,
+    left: -70,
+    backgroundColor: 'rgba(253, 230, 138, 0.40)',
   },
-  auroraCyan: {
+  cloudAmethyst: {
+    width: Math.min(SCREEN_WIDTH * 0.95, 480),
+    height: Math.min(SCREEN_WIDTH * 0.95, 480),
+    bottom: -100,
+    right: -80,
+    backgroundColor: 'rgba(221, 214, 254, 0.40)',
+  },
+  cloudCyan: {
     width: Math.min(SCREEN_WIDTH * 0.8, 380),
     height: Math.min(SCREEN_WIDTH * 0.8, 380),
-    top: '40%',
-    left: '25%',
-    backgroundColor: 'rgba(186, 230, 253, 0.32)',
+    top: '38%',
+    left: '20%',
+    backgroundColor: 'rgba(186, 230, 253, 0.30)',
   },
 
-  /* Sacred Geometry Matrix Grid */
-  gridContainer: {
+  /* Planetarium Center Container */
+  planetariumCenter: {
     position: 'absolute',
-    width: 640,
-    height: 640,
+    width: 660,
+    height: 660,
     top: '50%',
     left: '50%',
-    marginTop: -320,
-    marginLeft: -320,
+    marginTop: -330,
+    marginLeft: -330,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  svgGrid: {
-    width: 640,
-    height: 640,
   },
 
-  /* Floating Zodiac Rune Badges */
-  runeBadge: {
-    position: 'absolute',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  runePill: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    borderWidth: 1.2,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 8,
-    elevation: 4,
-    backdropFilter: 'blur(8px)' as any,
-  },
-  runeChar: {
-    fontSize: 16,
-    fontWeight: '900',
-  },
-
-  /* Shooting Star Meteor */
-  meteorWrapper: {
+  /* Sun Core */
+  sunCoronaOuter: {
     position: 'absolute',
     width: 140,
-    height: 2,
-    transform: [{ rotate: '32deg' }],
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: 'rgba(253, 230, 138, 0.35)',
+    shadowColor: '#F59E0B',
+    shadowOpacity: 0.6,
+    shadowRadius: 30,
   },
-  meteorTail: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    width: 130,
-    height: 2,
-    borderRadius: 1,
+  sunCoreGlow: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.85)',
+    shadowColor: '#F59E0B',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 18,
+    elevation: 8,
+    zIndex: 10,
   },
-  meteorHead: {
-    position: 'absolute',
-    right: 0,
-    top: -2,
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#FDE68A',
-    shadowOpacity: 1,
-    shadowRadius: 6,
-    elevation: 3,
+  sunSymbol: {
+    fontSize: 28,
   },
 
-  /* Micro Constellation Dots */
-  constellationDot: {
+  /* Orbit Tracks */
+  orbitTrack: {
+    position: 'absolute',
+    borderRadius: 9999,
+    borderStyle: 'dashed',
+  },
+  orbit1Track: {
+    width: 260,
+    height: 260,
+    borderWidth: 1.5,
+    borderColor: 'rgba(212, 175, 55, 0.22)',
+  },
+  orbit2Track: {
+    width: 440,
+    height: 440,
+    borderWidth: 1.3,
+    borderColor: 'rgba(139, 92, 246, 0.20)',
+    transform: [{ rotate: '25deg' }],
+  },
+  orbit3Track: {
+    width: 620,
+    height: 620,
+    borderWidth: 1.2,
+    borderColor: 'rgba(56, 189, 248, 0.18)',
+    transform: [{ rotate: '-15deg' }],
+  },
+
+  /* Revolving Orbit Containers */
+  orbitRevolvingContainer: {
+    position: 'absolute',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  orbit1Container: {
+    width: 260,
+    height: 260,
+  },
+  orbit2Container: {
+    width: 440,
+    height: 440,
+    transform: [{ rotate: '25deg' }],
+  },
+  orbit3Container: {
+    width: 620,
+    height: 620,
+    transform: [{ rotate: '-15deg' }],
+  },
+
+  /* Planet Orbs */
+  planetOrb: {
+    position: 'absolute',
+    borderRadius: 9999,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1.2,
+    borderColor: 'rgba(255, 255, 255, 0.9)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  planetMoon: {
+    width: 32,
+    height: 32,
+    top: -16,
+    shadowColor: '#F59E0B',
+  },
+  planetVenus: {
+    width: 28,
+    height: 28,
+    top: -14,
+    shadowColor: '#8B5CF6',
+  },
+  planetJupiter: {
+    width: 38,
+    height: 38,
+    bottom: -19,
+    shadowColor: '#D97706',
+  },
+  planetSaturn: {
+    width: 30,
+    height: 30,
+    right: -15,
+    shadowColor: '#0284C7',
+  },
+  planetIcon: {
+    fontSize: 14,
+  },
+
+  /* Stardust Points */
+  starNode: {
     position: 'absolute',
   },
 });
