@@ -35,128 +35,131 @@ export function DailyHoroscopeHero({
   };
 
   return (
-    <SpatialGlassCard padded elevated borderGold tilt style={styles.container}>
-      {/* Top Header: Period Selector Pill */}
-      <View style={styles.topRow}>
-        <View style={styles.periodPillContainer}>
-          {(['today', 'tomorrow', 'month'] as const).map((period) => {
-            const isActive = activePeriod === period;
-            return (
-              <Pressable
-                key={period}
-                onPress={() => {
-                  triggerHaptic();
-                  setActivePeriod(period);
-                }}
-                style={[styles.periodBtn, isActive && styles.periodBtnActive]}
-              >
-                {isActive && (
-                  <LinearGradient
-                    colors={['#D4AF37', '#F5D77F']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={StyleSheet.absoluteFill}
-                  />
-                )}
-                <Text style={[styles.periodText, isActive && styles.periodTextActive]}>
-                  {period === 'today' ? 'Today' : period === 'tomorrow' ? 'Tomorrow' : 'This Month'}
-                </Text>
-              </Pressable>
-            );
-          })}
+    <SpatialGlassCard padded elevated borderGold tilt>
+      <View style={styles.cardContent}>
+        {/* Top Header: Period Selector Pill */}
+        <View style={styles.topRow}>
+          <View style={styles.periodPillContainer}>
+            {(['today', 'tomorrow', 'month'] as const).map((period) => {
+              const isActive = activePeriod === period;
+              return (
+                <Pressable
+                  key={period}
+                  onPress={() => {
+                    triggerHaptic();
+                    setActivePeriod(period);
+                  }}
+                  style={[styles.periodBtn, isActive && styles.periodBtnActive]}
+                >
+                  {isActive && (
+                    <LinearGradient
+                      colors={['#D4AF37', '#F5D77F']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      style={StyleSheet.absoluteFill}
+                    />
+                  )}
+                  <Text style={[styles.periodText, isActive && styles.periodTextActive]}>
+                    {period === 'today' ? 'Today' : period === 'tomorrow' ? 'Tomorrow' : 'This Month'}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          <View style={styles.luckBadge}>
+            <Text style={styles.luckBadgeIcon}>⭐</Text>
+            <Text style={styles.luckBadgeText}>9.4 / 10 Luck</Text>
+          </View>
         </View>
 
-        <View style={styles.luckBadge}>
-          <Text style={styles.luckBadgeIcon}>⭐</Text>
-          <Text style={styles.luckBadgeText}>9.4 / 10 Luck</Text>
-        </View>
-      </View>
+        {/* Main Hero Body: 3D Embossed Crystal Zodiac Sphere & Constellation Badge */}
+        <View style={styles.zodiacHeroRow}>
+          {/* 3D Crystal Zodiac Sphere */}
+          <View style={styles.sphereWrapper}>
+            <LinearGradient
+              colors={['#FEF3C7', '#FDE68A', '#FCD34D']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.zodiacSphere}
+            >
+              <View style={styles.sphereSpecularGlint} />
+              <Text style={styles.zodiacGlyph}>{selectedRashi.symbol || '♈'}</Text>
+            </LinearGradient>
+            <View style={styles.sphereRings} />
+          </View>
 
-      {/* Main Hero Body: 3D Embossed Crystal Zodiac Sphere & Constellation Badge */}
-      <View style={styles.zodiacHeroRow}>
-        {/* 3D Crystal Zodiac Sphere */}
-        <View style={styles.sphereWrapper}>
+          {/* Zodiac Title & Element/Ruling Lord Badges */}
+          <View style={{ flex: 1, gap: 4 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text style={styles.rashiName}>{selectedRashi.name}</Text>
+              <Text style={styles.sanskritName}>({selectedRashi.sanskrit})</Text>
+            </View>
+            <Text style={styles.dateRange}>{selectedRashi.dates}</Text>
+
+            <View style={styles.tagsRow}>
+              <View style={styles.elementTag}>
+                <Text style={styles.elementTagText}>🔥 {selectedRashi.element} Element</Text>
+              </View>
+              <View style={styles.lordTag}>
+                <Text style={styles.lordTagText}>👑 Lord: {selectedRashi.ruler}</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* Astrological Insight Section with Crisp Slate Typography */}
+        <View style={styles.insightBox}>
+          <View style={styles.insightHeader}>
+            <Text style={styles.insightTag}>🌟 CELESTIAL ALIGNMENT INSIGHT</Text>
+            <Text style={styles.insightTithi}>Shukla Paksha · Pushya Nakshatra</Text>
+          </View>
+          <Text style={styles.insightContent}>
+            Sun transits auspicious house bringing immense clarity in financial planning and family relationships. Ideal day to launch new initiatives or sign agreements during Abhijit Muhurta.
+          </Text>
+        </View>
+
+        {/* Quick Astro Metric Chips */}
+        <View style={styles.quickMetricsRow}>
+          <View style={styles.metricChip}>
+            <Text style={styles.metricChipLabel}>Lucky Color</Text>
+            <Text style={styles.metricChipValue}>🟡 Imperial Gold</Text>
+          </View>
+          <View style={styles.metricChip}>
+            <Text style={styles.metricChipLabel}>Lucky Number</Text>
+            <Text style={styles.metricChipValue}>✨ 3 & 7</Text>
+          </View>
+          <View style={styles.metricChip}>
+            <Text style={styles.metricChipLabel}>Auspicious Direction</Text>
+            <Text style={styles.metricChipValue}>🧭 North-East</Text>
+          </View>
+        </View>
+
+        {/* Full Horoscope CTA Button */}
+        <Pressable
+          onPress={() => {
+            triggerHaptic();
+            router.push('/(tabs)/horoscope');
+          }}
+          style={({ pressed }) => [styles.ctaBtn, pressed && { opacity: 0.88, transform: [{ scale: 0.985 }] }]}
+        >
           <LinearGradient
-            colors={['#FEF3C7', '#FDE68A', '#FCD34D']}
+            colors={['#D4AF37', '#F5D77F', '#E6CA65']}
             start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.zodiacSphere}
-          >
-            <View style={styles.sphereSpecularGlint} />
-            <Text style={styles.zodiacGlyph}>{selectedRashi.symbol || '♈'}</Text>
-          </LinearGradient>
-          <View style={styles.sphereRings} />
-        </View>
-
-        {/* Zodiac Title & Element/Ruling Lord Badges */}
-        <View style={{ flex: 1, gap: 4 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Text style={styles.rashiName}>{selectedRashi.name}</Text>
-            <Text style={styles.sanskritName}>({selectedRashi.sanskrit})</Text>
-          </View>
-          <Text style={styles.dateRange}>{selectedRashi.dates}</Text>
-
-          <View style={styles.tagsRow}>
-            <View style={styles.elementTag}>
-              <Text style={styles.elementTagText}>🔥 {selectedRashi.element} Element</Text>
-            </View>
-            <View style={styles.lordTag}>
-              <Text style={styles.lordTagText}>👑 Lord: {selectedRashi.ruler}</Text>
-            </View>
-          </View>
-        </View>
+            end={{ x: 1, y: 0 }}
+            style={StyleSheet.absoluteFill}
+          />
+          <View style={styles.specularTopEdge} />
+          <Text style={styles.ctaText}>Explore Full Vedic Horoscope & Remedies →</Text>
+        </Pressable>
       </View>
-
-      {/* Astrological Insight Section with Crisp Slate Typography */}
-      <View style={styles.insightBox}>
-        <View style={styles.insightHeader}>
-          <Text style={styles.insightTag}>🌟 CELESTIAL ALIGNMENT INSIGHT</Text>
-          <Text style={styles.insightTithi}>Shukla Paksha · Pushya Nakshatra</Text>
-        </View>
-        <Text style={styles.insightContent}>
-          Sun transits auspicious house bringing immense clarity in financial planning and family relationships. Ideal day to launch new initiatives or sign agreements during Abhijit Muhurta.
-        </Text>
-      </View>
-
-      {/* Quick Astro Metric Chips */}
-      <View style={styles.quickMetricsRow}>
-        <View style={styles.metricChip}>
-          <Text style={styles.metricChipLabel}>Lucky Color</Text>
-          <Text style={styles.metricChipValue}>🟡 Imperial Gold</Text>
-        </View>
-        <View style={styles.metricChip}>
-          <Text style={styles.metricChipLabel}>Lucky Number</Text>
-          <Text style={styles.metricChipValue}>✨ 3 & 7</Text>
-        </View>
-        <View style={styles.metricChip}>
-          <Text style={styles.metricChipLabel}>Auspicious Direction</Text>
-          <Text style={styles.metricChipValue}>🧭 North-East</Text>
-        </View>
-      </View>
-
-      {/* Full Horoscope CTA Button */}
-      <Pressable
-        onPress={() => {
-          triggerHaptic();
-          router.push('/(tabs)/horoscope');
-        }}
-        style={({ pressed }) => [styles.ctaBtn, pressed && { opacity: 0.88, transform: [{ scale: 0.98 }] }]}
-      >
-        <LinearGradient
-          colors={['#D4AF37', '#F5D77F']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={StyleSheet.absoluteFill}
-        />
-        <Text style={styles.ctaText}>Explore Full Vedic Horoscope & Remedies →</Text>
-      </Pressable>
     </SpatialGlassCard>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    gap: spacing.md,
+  cardContent: {
+    gap: 14,
   },
   topRow: {
     flexDirection: 'row',
@@ -371,21 +374,33 @@ const styles = StyleSheet.create({
 
   /* CTA Button */
   ctaBtn: {
-    paddingVertical: 10,
+    height: 48,
+    marginTop: 4,
     borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.75)',
     shadowColor: '#D4AF37',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.28,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    elevation: 4,
+    position: 'relative',
+  },
+  specularTopEdge: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 1.5,
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
   },
   ctaText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '900',
     color: '#0F172A',
-    letterSpacing: 0.2,
+    letterSpacing: 0.3,
   },
 });
