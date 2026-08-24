@@ -58,6 +58,16 @@ export const colors = {
   auroraC: '#BAE6FD', // Sky Blue
   auroraD: '#FBCFE8', // Rose
 
+  // Astrotalk Brand Yellows & Saffron
+  brandYellow: '#FFC107',
+  brandYellowLight: '#FFF9E6',
+  brandGold: '#F59E0B',
+  brandSaffron: '#D97706',
+  astrotalkBg: '#F7F8FA',
+  verifiedBlue: '#2563EB',
+  onlineGreen: '#10B981',
+  busyAmber: '#F59E0B',
+
   // High-End Celestial Accents
   gold: '#D4AF37', // Imperial Starlight Gold
   goldSoft: '#F5D77F', // Metallic Gold Highlight
@@ -70,8 +80,8 @@ export const colors = {
   purple: '#7C3AED',
 
   // Deep Celestial High-Contrast Typography (WCAG AAA)
-  text: '#0F172A', // Deep Celestial Navy
-  textHeading: '#1E1B4B', // Deepest Navy
+  text: '#1A1A1A', // Deep Charcoal
+  textHeading: '#111827', // Crisp Black
   textMuted: '#64748B', // Slate Lavender
   textFaint: '#94A3B8', // Soft Morning Slate
   textGold: '#B8902A', // Rich Temple Gold for text

@@ -1,8 +1,12 @@
+/**
+ * AstroGuru — Astrotalk Astrologer Consultation Directory
+ * Filter by Vedic, Tarot, Love, Career, with instant Chat & Call buttons
+ */
+
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  Alert,
   FlatList,
-  Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -12,47 +16,33 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
-import { Platform } from 'react-native';
-import { GradientBackground } from '../../src/components/GradientBackground';
-import { AstrologerCard } from '../../src/components/AstrologerCard';
-import { EmptyState } from '../../src/components/EmptyState';
-import { ScreenHeader } from '../../src/components/ScreenHeader';
-import { Card } from '../../src/components/Card';
-import { SectionHeader } from '../../src/components/SectionHeader';
-import { colors, radius, spacing, typography } from '../../src/theme';
+import { AstrotalkHeader } from '../../src/components/astrotalk/AstrotalkHeader';
+import { AstrotalkAstrologerCard } from '../../src/components/astrotalk/AstrotalkAstrologerCard';
+import { AstrotalkRechargeModal } from '../../src/components/astrotalk/AstrotalkRechargeModal';
+import { colors, radius, spacing } from '../../src/theme';
 import { ASTROLOGERS } from '../../src/data/astrologers';
 import { Astrologer } from '../../src/types';
 import { useAuthStore } from '../../src/store/authStore';
-import { useJyotishiStore } from '../../src/store/jyotishiStore';
-import { formatCurrency } from '../../src/utils';
 import { fetchJyotishisFromFirebase } from '../../src/services/firebaseAuthService';
 import { AcharyaChatCenter } from '../../src/components/workstation/AcharyaChatCenter';
 
 const CATEGORIES = [
   { id: 'All', label: '🌟 All' },
-  { id: 'Instant', label: '⚡ 0m Wait' },
   { id: 'Online', label: '🟢 Online Now' },
-  { id: 'Vedic', label: '🪐 Vedic Jyotish' },
+  { id: 'Vedic', label: '🪐 Vedic' },
   { id: 'Tarot', label: '🃏 Tarot' },
+  { id: 'Love', label: '💖 Love & Match' },
+  { id: 'Career', label: '💼 Career & Money' },
   { id: 'Numerology', label: '🔢 Numerology' },
-  { id: 'Love', label: '❤️ Love & Match' },
-  { id: 'Career', label: '💼 Career' },
-  { id: 'Remedies', label: '🪔 Remedies' },
+  { id: 'Vastu', label: '🏛️ Vastu' },
 ];
 
-type Sort = 'popular' | 'rating' | 'price';
-const SORTS: { id: Sort; label: string; icon: string }[] = [
-  { id: 'popular', label: 'Popular', icon: '🔥' },
-  { id: 'rating', label: 'Top Rated', icon: '⭐' },
-  { id: 'price', label: 'Best Price', icon: '💎' },
-];
+type SortType = 'popular' | 'rating' | 'price_low' | 'exp';
 
 export default function Consult() {
   const router = useRouter();
   const authUser = useAuthStore((s) => s.user);
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
   // If logged in as Certified Astrologer / Jyotishi, render dedicated Acharya Live Chat Center
   if (authUser?.role === 'astrologer') {
@@ -61,16 +51,9 @@ export default function Consult() {
 
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState('All');
-  const [sort, setSort] = useState<Sort>('popular');
+  const [sort, setSort] = useState<SortType>('popular');
   const [astrologersList, setAstrologersList] = useState<Astrologer[]>(ASTROLOGERS);
-
-  const triggerHaptic = () => {
-    try {
-      if (Platform.OS !== 'web') {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      }
-    } catch (_) {}
-  };
+  const [rechargeModalVisible, setRechargeModalVisible] = useState(false);
 
   useEffect(() => {
     fetchJyotishisFromFirebase()
@@ -83,14 +66,18 @@ export default function Consult() {
               a.avatar ||
               'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200',
             rating: a.rating || 5.0,
-            reviews: a.reviews || 1,
-            pricePerMin: a.pricePerMin || 25,
-            experienceYears: a.experienceYears || 10,
+            reviewsCount: a.reviews || 1,
+            pricing: {
+              chatPerMin: a.pricePerMin || 25,
+              callPerMin: a.pricePerMin ? a.pricePerMin + 5 : 30,
+              report: 299,
+            },
+            experience: a.experienceYears || 10,
             specialties: a.specialties || ['Vedic Astrology'],
             languages: a.languages || ['Hindi', 'English'],
-            consultations: a.consultations || 0,
+            consultationsCount: a.consultations || 1400,
             online: a.online ?? true,
-            about: a.about || 'Certified Vedic Jyotish Expert',
+            bio: a.about || 'Certified Vedic Jyotish Expert',
           }));
           const existingIds = new Set(remoteList.map((r) => r.id));
           const localOnly = ASTROLOGERS.filter((l) => !existingIds.has(l.id));
@@ -100,415 +87,231 @@ export default function Consult() {
       .catch(() => {});
   }, []);
 
-  const list = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    let out = astrologersList.filter((a) => {
-      const matchQ =
-        !q ||
-        a.name.toLowerCase().includes(q) ||
-        a.specialties.some((s: string) => s.toLowerCase().includes(q)) ||
-        a.languages.some((l: string) => l.toLowerCase().includes(q));
-      const matchF =
-        filter === 'All' ||
-        (filter === 'Instant'
-          ? a.online
-          : filter === 'Online'
-          ? a.online
-          : a.specialties.some((s: string) => s.toLowerCase().includes(filter.toLowerCase())));
-      return matchQ && matchF;
-    });
-    out = [...out].sort((x, y) => {
-      if (sort === 'rating') return y.rating - x.rating;
-      if (sort === 'price') return x.pricePerMin - y.pricePerMin;
-      return y.consultations - x.consultations;
-    });
-    return out.sort((x, y) => Number(y.online) - Number(x.online));
-  }, [query, filter, sort, astrologersList]);
+  const filtered = useMemo(() => {
+    return astrologersList
+      .filter((a) => {
+        // Query search
+        if (query.trim().length > 0) {
+          const q = query.toLowerCase();
+          const matchesName = a.name.toLowerCase().includes(q);
+          const matchesSpecialty = a.specialties.some((s) => s.toLowerCase().includes(q));
+          const matchesLang = a.languages.some((l) => l.toLowerCase().includes(q));
+          if (!matchesName && !matchesSpecialty && !matchesLang) return false;
+        }
 
-  if (!isAuthenticated || !authUser) {
-    return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
-  }
+        // Category filter
+        if (filter === 'Online') return a.online;
+        if (filter === 'Vedic') return a.specialties.some((s) => s.toLowerCase().includes('vedic'));
+        if (filter === 'Tarot') return a.specialties.some((s) => s.toLowerCase().includes('tarot'));
+        if (filter === 'Love')
+          return a.specialties.some((s) => s.toLowerCase().includes('love') || s.toLowerCase().includes('relationship'));
+        if (filter === 'Career')
+          return a.specialties.some((s) => s.toLowerCase().includes('career') || s.toLowerCase().includes('finance'));
+        if (filter === 'Numerology')
+          return a.specialties.some((s) => s.toLowerCase().includes('numerology'));
+        if (filter === 'Vastu')
+          return a.specialties.some((s) => s.toLowerCase().includes('vastu'));
 
-  const onlineCount = astrologersList.filter((a) => a.online).length;
-
-  const renderHeader = () => (
-    <View style={styles.headerContainer}>
-      {/* ── Luminous Search Bar ── */}
-      <View style={styles.searchWrap}>
-        <Text style={styles.searchIcon}>🔍</Text>
-        <TextInput
-          value={query}
-          onChangeText={setQuery}
-          placeholder="Search Vedic Astrologer, Tarot or Remedy..."
-          placeholderTextColor="#94A3B8"
-          style={styles.searchInput}
-        />
-        {!!query && (
-          <Pressable
-            onPress={() => {
-              triggerHaptic();
-              setQuery('');
-            }}
-            hitSlop={8}
-            style={styles.clearBtnWrap}
-          >
-            <Text style={styles.clearBtn}>✕</Text>
-          </Pressable>
-        )}
-      </View>
-
-      {/* ── Live Astrologer Pulse Beacon Banner ── */}
-      <View style={styles.onlineBanner}>
-        <View style={styles.beaconWrap}>
-          <View style={styles.beaconOuter} />
-          <View style={styles.beaconDot} />
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.onlineTitle}>
-            <Text style={styles.onlineCount}>{onlineCount} Vedic Acharyas</Text> Active Online
-          </Text>
-          <Text style={styles.onlineSubtitle}>⚡ Instant 1-Tap Audio / Video · 0 min wait time</Text>
-        </View>
-        <View style={styles.secureBadge}>
-          <Text style={styles.secureBadgeText}>🔒 100% Private</Text>
-        </View>
-      </View>
-
-      {/* ── Category Filter Chips ── */}
-      <View style={styles.filterWrapper}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filterStrip}
-          style={{ flexGrow: 0 }}
-        >
-          {CATEGORIES.map((c) => {
-            const active = filter === c.id;
-            return (
-              <Pressable
-                key={c.id}
-                onPress={() => {
-                  triggerHaptic();
-                  setFilter(c.id);
-                }}
-                style={[styles.filterChip, active && styles.filterChipActive]}
-              >
-                {active && (
-                  <LinearGradient
-                    colors={['#D4AF37', '#E6CA65']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={StyleSheet.absoluteFill}
-                  />
-                )}
-                <Text style={[styles.filterChipText, active && styles.filterChipTextActive]}>
-                  {c.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
-      </View>
-
-      {/* ── Sort Segmented Control ── */}
-      <View style={styles.sortWrap}>
-        <Text style={styles.sortLabel}>SORT BY</Text>
-        <View style={styles.sortPills}>
-          {SORTS.map((s) => {
-            const active = sort === s.id;
-            return (
-              <Pressable
-                key={s.id}
-                onPress={() => {
-                  triggerHaptic();
-                  setSort(s.id);
-                }}
-                style={[styles.sortPill, active && styles.sortPillActive]}
-              >
-                {active && (
-                  <LinearGradient
-                    colors={['#D4AF37', '#E6CA65']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={StyleSheet.absoluteFill}
-                  />
-                )}
-                <Text style={[styles.sortPillText, active && styles.sortPillTextActive]}>
-                  {s.icon} {s.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      </View>
-    </View>
-  );
+        return true;
+      })
+      .sort((a, b) => {
+        if (sort === 'rating') return b.rating - a.rating;
+        if (sort === 'price_low') return a.pricing.chatPerMin - b.pricing.chatPerMin;
+        if (sort === 'exp') return b.experience - a.experience;
+        return (b.consultationsCount || 0) - (a.consultationsCount || 0);
+      });
+  }, [astrologersList, query, filter, sort]);
 
   return (
-    <GradientBackground>
+    <View style={styles.container}>
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-        <ScreenHeader
-          title="Consult"
-          subtitle={`${onlineCount} of ${astrologersList.length} experts online now`}
-          showWallet
-        />
+        {/* Astrotalk Fixed Header */}
+        <AstrotalkHeader onOpenRecharge={() => setRechargeModalVisible(true)} />
 
-        {list.length === 0 ? (
-          <View style={{ flex: 1 }}>
-            {renderHeader()}
-            <EmptyState
-              icon="🔭"
-              title="No Astrologers Found"
-              message="Try searching for another specialty, language, or clear the filter."
-              actionLabel="Clear Filters"
-              onAction={() => {
-                setQuery('');
-                setFilter('All');
-              }}
+        {/* Search & Sort Bar */}
+        <View style={styles.searchContainer}>
+          <View style={styles.searchBar}>
+            <Text style={{ fontSize: 16 }}>🔍</Text>
+            <TextInput
+              placeholder="Search Astrologer, Tarot, Vedic, Love…"
+              placeholderTextColor="#9CA3AF"
+              value={query}
+              onChangeText={setQuery}
+              style={styles.searchInput}
             />
-          </View>
-        ) : (
-          <FlatList
-            data={list}
-            keyExtractor={(a) => a.id}
-            ListHeaderComponent={renderHeader}
-            contentContainerStyle={styles.listContent}
-            showsVerticalScrollIndicator={false}
-            renderItem={({ item: a }) => (
-              <AstrologerCard
-                astrologer={a}
-                onPress={() => router.push(`/astrologer/${a.id}`)}
-              />
+            {query.length > 0 && (
+              <Pressable onPress={() => setQuery('')}>
+                <Text style={{ fontSize: 14, color: '#9CA3AF' }}>✕</Text>
+              </Pressable>
             )}
-            ListFooterComponent={
-              <Text style={styles.note}>
-                🕉️ All Jyotishis & Acharyas are verified with 10+ years of Vedic experience.
+          </View>
+        </View>
+
+        {/* Category Filter Pills */}
+        <View style={styles.categoriesWrapper}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}>
+            {CATEGORIES.map((cat) => {
+              const active = filter === cat.id;
+              return (
+                <Pressable
+                  key={cat.id}
+                  onPress={() => {
+                    try {
+                      if (Platform.OS !== 'web') {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      }
+                    } catch (_) {}
+                    setFilter(cat.id);
+                  }}
+                  style={[styles.catPill, active && styles.catPillActive]}
+                >
+                  <Text style={[styles.catPillText, active && styles.catPillTextActive]}>
+                    {cat.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        </View>
+
+        {/* Sort Header */}
+        <View style={styles.sortHeader}>
+          <Text style={styles.countText}>
+            Showing <Text style={{ fontWeight: '900', color: '#1A1A1A' }}>{filtered.length}</Text> Verified Astrologers
+          </Text>
+
+          <View style={styles.sortRow}>
+            <Pressable
+              onPress={() => setSort(sort === 'rating' ? 'price_low' : 'rating')}
+              style={styles.sortBtn}
+            >
+              <Text style={styles.sortBtnText}>
+                {sort === 'rating' ? '⭐ Rating' : sort === 'price_low' ? '💎 Price' : '🔥 Popular'} ▾
               </Text>
-            }
-          />
-        )}
+            </Pressable>
+          </View>
+        </View>
+
+        {/* Astrologers List */}
+        <FlatList
+          data={filtered}
+          keyExtractor={(item) => item.id}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 100 }}
+          renderItem={({ item }) => <AstrotalkAstrologerCard astrologer={item} />}
+          ListEmptyComponent={
+            <View style={styles.emptyState}>
+              <Text style={{ fontSize: 40 }}>🔍</Text>
+              <Text style={styles.emptyTitle}>No Astrologers Found</Text>
+              <Text style={styles.emptySub}>Try searching for a different skill or name.</Text>
+            </View>
+          }
+        />
       </SafeAreaView>
-    </GradientBackground>
+
+      {/* Recharge Modal */}
+      <AstrotalkRechargeModal
+        visible={rechargeModalVisible}
+        onClose={() => setRechargeModalVisible(false)}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  headerContainer: {
-    paddingHorizontal: spacing.md,
-    paddingTop: 6,
-    paddingBottom: 4,
-    gap: 10,
+  container: {
+    flex: 1,
+    backgroundColor: '#F7F8FA',
   },
-
-  /* Search Wrap */
-  searchWrap: {
+  searchContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: '#FFFFFF',
+  },
+  searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
-    paddingHorizontal: 14,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F3F4F6',
     borderRadius: radius.pill,
-    borderWidth: 1.5,
-    borderColor: 'rgba(226, 232, 240, 0.9)',
-    height: 48,
-    shadowColor: '#CBD5E1',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.35,
-    shadowRadius: 6,
-    elevation: 3,
+    paddingHorizontal: 12,
+    height: 42,
+    gap: 8,
   },
-  searchIcon: { fontSize: 16 },
   searchInput: {
     flex: 1,
-    color: '#0F172A',
-    fontSize: 13.5,
-    paddingVertical: 0,
-    fontWeight: '700',
-  },
-  clearBtnWrap: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: '#F1F5F9',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  clearBtn: {
-    fontSize: 11,
-    color: '#64748B',
-    fontWeight: '900',
-  },
-
-  /* Online Live Beacon Banner */
-  onlineBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255, 255, 255, 0.88)',
-    borderWidth: 1.5,
-    borderColor: 'rgba(212, 175, 55, 0.22)',
-    shadowColor: '#64748B',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 2,
-    backdropFilter: 'blur(12px)' as any,
-  },
-  beaconWrap: {
-    width: 20,
-    height: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  beaconOuter: {
-    position: 'absolute',
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: 'rgba(16, 185, 129, 0.25)',
-  },
-  beaconDot: {
-    width: 9,
-    height: 9,
-    borderRadius: 4.5,
-    backgroundColor: '#0D9488',
-  },
-  onlineTitle: {
-    fontSize: 12.5,
-    color: '#0F172A',
-    fontWeight: '800',
-  },
-  onlineCount: {
-    color: '#0D9488',
-    fontWeight: '900',
-  },
-  onlineSubtitle: {
-    fontSize: 10.5,
-    color: '#64748B',
+    fontSize: 13,
+    color: '#1A1A1A',
     fontWeight: '600',
-    marginTop: 1,
   },
-  secureBadge: {
-    backgroundColor: '#ECFDF5',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: radius.pill,
+  categoriesWrapper: {
+    backgroundColor: '#FFFFFF',
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  catPill: {
+    backgroundColor: '#F9FAFB',
     borderWidth: 1,
-    borderColor: '#A7F3D0',
-  },
-  secureBadgeText: {
-    fontSize: 9.5,
-    fontWeight: '900',
-    color: '#0D9488',
-  },
-
-  /* Filter Chips */
-  filterWrapper: {
-    height: 38,
-  },
-  filterStrip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingRight: spacing.md,
-  },
-  filterChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
+    borderColor: '#E5E7EB',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
     borderRadius: radius.pill,
-    backgroundColor: 'rgba(255, 255, 255, 0.88)',
-    borderWidth: 1.5,
-    borderColor: 'rgba(212, 175, 55, 0.25)',
-    overflow: 'hidden',
-    shadowColor: '#64748B',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 2,
-    backdropFilter: 'blur(16px) saturate(180%)' as any,
-    position: 'relative',
   },
-  filterChipActive: {
-    borderColor: '#D4AF37',
-    shadowColor: '#D4AF37',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.35,
-    shadowRadius: 8,
-    elevation: 4,
+  catPillActive: {
+    backgroundColor: '#FFFBEB',
+    borderColor: '#F59E0B',
   },
-  filterChipText: {
-    color: '#0F172A',
-    fontWeight: '800',
-    fontSize: 12,
+  catPillText: {
+    fontSize: 11.5,
+    fontWeight: '700',
+    color: '#4B5563',
   },
-  filterChipTextActive: {
-    color: '#0F172A',
+  catPillTextActive: {
+    color: '#D97706',
     fontWeight: '900',
   },
-
-  /* Sort Segmented Control */
-  sortWrap: {
+  sortHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 2,
-    marginBottom: 4,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
   },
-  sortLabel: {
-    fontSize: 10.5,
-    color: '#64748B',
-    fontWeight: '900',
-    letterSpacing: 0.8,
+  countText: {
+    fontSize: 12,
+    color: '#6B7280',
   },
-  sortPills: {
+  sortRow: {
     flexDirection: 'row',
-    gap: 4,
-    backgroundColor: 'rgba(241, 245, 249, 0.85)',
+    alignItems: 'center',
+    gap: 6,
+  },
+  sortBtn: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     borderRadius: radius.pill,
-    padding: 3,
-    borderWidth: 1.5,
-    borderColor: 'rgba(212, 175, 55, 0.18)',
   },
-  sortPill: {
-    paddingVertical: 5,
-    paddingHorizontal: 12,
-    borderRadius: radius.pill,
-    overflow: 'hidden',
-  },
-  sortPillActive: {
-    shadowColor: '#D4AF37',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  sortPillText: {
-    color: '#64748B',
-    fontWeight: '700',
+  sortBtnText: {
     fontSize: 11,
+    fontWeight: '800',
+    color: '#1F2937',
   },
-  sortPillTextActive: {
-    color: '#0F172A',
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+    gap: 8,
+  },
+  emptyTitle: {
+    fontSize: 16,
     fontWeight: '900',
+    color: '#1A1A1A',
   },
-
-  /* List */
-  listContent: {
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.xs,
-    paddingBottom: spacing.xxl,
-    gap: 12,
-  },
-  note: {
-    fontSize: 11,
-    color: '#64748B',
-    textAlign: 'center',
-    marginTop: spacing.md,
-    fontWeight: '600',
-    lineHeight: 16,
+  emptySub: {
+    fontSize: 12,
+    color: '#6B7280',
   },
 });

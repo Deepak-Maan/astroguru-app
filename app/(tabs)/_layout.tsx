@@ -9,7 +9,7 @@ import { useLiveChatStore } from '../../src/store/liveChatStore';
 
 /* ── SVG Icons matching user's exact design screenshot ── */
 function HomeIcon({ focused }: { focused: boolean }) {
-  const color = focused ? colors.teal : '#64748B';
+  const color = focused ? '#D97706' : '#64748B';
   return (
     <Svg width={24} height={24} viewBox="0 0 24 24" fill={focused ? color : 'none'} stroke={color} strokeWidth={focused ? 0 : 2} strokeLinecap="round" strokeLinejoin="round">
       <Path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
@@ -19,7 +19,7 @@ function HomeIcon({ focused }: { focused: boolean }) {
 }
 
 function BirthChartIcon({ focused }: { focused: boolean }) {
-  const color = focused ? colors.teal : '#64748B';
+  const color = focused ? '#D97706' : '#64748B';
   return (
     <Svg width={24} height={24} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
       <Circle cx={12} cy={12} r={10} />
@@ -29,7 +29,7 @@ function BirthChartIcon({ focused }: { focused: boolean }) {
 }
 
 function ConsultTabIcon({ focused }: { focused: boolean }) {
-  const color = focused ? '#059669' : '#64748B';
+  const color = focused ? '#D97706' : '#64748B';
   return (
     <Svg width={24} height={24} viewBox="0 0 24 24" fill={focused ? color : 'none'} stroke={color} strokeWidth={focused ? 0 : 2} strokeLinecap="round" strokeLinejoin="round">
       <Path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
@@ -40,7 +40,7 @@ function ConsultTabIcon({ focused }: { focused: boolean }) {
 const CompatibilityIcon = ConsultTabIcon;
 
 function ChatTabIcon({ focused, badgeCount }: { focused: boolean; badgeCount?: number }) {
-  const color = focused ? colors.teal : '#64748B';
+  const color = focused ? '#D97706' : '#64748B';
   return (
     <View style={{ position: 'relative' }}>
       <Svg width={24} height={24} viewBox="0 0 24 24" fill={focused ? color : 'none'} stroke={color} strokeWidth={focused ? 0 : 2} strokeLinecap="round" strokeLinejoin="round">
@@ -56,7 +56,7 @@ function ChatTabIcon({ focused, badgeCount }: { focused: boolean; badgeCount?: n
 }
 
 function HoroscopeIcon({ focused }: { focused: boolean }) {
-  const color = focused ? colors.teal : '#64748B';
+  const color = focused ? '#D97706' : '#64748B';
   return (
     <Svg width={24} height={24} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
       <Path d="M3 3v18h18" />
@@ -67,7 +67,7 @@ function HoroscopeIcon({ focused }: { focused: boolean }) {
 }
 
 function ProfileIcon({ focused }: { focused: boolean }) {
-  const color = focused ? colors.teal : '#64748B';
+  const color = focused ? '#D97706' : '#64748B';
   return (
     <Svg width={24} height={24} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
       <Path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
@@ -102,6 +102,13 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
               ? options.title
               : route.name;
 
+          // Astrotalk naming convention
+          if (route.name === 'index') label = 'Home';
+          else if (route.name === 'kundli') label = 'Kundli';
+          else if (route.name === 'consult') label = 'Consult';
+          else if (route.name === 'horoscope') label = 'Horoscope';
+          else if (route.name === 'profile') label = 'Wallet';
+
           // Role-based title overrides for Certified Astrologer
           if (isAstrologer) {
             if (route.name === 'index') label = 'Workstation';
@@ -134,7 +141,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
               onPress={onPress}
               style={styles.tabItem}
             >
-              {/* Top Emerald Green Indicator Line for Active Tab */}
+              {/* Top Golden Indicator Line for Active Tab */}
               {isFocused && <View style={styles.topIndicator} />}
 
               <View style={styles.iconBox}>
@@ -154,7 +161,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
               <Text
                 style={[
                   styles.label,
-                  { color: isFocused ? colors.teal : '#64748B', fontWeight: isFocused ? '800' : '600' },
+                  { color: isFocused ? '#D97706' : '#64748B', fontWeight: isFocused ? '900' : '600' },
                 ]}
                 numberOfLines={1}
               >
