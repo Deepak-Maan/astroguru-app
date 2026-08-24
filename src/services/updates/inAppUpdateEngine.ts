@@ -222,8 +222,10 @@ class InAppUpdateEngine {
    * Installs the downloaded APK package via Android Package Installer Intent
    */
   async installDownloadedPackage(localUri?: string, customApkUrl?: string): Promise<boolean> {
+    const targetUrl = customApkUrl || LIVE_DIRECT_APK_URL;
+
     if (Platform.OS === 'android' && localUri) {
-      // 1. IntentLauncher VIEW with content:// URI
+      // 1. Primary: IntentLauncher VIEW with content:// URI
       try {
         const fsAny = FileSystem as any;
         const getContentUri = fsAny.getContentUriAsync || FileSystem.getContentUriAsync;
@@ -240,10 +242,18 @@ class InAppUpdateEngine {
         });
         return true;
       } catch (e: any) {
-        console.warn('[InAppUpdateEngine] Intent install fallback to Sharing:', e);
+        console.warn('[InAppUpdateEngine] Intent install error, attempting fallback:', e);
       }
 
-      // 2. Sharing fallback
+      // 2. Direct browser APK link fallback
+      try {
+        await Linking.openURL(targetUrl);
+        return true;
+      } catch (linkErr) {
+        console.warn('[InAppUpdateEngine] Fallback openURL failed:', linkErr);
+      }
+
+      // 3. Fallback: Sharing dialog with package installer UTI
       try {
         const isAvailable = await Sharing.isAvailableAsync();
         if (isAvailable) {
@@ -260,7 +270,6 @@ class InAppUpdateEngine {
     }
 
     // Direct browser APK link fallback
-    const targetUrl = customApkUrl || LIVE_DIRECT_APK_URL;
     try {
       await Linking.openURL(targetUrl);
       return true;

@@ -166,7 +166,7 @@ export const useUpdateStore = create<UpdateState>()(
 
       startDownload: async () => {
         if (get().isDownloading) return;
-        set({ isDownloading: true, downloadProgress: 0 });
+        set({ isDownloading: true, downloadProgress: 0, downloadedPackageUri: null });
 
         try {
           const apkUrl = get().downloadUrl || LIVE_DIRECT_APK_URL;
@@ -183,14 +183,28 @@ export const useUpdateStore = create<UpdateState>()(
             apkUrl
           );
 
-          set({
-            isDownloading: false,
-            downloadProgress: 100,
-            isReadyToInstall: result.success,
-            downloadedPackageUri: result.localUri || null,
-          });
+          if (result && result.success && result.localUri) {
+            set({
+              isDownloading: false,
+              downloadProgress: 100,
+              isReadyToInstall: true,
+              downloadedPackageUri: result.localUri,
+            });
+
+            // Automatically launch Android package installer
+            if (Platform.OS === 'android') {
+              await inAppUpdateEngine.installDownloadedPackage(result.localUri, apkUrl);
+            }
+          } else {
+            // Direct browser fallback if local download stream was interrupted
+            set({ isDownloading: false, downloadProgress: 0 });
+            await inAppUpdateEngine.openDirectBrowserDownload(apkUrl);
+          }
         } catch (err: any) {
+          console.warn('[UpdateStore Download Error]', err);
           set({ isDownloading: false });
+          const apkUrl = get().downloadUrl || LIVE_DIRECT_APK_URL;
+          await inAppUpdateEngine.openDirectBrowserDownload(apkUrl);
         }
       },
 
@@ -198,7 +212,6 @@ export const useUpdateStore = create<UpdateState>()(
         const { downloadedPackageUri, downloadUrl } = get();
         try {
           await inAppUpdateEngine.installDownloadedPackage(downloadedPackageUri || undefined, downloadUrl || undefined);
-          set({ updateAvailable: false, isReadyToInstall: false });
         } catch (err) {
           console.warn('[Install Update Error]', err);
         }

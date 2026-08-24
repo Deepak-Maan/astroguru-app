@@ -12,22 +12,7 @@ import * as Sharing from 'expo-sharing';
 const ANDROID_INSTALL_FLAGS = 1 | 268435456;
 
 export async function launchNativeInstaller(targetFileUri: string, apkUrl: string): Promise<boolean> {
-  // Strategy 1: Sharing with system-level package-archive MIME type
-  try {
-    const isSharingAvailable = await Sharing.isAvailableAsync();
-    if (isSharingAvailable) {
-      await Sharing.shareAsync(targetFileUri, {
-        mimeType: 'application/vnd.android.package-archive',
-        dialogTitle: 'Install AstroGuru Update',
-        UTI: 'com.android.package-archive',
-      });
-      return true;
-    }
-  } catch (shareErr) {
-    console.warn('[Installer Strategy 1 - Sharing]', shareErr);
-  }
-
-  // Strategy 2: IntentLauncher VIEW
+  // Strategy 1: IntentLauncher VIEW with content:// URI
   try {
     const fsAny = FileSystem as any;
     const getContentUri = fsAny.getContentUriAsync || FileSystem.getContentUriAsync;
@@ -44,17 +29,33 @@ export async function launchNativeInstaller(targetFileUri: string, apkUrl: strin
     });
     return true;
   } catch (intentErr) {
-    console.warn('[Installer Strategy 2 - Intent VIEW]', intentErr);
+    console.warn('[Installer Strategy 1 - Intent VIEW]', intentErr);
   }
 
-  // Strategy 3: Direct browser download fallback
+  // Strategy 2: Direct browser download fallback
   try {
     await Linking.openURL(apkUrl);
     return true;
   } catch (linkErr) {
-    console.warn('[Installer Strategy 3 - Browser]', linkErr);
+    console.warn('[Installer Strategy 2 - Browser]', linkErr);
+  }
+
+  // Strategy 3: Sharing with system-level package-archive MIME type
+  try {
+    const isSharingAvailable = await Sharing.isAvailableAsync();
+    if (isSharingAvailable) {
+      await Sharing.shareAsync(targetFileUri, {
+        mimeType: 'application/vnd.android.package-archive',
+        dialogTitle: 'Install AstroGuru Update',
+        UTI: 'com.android.package-archive',
+      });
+      return true;
+    }
+  } catch (shareErr) {
+    console.warn('[Installer Strategy 3 - Sharing]', shareErr);
     return false;
   }
+  return false;
 }
 
 export async function downloadAndInstallApk(
