@@ -33,7 +33,6 @@ export default function Home() {
   const authUser = useAuthStore((s) => s.user);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const profile = useUserStore((s) => s.profile);
-  const wallet = useUserStore((s) => s.wallet);
 
   const [rechargeModalVisible, setRechargeModalVisible] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'vedic' | 'tarot' | 'love' | 'career'>('all');

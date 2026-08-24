@@ -10,7 +10,7 @@ import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { colors, radius, spacing, typography } from '../../theme';
-import { useUserStore } from '../../store/userStore';
+import { useWalletStore } from '../../store/walletStore';
 import { useLanguageStore } from '../../store/languageStore';
 import { useAuthStore } from '../../store/authStore';
 
@@ -20,7 +20,7 @@ interface Props {
 
 export function AstrotalkHeader({ onOpenRecharge }: Props) {
   const router = useRouter();
-  const wallet = useUserStore((s) => s.wallet);
+  const balance = useWalletStore((s) => s.balance ?? 100);
   const { currentLanguage, setLanguage } = useLanguageStore();
   const authUser = useAuthStore((s) => s.user);
 
@@ -90,7 +90,7 @@ export function AstrotalkHeader({ onOpenRecharge }: Props) {
           <View style={styles.walletIconCircle}>
             <Text style={{ fontSize: 11 }}>🪙</Text>
           </View>
-          <Text style={styles.walletAmount}>₹{wallet.balance.toFixed(0)}</Text>
+          <Text style={styles.walletAmount}>₹{Number(balance || 0).toFixed(0)}</Text>
           <View style={styles.walletAddBtn}>
             <Text style={styles.walletAddText}>+</Text>
           </View>

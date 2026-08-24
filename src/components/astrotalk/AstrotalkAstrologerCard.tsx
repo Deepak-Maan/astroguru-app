@@ -10,7 +10,7 @@ import {
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
-import { colors, radius, spacing } from '../../theme';
+import { radius } from '../../theme';
 import { Astrologer } from '../../types';
 
 interface Props {
@@ -20,6 +20,15 @@ interface Props {
 
 export function AstrotalkAstrologerCard({ astrologer, compact = false }: Props) {
   const router = useRouter();
+
+  if (!astrologer) return null;
+
+  const chatPrice = astrologer.pricing?.chatPerMin ?? (astrologer as any).pricePerMin ?? 25;
+  const callPrice = astrologer.pricing?.callPerMin ?? ((astrologer as any).pricePerMin ? (astrologer as any).pricePerMin + 5 : 30);
+  const expYears = astrologer.experience ?? (astrologer as any).experienceYears ?? 10;
+  const totalOrders = astrologer.consultationsCount ?? (astrologer as any).consultations ?? (astrologer as any).reviews ?? 1400;
+  const ratingValue = Number(astrologer.rating || 4.9).toFixed(1);
+  const originalPrice = Math.round(chatPrice * 1.75);
 
   const handleChat = () => {
     try {
@@ -47,8 +56,6 @@ export function AstrotalkAstrologerCard({ astrologer, compact = false }: Props) 
     } catch (_) {}
     router.push(`/astrologer/${astrologer.id}` as any);
   };
-
-  const originalPrice = (astrologer.pricing.chatPerMin * 1.8).toFixed(0);
 
   return (
     <Pressable
@@ -89,28 +96,28 @@ export function AstrotalkAstrologerCard({ astrologer, compact = false }: Props) 
 
           {/* Specialties */}
           <Text style={styles.specialtiesText} numberOfLines={1}>
-            {astrologer.specialties.join(', ')}
+            {(astrologer.specialties || ['Vedic Astrology']).join(', ')}
           </Text>
 
           {/* Languages */}
           <Text style={styles.languagesText} numberOfLines={1}>
-            🗣️ {astrologer.languages.slice(0, 3).join(', ')}
+            🗣️ {(astrologer.languages || ['Hindi', 'English']).slice(0, 3).join(', ')}
           </Text>
 
           {/* Experience & Orders */}
           <View style={styles.statsRow}>
-            <Text style={styles.expText}>📜 {astrologer.experience} yrs exp</Text>
+            <Text style={styles.expText}>📜 {expYears} yrs exp</Text>
             <Text style={styles.statDot}>•</Text>
             <View style={styles.ratingBox}>
               <Text style={styles.ratingStar}>⭐</Text>
-              <Text style={styles.ratingText}>{astrologer.rating.toFixed(1)}</Text>
-              <Text style={styles.ordersText}>({(astrologer.consultationsCount || 1200) / 1000}k)</Text>
+              <Text style={styles.ratingText}>{ratingValue}</Text>
+              <Text style={styles.ordersText}>({totalOrders > 999 ? `${(totalOrders / 1000).toFixed(1)}k` : totalOrders})</Text>
             </View>
           </View>
 
           {/* Pricing Row */}
           <View style={styles.priceRow}>
-            <Text style={styles.priceCurrent}>₹{astrologer.pricing.chatPerMin}/min</Text>
+            <Text style={styles.priceCurrent}>₹{chatPrice}/min</Text>
             <Text style={styles.priceOriginal}>₹{originalPrice}/min</Text>
             <View style={styles.discountBadge}>
               <Text style={styles.discountText}>45% OFF</Text>

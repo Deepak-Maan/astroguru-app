@@ -15,13 +15,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { colors, radius, spacing } from '../../src/theme';
 import { ASTROLOGERS } from '../../src/data/astrologers';
-import { useUserStore } from '../../src/store/userStore';
+import { useWalletStore } from '../../src/store/walletStore';
 
 export default function CallScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const astrologer = ASTROLOGERS.find((a) => a.id === id) || ASTROLOGERS[0];
-  const { wallet, deductWalletBalance } = useUserStore();
+  const balance = useWalletStore((s) => s.balance ?? 100);
+  const debit = useWalletStore((s) => s.debit);
 
   const [callStatus, setCallStatus] = useState<'connecting' | 'connected' | 'ended'>('connecting');
   const [seconds, setSeconds] = useState(0);
@@ -71,7 +72,7 @@ export default function CallScreen() {
         const next = prev + 1;
         // Deduct per-minute rate every 60 seconds
         if (next % 60 === 0) {
-          deductWalletBalance(astrologer.pricing.callPerMin || 25);
+          debit(astrologer.pricing.callPerMin || 25, `Voice Call with ${astrologer.name}`);
         }
         return next;
       });
@@ -128,7 +129,7 @@ export default function CallScreen() {
         <View style={styles.header}>
           <Text style={styles.appTitle}>Astrotalk Voice Consultation</Text>
           <View style={styles.ratePill}>
-            <Text style={styles.rateText}>₹{astrologer.pricing.callPerMin || 25}/min • Wallet: ₹{wallet.balance.toFixed(0)}</Text>
+            <Text style={styles.rateText}>₹{astrologer.pricing.callPerMin || 25}/min • Wallet: ₹{Number(balance || 0).toFixed(0)}</Text>
           </View>
         </View>
 

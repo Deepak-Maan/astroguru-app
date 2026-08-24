@@ -12,7 +12,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { colors, radius, spacing } from '../../theme';
-import { useUserStore } from '../../store/userStore';
+import { useWalletStore } from '../../store/walletStore';
 
 interface Props {
   visible: boolean;
@@ -29,7 +29,8 @@ const RECHARGE_PACKS = [
 ];
 
 export function AstrotalkRechargeModal({ visible, onClose }: Props) {
-  const { wallet, addWalletFunds } = useUserStore();
+  const balance = useWalletStore((s) => s.balance ?? 100);
+  const topup = useWalletStore((s) => s.topup);
   const [selectedAmount, setSelectedAmount] = useState<number>(100);
   const [customAmount, setCustomAmount] = useState<string>('');
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
@@ -61,7 +62,7 @@ export function AstrotalkRechargeModal({ visible, onClose }: Props) {
     else if (finalAmount >= 100) bonusMultiplier = 2.0;
 
     const creditAmount = finalAmount * bonusMultiplier;
-    addWalletFunds(creditAmount);
+    topup(creditAmount, `Recharge ₹${finalAmount} (+${((bonusMultiplier - 1) * 100).toFixed(0)}% Bonus)`);
 
     setIsSuccess(true);
     setTimeout(() => {
@@ -79,7 +80,7 @@ export function AstrotalkRechargeModal({ visible, onClose }: Props) {
             <View>
               <Text style={styles.headerTitle}>Add Money to Astrotalk Wallet</Text>
               <Text style={styles.headerSub}>
-                Current Balance: <Text style={{ color: '#059669', fontWeight: '900' }}>₹{wallet.balance.toFixed(0)}</Text>
+                Current Balance: <Text style={{ color: '#059669', fontWeight: '900' }}>₹{Number(balance || 0).toFixed(0)}</Text>
               </Text>
             </View>
             <Pressable onPress={onClose} style={styles.closeBtn}>
