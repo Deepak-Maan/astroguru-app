@@ -78,7 +78,7 @@ export function AstrotalkRechargeModal({ visible, onClose }: Props) {
           {/* Header */}
           <View style={styles.header}>
             <View>
-              <Text style={styles.headerTitle}>Add Money to Astrotalk Wallet</Text>
+              <Text style={styles.headerTitle}>Add Money to AstroGuru Wallet</Text>
               <Text style={styles.headerSub}>
                 Current Balance: <Text style={{ color: '#059669', fontWeight: '900' }}>₹{Number(balance || 0).toFixed(0)}</Text>
               </Text>

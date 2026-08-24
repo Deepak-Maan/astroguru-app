@@ -63,12 +63,12 @@ export function AstrotalkHeader({ onOpenRecharge }: Props) {
         </View>
         <View>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-            <Text style={styles.brandTitle}>Astrotalk</Text>
+            <Text style={styles.brandTitle}>AstroGuru</Text>
             <View style={styles.verifiedDot}>
               <Text style={{ fontSize: 9, color: '#FFFFFF', fontWeight: '900' }}>✓</Text>
             </View>
           </View>
-          <Text style={styles.brandSubtitle}>India's #1 Astrology App</Text>
+          <Text style={styles.brandSubtitle}>Vedic Astrology & Horoscope</Text>
         </View>
       </View>
 

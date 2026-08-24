@@ -127,7 +127,7 @@ export default function CallScreen() {
       <SafeAreaView style={{ flex: 1, justifyContent: 'space-between' }}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.appTitle}>Astrotalk Voice Consultation</Text>
+          <Text style={styles.appTitle}>AstroGuru Voice Consultation</Text>
           <View style={styles.ratePill}>
             <Text style={styles.rateText}>₹{astrologer.pricing.callPerMin || 25}/min • Wallet: ₹{Number(balance || 0).toFixed(0)}</Text>
           </View>

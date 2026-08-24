@@ -66,7 +66,7 @@ export function AstrotalkCorePillars({ onSelectService }: Props) {
     },
     {
       id: 'store',
-      title: 'Astrotalk\nStore & Puja',
+      title: 'AstroGuru\nStore & Puja',
       subtitle: 'Gemstones & Yantras',
       badge: 'CERTIFIED',
       icon: '🛍️',
