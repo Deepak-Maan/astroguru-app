@@ -22,6 +22,7 @@ import { AstrotalkFreeConsultBanner } from '../../src/components/astrotalk/Astro
 import { AstrotalkHeroBannerCarousel } from '../../src/components/astrotalk/AstrotalkHeroBannerCarousel';
 import { AstrotalkCorePillars } from '../../src/components/astrotalk/AstrotalkCorePillars';
 import { AstrotalkFreeServicesGrid } from '../../src/components/astrotalk/AstrotalkFreeServicesGrid';
+import { AstrotalkFortuneWheelBanner } from '../../src/components/astrotalk/AstrotalkFortuneWheelBanner';
 import { AstrotalkAstrologerCard } from '../../src/components/astrotalk/AstrotalkAstrologerCard';
 import { AstrotalkVideoTestimonials } from '../../src/components/astrotalk/AstrotalkVideoTestimonials';
 import { AstrotalkRechargeModal } from '../../src/components/astrotalk/AstrotalkRechargeModal';
@@ -89,6 +90,9 @@ export default function Home() {
 
           {/* 10-Grid Astrotalk Free Services */}
           <AstrotalkFreeServicesGrid />
+
+          {/* Daily Cosmic Fortune Wheel Banner */}
+          <AstrotalkFortuneWheelBanner />
 
           {/* Astrologers Online Now Horizontal Scroller */}
           <View style={styles.sectionHeaderRow}>

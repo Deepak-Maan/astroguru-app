@@ -137,6 +137,7 @@ export default function RootLayout() {
             <Stack.Screen name="admin/index" options={{ presentation: 'card' }} />
             <Stack.Screen name="wallet" options={{ presentation: 'card' }} />
             <Stack.Screen name="daily-rewards" />
+            <Stack.Screen name="fortune-wheel" options={{ presentation: 'card' }} />
             <Stack.Screen name="privacy" />
             <Stack.Screen name="panchang" />
             <Stack.Screen name="tarot" />
