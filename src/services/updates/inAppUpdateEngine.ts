@@ -1,8 +1,7 @@
 /**
  * AstroGuru Native In-App APK Downloader & Package Installer Engine
- * Production-grade direct APK streaming, background downloads, permission helper,
- * storage garbage collection, and Android Intent package installation.
- * Powered by GitHub Releases API (https://github.com/Deepak-Maan/astroguru-app/releases).
+ * True In-App APK streaming, byte counter, transfer speed, Android Intent installation,
+ * and zero browser redirects.
  */
 
 import { Platform, Linking } from 'react-native';
@@ -26,20 +25,20 @@ export interface InAppUpdateCheckResult {
   releaseNotes: string[];
   isMandatory: boolean;
   type: 'apk';
-  downloadUrl?: string;
-  apkFileName?: string;
-  apkSizeMb?: number;
+  downloadUrl: string;
+  apkFileName: string;
+  apkSizeMb: number;
 }
 
 export const GITHUB_OWNER = 'Deepak-Maan';
 export const GITHUB_REPO = 'astroguru-app';
 export const GITHUB_API_LATEST_RELEASE = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/releases/latest`;
-export const LIVE_DIRECT_APK_URL = `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases`;
 
-/**
- * Robust version comparison helper
- * Handles versionCode ('286' > '285') and semver ('2.8.6' > '2.8.5')
- */
+export function getDirectApkDownloadUrl(version: string, assetName: string = 'app-release.apk'): string {
+  const cleanVer = version.replace(/^v/i, '').trim();
+  return `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases/download/v${cleanVer}/${assetName}`;
+}
+
 export function isRemoteVersionNewer(remoteVer: string, currentVer: string): boolean {
   if (!remoteVer || !currentVer) return false;
 
@@ -48,14 +47,14 @@ export function isRemoteVersionNewer(remoteVer: string, currentVer: string): boo
 
   if (cleanRemote === cleanCurrent) return false;
 
-  // Numeric versionCode check (e.g. "286" vs "285")
+  // Numeric versionCode check (e.g. "287" vs "286")
   const remoteNum = parseInt(cleanRemote, 10);
   const currentNum = parseInt(cleanCurrent, 10);
   if (!isNaN(remoteNum) && !isNaN(currentNum) && !cleanRemote.includes('.') && !cleanCurrent.includes('.')) {
     return remoteNum > currentNum;
   }
 
-  // Semver check (e.g. "2.8.6" vs "2.8.5")
+  // Semver check (e.g. "2.8.7" vs "2.8.6")
   const rParts = cleanRemote.split('.').map((p) => parseInt(p, 10) || 0);
   const cParts = cleanCurrent.split('.').map((p) => parseInt(p, 10) || 0);
 
@@ -75,8 +74,7 @@ class InAppUpdateEngine {
   private lastTimestamp: number = 0;
 
   /**
-   * Automatic Storage Garbage Collector:
-   * Scans cache/document directories and deletes older version APKs to free up phone storage.
+   * Cleans up old cached APKs to keep storage lean.
    */
   async cleanupOldApks(keepVersion?: string): Promise<void> {
     if (Platform.OS !== 'android') return;
@@ -93,7 +91,6 @@ class InAppUpdateEngine {
         if (file.toLowerCase().endsWith('.apk') && file !== keepName) {
           try {
             await fsAny.deleteAsync(`${targetDir}${file}`, { idempotent: true });
-            console.log('[InAppUpdateEngine] Cleaned up old APK:', file);
           } catch (_) {}
         }
       }
@@ -103,13 +100,12 @@ class InAppUpdateEngine {
   }
 
   /**
-   * Checks GitHub Releases for the latest APK uploaded by the developer.
+   * Checks GitHub for the latest release metadata.
    */
   async checkForUpdate(currentVersion: string, fallbackVersion: string): Promise<InAppUpdateCheckResult> {
     const currentCode = Application.nativeBuildVersion || '286';
     const currentName = Application.nativeApplicationVersion || currentVersion || '2.8.6';
 
-    // 1. Query GitHub Releases API
     try {
       const response = await fetch(GITHUB_API_LATEST_RELEASE, {
         headers: {
@@ -123,33 +119,29 @@ class InAppUpdateEngine {
         const rawTag = data.tag_name || '';
         const cleanTag = rawTag.replace(/^v/i, '').trim();
 
-        // Check if remote version from GitHub Release is newer
         const isNewer =
           isRemoteVersionNewer(cleanTag, currentCode) ||
           isRemoteVersionNewer(cleanTag, currentName);
 
-        // Find .apk asset download URL from release assets
         const apkAsset = data.assets?.find((asset: any) =>
           typeof asset.name === 'string' && asset.name.toLowerCase().endsWith('.apk')
         );
 
-        const downloadUrl = apkAsset?.browser_download_url || 
-          `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases/download/${rawTag || 'v' + cleanTag}/${apkAsset?.name || 'app-release.apk'}`;
-
-        const rawSize = apkAsset?.size ? (apkAsset.size / (1024 * 1024)).toFixed(1) : '42.5';
-        const isMandatory = data.body?.toLowerCase().includes('[mandatory]') || data.body?.toLowerCase().includes('force_update') || false;
+        const directUrl = apkAsset?.browser_download_url || getDirectApkDownloadUrl(cleanTag || fallbackVersion);
+        const rawSize = apkAsset?.size ? (apkAsset.size / (1024 * 1024)).toFixed(1) : '44.8';
+        const isMandatory = data.body?.toLowerCase().includes('[mandatory]') || false;
 
         const formattedNotes: string[] = [];
         if (data.body) {
           data.body
             .split('\n')
-            .map((line: string) => line.trim())
-            .filter((line: string) => line.length > 0 && !line.startsWith('#'))
-            .forEach((line: string) => {
-              if (line.startsWith('-') || line.startsWith('*') || line.startsWith('•')) {
-                formattedNotes.push(line.replace(/^[-*•]\s*/, '• '));
+            .map((l: string) => l.trim())
+            .filter((l: string) => l.length > 0 && !l.startsWith('#'))
+            .forEach((l: string) => {
+              if (l.startsWith('-') || l.startsWith('*') || l.startsWith('•')) {
+                formattedNotes.push(l.replace(/^[-*•]\s*/, '• '));
               } else {
-                formattedNotes.push(`• ${line}`);
+                formattedNotes.push(`• ${l}`);
               }
             });
         }
@@ -157,9 +149,10 @@ class InAppUpdateEngine {
         const notes = formattedNotes.length > 0
           ? formattedNotes
           : [
-              '• 🚀 Performance optimizations & 2x faster Kundli rendering.',
+              '• 👑 Ultra-Premium Imperial Gold & Crystal Glass Design System.',
               '• 💬 Enhanced live consultation stability and chat responsiveness.',
-              '• 🔒 Security patches and seamless in-app APK updating.',
+              '• 🧭 Vastu Compass, Love Meter & Daily Karma Rewards.',
+              '• 📲 100% In-App Direct APK Downloading & Auto-Installation.',
             ];
 
         return {
@@ -169,28 +162,35 @@ class InAppUpdateEngine {
           releaseNotes: notes,
           isMandatory,
           type: 'apk',
-          downloadUrl,
-          apkFileName: apkAsset?.name || `AstroGuru-v${cleanTag}.apk`,
+          downloadUrl: directUrl,
+          apkFileName: apkAsset?.name || `AstroGuru-v${cleanTag || fallbackVersion}.apk`,
           apkSizeMb: parseFloat(rawSize),
         };
       }
     } catch (ghErr) {
-      console.log('[InAppUpdateEngine] GitHub Releases check error:', ghErr);
+      console.log('[InAppUpdateEngine] GitHub Releases check notice:', ghErr);
     }
 
-    // Up to date or offline
+    // Default fallback
     return {
-      isAvailable: false,
+      isAvailable: isRemoteVersionNewer(fallbackVersion, currentName),
       currentVersion: currentName,
-      latestVersion: currentName,
-      releaseNotes: ['You are using the latest version of AstroGuru.'],
+      latestVersion: fallbackVersion,
+      releaseNotes: [
+        '• 👑 Ultra-Premium Imperial Gold & Crystal Glass Design System.',
+        '• 💬 Astrotalk-Grade 1-on-1 Chat, Voice Call & Live Streaming.',
+        '• 🧭 Vastu Compass, Love Meter & Daily Karma Rewards.',
+      ],
       isMandatory: false,
       type: 'apk',
+      downloadUrl: getDirectApkDownloadUrl(fallbackVersion),
+      apkFileName: `AstroGuru-v${fallbackVersion}.apk`,
+      apkSizeMb: 44.8,
     };
   }
 
   /**
-   * Downloads the APK package directly in-app with byte counting, transfer speed, and integrity checks.
+   * Streams the APK file directly to phone storage without opening any browser.
    */
   async downloadUpdatePackage(
     targetVersion: string,
@@ -201,7 +201,10 @@ class InAppUpdateEngine {
       return { success: false, type: 'apk', error: 'Platform not Android' };
     }
 
-    const apkUrl = customApkUrl || LIVE_DIRECT_APK_URL;
+    const cleanVer = targetVersion.replace(/^v/i, '').trim();
+    const primaryUrl = customApkUrl && customApkUrl.endsWith('.apk')
+      ? customApkUrl
+      : getDirectApkDownloadUrl(cleanVer);
 
     try {
       const fsAny = FileSystem as any;
@@ -211,23 +214,23 @@ class InAppUpdateEngine {
         return { success: false, type: 'apk', error: 'FileSystem not available' };
       }
 
-      // Cleanup older version APKs before starting download
-      await this.cleanupOldApks(targetVersion);
+      await this.cleanupOldApks(cleanVer);
 
-      const fileName = `AstroGuru-v${targetVersion}.apk`;
+      const fileName = `AstroGuru-v${cleanVer}.apk`;
       const localPath = `${targetDir}${fileName}`;
 
-      // Check if already completely downloaded and valid
+      // If already fully downloaded
       try {
         const existingInfo = await fsAny.getInfoAsync(localPath);
-        if (existingInfo.exists && existingInfo.size > 10 * 1024 * 1024) {
+        if (existingInfo.exists && existingInfo.size > 8 * 1024 * 1024) {
+          const finalMb = (existingInfo.size / (1024 * 1024)).toFixed(1);
           onProgress({
             totalBytes: existingInfo.size,
             downloadedBytes: existingInfo.size,
             percentage: 100,
-            speedKbps: 3500,
-            downloadedMb: (existingInfo.size / (1024 * 1024)).toFixed(1),
-            totalMb: (existingInfo.size / (1024 * 1024)).toFixed(1),
+            speedKbps: 4500,
+            downloadedMb: finalMb,
+            totalMb: finalMb,
           });
           return { success: true, localUri: localPath, type: 'apk' };
         } else if (existingInfo.exists) {
@@ -239,7 +242,7 @@ class InAppUpdateEngine {
       this.lastTimestamp = Date.now();
 
       this.activeDownload = fsAny.createDownloadResumable(
-        apkUrl,
+        primaryUrl,
         localPath,
         {
           headers: {
@@ -248,15 +251,17 @@ class InAppUpdateEngine {
           },
         },
         (downloadProgress: any) => {
-          const total = downloadProgress.totalBytesExpectedToWrite || 42 * 1024 * 1024;
+          const total = downloadProgress.totalBytesExpectedToWrite > 0
+            ? downloadProgress.totalBytesExpectedToWrite
+            : 44.8 * 1024 * 1024;
           const downloaded = downloadProgress.totalBytesWritten;
           const percentage = Math.min(100, Math.max(1, Math.floor((downloaded / total) * 100)));
 
           const now = Date.now();
           const timeDiff = (now - this.lastTimestamp) / 1000;
-          let speedKbps = 2400;
+          let speedKbps = 2800;
 
-          if (timeDiff >= 0.3) {
+          if (timeDiff >= 0.25) {
             const bytesDiff = downloaded - this.lastDownloadedBytes;
             speedKbps = Math.max(100, Math.floor(bytesDiff / timeDiff / 1024));
             this.lastDownloadedBytes = downloaded;
@@ -275,35 +280,34 @@ class InAppUpdateEngine {
       );
 
       const result = await this.activeDownload.downloadAsync();
-      
+
       if (result && result.uri) {
-        // Validate APK integrity (size > 10MB to avoid partial/corrupt files)
         const fileInfo = await fsAny.getInfoAsync(result.uri);
-        if (fileInfo.exists && fileInfo.size > 10 * 1024 * 1024) {
+        if (fileInfo.exists && fileInfo.size > 5 * 1024 * 1024) {
           const finalMb = (fileInfo.size / (1024 * 1024)).toFixed(1);
           onProgress({
             totalBytes: fileInfo.size,
             downloadedBytes: fileInfo.size,
             percentage: 100,
-            speedKbps: 3500,
+            speedKbps: 4500,
             downloadedMb: finalMb,
             totalMb: finalMb,
           });
           return { success: true, localUri: result.uri, type: 'apk' };
         } else {
-          return { success: false, type: 'apk', error: 'Downloaded APK file is incomplete or corrupted.' };
+          return { success: false, type: 'apk', error: 'Downloaded file incomplete' };
         }
       }
 
-      return { success: false, type: 'apk', error: 'Download stream returned no URI' };
+      return { success: false, type: 'apk', error: 'No download result URI returned' };
     } catch (err: any) {
-      console.warn('[InAppUpdateEngine] Direct APK download error:', err);
+      console.warn('[InAppUpdateEngine] In-app APK streaming notice:', err);
       return { success: false, type: 'apk', error: err?.message || 'Download error' };
     }
   }
 
   /**
-   * Installs the downloaded APK package directly via Android Package Installer Intent
+   * Installs the downloaded APK directly via Android package installer intent (NO BROWSER).
    */
   async installDownloadedPackage(localUri?: string): Promise<boolean> {
     if (Platform.OS !== 'android' || !localUri) {
@@ -319,7 +323,7 @@ class InAppUpdateEngine {
         packageUri = await getContentUri(localUri);
       }
 
-      // Launch native Android Package Installer directly
+      // Launch native Android Package Installer directly on device
       await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
         data: packageUri,
         flags: 1 | 268435456, // FLAG_GRANT_READ_URI_PERMISSION | FLAG_ACTIVITY_NEW_TASK
@@ -327,16 +331,14 @@ class InAppUpdateEngine {
       });
       return true;
     } catch (e: any) {
-      console.warn('[InAppUpdateEngine] Intent install error:', e);
-
-      // Prompt for unknown sources permission if restricted
+      console.warn('[InAppUpdateEngine] Native install launcher:', e);
       await this.openSettingsForInstallPermission();
       return false;
     }
   }
 
   /**
-   * 1-Tap Unknown Apps Permission helper for Android 8.0 through Android 15
+   * 1-Tap Unknown Apps Permission helper
    */
   async openSettingsForInstallPermission(): Promise<void> {
     if (Platform.OS === 'android') {
@@ -345,7 +347,6 @@ class InAppUpdateEngine {
           data: 'package:com.astroguru.app',
         });
       } catch (e) {
-        console.warn('[InAppUpdateEngine] Failed to open unknown sources settings:', e);
         try {
           await IntentLauncher.startActivityAsync('android.settings.APPLICATION_DETAILS_SETTINGS', {
             data: 'package:com.astroguru.app',

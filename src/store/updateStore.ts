@@ -2,7 +2,7 @@ import { Platform } from 'react-native';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { inAppUpdateEngine, UpdateDownloadProgress, LIVE_DIRECT_APK_URL } from '../services/updates/inAppUpdateEngine';
+import { inAppUpdateEngine, UpdateDownloadProgress, getDirectApkDownloadUrl } from '../services/updates/inAppUpdateEngine';
 import { syncLatestAppVersionToFirebase } from '../services/firebaseRealtimeService';
 
 export const LATEST_RELEASE_VERSION = '2.8.7';
@@ -22,95 +22,55 @@ export interface UpdateInfo {
   isDownloading: boolean;
   isBackgroundDownloading: boolean;
   isReadyToInstall: boolean;
+  downloadedPackageUri: string | null;
+  updateType: 'apk';
+  downloadUrl: string | null;
+  lastCheckedTime: string | null;
   isChecking: boolean;
   manualCheckMessage: string | null;
-  lastCheckedTime: string | null;
-  downloadedPackageUri: string | null;
-  updateType: 'apk' | 'ota';
-  downloadUrl: string | null;
 }
 
-interface UpdateState extends UpdateInfo {
+export interface UpdateActions {
   checkForUpdates: () => Promise<{ isNewAvailable: boolean; currentVersion: string; latestVersion: string }>;
   checkUpdatesManual: () => Promise<void>;
-  autoCheckAndFetchOnStartup: () => Promise<void>;
-  broadcastUpdate: (newVer: string, notes: string[], mandatory?: boolean) => void;
-  triggerUpdateModal: () => void;
   startDownload: (background?: boolean) => Promise<void>;
-  installUpdate: () => Promise<void>;
   downloadDirectApk: () => Promise<void>;
+  installUpdate: () => Promise<void>;
   dismissUpdate: () => void;
   dismissInstallSnackbar: () => void;
+  broadcastUpdate: (newVer: string, notes: string[], mandatory?: boolean) => void;
+  triggerUpdateModal: () => void;
   openPermissionSettings: () => Promise<void>;
 }
 
-export const useUpdateStore = create<UpdateState>()(
+export const useUpdateStore = create<UpdateInfo & UpdateActions>()(
   persist(
     (set, get) => ({
-      currentVersion: LATEST_RELEASE_VERSION,
+      currentVersion: '2.8.6',
       latestVersion: LATEST_RELEASE_VERSION,
       updateAvailable: false,
       isMandatory: false,
       releaseNotes: [
-        '• 🚀 Release v2.8.6: Standalone Android In-App APK Updater',
-        '• 💬 Real-Time Astrotalk Consultation Experience & Live Q&A',
-        '• 🪔 E-Puja Booking & Certified Gemstones Store with Instant Wallet Checkout',
-        '• 🔒 100% Error-Free Native Android Bundler & Hermes Engine',
+        '• 👑 Ultra-Premium Imperial Gold & Crystal Glass Design System.',
+        '• 💬 Astrotalk-Grade 1-on-1 Chat, Voice Call & Live Streaming.',
+        '• 🧭 Vastu Compass, Love Meter & Daily Karma Rewards.',
+        '• 📲 100% In-App Direct APK Downloading & Auto-Installation.',
       ],
       downloadProgress: 0,
       downloadedBytes: 0,
-      totalBytes: 0,
+      totalBytes: 44.8 * 1024 * 1024,
       downloadedMb: '0.0',
-      totalMb: '42.5',
+      totalMb: '44.8',
       speedKbps: 0,
       isDownloading: false,
       isBackgroundDownloading: false,
       isReadyToInstall: false,
-      isChecking: false,
-      manualCheckMessage: null,
-      lastCheckedTime: null,
       downloadedPackageUri: null,
       updateType: 'apk',
-      downloadUrl: null,
-
-      autoCheckAndFetchOnStartup: async () => {
-        try {
-          syncLatestAppVersionToFirebase(LATEST_RELEASE_VERSION, get().releaseNotes, LIVE_DIRECT_APK_URL);
-          // Cleanup older version APK files on startup
-          inAppUpdateEngine.cleanupOldApks(LATEST_RELEASE_VERSION);
-        } catch (_) {}
-
-        if (Platform.OS === 'web') {
-          set({
-            currentVersion: LATEST_RELEASE_VERSION,
-            latestVersion: LATEST_RELEASE_VERSION,
-            updateAvailable: false,
-            isReadyToInstall: false,
-          });
-          return;
-        }
-
-        // Automatic GitHub Release Check on Startup
-        try {
-          const currentVer = get().currentVersion;
-          const result = await inAppUpdateEngine.checkForUpdate(currentVer, LATEST_RELEASE_VERSION);
-          if (result.isAvailable) {
-            set({
-              updateAvailable: true,
-              latestVersion: result.latestVersion,
-              releaseNotes: result.releaseNotes,
-              isMandatory: result.isMandatory,
-              updateType: result.type,
-              downloadUrl: result.downloadUrl || null,
-              totalMb: result.apkSizeMb ? result.apkSizeMb.toFixed(1) : '42.5',
-              lastCheckedTime: new Date().toISOString(),
-            });
-            return;
-          }
-        } catch (e) {
-          console.warn('[UpdateStore Startup GitHub Check]', e);
-        }
-      },
+      downloadUrl: getDirectApkDownloadUrl(LATEST_RELEASE_VERSION),
+      lastCheckedTime: null,
+      isChecking: false,
+      manualCheckMessage: null,
 
       checkForUpdates: async () => {
         set({ isChecking: true });
@@ -125,8 +85,8 @@ export const useUpdateStore = create<UpdateState>()(
             releaseNotes: result.releaseNotes,
             isMandatory: result.isMandatory,
             updateType: result.type,
-            downloadUrl: result.downloadUrl || null,
-            totalMb: result.apkSizeMb ? result.apkSizeMb.toFixed(1) : '42.5',
+            downloadUrl: result.downloadUrl,
+            totalMb: result.apkSizeMb ? result.apkSizeMb.toFixed(1) : '44.8',
             lastCheckedTime: new Date().toISOString(),
           });
           return {
@@ -145,7 +105,7 @@ export const useUpdateStore = create<UpdateState>()(
       },
 
       checkUpdatesManual: async () => {
-        set({ isChecking: true, manualCheckMessage: 'Checking GitHub for updates…' });
+        set({ isChecking: true, manualCheckMessage: 'Checking for updates…' });
         const currentVer = get().currentVersion;
 
         try {
@@ -159,8 +119,8 @@ export const useUpdateStore = create<UpdateState>()(
               releaseNotes: result.releaseNotes,
               isMandatory: result.isMandatory,
               updateType: result.type,
-              downloadUrl: result.downloadUrl || null,
-              totalMb: result.apkSizeMb ? result.apkSizeMb.toFixed(1) : '42.5',
+              downloadUrl: result.downloadUrl,
+              totalMb: result.apkSizeMb ? result.apkSizeMb.toFixed(1) : '44.8',
               manualCheckMessage: null,
             });
           } else {
@@ -189,11 +149,16 @@ export const useUpdateStore = create<UpdateState>()(
           isMandatory: mandatory,
           updateAvailable: true,
           isReadyToInstall: false,
+          downloadUrl: getDirectApkDownloadUrl(newVer),
         });
       },
 
       triggerUpdateModal: () => {
-        set({ updateAvailable: true, latestVersion: LATEST_RELEASE_VERSION });
+        set({
+          updateAvailable: true,
+          latestVersion: LATEST_RELEASE_VERSION,
+          downloadUrl: getDirectApkDownloadUrl(LATEST_RELEASE_VERSION),
+        });
       },
 
       startDownload: async (background = false) => {
@@ -206,15 +171,16 @@ export const useUpdateStore = create<UpdateState>()(
           isReadyToInstall: false,
         });
 
-        // If background, close the modal so user can keep using the app
         if (background) {
           set({ updateAvailable: false });
         }
 
         try {
-          const apkUrl = get().downloadUrl || LIVE_DIRECT_APK_URL;
+          const targetVersion = get().latestVersion || LATEST_RELEASE_VERSION;
+          const directUrl = get().downloadUrl || getDirectApkDownloadUrl(targetVersion);
+
           const result = await inAppUpdateEngine.downloadUpdatePackage(
-            get().latestVersion,
+            targetVersion,
             (progress: UpdateDownloadProgress) => {
               set({
                 downloadProgress: progress.percentage,
@@ -225,7 +191,7 @@ export const useUpdateStore = create<UpdateState>()(
                 totalMb: progress.totalMb || (progress.totalBytes / (1024 * 1024)).toFixed(1),
               });
             },
-            apkUrl
+            directUrl
           );
 
           if (result && result.success && result.localUri) {
@@ -237,12 +203,12 @@ export const useUpdateStore = create<UpdateState>()(
               downloadedPackageUri: result.localUri,
             });
 
-            // Automatically launch Android package installer if foreground
+            // Automatically launch Android package installer directly
             if (Platform.OS === 'android' && !background) {
               await inAppUpdateEngine.installDownloadedPackage(result.localUri);
             }
           } else {
-            console.warn('[UpdateStore Download]', result?.error || 'Download failed');
+            console.warn('[UpdateStore Download Notice]', result?.error || 'Download error');
             set({ isDownloading: false, isBackgroundDownloading: false, downloadProgress: 0 });
           }
         } catch (err: any) {
@@ -260,7 +226,6 @@ export const useUpdateStore = create<UpdateState>()(
             console.warn('[Install Update Error]', err);
           }
         } else {
-          // If not downloaded yet, trigger download and install
           await get().startDownload(false);
         }
       },
