@@ -70,7 +70,7 @@ export function AstrotalkCorePillars({ onSelectService }: Props) {
       subtitle: 'Gemstones & Yantras',
       badge: 'CERTIFIED',
       icon: '🛍️',
-      route: '/gemstone-finder',
+      route: '/store',
       bgGradient: ['#FFFFFF', '#F5F3FF'],
       border: '#DDD6FE',
       iconBg: '#EDE9FE',
