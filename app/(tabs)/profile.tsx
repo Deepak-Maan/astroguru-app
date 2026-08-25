@@ -390,7 +390,7 @@ export default function Profile() {
                 </Card>
               </View>
 
-              <Text style={styles.version}>AstroGuru · v2.8.3 · Signed in as {authUser?.email ?? 'Seeker'}</Text>
+              <Text style={styles.version}>AstroGuru · v2.8.7 · Signed in as {authUser?.email ?? 'Seeker'}</Text>
             </ScrollView>
           </>
         )}
