@@ -115,18 +115,18 @@ export function AstrotalkAstrologerCard({ astrologer, compact = false }: Props) 
             </View>
           </View>
 
-          {/* Pricing Row */}
+          {/* Pricing Row with FREE 1st Deal */}
           <View style={styles.priceRow}>
             <Text style={styles.priceCurrent}>₹{chatPrice}/min</Text>
             <Text style={styles.priceOriginal}>₹{originalPrice}/min</Text>
-            <View style={styles.discountBadge}>
-              <Text style={styles.discountText}>45% OFF</Text>
+            <View style={styles.freeDealBadge}>
+              <Text style={styles.freeDealText}>🎁 FREE 1st Min</Text>
             </View>
           </View>
         </View>
       </View>
 
-      {/* Bottom Action Buttons: Chat & Call */}
+      {/* Bottom Action Buttons: Chat & Call or Notify Me */}
       <View style={styles.actionsFooter}>
         <Pressable
           onPress={handleChat}
@@ -138,15 +138,31 @@ export function AstrotalkAstrologerCard({ astrologer, compact = false }: Props) 
             end={{ x: 1, y: 0 }}
             style={StyleSheet.absoluteFill}
           />
-          <Text style={styles.chatBtnText}>💬 Chat</Text>
+          <Text style={styles.chatBtnText}>💬 Chat (FREE)</Text>
         </Pressable>
 
-        <Pressable
-          onPress={handleCall}
-          style={({ pressed }) => [styles.callBtn, pressed && { opacity: 0.85 }]}
-        >
-          <Text style={styles.callBtnText}>📞 Call</Text>
-        </Pressable>
+        {astrologer.online ? (
+          <Pressable
+            onPress={handleCall}
+            style={({ pressed }) => [styles.callBtn, pressed && { opacity: 0.85 }]}
+          >
+            <Text style={styles.callBtnText}>📞 Call (₹{callPrice}/m)</Text>
+          </Pressable>
+        ) : (
+          <Pressable
+            onPress={() => {
+              try {
+                if (Platform.OS !== 'web') {
+                  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                }
+              } catch (_) {}
+              alert(`🔔 Notification Alert Set!\nWe will notify you immediately when ${astrologer.name} is online.`);
+            }}
+            style={({ pressed }) => [styles.notifyBtn, pressed && { opacity: 0.85 }]}
+          >
+            <Text style={styles.notifyBtnText}>🔔 Notify When Free</Text>
+          </Pressable>
+        )}
       </View>
     </Pressable>
   );
@@ -307,6 +323,19 @@ const styles = StyleSheet.create({
     textDecorationLine: 'line-through',
     fontWeight: '600',
   },
+  freeDealBadge: {
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+    paddingHorizontal: 5,
+    paddingVertical: 1.5,
+    borderRadius: 4,
+  },
+  freeDealText: {
+    fontSize: 9,
+    fontWeight: '900',
+    color: '#059669',
+  },
   discountBadge: {
     backgroundColor: '#FEE2E2',
     paddingHorizontal: 4,
@@ -340,7 +369,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   chatBtnText: {
-    fontSize: 13,
+    fontSize: 12.5,
     fontWeight: '900',
     color: '#1A1A1A',
   },
@@ -352,11 +381,26 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
-    borderColor: '#10B981',
+    borderColor: '#059669',
   },
   callBtnText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '900',
     color: '#059669',
+  },
+  notifyBtn: {
+    flex: 1,
+    height: 38,
+    borderRadius: radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFBEB',
+    borderWidth: 1.2,
+    borderColor: '#F59E0B',
+  },
+  notifyBtnText: {
+    fontSize: 11.5,
+    fontWeight: '900',
+    color: '#D97706',
   },
 });

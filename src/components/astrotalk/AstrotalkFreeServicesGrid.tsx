@@ -25,9 +25,11 @@ export function AstrotalkFreeServicesGrid() {
   const SERVICES = [
     { id: 'kundli', title: 'Free Kundli', icon: '🪐', badge: '10-Pg', bg: '#FFFBEB', border: '#FDE68A', route: '/(tabs)/kundli' },
     { id: 'matching', title: 'Matching', icon: '💖', badge: '36 Guna', bg: '#FDF2F8', border: '#FBCFE8', route: '/matching' },
+    { id: 'lovemeter', title: 'Love Meter', icon: '❤️', badge: 'New', bg: '#FFF1F2', border: '#FECDD3', route: '/love-meter' },
+    { id: 'vastu', title: 'Vastu Compass', icon: '🧭', badge: 'Energy', bg: '#F0FDF4', border: '#BBF7D0', route: '/vastu-compass' },
     { id: 'horoscope', title: 'Horoscope', icon: '🔮', badge: 'Daily', bg: '#F5F3FF', border: '#DDD6FE', route: '/(tabs)/horoscope' },
     { id: 'panchang', title: 'Panchang', icon: '🌅', badge: 'Today', bg: '#FFF7ED', border: '#FFEDD5', route: '/panchang' },
-    { id: 'numerology', title: 'Numerology', icon: '🔢', badge: 'Grid', bg: '#F0F9FF', border: '#BAE6FD', route: '/numerology' },
+    { id: 'karma', title: 'Karma Coins', icon: '🪙', badge: 'Cashback', bg: '#FEF3C7', border: '#FDE68A', route: '/karma-rewards' },
     { id: 'tarot', title: 'Tarot Card', icon: '🃏', badge: '3-Card', bg: '#FAF5FF', border: '#E9D5FF', route: '/tarot' },
     { id: 'gemstone', title: 'Gemstone', icon: '💍', badge: 'Rashi', bg: '#ECFDF5', border: '#A7F3D0', route: '/gemstone-finder' },
     { id: 'mantra', title: '108 Japa', icon: '📿', badge: 'Mala', bg: '#FFFBEB', border: '#FDE68A', route: '/japa' },

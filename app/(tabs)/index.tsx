@@ -18,10 +18,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { AstrotalkHeader } from '../../src/components/astrotalk/AstrotalkHeader';
+import { AstrotalkFreeConsultBanner } from '../../src/components/astrotalk/AstrotalkFreeConsultBanner';
 import { AstrotalkHeroBannerCarousel } from '../../src/components/astrotalk/AstrotalkHeroBannerCarousel';
 import { AstrotalkCorePillars } from '../../src/components/astrotalk/AstrotalkCorePillars';
 import { AstrotalkFreeServicesGrid } from '../../src/components/astrotalk/AstrotalkFreeServicesGrid';
 import { AstrotalkAstrologerCard } from '../../src/components/astrotalk/AstrotalkAstrologerCard';
+import { AstrotalkVideoTestimonials } from '../../src/components/astrotalk/AstrotalkVideoTestimonials';
 import { AstrotalkRechargeModal } from '../../src/components/astrotalk/AstrotalkRechargeModal';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { useUserStore } from '../../src/store/userStore';
@@ -79,10 +81,13 @@ export default function Home() {
           {/* Hero Promotional Carousel */}
           <AstrotalkHeroBannerCarousel />
 
+          {/* New User Free Consultation Countdown Banner */}
+          <AstrotalkFreeConsultBanner />
+
           {/* 4 Core Astrotalk Pillars (Chat, Call, Live, Store) */}
           <AstrotalkCorePillars />
 
-          {/* 8-Grid Astrotalk Free Services */}
+          {/* 10-Grid Astrotalk Free Services */}
           <AstrotalkFreeServicesGrid />
 
           {/* Astrologers Online Now Horizontal Scroller */}
@@ -180,6 +185,9 @@ export default function Home() {
           {filteredAstrologers.map((astrologer) => (
             <AstrotalkAstrologerCard key={astrologer.id} astrologer={astrologer} />
           ))}
+
+          {/* Devotee Stories & Video Testimonials */}
+          <AstrotalkVideoTestimonials />
 
           {/* Bottom Space for Floating Tab Bar */}
           <View style={{ height: 90 }} />
