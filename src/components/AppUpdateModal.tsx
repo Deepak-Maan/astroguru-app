@@ -1,10 +1,10 @@
 import React from 'react';
-import { Linking, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 import { colors, radius, spacing, typography } from '../theme';
 import { Button } from './Button';
 import { useUpdateStore } from '../store/updateStore';
-import { LIVE_DIRECT_APK_URL } from '../services/updates/inAppUpdateEngine';
 
 export function AppUpdateModal() {
   const {
@@ -14,24 +14,35 @@ export function AppUpdateModal() {
     isMandatory,
     releaseNotes,
     downloadProgress,
-    downloadedBytes,
-    totalBytes,
+    downloadedMb,
+    totalMb,
     speedKbps,
     isDownloading,
     isReadyToInstall,
-    downloadUrl,
     startDownload,
     installUpdate,
     dismissUpdate,
+    openPermissionSettings,
   } = useUpdateStore();
 
   if (Platform.OS === 'web' || !updateAvailable) return null;
 
-  const targetApkUrl = downloadUrl || LIVE_DIRECT_APK_URL;
+  const handleForegroundDownload = () => {
+    try {
+      if (Platform.OS !== 'web') {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      }
+    } catch (_) {}
+    startDownload(false);
+  };
 
-  const formatBytes = (bytes: number) => {
-    if (!bytes || bytes <= 0) return '0 MB';
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  const handleBackgroundDownload = () => {
+    try {
+      if (Platform.OS !== 'web') {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+    } catch (_) {}
+    startDownload(true);
   };
 
   return (
@@ -48,25 +59,27 @@ export function AppUpdateModal() {
                 style={StyleSheet.absoluteFill}
               />
               <View style={styles.badgePill}>
-                <Text style={styles.badgeText}>✨ NEW UPDATE READY</Text>
+                <Text style={styles.badgeText}>✨ OFFICIAL UPDATE</Text>
               </View>
               <Text style={{ fontSize: 36, marginVertical: 2 }}>🚀</Text>
               <Text style={styles.headerTitle}>AstroGuru Update Available</Text>
+              
               <View style={styles.versionBadge}>
                 <Text style={styles.versionText}>
-                  Current: v{currentVersion} ➔ <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>New: v{latestVersion}</Text>
+                  v{currentVersion} ➔ <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>v{latestVersion}</Text>
                 </Text>
+                <Text style={styles.sizeText}>• {totalMb} MB</Text>
               </View>
             </View>
 
             {/* Release Notes */}
             <View style={styles.notesContainer}>
               <Text style={styles.notesHeader}>🎁 What's New in v{latestVersion}:</Text>
-              <ScrollView style={{ maxHeight: 150 }} contentContainerStyle={{ gap: 8 }} showsVerticalScrollIndicator={false}>
+              <ScrollView style={{ maxHeight: 140 }} contentContainerStyle={{ gap: 8 }} showsVerticalScrollIndicator={false}>
                 {releaseNotes.map((note, index) => (
                   <View key={index} style={styles.noteItem}>
                     <Text style={styles.noteBullet}>•</Text>
-                    <Text style={styles.noteText}>{note}</Text>
+                    <Text style={styles.noteText}>{note.replace(/^[•\s*]+/, '')}</Text>
                   </View>
                 ))}
               </ScrollView>
@@ -77,23 +90,25 @@ export function AppUpdateModal() {
               <View style={styles.progressBox}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Text style={styles.progressLabel}>
-                    📥 Downloading APK from GitHub…
+                    📥 Streaming APK Package…
                   </Text>
                   <Text style={styles.progressPct}>
                     {downloadProgress}%
                   </Text>
                 </View>
+
                 <View style={styles.track}>
                   <View
                     style={[
                       styles.bar,
-                      { width: `${downloadProgress}%` },
+                      { width: `${Math.max(4, downloadProgress)}%` },
                     ]}
                   />
                 </View>
+
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 }}>
                   <Text style={styles.speedText}>
-                    {totalBytes > 0 ? `${formatBytes(downloadedBytes)} / ${formatBytes(totalBytes)}` : `${downloadProgress}% downloaded`}
+                    {downloadedMb} MB / {totalMb} MB
                   </Text>
                   {speedKbps > 0 && (
                     <Text style={styles.speedText}>
@@ -104,20 +119,31 @@ export function AppUpdateModal() {
               </View>
             )}
 
-            {/* Ready to Install Notification */}
-            {isReadyToInstall && !isDownloading && (
-              <View style={styles.readyCard}>
+            {/* Ready State */}
+            {isReadyToInstall && (
+              <View style={styles.readyBox}>
                 <Text style={styles.readyText}>
-                  ✅ APK Download Complete! Tap below to install seamlessly.
+                  ✅ APK Download Complete! Tap below to install.
                 </Text>
               </View>
             )}
+
+            {/* Android 1-Tap Permission Helper */}
+            <Pressable
+              onPress={openPermissionSettings}
+              style={({ pressed }) => [styles.permissionHelper, pressed && { opacity: 0.8 }]}
+            >
+              <Text style={{ fontSize: 13 }}>⚙️</Text>
+              <Text style={styles.permissionText}>
+                Need help? <Text style={{ textDecorationLine: 'underline', fontWeight: '800' }}>Allow "Install Unknown Apps" permission</Text>
+              </Text>
+            </Pressable>
 
             {/* Actions */}
             <View style={styles.actionColumn}>
               {isDownloading ? (
                 <Button
-                  label={`📥 Downloading APK (${downloadProgress}%)…`}
+                  label={`📥 Downloading (${downloadProgress}%)…`}
                   variant="gold"
                   size="md"
                   disabled
@@ -131,12 +157,23 @@ export function AppUpdateModal() {
                   onPress={() => installUpdate()}
                 />
               ) : (
-                <Button
-                  label="📥 Download & Install Update"
-                  variant="gold"
-                  size="md"
-                  onPress={() => startDownload()}
-                />
+                <>
+                  <Button
+                    label={`📥 Download & Install (${totalMb} MB)`}
+                    variant="gold"
+                    size="md"
+                    onPress={handleForegroundDownload}
+                  />
+
+                  {!isMandatory && (
+                    <Pressable
+                      onPress={handleBackgroundDownload}
+                      style={({ pressed }) => [styles.bgDownloadBtn, pressed && { opacity: 0.85 }]}
+                    >
+                      <Text style={styles.bgDownloadText}>⏳ Download in Background</Text>
+                    </Pressable>
+                  )}
+                </>
               )}
 
               {!isMandatory && !isDownloading && (
@@ -170,130 +207,173 @@ const styles = StyleSheet.create({
   },
   webWrapper: {
     width: '100%',
-    maxWidth: 440,
+    maxWidth: 420,
+    alignItems: 'center',
   },
   card: {
+    width: '100%',
     backgroundColor: '#FFFFFF',
-    borderRadius: 24,
+    borderRadius: radius.xl,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.35,
-    shadowRadius: 20,
-    elevation: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    shadowRadius: 28,
+    elevation: 16,
+    borderWidth: 1.5,
+    borderColor: 'rgba(212, 175, 55, 0.35)',
   },
   header: {
     paddingVertical: spacing.lg,
     paddingHorizontal: spacing.md,
     alignItems: 'center',
-    position: 'relative',
+    justifyContent: 'center',
   },
   badgePill: {
-    backgroundColor: 'rgba(0, 0, 0, 0.25)',
+    backgroundColor: 'rgba(255, 255, 255, 0.22)',
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: radius.pill,
-    marginBottom: spacing.xs,
+    marginBottom: 4,
   },
   badgeText: {
     ...typography.tiny,
     color: '#FFFFFF',
-    fontWeight: '800',
-    letterSpacing: 0.5,
+    fontWeight: '900',
+    letterSpacing: 0.8,
   },
   headerTitle: {
     ...typography.h2,
     color: '#FFFFFF',
     fontWeight: '900',
-    marginTop: 4,
+    textAlign: 'center',
   },
   versionBadge: {
-    marginTop: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(0, 0, 0, 0.28)',
     paddingHorizontal: 12,
-    paddingVertical: 3,
-    borderRadius: radius.sm,
+    paddingVertical: 4,
+    borderRadius: radius.pill,
+    marginTop: 6,
   },
   versionText: {
     ...typography.small,
+    color: '#FDE68A',
+    fontWeight: '700',
+  },
+  sizeText: {
+    ...typography.small,
     color: '#FFFFFF',
-    fontWeight: '600',
+    fontWeight: '800',
   },
   notesContainer: {
     padding: spacing.md,
     backgroundColor: '#F8FAFC',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(226, 232, 240, 0.8)',
+    borderBottomColor: '#E2E8F0',
   },
   notesHeader: {
-    ...typography.tiny,
-    color: colors.textMuted,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    marginBottom: spacing.xs,
+    ...typography.small,
+    color: '#1E293B',
+    fontWeight: '800',
+    marginBottom: 6,
+  },
+  noteItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 6,
   },
   noteBullet: {
-    ...typography.small,
-    color: colors.goldDark,
+    fontSize: 14,
+    color: '#D97706',
     fontWeight: '900',
-    marginRight: 6,
+    lineHeight: 18,
   },
   noteText: {
     ...typography.small,
-    color: colors.text,
-    lineHeight: 18,
+    color: '#475569',
     flex: 1,
+    lineHeight: 18,
+    fontWeight: '600',
   },
   progressBox: {
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.md,
+    padding: spacing.md,
+    backgroundColor: '#FFFBEB',
+    borderBottomWidth: 1,
+    borderBottomColor: '#FEF3C7',
   },
   progressLabel: {
-    ...typography.tiny,
-    color: colors.textMuted,
-    fontWeight: '700',
+    ...typography.small,
+    color: '#92400E',
+    fontWeight: '800',
   },
   progressPct: {
-    ...typography.tiny,
-    color: colors.goldDark,
+    ...typography.small,
+    color: '#D97706',
     fontWeight: '900',
   },
   track: {
     height: 8,
     backgroundColor: '#E2E8F0',
     borderRadius: 4,
-    marginTop: 6,
     overflow: 'hidden',
+    marginTop: 8,
   },
   bar: {
     height: '100%',
-    backgroundColor: colors.gold,
+    backgroundColor: '#F59E0B',
     borderRadius: 4,
   },
   speedText: {
-    fontSize: 10.5,
-    color: colors.textMuted,
+    ...typography.tiny,
+    color: '#64748B',
     fontWeight: '700',
   },
-  readyCard: {
-    marginHorizontal: spacing.md,
-    marginTop: spacing.md,
+  readyBox: {
+    padding: spacing.md,
     backgroundColor: '#ECFDF5',
-    borderWidth: 1,
-    borderColor: '#BBF7D0',
-    borderRadius: radius.md,
-    padding: spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: '#A7F3D0',
+    alignItems: 'center',
   },
   readyText: {
     ...typography.small,
-    color: '#047857',
+    color: '#065F46',
     fontWeight: '800',
     textAlign: 'center',
   },
+  permissionHelper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#F1F5F9',
+  },
+  permissionText: {
+    fontSize: 10.5,
+    color: '#475569',
+    fontWeight: '600',
+  },
   actionColumn: {
     padding: spacing.md,
-    gap: spacing.sm,
+    gap: 10,
+  },
+  bgDownloadBtn: {
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1.5,
+    borderColor: '#CBD5E1',
+    paddingVertical: 10,
+    borderRadius: radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bgDownloadText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#475569',
   },
 });

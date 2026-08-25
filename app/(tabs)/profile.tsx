@@ -124,6 +124,9 @@ export default function Profile() {
   const currentVersion = useUpdateStore((s) => s.currentVersion);
   const latestVersion = useUpdateStore((s) => s.latestVersion);
   const triggerUpdateModal = useUpdateStore((s) => s.triggerUpdateModal);
+  const checkUpdatesManual = useUpdateStore((s) => s.checkUpdatesManual);
+  const isCheckingUpdates = useUpdateStore((s) => s.isChecking);
+  const manualCheckMessage = useUpdateStore((s) => s.manualCheckMessage);
 
   const [showLogoutOverlay, setShowLogoutOverlay] = useState(false);
 
@@ -357,10 +360,21 @@ export default function Profile() {
                   <Row icon="🚀" label={`Upgrade / Update App (v${currentVersion})`} onPress={() => triggerUpdateModal()} accent={colors.teal} />
                   <Row icon="👑" label={isVip ? `AstroVIP — ${vipPlanId} (Active)` : 'Get AstroVIP Pass'} onPress={() => router.push('/vip')} accent={colors.gold} />
                   <Row icon="📄" label="10-Page Kundli PDF Export" onPress={() => router.push('/kundli-pdf')} />
-                  <Row icon="🔄" label={`Check for In-App Updates · v${latestVersion}`} onPress={triggerUpdateModal} accent={colors.teal} />
+                  <Row
+                    icon="🔄"
+                    label={isCheckingUpdates ? 'Checking GitHub for updates…' : `Check for In-App Updates · v${currentVersion}`}
+                    onPress={checkUpdatesManual}
+                    accent={colors.teal}
+                  />
                   <Row icon="⚙️" label="Settings & Security Vault" onPress={() => router.push('/settings')} />
                   <Row icon="🚪" label="Sign Out" onPress={handleSignOut} accent={colors.danger} />
                 </Card>
+
+                {!!manualCheckMessage && (
+                  <View style={{ backgroundColor: '#ECFDF5', borderWidth: 1.2, borderColor: '#A7F3D0', borderRadius: radius.md, padding: spacing.md, marginTop: spacing.sm, alignItems: 'center' }}>
+                    <Text style={{ fontSize: 12.5, fontWeight: '800', color: '#065F46' }}>{manualCheckMessage}</Text>
+                  </View>
+                )}
               </View>
 
               {/* Danger zone */}

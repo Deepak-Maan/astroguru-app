@@ -7,6 +7,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { colors } from '../src/theme';
 import { useSettingsStore } from '../src/store/settingsStore';
 import { AppUpdateModal } from '../src/components/AppUpdateModal';
+import { UpdateInstallSnackbar } from '../src/components/UpdateInstallSnackbar';
 import { SecurityLockModal } from '../src/components/SecurityLockModal';
 import { NotificationToast } from '../src/components/NotificationToast';
 import { IncomingCallModal } from '../src/components/IncomingCallModal';
@@ -173,6 +174,7 @@ export default function RootLayout() {
           <NotificationToast />
           <IncomingCallModal />
           <AppUpdateModal />
+          <UpdateInstallSnackbar />
           <SecurityLockModal />
           <SecurityBlurShield />
         </SafeAreaProvider>
