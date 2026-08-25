@@ -1,0 +1,71 @@
+name: Build & Release Android APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-apk:
+    name: 🤖 Compile Standalone Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🏗 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: ☕ Setup Java Development Kit (JDK 17)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: 🤖 Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: 📦 Install Node Dependencies
+        run: npm install
+
+      - name: 🔨 Generate Android Native Release APK via Gradle
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon
+
+      - name: 🚀 Publish APK to GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: android/app/build/outputs/apk/release/app-release.apk
+          name: AstroGuru Official Release ${{ github.ref_name }}
+          body: |
+            ## 🌟 AstroGuru Release ${{ github.ref_name }}
+            
+            ### ✨ What's New:
+            - 👑 **Ultra-Premium Imperial Gold & Crystal Glass Design System**
+            - 💬 **Astrotalk-Grade 1-on-1 Chat, Voice Call & Live Streaming**
+            - 🧭 **Vedic Vastu Shastra Compass & 4-Pillar Love Meter**
+            - 🪙 **Daily Karma Streak & Coins Converter**
+            - 🎬 **9:16 Video Reels Devotee Stories & Story Player**
+            - 📲 **In-App Direct APK Streaming & Auto-Installer**
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 💾 Upload Build Artifact (APK)
+        uses: actions/upload-artifact@v4
+        with:
+          name: AstroGuru-APK-${{ github.ref_name || 'latest' }}
+          path: android/app/build/outputs/apk/release/*.apk
