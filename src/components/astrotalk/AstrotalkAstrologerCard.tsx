@@ -63,7 +63,7 @@ export function AstrotalkAstrologerCard({ astrologer, compact = false }: Props) 
       style={({ pressed }) => [
         styles.card,
         compact && styles.cardCompact,
-        pressed && { opacity: 0.95, transform: [{ scale: 0.99 }] },
+        pressed && { opacity: 0.96, transform: [{ scale: 0.99 }] },
       ]}
     >
       <View style={styles.topRow}>
@@ -90,7 +90,7 @@ export function AstrotalkAstrologerCard({ astrologer, compact = false }: Props) 
               {astrologer.name}
             </Text>
             <View style={styles.verifiedCheck}>
-              <Text style={{ fontSize: 9, color: '#FFFFFF', fontWeight: '900' }}>✓</Text>
+              <Text style={styles.verifiedCheckText}>✓</Text>
             </View>
           </View>
 
@@ -130,7 +130,7 @@ export function AstrotalkAstrologerCard({ astrologer, compact = false }: Props) 
       <View style={styles.actionsFooter}>
         <Pressable
           onPress={handleChat}
-          style={({ pressed }) => [styles.chatBtn, pressed && { opacity: 0.85 }]}
+          style={({ pressed }) => [styles.chatBtn, pressed && { opacity: 0.88 }]}
         >
           <LinearGradient
             colors={['#FFC107', '#F59E0B']}
@@ -144,7 +144,7 @@ export function AstrotalkAstrologerCard({ astrologer, compact = false }: Props) 
         {astrologer.online ? (
           <Pressable
             onPress={handleCall}
-            style={({ pressed }) => [styles.callBtn, pressed && { opacity: 0.85 }]}
+            style={({ pressed }) => [styles.callBtn, pressed && { opacity: 0.85, backgroundColor: '#F0FDF4' }]}
           >
             <Text style={styles.callBtnText}>📞 Call (₹{callPrice}/m)</Text>
           </Pressable>
@@ -176,29 +176,30 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginVertical: 6,
     borderWidth: 1,
-    borderColor: '#F0F0F0',
+    borderColor: '#EFEFEF',
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 3,
+    shadowRadius: 8,
+    elevation: 2,
   },
   cardCompact: {
-    width: 280,
+    width: 320,
     marginHorizontal: 6,
   },
   topRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: 12,
   },
   avatarWrapper: {
     alignItems: 'center',
-    width: 76,
+    width: 72,
   },
   avatar: {
-    width: 74,
-    height: 74,
-    borderRadius: 37,
+    width: 68,
+    height: 68,
+    borderRadius: 34,
     backgroundColor: '#F3F4F6',
     borderWidth: 2,
     borderColor: '#FFC107',
@@ -209,7 +210,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ECFDF5',
     borderWidth: 1,
     borderColor: '#A7F3D0',
-    paddingHorizontal: 6,
+    paddingHorizontal: 7,
     paddingVertical: 2,
     borderRadius: radius.pill,
     marginTop: -10,
@@ -222,7 +223,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#10B981',
   },
   onlineText: {
-    fontSize: 9,
+    fontSize: 9.5,
     fontWeight: '800',
     color: '#059669',
   },
@@ -230,13 +231,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#FEF3C7',
     borderWidth: 1,
     borderColor: '#FDE68A',
-    paddingHorizontal: 6,
+    paddingHorizontal: 7,
     paddingVertical: 2,
     borderRadius: radius.pill,
     marginTop: -10,
   },
   busyText: {
-    fontSize: 9,
+    fontSize: 9.5,
     fontWeight: '800',
     color: '#D97706',
   },
@@ -251,17 +252,24 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   nameText: {
-    fontSize: 15,
+    fontSize: 15.5,
     fontWeight: '900',
     color: '#1A1A1A',
+    flexShrink: 1,
   },
   verifiedCheck: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+    width: 15,
+    height: 15,
+    borderRadius: 7.5,
     backgroundColor: '#2563EB',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  verifiedCheckText: {
+    fontSize: 9,
+    color: '#FFFFFF',
+    fontWeight: '900',
+    lineHeight: 11,
   },
   specialtiesText: {
     fontSize: 11.5,
@@ -294,10 +302,10 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   ratingStar: {
-    fontSize: 10,
+    fontSize: 10.5,
   },
   ratingText: {
-    fontSize: 11,
+    fontSize: 11.5,
     fontWeight: '900',
     color: '#1A1A1A',
   },
@@ -313,7 +321,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   priceCurrent: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '900',
     color: '#059669',
   },
@@ -327,37 +335,27 @@ const styles = StyleSheet.create({
     backgroundColor: '#ECFDF5',
     borderWidth: 1,
     borderColor: '#A7F3D0',
-    paddingHorizontal: 5,
-    paddingVertical: 1.5,
-    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    marginLeft: 'auto',
   },
   freeDealText: {
-    fontSize: 9,
-    fontWeight: '900',
+    fontSize: 9.5,
+    fontWeight: '800',
     color: '#059669',
-  },
-  discountBadge: {
-    backgroundColor: '#FEE2E2',
-    paddingHorizontal: 4,
-    paddingVertical: 1.5,
-    borderRadius: 4,
-  },
-  discountText: {
-    fontSize: 8.5,
-    fontWeight: '900',
-    color: '#DC2626',
   },
   actionsFooter: {
     flexDirection: 'row',
     gap: 8,
-    marginTop: 10,
+    marginTop: 12,
     paddingTop: 10,
     borderTopWidth: 1,
     borderTopColor: '#F3F4F6',
   },
   chatBtn: {
     flex: 1,
-    height: 38,
+    height: 40,
     borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
@@ -369,13 +367,13 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   chatBtnText: {
-    fontSize: 12.5,
+    fontSize: 13,
     fontWeight: '900',
     color: '#1A1A1A',
   },
   callBtn: {
     flex: 1,
-    height: 38,
+    height: 40,
     borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
@@ -384,13 +382,13 @@ const styles = StyleSheet.create({
     borderColor: '#059669',
   },
   callBtnText: {
-    fontSize: 12,
+    fontSize: 12.5,
     fontWeight: '900',
     color: '#059669',
   },
   notifyBtn: {
     flex: 1,
-    height: 38,
+    height: 40,
     borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
@@ -399,7 +397,7 @@ const styles = StyleSheet.create({
     borderColor: '#F59E0B',
   },
   notifyBtnText: {
-    fontSize: 11.5,
+    fontSize: 12,
     fontWeight: '900',
     color: '#D97706',
   },
