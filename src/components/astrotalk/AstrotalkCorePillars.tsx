@@ -9,13 +9,22 @@ import {
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
-import { colors, radius, spacing } from '../../theme';
+import { radius, spacing } from '../../theme';
 
-interface Props {
-  onSelectService?: (service: string) => void;
+interface Pillar {
+  id: string;
+  title: string;
+  subtitle: string;
+  badge?: string;
+  icon: string;
+  route: string;
+  bgGradient: string[];
+  border: string;
+  iconBg: string;
+  accent: string;
 }
 
-export function AstrotalkCorePillars({ onSelectService }: Props) {
+export function AstrotalkCorePillars() {
   const router = useRouter();
 
   const handlePress = (route: string) => {
@@ -27,15 +36,15 @@ export function AstrotalkCorePillars({ onSelectService }: Props) {
     router.push(route as never);
   };
 
-  const PILLARS = [
+  const PILLARS: Pillar[] = [
     {
       id: 'chat',
       title: 'Chat with\nAstrologer',
-      subtitle: '500+ Online • ₹10/min',
+      subtitle: 'Instant 1-on-1 Chat',
       badge: 'POPULAR',
       icon: '💬',
       route: '/(tabs)/consult',
-      bgGradient: ['#FFFFFF', '#FFFBEB'],
+      bgGradient: ['#FFFFFF', '#FFFDF5', '#FFFBEB'],
       border: '#FDE68A',
       iconBg: '#FEF3C7',
       accent: '#D97706',
@@ -43,11 +52,11 @@ export function AstrotalkCorePillars({ onSelectService }: Props) {
     {
       id: 'call',
       title: 'Talk to\nAstrologer',
-      subtitle: 'Instant Voice Call',
-      badge: 'HOT',
+      subtitle: 'Voice Consultation',
+      badge: '⚡ FAST',
       icon: '📞',
       route: '/(tabs)/consult',
-      bgGradient: ['#FFFFFF', '#ECFDF5'],
+      bgGradient: ['#FFFFFF', '#F7FDF9', '#ECFDF5'],
       border: '#A7F3D0',
       iconBg: '#D1FAE5',
       accent: '#059669',
@@ -59,7 +68,7 @@ export function AstrotalkCorePillars({ onSelectService }: Props) {
       badge: '🔴 LIVE',
       icon: '📹',
       route: '/live-darshan',
-      bgGradient: ['#FFFFFF', '#FEF2F2'],
+      bgGradient: ['#FFFFFF', '#FFF8F8', '#FEF2F2'],
       border: '#FECACA',
       iconBg: '#FEE2E2',
       accent: '#DC2626',
@@ -71,7 +80,7 @@ export function AstrotalkCorePillars({ onSelectService }: Props) {
       badge: 'CERTIFIED',
       icon: '🛍️',
       route: '/store',
-      bgGradient: ['#FFFFFF', '#F5F3FF'],
+      bgGradient: ['#FFFFFF', '#FAF8FF', '#F5F3FF'],
       border: '#DDD6FE',
       iconBg: '#EDE9FE',
       accent: '#7C3AED',
@@ -81,38 +90,48 @@ export function AstrotalkCorePillars({ onSelectService }: Props) {
   return (
     <View style={styles.container}>
       <View style={styles.grid}>
-        {PILLARS.map((item) => (
+        {PILLARS.map((p) => (
           <Pressable
-            key={item.id}
-            onPress={() => handlePress(item.route)}
+            key={p.id}
+            onPress={() => handlePress(p.route)}
             style={({ pressed }) => [
               styles.pillarCard,
-              { borderColor: item.border },
-              pressed && { opacity: 0.88, transform: [{ scale: 0.97 }] },
+              { borderColor: p.border },
+              pressed && { opacity: 0.92, transform: [{ scale: 0.97 }] },
             ]}
           >
             <LinearGradient
-              colors={item.bgGradient as any}
+              colors={p.bgGradient as any}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={StyleSheet.absoluteFill}
             />
 
-            {/* Top Pill Badge */}
-            <View style={[styles.badge, { backgroundColor: item.accent }]}>
-              <Text style={styles.badgeText}>{item.badge}</Text>
-            </View>
+            {/* Top Specular Edge */}
+            <View style={styles.specularTopEdge} />
+
+            {/* Badge Ribbon */}
+            {p.badge && (
+              <View style={[styles.badgePill, { backgroundColor: p.accent }]}>
+                <Text style={styles.badgeText}>{p.badge}</Text>
+              </View>
+            )}
 
             {/* Icon Bubble */}
-            <View style={[styles.iconCircle, { backgroundColor: item.iconBg }]}>
-              <Text style={{ fontSize: 26 }}>{item.icon}</Text>
+            <View style={[styles.iconCircle, { backgroundColor: p.iconBg }]}>
+              <Text style={{ fontSize: 24 }}>{p.icon}</Text>
             </View>
 
             {/* Title & Subtitle */}
-            <Text style={styles.pillarTitle}>{item.title}</Text>
-            <Text style={styles.pillarSubtitle} numberOfLines={1}>
-              {item.subtitle}
-            </Text>
+            <View style={styles.textWrap}>
+              <Text style={styles.titleText}>{p.title}</Text>
+              <Text style={styles.subText}>{p.subtitle}</Text>
+            </View>
+
+            {/* Arrow Action */}
+            <View style={styles.arrowRow}>
+              <Text style={[styles.arrowText, { color: p.accent }]}>Connect ➔</Text>
+            </View>
           </Pressable>
         ))}
       </View>
@@ -123,35 +142,47 @@ export function AstrotalkCorePillars({ onSelectService }: Props) {
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 16,
-    marginVertical: spacing.xs,
+    paddingTop: 12,
+    paddingBottom: 4,
   },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
     justifyContent: 'space-between',
+    gap: 12,
   },
   pillarCard: {
-    width: '48.5%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 18,
+    width: '48%',
+    height: 154,
+    borderRadius: 22,
     padding: 12,
+    justifyContent: 'space-between',
     borderWidth: 1.5,
     overflow: 'hidden',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
     position: 'relative',
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.08,
+    shadowRadius: 14,
+    elevation: 3,
   },
-  badge: {
+  specularTopEdge: {
     position: 'absolute',
-    top: 8,
-    right: 8,
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 1.5,
+    backgroundColor: 'rgba(255, 255, 255, 1.0)',
+    zIndex: 2,
+  },
+  badgePill: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: radius.pill,
+    zIndex: 3,
   },
   badgeText: {
     color: '#FFFFFF',
@@ -160,23 +191,34 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   iconCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.9)',
   },
-  pillarTitle: {
-    fontSize: 14,
+  textWrap: {
+    gap: 2,
+  },
+  titleText: {
+    fontSize: 14.5,
     fontWeight: '900',
-    color: '#1A1A1A',
+    color: '#0F172A',
     lineHeight: 18,
   },
-  pillarSubtitle: {
+  subText: {
     fontSize: 10.5,
-    color: '#6B7280',
+    color: '#64748B',
     fontWeight: '600',
-    marginTop: 3,
+  },
+  arrowRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  arrowText: {
+    fontSize: 11,
+    fontWeight: '900',
   },
 });

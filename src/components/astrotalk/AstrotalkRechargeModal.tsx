@@ -6,67 +6,77 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
-import { colors, radius, spacing } from '../../theme';
+import { radius, spacing } from '../../theme';
 import { useWalletStore } from '../../store/walletStore';
+import { launchUpiPayment } from '../../services/paymentService';
 
 interface Props {
   visible: boolean;
   onClose: () => void;
 }
 
-const RECHARGE_PACKS = [
-  { amount: 50, cashback: '₹50 Balance', extra: '', popular: false },
-  { amount: 100, cashback: 'Get ₹200', extra: '100% Extra', popular: true },
-  { amount: 200, cashback: 'Get ₹400', extra: '100% Extra', popular: false },
-  { amount: 500, cashback: 'Get ₹1,100', extra: '120% Bonus', popular: true },
-  { amount: 1000, cashback: 'Get ₹2,500', extra: '150% Mega', popular: false },
-  { amount: 2000, cashback: 'Get ₹5,500', extra: 'VIP 175%', popular: false },
+interface RechargePack {
+  id: string;
+  amount: number;
+  bonus: number;
+  tag?: string;
+  badgeColor?: string;
+  popular?: boolean;
+}
+
+const PACKS: RechargePack[] = [
+  { id: 'p1', amount: 50, bonus: 50, tag: '100% EXTRA', popular: false },
+  { id: 'p2', amount: 100, bonus: 100, tag: 'MOST POPULAR', popular: true },
+  { id: 'p3', amount: 200, bonus: 200, tag: '100% EXTRA', popular: false },
+  { id: 'p4', amount: 500, bonus: 500, tag: 'MEGA SAVER', popular: false },
+  { id: 'p5', amount: 1000, bonus: 1000, tag: 'VIP BONUS', popular: false },
+  { id: 'p6', amount: 2000, bonus: 2000, tag: 'ACHARYA PACK', popular: false },
 ];
 
 export function AstrotalkRechargeModal({ visible, onClose }: Props) {
   const balance = useWalletStore((s) => s.balance ?? 100);
   const topup = useWalletStore((s) => s.topup);
-  const [selectedAmount, setSelectedAmount] = useState<number>(100);
-  const [customAmount, setCustomAmount] = useState<string>('');
-  const [isSuccess, setIsSuccess] = useState<boolean>(false);
 
-  const handleSelectPack = (amt: number) => {
+  const [selectedPack, setSelectedPack] = useState<RechargePack>(PACKS[1]);
+  const [loading, setLoading] = useState(false);
+  const [successNotice, setSuccessNotice] = useState<string | null>(null);
+
+  const handleSelect = (pack: RechargePack) => {
     try {
       if (Platform.OS !== 'web') {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       }
     } catch (_) {}
-    setSelectedAmount(amt);
-    setCustomAmount('');
+    setSelectedPack(pack);
   };
 
-  const handlePay = () => {
-    const finalAmount = customAmount ? parseFloat(customAmount) : selectedAmount;
-    if (isNaN(finalAmount) || finalAmount <= 0) return;
-
+  const handleProceedPay = async () => {
+    setLoading(true);
     try {
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
     } catch (_) {}
 
-    // Calculate bonus credit
-    let bonusMultiplier = 1;
-    if (finalAmount >= 1000) bonusMultiplier = 2.5;
-    else if (finalAmount >= 500) bonusMultiplier = 2.2;
-    else if (finalAmount >= 100) bonusMultiplier = 2.0;
+    const txnId = `AGW${Date.now().toString().slice(-6)}`;
+    await launchUpiPayment({
+      app: 'generic',
+      amount: selectedPack.amount,
+      txnId,
+    });
 
-    const creditAmount = finalAmount * bonusMultiplier;
-    topup(creditAmount, `Recharge ₹${finalAmount} (+${((bonusMultiplier - 1) * 100).toFixed(0)}% Bonus)`);
+    const totalCredit = selectedPack.amount + selectedPack.bonus;
+    topup(totalCredit, `Instant Wallet Recharge (₹${selectedPack.amount} + ₹${selectedPack.bonus} Bonus)`);
 
-    setIsSuccess(true);
+    setSuccessNotice(`₹${totalCredit} successfully added to your AstroGuru Wallet!`);
+    setLoading(false);
+
     setTimeout(() => {
-      setIsSuccess(false);
+      setSuccessNotice(null);
       onClose();
     }, 1800);
   };
@@ -88,90 +98,90 @@ export function AstrotalkRechargeModal({ visible, onClose }: Props) {
             </Pressable>
           </View>
 
-          {/* Success State */}
-          {isSuccess ? (
-            <View style={styles.successBox}>
-              <Text style={{ fontSize: 50 }}>🎉</Text>
-              <Text style={styles.successTitle}>Recharge Successful!</Text>
-              <Text style={styles.successSub}>Your wallet balance has been updated instantly.</Text>
+          {/* Success Banner */}
+          {!!successNotice && (
+            <View style={styles.successBanner}>
+              <Text style={{ fontSize: 20 }}>🎉</Text>
+              <Text style={styles.successText}>{successNotice}</Text>
             </View>
-          ) : (
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: spacing.md }}>
-              {/* Promo Cashback Banner */}
-              <View style={styles.promoBanner}>
-                <LinearGradient
-                  colors={['#FFFBEB', '#FEF3C7']}
-                  style={StyleSheet.absoluteFill}
-                />
-                <Text style={{ fontSize: 24 }}>🎁</Text>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.promoTitle}>100% EXTRA CASHBACK</Text>
-                  <Text style={styles.promoSub}>Recharge ₹100 or more & get double balance for consultations!</Text>
-                </View>
-              </View>
-
-              {/* Recharge Packs Grid */}
-              <Text style={styles.sectionLabel}>Select Recharge Pack</Text>
-              <View style={styles.packsGrid}>
-                {RECHARGE_PACKS.map((pack) => {
-                  const isSelected = selectedAmount === pack.amount && !customAmount;
-                  return (
-                    <Pressable
-                      key={pack.amount}
-                      onPress={() => handleSelectPack(pack.amount)}
-                      style={[
-                        styles.packCard,
-                        isSelected && styles.packCardSelected,
-                      ]}
-                    >
-                      {pack.extra ? (
-                        <View style={[styles.extraPill, isSelected && { backgroundColor: '#F59E0B' }]}>
-                          <Text style={styles.extraText}>{pack.extra}</Text>
-                        </View>
-                      ) : null}
-                      <Text style={styles.packAmount}>₹{pack.amount}</Text>
-                      <Text style={styles.packCashback}>{pack.cashback}</Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-
-              {/* Custom Amount Input */}
-              <Text style={[styles.sectionLabel, { marginTop: 14 }]}>Or Enter Custom Amount (₹)</Text>
-              <View style={styles.inputRow}>
-                <Text style={styles.currencySymbol}>₹</Text>
-                <TextInput
-                  placeholder="e.g. 250"
-                  placeholderTextColor="#9CA3AF"
-                  keyboardType="numeric"
-                  value={customAmount}
-                  onChangeText={(val) => {
-                    setCustomAmount(val);
-                    setSelectedAmount(0);
-                  }}
-                  style={styles.textInput}
-                />
-              </View>
-
-              {/* Pay Button */}
-              <Pressable
-                onPress={handlePay}
-                style={({ pressed }) => [styles.payBtn, pressed && { opacity: 0.88, transform: [{ scale: 0.985 }] }]}
-              >
-                <LinearGradient
-                  colors={['#FFC107', '#F59E0B']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={StyleSheet.absoluteFill}
-                />
-                <Text style={styles.payBtnText}>
-                  Proceed to Pay ₹{customAmount || selectedAmount} ➔
-                </Text>
-              </Pressable>
-
-              <Text style={styles.secureText}>🔒 256-Bit SSL Encrypted • Instant 100% Refund Guarantee</Text>
-            </ScrollView>
           )}
+
+          {/* Promotional Banner */}
+          <View style={styles.offerBanner}>
+            <LinearGradient
+              colors={['#78350F', '#B45309', '#D97706']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={StyleSheet.absoluteFill}
+            />
+            <Text style={{ fontSize: 28 }}>🎁</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.offerTitle}>Get 100% Extra Cashback</Text>
+              <Text style={styles.offerSub}>Recharge ₹100 and get ₹200 wallet balance instantly!</Text>
+            </View>
+          </View>
+
+          {/* Recharge Packs Grid */}
+          <ScrollView contentContainerStyle={styles.packsGrid} showsVerticalScrollIndicator={false}>
+            {PACKS.map((pack) => {
+              const active = selectedPack.id === pack.id;
+              return (
+                <Pressable
+                  key={pack.id}
+                  onPress={() => handleSelect(pack)}
+                  style={[
+                    styles.packCard,
+                    active && styles.packCardActive,
+                  ]}
+                >
+                  {active && (
+                    <LinearGradient
+                      colors={['#FFFBEB', '#FEF3C7']}
+                      style={StyleSheet.absoluteFill}
+                    />
+                  )}
+
+                  {pack.tag && (
+                    <View style={[styles.packTag, pack.popular && { backgroundColor: '#D97706' }]}>
+                      <Text style={styles.packTagText}>{pack.tag}</Text>
+                    </View>
+                  )}
+
+                  <Text style={styles.packAmount}>₹{pack.amount}</Text>
+                  <Text style={styles.packBonus}>+ ₹{pack.bonus} Free Cash</Text>
+                  <Text style={styles.packTotal}>Total: ₹{pack.amount + pack.bonus}</Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+
+          {/* Footer Checkout CTA */}
+          <View style={styles.footer}>
+            <View style={styles.footerInfo}>
+              <Text style={styles.footerPayAmount}>
+                Pay <Text style={{ color: '#D97706', fontWeight: '900' }}>₹{selectedPack.amount}</Text>
+              </Text>
+              <Text style={styles.footerGetAmount}>
+                Get ₹{selectedPack.amount + selectedPack.bonus} in Wallet
+              </Text>
+            </View>
+
+            <Pressable
+              onPress={handleProceedPay}
+              disabled={loading}
+              style={({ pressed }) => [styles.payBtn, pressed && { opacity: 0.88 }]}
+            >
+              <LinearGradient
+                colors={['#D4AF37', '#F59E0B']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={StyleSheet.absoluteFill}
+              />
+              <Text style={styles.payBtnText}>
+                {loading ? 'Processing…' : 'Proceed to Pay ➔'}
+              </Text>
+            </Pressable>
+          </View>
         </View>
       </View>
     </Modal>
@@ -188,174 +198,188 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
+    paddingTop: 18,
     maxHeight: '85%',
-    overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: -6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 10,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: spacing.md,
+    paddingHorizontal: 20,
+    paddingBottom: 14,
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
   },
   headerTitle: {
     fontSize: 16,
     fontWeight: '900',
-    color: '#1A1A1A',
+    color: '#0F172A',
   },
   headerSub: {
     fontSize: 12,
-    color: '#6B7280',
+    color: '#64748B',
     marginTop: 2,
   },
   closeBtn: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#F1F5F9',
     alignItems: 'center',
     justifyContent: 'center',
   },
   closeBtnText: {
     fontSize: 14,
     fontWeight: '900',
-    color: '#4B5563',
+    color: '#64748B',
   },
-  promoBanner: {
+  successBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
+    backgroundColor: '#ECFDF5',
+    marginHorizontal: 16,
+    marginTop: 10,
     padding: 12,
-    borderRadius: 16,
-    borderWidth: 1.2,
-    borderColor: '#FDE68A',
-    overflow: 'hidden',
-    marginBottom: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
   },
-  promoTitle: {
+  successText: {
     fontSize: 12,
     fontWeight: '900',
-    color: '#D97706',
+    color: '#065F46',
+    flex: 1,
   },
-  promoSub: {
-    fontSize: 11,
-    color: '#6B7280',
-    lineHeight: 15,
-  },
-  sectionLabel: {
-    fontSize: 13,
-    fontWeight: '900',
-    color: '#1F2937',
+  offerBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginHorizontal: 16,
+    marginTop: 14,
     marginBottom: 8,
+    padding: 14,
+    borderRadius: 18,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+  },
+  offerTitle: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '900',
+  },
+  offerSub: {
+    color: '#FEF3C7',
+    fontSize: 10.5,
+    fontWeight: '600',
+    marginTop: 2,
   },
   packsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
     justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    gap: 10,
   },
   packCard: {
     width: '31%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    backgroundColor: '#FAFAFA',
+    borderRadius: 18,
     borderWidth: 1.5,
     borderColor: '#E5E7EB',
-    padding: 10,
+    paddingVertical: 14,
+    paddingHorizontal: 8,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
-    gap: 2,
+    overflow: 'hidden',
   },
-  packCardSelected: {
+  packCardActive: {
     borderColor: '#F59E0B',
-    backgroundColor: '#FFFBEB',
+    shadowColor: '#F59E0B',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 3,
   },
-  extraPill: {
+  packTag: {
     position: 'absolute',
-    top: -8,
+    top: 0,
+    right: 0,
+    left: 0,
     backgroundColor: '#059669',
-    paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: radius.pill,
+    alignItems: 'center',
   },
-  extraText: {
-    fontSize: 8,
-    fontWeight: '900',
+  packTagText: {
     color: '#FFFFFF',
+    fontSize: 7.5,
+    fontWeight: '900',
   },
   packAmount: {
     fontSize: 18,
     fontWeight: '900',
-    color: '#1A1A1A',
-    marginTop: 4,
+    color: '#0F172A',
+    marginTop: 6,
   },
-  packCashback: {
+  packBonus: {
     fontSize: 10,
     fontWeight: '800',
     color: '#059669',
+    marginTop: 2,
   },
-  inputRow: {
+  packTotal: {
+    fontSize: 9.5,
+    color: '#64748B',
+    marginTop: 2,
+    fontWeight: '600',
+  },
+  footer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F9FAFB',
-    borderWidth: 1.5,
-    borderColor: '#E5E7EB',
-    borderRadius: 14,
-    paddingHorizontal: 12,
-    height: 48,
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderTopWidth: 1,
+    borderTopColor: '#F0F0F0',
+    backgroundColor: '#FFFFFF',
   },
-  currencySymbol: {
-    fontSize: 18,
-    fontWeight: '900',
-    color: '#1A1A1A',
-    marginRight: 6,
+  footerInfo: {
+    gap: 2,
   },
-  textInput: {
-    flex: 1,
+  footerPayAmount: {
     fontSize: 16,
-    fontWeight: '800',
-    color: '#1A1A1A',
+    fontWeight: '900',
+    color: '#0F172A',
+  },
+  footerGetAmount: {
+    fontSize: 11,
+    color: '#059669',
+    fontWeight: '700',
   },
   payBtn: {
-    height: 50,
+    height: 44,
+    paddingHorizontal: 20,
     borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 18,
     overflow: 'hidden',
     shadowColor: '#F59E0B',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.35,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowRadius: 6,
+    elevation: 3,
   },
   payBtnText: {
-    fontSize: 15,
+    fontSize: 13.5,
     fontWeight: '900',
     color: '#1A1A1A',
-  },
-  secureText: {
-    fontSize: 10.5,
-    color: '#9CA3AF',
-    textAlign: 'center',
-    marginTop: 10,
-    fontWeight: '600',
-  },
-  successBox: {
-    padding: spacing.xxl,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  successTitle: {
-    fontSize: 20,
-    fontWeight: '900',
-    color: '#059669',
-  },
-  successSub: {
-    fontSize: 13,
-    color: '#6B7280',
-    textAlign: 'center',
   },
 });

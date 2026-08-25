@@ -8,7 +8,17 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { colors, radius, spacing } from '../../theme';
+import { radius, spacing } from '../../theme';
+
+interface ServiceItem {
+  id: string;
+  title: string;
+  icon: string;
+  badge?: string;
+  bg: string;
+  border: string;
+  route: string;
+}
 
 export function AstrotalkFreeServicesGrid() {
   const router = useRouter();
@@ -22,7 +32,7 @@ export function AstrotalkFreeServicesGrid() {
     router.push(route as never);
   };
 
-  const SERVICES = [
+  const SERVICES: ServiceItem[] = [
     { id: 'kundli', title: 'Free Kundli', icon: '🪐', badge: '10-Pg', bg: '#FFFBEB', border: '#FDE68A', route: '/(tabs)/kundli' },
     { id: 'matching', title: 'Matching', icon: '💖', badge: '36 Guna', bg: '#FDF2F8', border: '#FBCFE8', route: '/matching' },
     { id: 'lovemeter', title: 'Love Meter', icon: '❤️', badge: 'New', bg: '#FFF1F2', border: '#FECDD3', route: '/love-meter' },
@@ -38,8 +48,10 @@ export function AstrotalkFreeServicesGrid() {
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
-        <Text style={styles.sectionTitle}>✨ Complimentary Vedic Tools</Text>
-        <Text style={styles.sectionSub}>100% Free Calculations</Text>
+        <View>
+          <Text style={styles.sectionTitle}>✨ Complimentary Vedic Tools</Text>
+          <Text style={styles.sectionSub}>100% Free Calculations & Instant Reports</Text>
+        </View>
       </View>
 
       <View style={styles.grid}>
@@ -53,14 +65,19 @@ export function AstrotalkFreeServicesGrid() {
               pressed && { opacity: 0.8, transform: [{ scale: 0.94 }] },
             ]}
           >
+            {/* Top Specular Edge */}
+            <View style={styles.specularTopEdge} />
+
             {item.badge && (
               <View style={styles.badge}>
                 <Text style={styles.badgeText}>{item.badge}</Text>
               </View>
             )}
+
             <View style={styles.iconWrapper}>
               <Text style={{ fontSize: 24 }}>{item.icon}</Text>
             </View>
+
             <Text style={styles.itemTitle} numberOfLines={1}>
               {item.title}
             </Text>
@@ -74,55 +91,63 @@ export function AstrotalkFreeServicesGrid() {
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 16,
-    marginVertical: spacing.sm,
+    paddingTop: 16,
+    paddingBottom: 4,
   },
   headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     marginBottom: 10,
   },
   sectionTitle: {
     fontSize: 16,
     fontWeight: '900',
-    color: '#1A1A1A',
+    color: '#0F172A',
   },
   sectionSub: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#F59E0B',
+    fontSize: 11.5,
+    color: '#64748B',
+    fontWeight: '600',
+    marginTop: 1,
   },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
     justifyContent: 'space-between',
+    gap: 8,
   },
   itemCell: {
-    width: '23%',
-    aspectRatio: 0.92,
+    width: '18.2%',
+    minWidth: 62,
+    aspectRatio: 0.9,
     borderRadius: 16,
     borderWidth: 1.2,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 6,
+    padding: 4,
     position: 'relative',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
+    overflow: 'hidden',
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
     elevation: 2,
+  },
+  specularTopEdge: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
   },
   badge: {
     position: 'absolute',
-    top: -4,
-    right: -4,
-    backgroundColor: '#F59E0B',
+    top: 3,
+    right: 3,
+    backgroundColor: '#D97706',
     paddingHorizontal: 4,
-    paddingVertical: 1.5,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: '#FFFFFF',
+    paddingVertical: 1,
+    borderRadius: 4,
+    zIndex: 2,
   },
   badgeText: {
     color: '#FFFFFF',
@@ -130,12 +155,12 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   iconWrapper: {
-    marginBottom: 4,
+    marginBottom: 3,
   },
   itemTitle: {
-    fontSize: 10,
+    fontSize: 9.5,
     fontWeight: '800',
-    color: '#1F2937',
+    color: '#1E293B',
     textAlign: 'center',
   },
 });
