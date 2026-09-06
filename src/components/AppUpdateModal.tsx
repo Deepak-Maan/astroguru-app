@@ -19,10 +19,13 @@ export function AppUpdateModal() {
     speedKbps,
     isDownloading,
     isReadyToInstall,
+    downloadError,
     startDownload,
     installUpdate,
+    openDirectDownloadInBrowser,
     dismissUpdate,
     openPermissionSettings,
+    clearDownloadError,
   } = useUpdateStore();
 
   if (Platform.OS === 'web' || !updateAvailable) return null;
@@ -75,7 +78,7 @@ export function AppUpdateModal() {
             {/* Release Notes */}
             <View style={styles.notesContainer}>
               <Text style={styles.notesHeader}>🎁 What's New in v{latestVersion}:</Text>
-              <ScrollView style={{ maxHeight: 140 }} contentContainerStyle={{ gap: 8 }} showsVerticalScrollIndicator={false}>
+              <ScrollView style={{ maxHeight: 130 }} contentContainerStyle={{ gap: 8 }} showsVerticalScrollIndicator={false}>
                 {releaseNotes.map((note, index) => (
                   <View key={index} style={styles.noteItem}>
                     <Text style={styles.noteBullet}>•</Text>
@@ -84,6 +87,14 @@ export function AppUpdateModal() {
                 ))}
               </ScrollView>
             </View>
+
+            {/* Download Error Banner if any */}
+            {!!downloadError && (
+              <View style={styles.errorBox}>
+                <Text style={styles.errorTitle}>⚠️ Download Notice</Text>
+                <Text style={styles.errorText}>{downloadError}</Text>
+              </View>
+            )}
 
             {/* Download Progress Bar */}
             {isDownloading && (
@@ -159,20 +170,27 @@ export function AppUpdateModal() {
               ) : (
                 <>
                   <Button
-                    label={`📥 Download & Install (${totalMb} MB)`}
+                    label={downloadError ? `🔄 Retry In-App Download` : `📥 Download & Install (${totalMb} MB)`}
                     variant="gold"
                     size="md"
                     onPress={handleForegroundDownload}
                   />
 
-                  {!isMandatory && (
+                  {downloadError ? (
+                    <Pressable
+                      onPress={openDirectDownloadInBrowser}
+                      style={({ pressed }) => [styles.bgDownloadBtn, pressed && { opacity: 0.85 }]}
+                    >
+                      <Text style={styles.bgDownloadText}>🌐 Direct Download APK (Browser Link)</Text>
+                    </Pressable>
+                  ) : !isMandatory ? (
                     <Pressable
                       onPress={handleBackgroundDownload}
                       style={({ pressed }) => [styles.bgDownloadBtn, pressed && { opacity: 0.85 }]}
                     >
                       <Text style={styles.bgDownloadText}>⏳ Download in Background</Text>
                     </Pressable>
-                  )}
+                  ) : null}
                 </>
               )}
 
@@ -297,6 +315,24 @@ const styles = StyleSheet.create({
     flex: 1,
     lineHeight: 18,
     fontWeight: '600',
+  },
+  errorBox: {
+    padding: spacing.md,
+    backgroundColor: '#FEF2F2',
+    borderBottomWidth: 1,
+    borderBottomColor: '#FECACA',
+  },
+  errorTitle: {
+    ...typography.small,
+    color: '#991B1B',
+    fontWeight: '800',
+    marginBottom: 2,
+  },
+  errorText: {
+    fontSize: 11.5,
+    color: '#B91C1C',
+    fontWeight: '600',
+    lineHeight: 16,
   },
   progressBox: {
     padding: spacing.md,

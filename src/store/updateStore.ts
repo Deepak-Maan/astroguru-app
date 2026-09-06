@@ -1,8 +1,9 @@
-import { Platform } from 'react-native';
+import { Platform, Linking } from 'react-native';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { inAppUpdateEngine, UpdateDownloadProgress, getDirectApkDownloadUrl } from '../services/updates/inAppUpdateEngine';
+import * as Application from 'expo-application';
+import { inAppUpdateEngine, UpdateDownloadProgress, getDirectApkDownloadUrl, FALLBACK_RELEASE_APK_URL } from '../services/updates/inAppUpdateEngine';
 import { syncLatestAppVersionToFirebase } from '../services/firebaseRealtimeService';
 
 export const LATEST_RELEASE_VERSION = '2.8.8';
@@ -28,25 +29,31 @@ export interface UpdateInfo {
   lastCheckedTime: string | null;
   isChecking: boolean;
   manualCheckMessage: string | null;
+  downloadError: string | null;
 }
 
 export interface UpdateActions {
   checkForUpdates: () => Promise<{ isNewAvailable: boolean; currentVersion: string; latestVersion: string }>;
   checkUpdatesManual: () => Promise<void>;
+  autoCheckAndFetchOnStartup: () => Promise<void>;
   startDownload: (background?: boolean) => Promise<void>;
   downloadDirectApk: () => Promise<void>;
+  openDirectDownloadInBrowser: () => Promise<void>;
   installUpdate: () => Promise<void>;
   dismissUpdate: () => void;
   dismissInstallSnackbar: () => void;
-  broadcastUpdate: (newVer: string, notes: string[], mandatory?: boolean) => void;
+  broadcastUpdate: (newVer: string, notes: string[], mandatory?: boolean, apkUrl?: string) => void;
   triggerUpdateModal: () => void;
   openPermissionSettings: () => Promise<void>;
+  clearDownloadError: () => void;
 }
+
+const defaultAppVersion = Application.nativeApplicationVersion || '2.8.8';
 
 export const useUpdateStore = create<UpdateInfo & UpdateActions>()(
   persist(
     (set, get) => ({
-      currentVersion: '2.8.6',
+      currentVersion: defaultAppVersion,
       latestVersion: LATEST_RELEASE_VERSION,
       updateAvailable: false,
       isMandatory: false,
@@ -54,7 +61,7 @@ export const useUpdateStore = create<UpdateInfo & UpdateActions>()(
         '• 👑 Ultra-Premium Imperial Gold & Crystal Glass Design System.',
         '• 💬 Astrotalk-Grade 1-on-1 Chat, Voice Call & Live Streaming.',
         '• 🧭 Vastu Compass, Love Meter & Daily Karma Rewards.',
-        '• 📲 100% In-App Direct APK Downloading & Auto-Installation.',
+        '• 📲 100% In-App Direct APK Streaming & Auto-Installation.',
       ],
       downloadProgress: 0,
       downloadedBytes: 0,
@@ -67,14 +74,36 @@ export const useUpdateStore = create<UpdateInfo & UpdateActions>()(
       isReadyToInstall: false,
       downloadedPackageUri: null,
       updateType: 'apk',
-      downloadUrl: getDirectApkDownloadUrl(LATEST_RELEASE_VERSION),
+      downloadUrl: FALLBACK_RELEASE_APK_URL,
       lastCheckedTime: null,
       isChecking: false,
       manualCheckMessage: null,
+      downloadError: null,
+
+      autoCheckAndFetchOnStartup: async () => {
+        try {
+          const currentVer = get().currentVersion || defaultAppVersion;
+          const result = await inAppUpdateEngine.checkForUpdate(currentVer, LATEST_RELEASE_VERSION);
+          if (result.isAvailable) {
+            set({
+              updateAvailable: true,
+              latestVersion: result.latestVersion,
+              releaseNotes: result.releaseNotes,
+              isMandatory: result.isMandatory,
+              updateType: result.type,
+              downloadUrl: result.downloadUrl,
+              totalMb: result.apkSizeMb ? result.apkSizeMb.toFixed(1) : '44.8',
+              lastCheckedTime: new Date().toISOString(),
+            });
+          }
+        } catch (e) {
+          console.log('[UpdateStore autoCheck startup notice]', e);
+        }
+      },
 
       checkForUpdates: async () => {
         set({ isChecking: true });
-        const currentVer = get().currentVersion;
+        const currentVer = get().currentVersion || defaultAppVersion;
 
         try {
           const result = await inAppUpdateEngine.checkForUpdate(currentVer, LATEST_RELEASE_VERSION);
@@ -106,7 +135,7 @@ export const useUpdateStore = create<UpdateInfo & UpdateActions>()(
 
       checkUpdatesManual: async () => {
         set({ isChecking: true, manualCheckMessage: 'Checking for updates…' });
-        const currentVer = get().currentVersion;
+        const currentVer = get().currentVersion || defaultAppVersion;
 
         try {
           const result = await inAppUpdateEngine.checkForUpdate(currentVer, LATEST_RELEASE_VERSION);
@@ -125,11 +154,11 @@ export const useUpdateStore = create<UpdateInfo & UpdateActions>()(
             });
           } else {
             set({
-              manualCheckMessage: `You are using the latest version of AstroGuru (v${currentVer}) ✅`,
+              manualCheckMessage: `You are running the latest version of AstroGuru (v${currentVer}) ✅`,
             });
             setTimeout(() => {
               set({ manualCheckMessage: null });
-            }, 3500);
+            }, 4000);
           }
         } catch (err) {
           set({
@@ -138,26 +167,33 @@ export const useUpdateStore = create<UpdateInfo & UpdateActions>()(
           });
           setTimeout(() => {
             set({ manualCheckMessage: null });
-          }, 3500);
+          }, 4000);
         }
       },
 
-      broadcastUpdate: (newVer, notes, mandatory = false) => {
+      broadcastUpdate: (newVer, notes, mandatory = false, customApkUrl?: string) => {
+        const finalUrl = customApkUrl || getDirectApkDownloadUrl(newVer);
         set({
           latestVersion: newVer,
           releaseNotes: notes,
           isMandatory: mandatory,
           updateAvailable: true,
           isReadyToInstall: false,
-          downloadUrl: getDirectApkDownloadUrl(newVer),
+          downloadUrl: finalUrl,
         });
+
+        // Sync to cloud database for all active seeker devices
+        try {
+          syncLatestAppVersionToFirebase(newVer, notes, finalUrl);
+        } catch (_) {}
       },
 
       triggerUpdateModal: () => {
         set({
           updateAvailable: true,
           latestVersion: LATEST_RELEASE_VERSION,
-          downloadUrl: getDirectApkDownloadUrl(LATEST_RELEASE_VERSION),
+          downloadUrl: get().downloadUrl || FALLBACK_RELEASE_APK_URL,
+          downloadError: null,
         });
       },
 
@@ -169,6 +205,7 @@ export const useUpdateStore = create<UpdateInfo & UpdateActions>()(
           downloadProgress: 1,
           downloadedPackageUri: null,
           isReadyToInstall: false,
+          downloadError: null,
         });
 
         if (background) {
@@ -177,7 +214,7 @@ export const useUpdateStore = create<UpdateInfo & UpdateActions>()(
 
         try {
           const targetVersion = get().latestVersion || LATEST_RELEASE_VERSION;
-          const directUrl = get().downloadUrl || getDirectApkDownloadUrl(targetVersion);
+          const directUrl = get().downloadUrl || FALLBACK_RELEASE_APK_URL;
 
           const result = await inAppUpdateEngine.downloadUpdatePackage(
             targetVersion,
@@ -201,6 +238,7 @@ export const useUpdateStore = create<UpdateInfo & UpdateActions>()(
               downloadProgress: 100,
               isReadyToInstall: true,
               downloadedPackageUri: result.localUri,
+              downloadError: null,
             });
 
             // Automatically launch Android package installer directly
@@ -209,11 +247,35 @@ export const useUpdateStore = create<UpdateInfo & UpdateActions>()(
             }
           } else {
             console.warn('[UpdateStore Download Notice]', result?.error || 'Download error');
-            set({ isDownloading: false, isBackgroundDownloading: false, downloadProgress: 0 });
+            set({
+              isDownloading: false,
+              isBackgroundDownloading: false,
+              downloadProgress: 0,
+              downloadError: result?.error || 'Download interrupted. You can retry or download directly.',
+            });
           }
         } catch (err: any) {
           console.warn('[UpdateStore Download Error]', err);
-          set({ isDownloading: false, isBackgroundDownloading: false, downloadProgress: 0 });
+          set({
+            isDownloading: false,
+            isBackgroundDownloading: false,
+            downloadProgress: 0,
+            downloadError: err?.message || 'Download error encountered. Please check connection.',
+          });
+        }
+      },
+
+      openDirectDownloadInBrowser: async () => {
+        const url = get().downloadUrl || FALLBACK_RELEASE_APK_URL;
+        try {
+          const canOpen = await Linking.canOpenURL(url);
+          if (canOpen) {
+            await Linking.openURL(url);
+          } else {
+            await Linking.openURL(FALLBACK_RELEASE_APK_URL);
+          }
+        } catch (e) {
+          console.warn('[OpenDirectDownload Error]', e);
         }
       },
 
@@ -238,9 +300,13 @@ export const useUpdateStore = create<UpdateInfo & UpdateActions>()(
         await inAppUpdateEngine.openSettingsForInstallPermission();
       },
 
+      clearDownloadError: () => {
+        set({ downloadError: null });
+      },
+
       dismissUpdate: () => {
         if (!get().isMandatory) {
-          set({ updateAvailable: false });
+          set({ updateAvailable: false, downloadError: null });
         }
       },
 
@@ -249,7 +315,7 @@ export const useUpdateStore = create<UpdateInfo & UpdateActions>()(
       },
     }),
     {
-      name: 'astroguru_update_store',
+      name: 'astroguru_update_store_v2',
       storage: createJSONStorage(() => AsyncStorage),
     }
   )
