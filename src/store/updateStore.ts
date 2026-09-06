@@ -6,7 +6,7 @@ import * as Application from 'expo-application';
 import { inAppUpdateEngine, UpdateDownloadProgress, getDirectApkDownloadUrl, FALLBACK_RELEASE_APK_URL } from '../services/updates/inAppUpdateEngine';
 import { syncLatestAppVersionToFirebase } from '../services/firebaseRealtimeService';
 
-export const LATEST_RELEASE_VERSION = '2.8.8';
+export const LATEST_RELEASE_VERSION = '2.8.9';
 
 export interface UpdateInfo {
   currentVersion: string;
@@ -48,7 +48,7 @@ export interface UpdateActions {
   clearDownloadError: () => void;
 }
 
-const defaultAppVersion = Application.nativeApplicationVersion || '2.8.8';
+const defaultAppVersion = Application.nativeApplicationVersion || '2.8.9';
 
 export const useUpdateStore = create<UpdateInfo & UpdateActions>()(
   persist(
@@ -58,10 +58,10 @@ export const useUpdateStore = create<UpdateInfo & UpdateActions>()(
       updateAvailable: false,
       isMandatory: false,
       releaseNotes: [
-        '• 👑 Ultra-Premium Imperial Gold & Crystal Glass Design System.',
-        '• 💬 Astrotalk-Grade 1-on-1 Chat, Voice Call & Live Streaming.',
-        '• 🧭 Vastu Compass, Love Meter & Daily Karma Rewards.',
-        '• 📲 100% In-App Direct APK Streaming & Auto-Installation.',
+        '• 📲 Bulletproof In-App APK Streaming & Auto-Installer.',
+        '• 💰 100% Idempotent Per-Minute Accurate Wallet Deductions.',
+        '• 📸 Custom QR Scanner & UPI Gateway for Instant Recharges.',
+        '• 📞 Glowing Aura HD Voice & Video Consultation System.',
       ],
       downloadProgress: 0,
       downloadedBytes: 0,
