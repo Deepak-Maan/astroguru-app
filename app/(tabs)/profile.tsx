@@ -19,11 +19,32 @@ import { RASHIS } from '../../src/data/rashis';
 import { NAKSHATRAS } from '../../src/data/nakshatras';
 import { formatCurrency } from '../../src/utils';
 import { useLiveChatStore } from '../../src/store/liveChatStore';
+import { subscribeToAcharyaRoomsInFirebase } from '../../src/services/firebaseRealtimeService';
 
 function AcharyaLiveQueue({ astrologerId }: { astrologerId: string }) {
   const router = useRouter();
   const roomsMap = useLiveChatStore((s) => s.rooms);
   const acceptRoom = useLiveChatStore((s) => s.acceptRoom);
+  const syncRoom = useLiveChatStore((s) => s.createRoom);
+
+  React.useEffect(() => {
+    if (!astrologerId) return;
+    const unsub = subscribeToAcharyaRoomsInFirebase(astrologerId, (rooms) => {
+      rooms.forEach((r) => {
+        if (r && r.roomId) {
+          syncRoom({
+            seekerId: r.seekerId || 'usr_seeker',
+            seekerName: r.seekerName || 'Seeker',
+            astrologerId: r.astrologerId || astrologerId,
+            astrologerName: r.astrologerName || 'Acharya',
+            topic: r.topic || 'Vedic Astrology Consultation',
+            ratePerMin: r.ratePerMin || 25,
+          });
+        }
+      });
+    });
+    return () => unsub();
+  }, [astrologerId]);
 
   const activeRooms = Object.values(roomsMap).filter(
     (r) => r && (r.astrologerId === astrologerId || r.astrologerId === 'astro-1' || true) && r.status !== 'ended'

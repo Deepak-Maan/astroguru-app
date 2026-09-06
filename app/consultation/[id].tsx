@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  Alert,
   Animated,
   Dimensions,
   Modal,
@@ -13,24 +14,40 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { ASTROLOGERS } from '../../src/data/astrologers';
 import { Avatar } from '../../src/components/Avatar';
+import { Button } from '../../src/components/Button';
 import { useWalletStore } from '../../src/store/walletStore';
 import { useAuthStore } from '../../src/store/authStore';
+import { useJyotishiStore } from '../../src/store/jyotishiStore';
+import { useUserStore } from '../../src/store/userStore';
 import { formatCurrency } from '../../src/utils';
+import { getAstrologerByIdFromFirebase } from '../../src/services/firebaseAuthService';
+import {
+  initiateCallInFirebase,
+  updateCallStatusInFirebase,
+} from '../../src/services/firebaseRealtimeService';
+import { showIncomingCallNotification } from '../../src/services/notificationService';
+import { firebaseDb } from '../../src/services/firebaseConfig';
+import { ref, onValue, off } from 'firebase/database';
+import { Astrologer } from '../../src/types';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-import { getAstrologerByIdFromFirebase } from '../../src/services/firebaseAuthService';
-import { initiateCallInFirebase, updateCallStatusInFirebase } from '../../src/services/firebaseRealtimeService';
-import { showIncomingCallNotification } from '../../src/services/notificationService';
-import { Astrologer } from '../../src/types';
-
 export default function LiveConsultationScreen() {
   const router = useRouter();
-  const { id, type = 'video', callId: paramCallId, role = 'seeker' } = useLocalSearchParams<{ id: string; type?: 'audio' | 'video'; callId?: string; role?: string }>();
-  const [astrologer, setAstrologer] = useState<Astrologer>(() => ASTROLOGERS.find((a) => a.id === id) || ASTROLOGERS[0]);
+  const { id, type = 'video', callId: paramCallId, role = 'seeker' } = useLocalSearchParams<{
+    id: string;
+    type?: 'audio' | 'video';
+    callId?: string;
+    role?: string;
+  }>();
+
+  const [astrologer, setAstrologer] = useState<Astrologer>(
+    () => ASTROLOGERS.find((a) => a.id === id) || ASTROLOGERS[0]
+  );
   const [activeCallId, setActiveCallId] = useState(paramCallId || `call_${Date.now()}`);
 
   useEffect(() => {
@@ -42,9 +59,11 @@ export default function LiveConsultationScreen() {
   }, [id]);
 
   const user = useAuthStore((s) => s.user);
+  const kundli = useUserStore((s) => s.kundli);
 
   const debit = useWalletStore((s) => s.debit);
   const balance = useWalletStore((s) => s.balance);
+  const topup = useWalletStore((s) => s.topup);
 
   const [callState, setCallState] = useState<'connecting' | 'connected' | 'ended'>('connecting');
   const [isVideoOn, setIsVideoOn] = useState(type === 'video');
@@ -52,9 +71,11 @@ export default function LiveConsultationScreen() {
   const [isSpeakerOn, setIsSpeakerOn] = useState(true);
   const [cameraFacing, setCameraFacing] = useState<'front' | 'back'>('front');
   const [showKundliOverlay, setShowKundliOverlay] = useState(false);
+  const [showRecapModal, setShowRecapModal] = useState(false);
 
   const [seconds, setSeconds] = useState(0);
   const [billedMinutes, setBilledMinutes] = useState(1);
+  const [lowBalanceAlert, setLowBalanceAlert] = useState(false);
 
   // Animation drivers
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -82,6 +103,40 @@ export default function LiveConsultationScreen() {
     }
   }, [astrologer?.id, activeCallId, role]);
 
+  // Real-time Firebase Call Status Synchronizer
+  useEffect(() => {
+    if (!activeCallId) return;
+    const cleanCallId = String(activeCallId).replace(/[.#$\[\]\/]/g, '_');
+    const callRef = ref(firebaseDb, `calls/${cleanCallId}`);
+
+    const unsubscribe = onValue(callRef, (snapshot) => {
+      const callData = snapshot.val();
+      if (!callData) return;
+
+      if (callData.status === 'connected') {
+        setCallState('connected');
+      } else if (callData.status === 'ended' || callData.status === 'declined') {
+        setCallState('ended');
+        setShowRecapModal(true);
+      }
+    });
+
+    // Fallback auto-connect after 3s if peer is ready
+    const timer = setTimeout(() => {
+      if (callState === 'connecting') {
+        setCallState('connected');
+        if (astrologer) {
+          updateCallStatusInFirebase(activeCallId, astrologer.id, 'connected');
+        }
+      }
+    }, 3000);
+
+    return () => {
+      off(callRef);
+      clearTimeout(timer);
+    };
+  }, [activeCallId, astrologer?.id]);
+
   // Pulse animation while connecting
   useEffect(() => {
     if (callState === 'connecting') {
@@ -106,17 +161,6 @@ export default function LiveConsultationScreen() {
     }
   }, [callState, isMuted]);
 
-  // Auto connect after 2.5 seconds
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setCallState('connected');
-      if (astrologer) {
-        updateCallStatusInFirebase(activeCallId, astrologer.id, 'connected');
-      }
-    }, 2500);
-    return () => clearTimeout(timer);
-  }, [activeCallId, astrologer?.id]);
-
   // Call duration timer & billing engine
   useEffect(() => {
     if (callState !== 'connected') return;
@@ -126,6 +170,18 @@ export default function LiveConsultationScreen() {
         const next = prev + 1;
         // Bill every 60 seconds
         if (next > 0 && next % 60 === 0 && role !== 'expert') {
+          // Check balance before billing
+          if (balance < astrologer.pricePerMin) {
+            setLowBalanceAlert(true);
+            try {
+              if (Platform.OS !== 'web') {
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+              }
+            } catch (_) {}
+            handleEndCall();
+            return prev;
+          }
+
           setBilledMinutes((m) => m + 1);
           debit(astrologer.pricePerMin, `Live ${type.toUpperCase()} Consultation with ${astrologer.name}`);
         }
@@ -134,16 +190,19 @@ export default function LiveConsultationScreen() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [callState, astrologer, debit, type, role]);
+  }, [callState, astrologer, debit, type, role, balance]);
 
   function handleEndCall() {
     setCallState('ended');
     if (astrologer) {
       updateCallStatusInFirebase(activeCallId, astrologer.id, 'ended');
     }
-    setTimeout(() => {
-      router.back();
-    }, 1200);
+    try {
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+    } catch (_) {}
+    setShowRecapModal(true);
   }
 
   const formatTimer = (s: number) => {
@@ -151,6 +210,8 @@ export default function LiveConsultationScreen() {
     const secs = s % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
+
+  const totalCharged = astrologer.pricePerMin * billedMinutes;
 
   return (
     <View style={styles.container}>
@@ -179,24 +240,31 @@ export default function LiveConsultationScreen() {
         </View>
       ) : (
         <LinearGradient
-          colors={['#0F172A', '#1E293B', '#090D16']}
-          style={StyleSheet.absoluteFill}
+          colors={['#0A0E1A', '#1E1B4B', '#0F172A']}
+          style={styles.audioCanvas}
         >
-          <View style={styles.audioCanvas}>
-            <Animated.View style={[styles.avatarPulseRing, { transform: [{ scale: pulseAnim }] }]}>
-              <Avatar name={astrologer.name} size={120} />
-            </Animated.View>
-            <Text style={styles.audioAstrologerName}>{astrologer.name}</Text>
-            <Text style={styles.audioSpecialty}>{astrologer.specialties.join(' · ')}</Text>
+          <Animated.View style={[styles.avatarPulseRing, { transform: [{ scale: pulseAnim }] }]}>
+            <Avatar name={astrologer.name} size={120} />
+          </Animated.View>
+          <Text style={styles.audioAstrologerName}>{astrologer.name}</Text>
+          <Text style={styles.audioSpecialty}>
+            {astrologer.specialties?.join(' · ') || 'Senior Vedic Jyotishi'}
+          </Text>
 
-            {/* Live Audio Waveform Indicator */}
-            {callState === 'connected' && (
-              <Animated.View style={[styles.waveRow, { opacity: waveAnim }]}>
-                {[14, 28, 42, 20, 36, 18, 30].map((h, i) => (
-                  <View key={i} style={[styles.waveBar, { height: h }]} />
-                ))}
-              </Animated.View>
-            )}
+          {/* Audio Wave Visualizer */}
+          <View style={styles.waveRow}>
+            {[1, 2, 3, 4, 5, 6, 7].map((bar) => (
+              <Animated.View
+                key={bar}
+                style={[
+                  styles.waveBar,
+                  {
+                    height: callState === 'connected' ? 14 + (bar % 3) * 16 : 8,
+                    opacity: isMuted ? 0.2 : 0.9,
+                  },
+                ]}
+              />
+            ))}
           </View>
         </LinearGradient>
       )}
@@ -211,7 +279,7 @@ export default function LiveConsultationScreen() {
                 ? '⏳ Establishing WebRTC Connection…'
                 : callState === 'ended'
                 ? '🔴 Consultation Ended'
-                : `⏱️ ${formatTimer(seconds)} · ₹${astrologer.pricePerMin * billedMinutes} charged`}
+                : `⏱️ ${formatTimer(seconds)} · ₹${totalCharged} charged`}
             </Text>
           </View>
           <Pressable
@@ -234,9 +302,9 @@ export default function LiveConsultationScreen() {
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 8 }}>
             {[
-              { label: 'Lagna Rashi', val: 'Mesha (Aries)' },
-              { label: 'Moon Sign', val: 'Vrishabha (Taurus)' },
-              { label: 'Current Dasha', val: 'Rahu - Jupiter (2026)' },
+              { label: 'Lagna Rashi', val: kundli?.lagna || 'Mesha (Aries)' },
+              { label: 'Moon Sign', val: kundli?.rashi || 'Vrishabha (Taurus)' },
+              { label: 'Current Dasha', val: kundli?.dasha || 'Rahu - Jupiter (2026)' },
               { label: 'Sun Position', val: '10th House (Digbala)' },
             ].map((item) => (
               <View key={item.label} style={styles.kundliItemChip}>
@@ -296,6 +364,66 @@ export default function LiveConsultationScreen() {
           </Pressable>
         </View>
       </SafeAreaView>
+
+      {/* ── CONSULTATION SUMMARY & RATING RECAP MODAL ── */}
+      <Modal visible={showRecapModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.recapCard}>
+            <LinearGradient
+              colors={['#1E1B4B', '#0F172A']}
+              style={StyleSheet.absoluteFill}
+            />
+            <View style={styles.recapIconBox}>
+              <Text style={{ fontSize: 32 }}>✨</Text>
+            </View>
+
+            <Text style={styles.recapTitle}>Consultation Completed</Text>
+            <Text style={styles.recapSub}>
+              Your session with {astrologer.name} has concluded.
+            </Text>
+
+            {/* Metrics */}
+            <View style={styles.recapMetricsBox}>
+              <View style={styles.recapMetricItem}>
+                <Text style={styles.metricLabel}>Duration</Text>
+                <Text style={styles.metricVal}>{formatTimer(seconds)}</Text>
+              </View>
+              <View style={styles.metricDivider} />
+              <View style={styles.recapMetricItem}>
+                <Text style={styles.metricLabel}>Billed</Text>
+                <Text style={[styles.metricVal, { color: colors.gold }]}>₹{totalCharged}</Text>
+              </View>
+              <View style={styles.metricDivider} />
+              <View style={styles.recapMetricItem}>
+                <Text style={styles.metricLabel}>Rate</Text>
+                <Text style={styles.metricVal}>₹{astrologer.pricePerMin}/m</Text>
+              </View>
+            </View>
+
+            {/* 5-Star Quick Rating */}
+            <View style={{ alignItems: 'center', marginVertical: 8 }}>
+              <Text style={{ color: '#FDE68A', fontSize: 11, fontWeight: '700', marginBottom: 4 }}>
+                Rate Your Experience:
+              </Text>
+              <View style={{ flexDirection: 'row', gap: 6 }}>
+                {['⭐', '⭐', '⭐', '⭐', '⭐'].map((st, i) => (
+                  <Text key={i} style={{ fontSize: 20 }}>{st}</Text>
+                ))}
+              </View>
+            </View>
+
+            <Button
+              label="Done & Return to Home"
+              variant="gold"
+              size="md"
+              onPress={() => {
+                setShowRecapModal(false);
+                router.replace('/(tabs)');
+              }}
+            />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -306,68 +434,197 @@ const styles = StyleSheet.create({
   remoteVideoCanvas: { alignItems: 'center', gap: 12 },
   remoteVideoName: { fontSize: 20, fontWeight: '900', color: '#FFFFFF' },
   liveIndicatorPill: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: 'rgba(16,185,129,0.2)', paddingHorizontal: 12, paddingVertical: 5,
-    borderRadius: radius.pill, borderWidth: 1, borderColor: colors.teal,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(16,185,129,0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: colors.teal,
   },
   greenDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#10B981' },
   liveIndicatorText: { color: '#10B981', fontSize: 11, fontWeight: '900' },
   pipWindow: {
-    position: 'absolute', top: 110, right: 20, width: 90, height: 120,
-    borderRadius: radius.lg, backgroundColor: 'rgba(15,23,42,0.85)',
-    borderWidth: 2, borderColor: colors.teal, alignItems: 'center', justifyContent: 'center', gap: 4,
+    position: 'absolute',
+    top: 110,
+    right: 20,
+    width: 90,
+    height: 120,
+    borderRadius: radius.lg,
+    backgroundColor: 'rgba(15,23,42,0.85)',
+    borderWidth: 2,
+    borderColor: colors.teal,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
   },
   pipLabel: { color: '#94A3B8', fontSize: 10, fontWeight: '700' },
   audioCanvas: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12 },
   avatarPulseRing: {
-    borderRadius: 80, padding: 8, backgroundColor: 'rgba(5,150,105,0.15)',
-    borderWidth: 2, borderColor: 'rgba(5,150,105,0.4)',
+    borderRadius: 80,
+    padding: 8,
+    backgroundColor: 'rgba(5,150,105,0.15)',
+    borderWidth: 2,
+    borderColor: 'rgba(5,150,105,0.4)',
   },
   audioAstrologerName: { fontSize: 24, fontWeight: '900', color: '#FFFFFF' },
   audioSpecialty: { fontSize: 13, color: '#94A3B8', fontWeight: '600' },
   waveRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 16 },
   waveBar: { width: 6, backgroundColor: colors.teal, borderRadius: 3 },
-  topHeaderOverlay: { position: 'absolute', top: 0, left: 0, right: 0, paddingHorizontal: spacing.md, paddingTop: spacing.sm },
+  topHeaderOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.sm,
+  },
   headerGlassCard: {
-    flexDirection: 'row', alignItems: 'center', padding: spacing.md,
-    backgroundColor: 'rgba(15,23,42,0.85)', borderRadius: radius.xl,
-    borderWidth: 1, borderColor: 'rgba(255,255,254,0.15)', gap: spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.md,
+    backgroundColor: 'rgba(15,23,42,0.85)',
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,254,0.15)',
+    gap: spacing.sm,
   },
   headerAstrologerName: { fontSize: 16, fontWeight: '900', color: '#FFFFFF' },
   headerStatusText: { fontSize: 12, color: '#10B981', fontWeight: '700', marginTop: 2 },
   kundliOverlayBtn: {
-    backgroundColor: 'rgba(217,119,6,0.2)', paddingHorizontal: 12, paddingVertical: 7,
-    borderRadius: radius.pill, borderWidth: 1, borderColor: colors.gold,
+    backgroundColor: 'rgba(217,119,6,0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: colors.gold,
   },
   kundliOverlayBtnText: { color: colors.gold, fontSize: 12, fontWeight: '800' },
   floatingKundliDrawer: {
-    position: 'absolute', top: 120, left: spacing.md, right: spacing.md,
-    backgroundColor: 'rgba(15,23,42,0.95)', borderRadius: radius.lg, padding: spacing.md,
-    borderWidth: 1.5, borderColor: colors.gold, gap: 4, zIndex: 99,
+    position: 'absolute',
+    top: 120,
+    left: spacing.md,
+    right: spacing.md,
+    backgroundColor: 'rgba(15,23,42,0.95)',
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    borderWidth: 1.5,
+    borderColor: colors.gold,
+    gap: 4,
+    zIndex: 99,
   },
   drawerTitle: { color: '#FFFFFF', fontSize: 14, fontWeight: '900' },
   closeDrawerBtn: { padding: 4 },
   kundliItemChip: {
-    backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: radius.md, padding: 10,
-    marginRight: 8, borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)', gap: 2,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: radius.md,
+    padding: 10,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.15)',
+    gap: 2,
   },
   kundliChipLabel: { color: '#94A3B8', fontSize: 10, fontWeight: '700' },
   kundliChipVal: { color: '#FFFFFF', fontSize: 12, fontWeight: '800' },
   bottomControlOverlay: { position: 'absolute', bottom: 0, left: 0, right: 0 },
   controlsRow: {
-    flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center',
-    paddingVertical: spacing.lg, backgroundColor: 'rgba(15,23,42,0.92)',
-    borderTopLeftRadius: 28, borderTopRightRadius: 28, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
+    paddingVertical: spacing.lg,
+    backgroundColor: 'rgba(15,23,42,0.92)',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   controlBtn: { alignItems: 'center', gap: 4, width: 60 },
   controlBtnActive: { opacity: 0.4 },
   controlIcon: { fontSize: 24 },
   controlText: { color: '#FFFFFF', fontSize: 11, fontWeight: '700' },
   endCallBtn: {
-    width: 60, height: 60, borderRadius: 30, backgroundColor: '#EF4444',
-    alignItems: 'center', justifyContent: 'center', gap: 2,
-    shadowColor: '#EF4444', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.5, shadowRadius: 8, elevation: 6,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#EF4444',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 2,
+    shadowColor: '#EF4444',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 6,
   },
   endCallIcon: { fontSize: 22 },
   endCallText: { color: '#FFFFFF', fontSize: 10, fontWeight: '900' },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15,23,42,0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.lg,
+  },
+  recapCard: {
+    width: '100%',
+    maxWidth: 340,
+    borderRadius: 24,
+    padding: spacing.lg,
+    alignItems: 'center',
+    overflow: 'hidden',
+    borderWidth: 1.5,
+    borderColor: '#FDE68A',
+    gap: 8,
+  },
+  recapIconBox: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(217,119,6,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: colors.gold,
+  },
+  recapTitle: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#FFFFFF',
+  },
+  recapSub: {
+    fontSize: 12,
+    color: '#CBD5E1',
+    textAlign: 'center',
+  },
+  recapMetricsBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 14,
+    padding: 10,
+    marginVertical: 6,
+    width: '100%',
+  },
+  recapMetricItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  metricLabel: {
+    fontSize: 9.5,
+    color: '#94A3B8',
+    fontWeight: '700',
+  },
+  metricVal: {
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    marginTop: 2,
+  },
+  metricDivider: {
+    width: 1,
+    height: 24,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+  },
 });
