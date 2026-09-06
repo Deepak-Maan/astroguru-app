@@ -189,9 +189,26 @@ export const useUpdateStore = create<UpdateInfo & UpdateActions>()(
       },
 
       triggerUpdateModal: () => {
+        const currentVer = Application.nativeApplicationVersion || get().currentVersion || defaultAppVersion;
+        const latestVer = get().latestVersion || LATEST_RELEASE_VERSION;
+
+        // If the user is already on the latest version or higher, inform them instead of opening a false update modal
+        if (!isRemoteVersionNewer(latestVer, currentVer)) {
+          set({
+            currentVersion: currentVer,
+            updateAvailable: false,
+            manualCheckMessage: `You are running the latest version of AstroGuru (v${currentVer}) ✅`,
+          });
+          setTimeout(() => {
+            set({ manualCheckMessage: null });
+          }, 4000);
+          return;
+        }
+
         set({
+          currentVersion: currentVer,
           updateAvailable: true,
-          latestVersion: LATEST_RELEASE_VERSION,
+          latestVersion: latestVer,
           downloadUrl: get().downloadUrl || FALLBACK_RELEASE_APK_URL,
           downloadError: null,
         });

@@ -378,15 +378,14 @@ export default function Profile() {
                 <Card padded={false}>
                   <Row icon="✏️" label="Edit Profile & Birth Details" onPress={() => router.push('/edit-profile')} accent={colors.teal} />
                   <Row icon="🪪" label="Govt ID & Watermark KYC Vault" onPress={() => router.push('/acharya/kyc-verification')} accent={colors.teal} />
-                  <Row icon="🚀" label={`Upgrade / Update App (v${currentVersion})`} onPress={() => triggerUpdateModal()} accent={colors.teal} />
-                  <Row icon="👑" label={isVip ? `AstroVIP — ${vipPlanId} (Active)` : 'Get AstroVIP Pass'} onPress={() => router.push('/vip')} accent={colors.gold} />
-                  <Row icon="📄" label="10-Page Kundli PDF Export" onPress={() => router.push('/kundli-pdf')} />
                   <Row
-                    icon="🔄"
-                    label={isCheckingUpdates ? 'Checking GitHub for updates…' : `Check for In-App Updates · v${currentVersion}`}
+                    icon="🚀"
+                    label={isCheckingUpdates ? 'Checking for updates…' : `Check for In-App Updates · v${currentVersion}`}
                     onPress={checkUpdatesManual}
                     accent={colors.teal}
                   />
+                  <Row icon="👑" label={isVip ? `AstroVIP — ${vipPlanId} (Active)` : 'Get AstroVIP Pass'} onPress={() => router.push('/vip')} accent={colors.gold} />
+                  <Row icon="📄" label="10-Page Kundli PDF Export" onPress={() => router.push('/kundli-pdf')} />
                   <Row icon="⚙️" label="Settings & Security Vault" onPress={() => router.push('/settings')} />
                   <Row icon="🚪" label="Sign Out" onPress={handleSignOut} accent={colors.danger} />
                 </Card>
