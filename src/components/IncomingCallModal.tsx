@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
+  Easing,
   Modal,
   Platform,
   Pressable,
@@ -10,6 +11,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 import { Avatar } from './Avatar';
 import { colors, radius, spacing, typography } from '../theme';
 import { useAuthStore } from '../store/authStore';
@@ -17,7 +19,6 @@ import {
   subscribeToIncomingCallsInFirebase,
   updateCallStatusInFirebase,
 } from '../services/firebaseRealtimeService';
-
 import { showIncomingCallNotification } from '../services/notificationService';
 
 export function IncomingCallModal() {
@@ -26,7 +27,8 @@ export function IncomingCallModal() {
   const isAstrologer = authUser?.role === 'astrologer';
 
   const [incomingCall, setIncomingCall] = useState<any | null>(null);
-  const [pulseAnim] = useState(new Animated.Value(1));
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const ringAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     if (!isAstrologer) return;
@@ -46,6 +48,11 @@ export function IncomingCallModal() {
         const activeRinging = calls.find((c) => c && c.status === 'ringing');
         if (activeRinging) {
           setIncomingCall(activeRinging);
+          try {
+            if (Platform.OS !== 'web') {
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            }
+          } catch (_) {}
           showIncomingCallNotification({
             seekerName: activeRinging.seekerName || 'Seeker',
             type: activeRinging.type === 'video' ? 'video' : 'audio',
@@ -61,21 +68,36 @@ export function IncomingCallModal() {
     };
   }, [isAstrologer, authUser?.id, authUser?.email]);
 
-  // Pulse animation when incoming call is active
+  // Pulse & Ring animation when incoming call is active
   useEffect(() => {
     if (incomingCall) {
       const loop = Animated.loop(
-        Animated.sequence([
-          Animated.timing(pulseAnim, {
-            toValue: 1.18,
-            duration: 700,
-            useNativeDriver: true,
-          }),
-          Animated.timing(pulseAnim, {
-            toValue: 1,
-            duration: 700,
-            useNativeDriver: true,
-          }),
+        Animated.parallel([
+          Animated.sequence([
+            Animated.timing(pulseAnim, {
+              toValue: 1.15,
+              duration: 700,
+              useNativeDriver: true,
+            }),
+            Animated.timing(pulseAnim, {
+              toValue: 1,
+              duration: 700,
+              useNativeDriver: true,
+            }),
+          ]),
+          Animated.sequence([
+            Animated.timing(ringAnim, {
+              toValue: 1.5,
+              duration: 1200,
+              easing: Easing.out(Easing.ease),
+              useNativeDriver: true,
+            }),
+            Animated.timing(ringAnim, {
+              toValue: 1,
+              duration: 0,
+              useNativeDriver: true,
+            }),
+          ]),
         ])
       );
       loop.start();
@@ -89,6 +111,11 @@ export function IncomingCallModal() {
 
   function handleAccept() {
     if (!incomingCall || !authUser?.id) return;
+    try {
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+    } catch (_) {}
     updateCallStatusInFirebase(incomingCall.callId, String(authUser.id), 'connected');
     const callInfo = { ...incomingCall };
     setIncomingCall(null);
@@ -99,6 +126,11 @@ export function IncomingCallModal() {
 
   function handleDecline() {
     if (!incomingCall || !authUser?.id) return;
+    try {
+      if (Platform.OS !== 'web') {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      }
+    } catch (_) {}
     updateCallStatusInFirebase(incomingCall.callId, String(authUser.id), 'declined');
     setIncomingCall(null);
   }
@@ -107,44 +139,77 @@ export function IncomingCallModal() {
     <Modal visible transparent animationType="fade">
       <View style={styles.backdrop}>
         <LinearGradient
-          colors={['rgba(15,23,42,0.92)', 'rgba(30,41,59,0.96)']}
+          colors={['rgba(5,8,17,0.95)', 'rgba(23,18,43,0.98)']}
           style={StyleSheet.absoluteFill}
         />
 
         <View style={styles.card}>
-          <Text style={styles.callBadge}>
-            {isVideo ? '📹 INCOMING HD VIDEO CALL' : '📞 INCOMING AUDIO CALL'}
-          </Text>
+          <LinearGradient
+            colors={['#1E1B4B', '#0F172A']}
+            style={StyleSheet.absoluteFill}
+          />
+          <View style={styles.topSpecular} />
 
-          <Animated.View style={[styles.avatarWrapper, { transform: [{ scale: pulseAnim }] }]}>
-            <Avatar name={incomingCall.seekerName || 'Seeker'} size={96} />
-          </Animated.View>
+          <View style={styles.badgeRow}>
+            <View style={styles.callBadge}>
+              <Text style={styles.callBadgeText}>
+                {isVideo ? '📹 INCOMING HD VIDEO CALL' : '📞 INCOMING AUDIO CALL'}
+              </Text>
+            </View>
+          </View>
+
+          {/* Animated Avatar Aura */}
+          <View style={styles.avatarStage}>
+            <Animated.View
+              style={[
+                styles.auraPulseRing,
+                { transform: [{ scale: ringAnim }], opacity: 0.35 },
+              ]}
+            />
+            <Animated.View style={[styles.avatarWrapper, { transform: [{ scale: pulseAnim }] }]}>
+              <Avatar name={incomingCall.seekerName || 'Seeker'} size={100} />
+            </Animated.View>
+          </View>
 
           <Text style={styles.callerName}>{incomingCall.seekerName || 'Seeker'}</Text>
           <Text style={styles.callerSub}>
-            Requesting a live Vedic {isVideo ? 'Video' : 'Audio'} Consultation
+            Live Vedic {isVideo ? 'Video' : 'Audio'} Consultation Request
           </Text>
 
           <View style={styles.rateBadge}>
-            <Text style={styles.rateText}>Rate: ₹{incomingCall.ratePerMin || 25}/min</Text>
+            <Text style={styles.rateText}>Earn ₹{Math.round((incomingCall.ratePerMin || 25) * 0.8)}/min (Net Payout)</Text>
           </View>
 
           {/* Action Buttons */}
           <View style={styles.actionsRow}>
             {/* Decline */}
-            <Pressable onPress={handleDecline} style={styles.declineBtn}>
-              <Text style={{ fontSize: 26 }}>📵</Text>
+            <Pressable
+              onPress={handleDecline}
+              style={({ pressed }) => [
+                styles.declineBtn,
+                pressed && { transform: [{ scale: 0.94 }], opacity: 0.85 },
+              ]}
+            >
+              <Text style={{ fontSize: 24 }}>📵</Text>
               <Text style={styles.actionBtnLabel}>Decline</Text>
             </Pressable>
 
             {/* Accept */}
-            <Pressable onPress={handleAccept} style={styles.acceptBtn}>
+            <Pressable
+              onPress={handleAccept}
+              style={({ pressed }) => [
+                styles.acceptBtn,
+                pressed && { transform: [{ scale: 0.94 }], opacity: 0.85 },
+              ]}
+            >
               <LinearGradient
                 colors={['#10B981', '#059669']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
                 style={StyleSheet.absoluteFill}
               />
-              <Text style={{ fontSize: 26 }}>{isVideo ? '📹' : '📞'}</Text>
-              <Text style={[styles.actionBtnLabel, { color: '#FFFFFF' }]}>Answer</Text>
+              <Text style={{ fontSize: 24 }}>{isVideo ? '📹' : '📞'}</Text>
+              <Text style={[styles.actionBtnLabel, { color: '#FFFFFF' }]}>Accept Call</Text>
             </Pressable>
           </View>
         </View>
@@ -162,94 +227,125 @@ const styles = StyleSheet.create({
   },
   card: {
     width: '100%',
-    maxWidth: 380,
-    backgroundColor: '#FFFFFF',
-    borderRadius: radius.xl,
+    maxWidth: 360,
+    borderRadius: 26,
     padding: spacing.xl,
     alignItems: 'center',
-    shadowColor: 'rgba(0,0,0,0.5)',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.5,
-    shadowRadius: 20,
-    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.6,
+    shadowRadius: 24,
+    elevation: 12,
     borderWidth: 1.5,
-    borderColor: 'rgba(245,158,11,0.5)',
+    borderColor: '#D4AF37',
+    overflow: 'hidden',
+    position: 'relative',
+    gap: 6,
+  },
+  topSpecular: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 2,
+    backgroundColor: 'rgba(255,255,255,0.4)',
+  },
+  badgeRow: {
+    marginBottom: 8,
   },
   callBadge: {
-    ...typography.tiny,
-    color: colors.teal,
-    fontWeight: '900',
-    backgroundColor: 'rgba(5,150,105,0.12)',
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: radius.pill,
-    marginBottom: spacing.md,
-    borderWidth: 1,
-    borderColor: 'rgba(5,150,105,0.3)',
-  },
-  avatarWrapper: {
-    width: 108,
-    height: 108,
-    borderRadius: 54,
-    borderWidth: 3,
-    borderColor: colors.gold,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.sm,
-    backgroundColor: '#FFFFFF',
-  },
-  callerName: {
-    ...typography.h2,
-    fontSize: 20,
-    color: '#0F172A',
-    fontWeight: '900',
-    textAlign: 'center',
-  },
-  callerSub: {
-    ...typography.small,
-    color: colors.textMuted,
-    textAlign: 'center',
-    marginTop: 3,
-    fontWeight: '600',
-  },
-  rateBadge: {
-    backgroundColor: 'rgba(245,158,11,0.12)',
+    backgroundColor: 'rgba(16,185,129,0.2)',
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: radius.pill,
-    marginTop: spacing.sm,
-    marginBottom: spacing.lg,
     borderWidth: 1,
-    borderColor: 'rgba(245,158,11,0.3)',
+    borderColor: '#10B981',
+  },
+  callBadgeText: {
+    fontSize: 9.5,
+    fontWeight: '900',
+    color: '#10B981',
+    letterSpacing: 0.5,
+  },
+  avatarStage: {
+    width: 140,
+    height: 140,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 10,
+    position: 'relative',
+  },
+  auraPulseRing: {
+    position: 'absolute',
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    borderWidth: 2,
+    borderColor: '#10B981',
+  },
+  avatarWrapper: {
+    borderRadius: 54,
+    borderWidth: 3,
+    borderColor: '#D4AF37',
+    padding: 3,
+    backgroundColor: '#0F172A',
+  },
+  callerName: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    textAlign: 'center',
+  },
+  callerSub: {
+    fontSize: 11.5,
+    color: '#94A3B8',
+    textAlign: 'center',
+    fontWeight: '600',
+    marginTop: 2,
+  },
+  rateBadge: {
+    backgroundColor: 'rgba(217,119,6,0.18)',
+    paddingHorizontal: 14,
+    paddingVertical: 5,
+    borderRadius: radius.pill,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: colors.gold,
   },
   rateText: {
-    ...typography.tiny,
-    color: colors.saffron,
-    fontWeight: '900',
+    fontSize: 11.5,
+    fontWeight: '800',
+    color: '#FDE68A',
   },
   actionsRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xl,
+    gap: 14,
+    marginTop: 22,
+    width: '100%',
   },
   declineBtn: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: 'rgba(239,68,68,0.12)',
-    borderWidth: 1.5,
-    borderColor: '#EF4444',
+    flex: 1,
+    backgroundColor: '#EF4444',
+    paddingVertical: 12,
+    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 2,
+    flexDirection: 'row',
+    gap: 6,
+    shadowColor: '#EF4444',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 4,
   },
   acceptBtn: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    flex: 1.3,
+    paddingVertical: 12,
+    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 2,
+    flexDirection: 'row',
+    gap: 6,
     overflow: 'hidden',
     shadowColor: '#10B981',
     shadowOffset: { width: 0, height: 4 },
@@ -258,9 +354,8 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   actionBtnLabel: {
-    ...typography.tiny,
-    fontSize: 10.5,
-    fontWeight: '800',
-    color: colors.textMuted,
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#FFFFFF',
   },
 });
