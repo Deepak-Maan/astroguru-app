@@ -36,8 +36,8 @@ export const GITHUB_REPO = 'astroguru-app';
 export const GITHUB_API_ALL_RELEASES = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/releases`;
 export const GITHUB_API_LATEST_RELEASE = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/releases/latest`;
 
-// Fallback known valid APK download URLs in case a newly created GitHub release does not have an asset uploaded yet
-export const FALLBACK_RELEASE_APK_URL = `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases/download/v2.8.7/astro-2.8.4.apk`;
+// Direct verified APK artifact URL for v2.8.8 release
+export const FALLBACK_RELEASE_APK_URL = `https://expo.dev/artifacts/eas/u4tpx1IXSB9hLkluVHqFoehWSm73P2JSIxJvs8qQwIY.apk`;
 
 export function getDirectApkDownloadUrl(version: string, assetName: string = 'app-release.apk'): string {
   const cleanVer = version.replace(/^v/i, '').trim();
