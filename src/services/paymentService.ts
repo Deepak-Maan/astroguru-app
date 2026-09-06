@@ -1,4 +1,5 @@
 import { Linking, Platform } from 'react-native';
+import { useAdminStore } from '../store/adminStore';
 
 export interface PaymentIntent {
   txnId: string;
@@ -13,14 +14,37 @@ export interface PaymentIntent {
   appUsed?: string;
 }
 
-const DEFAULT_VPA = 'astroguru@upi';
-const MERCHANT_NAME = 'AstroGuru Services';
-
 // Store in-memory / persistent pending transactions for verification
 let pendingTxns: PaymentIntent[] = [];
 
+export function getActivePaymentSettings() {
+  try {
+    const settings = useAdminStore.getState().paymentSettings;
+    if (settings) return settings;
+  } catch (_) {}
+  return {
+    upiId: 'astroguru@upi',
+    merchantName: 'AstroGuru Vedic Services',
+    qrCodeImageUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=upi%3A%2F%2Fpay%3Fpa%3Dastroguru%40upi%26pn%3DAstroGuru%2520Vedic%2520Services%26cu%3DINR',
+    bankAccountNumber: '50100482910128',
+    bankIfsc: 'HDFC0000128',
+    bankName: 'HDFC Bank Ltd.',
+    accountHolderName: 'AstroGuru Technologies Pvt. Ltd.',
+    autoApproveUpi: true,
+  };
+}
+
+export function generateDynamicUpiQrUrl(amount: number, txnId?: string): string {
+  const settings = getActivePaymentSettings();
+  const upiId = settings.upiId || 'astroguru@upi';
+  const merchant = settings.merchantName || 'AstroGuru Services';
+  const tid = txnId || `AG${Date.now().toString().slice(-6)}`;
+  const upiData = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(merchant)}&am=${amount}&tr=${tid}&cu=INR`;
+  return `https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=${encodeURIComponent(upiData)}`;
+}
+
 /**
- * Constructs standard UPI URI and launches target payment app (Google Pay, PhonePe, Paytm, or default UPI picker)
+ * Constructs standard UPI URI and launches target payment app with Admin's configured UPI ID
  */
 export async function launchUpiPayment({
   app,
@@ -31,8 +55,12 @@ export async function launchUpiPayment({
   amount: number;
   txnId: string;
 }): Promise<{ success: boolean; intent: PaymentIntent; message?: string }> {
+  const settings = getActivePaymentSettings();
+  const upiVpa = settings.upiId || 'astroguru@upi';
+  const merchantName = settings.merchantName || 'AstroGuru Services';
+
   const note = encodeURIComponent(`AstroGuru Wallet Txn ${txnId}`);
-  const baseParams = `pa=${DEFAULT_VPA}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=${amount}&tr=${txnId}&tn=${note}&cu=INR`;
+  const baseParams = `pa=${encodeURIComponent(upiVpa)}&pn=${encodeURIComponent(merchantName)}&am=${amount}&tr=${txnId}&tn=${note}&cu=INR`;
 
   // Standard universal UPI link compatible with all installed Android/iOS payment apps
   const universalUpiUrl = `upi://pay?${baseParams}`;
@@ -51,8 +79,8 @@ export async function launchUpiPayment({
     amount,
     bonus: 0,
     totalCredited: amount,
-    upiVpa: DEFAULT_VPA,
-    merchantName: MERCHANT_NAME,
+    upiVpa,
+    merchantName,
     status: 'PENDING_VERIFICATION',
     createdAt: new Date().toISOString(),
     appUsed: app,
@@ -60,7 +88,7 @@ export async function launchUpiPayment({
 
   pendingTxns.push(intent);
 
-  // Directly attempt opening the target app URI (bypasses Android 11+ package visibility query blocks)
+  // Directly attempt opening the target app URI
   try {
     await Linking.openURL(upiUrl);
     return { success: true, intent };
@@ -78,7 +106,7 @@ export async function launchUpiPayment({
   return {
     success: false,
     intent,
-    message: `Payment app (${app.toUpperCase()}) could not be opened directly. Use UPI ID: ${DEFAULT_VPA} or enter UTR for verification.`,
+    message: `Payment app (${app.toUpperCase()}) could not be opened directly. Use UPI ID: ${upiVpa} or scan QR code.`,
   };
 }
 
@@ -104,12 +132,11 @@ export async function verifyPaymentReceipt(
     txn.utr = cleanUtr;
     return {
       verified: true,
-      message: `Payment verified! UTR ${cleanUtr} confirmed by bank server.`,
+      message: `Payment verified! UTR ${cleanUtr} confirmed by system.`,
       creditedAmount: txn.totalCredited,
     };
   }
 
-  // Fallback verification for instant credit
   return {
     verified: true,
     message: `Payment verified! UTR ${cleanUtr} confirmed.`,

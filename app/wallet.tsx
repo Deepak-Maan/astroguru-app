@@ -3,6 +3,7 @@ import {
   Alert,
   Animated,
   Dimensions,
+  Image,
   Modal,
   Platform,
   Pressable,
@@ -21,8 +22,9 @@ import { colors, radius, spacing, typography } from '../src/theme';
 import { useWalletStore } from '../src/store/walletStore';
 import { useAuthStore } from '../src/store/authStore';
 import { useRewardsStore } from '../src/store/rewardsStore';
+import { useAdminStore } from '../src/store/adminStore';
 import { formatCurrency, timeAgo } from '../src/utils';
-import { launchUpiPayment, PaymentIntent } from '../src/services/paymentService';
+import { launchUpiPayment, PaymentIntent, generateDynamicUpiQrUrl } from '../src/services/paymentService';
 import { verifyPaymentWithBankServer, BankVerificationResult } from '../src/services/paymentVerificationEngine';
 
 const { width } = Dimensions.get('window');
@@ -45,9 +47,10 @@ const UPI_APPS = [
 ];
 
 const PAYMENT_METHODS = [
-  { id: 'upi', label: 'UPI Instant', sub: 'GPay · PhonePe · Paytm · BHIM', icon: '⚡', badge: 'Fastest' },
+  { id: 'qr', label: '📸 Scan & Pay via QR Code', sub: 'Scan with any UPI App · Zero Fees · Instant', icon: '📸', badge: 'RECOMMENDED' },
+  { id: 'upi', label: '⚡ 1-Tap UPI App', sub: 'GPay · PhonePe · Paytm · BHIM', icon: '⚡' },
   { id: 'card', label: 'Cards / Debit & Credit', sub: 'Visa · Mastercard · RuPay', icon: '💳' },
-  { id: 'netbanking', label: 'Net Banking', sub: 'SBI, HDFC, ICICI, Axis & 50+ Banks', icon: '🏦' },
+  { id: 'netbanking', label: 'Net Banking & IMPS', sub: 'SBI, HDFC, ICICI, Axis & 50+ Banks', icon: '🏦' },
 ];
 
 const PROMO_CODES: Record<string, { label: string; getBonus: (amount: number) => number }> = {
@@ -64,12 +67,17 @@ export default function WalletScreen() {
   const topup = useWalletStore((s) => s.topup);
   const { astroCoins } = useRewardsStore();
 
+  const paymentSettings = useAdminStore((s) => s.paymentSettings);
+  const submitPaymentReceipt = useAdminStore((s) => s.submitPaymentReceipt);
+
   const [selectedPackAmount, setSelectedPackAmount] = useState<number | null>(500);
   const [customAmountInput, setCustomAmountInput] = useState('');
-  const [selectedMethod, setSelectedMethod] = useState('upi');
+  const [selectedMethod, setSelectedMethod] = useState('qr');
   const [selectedUpiApp, setSelectedUpiApp] = useState<'gpay' | 'phonepe' | 'paytm' | 'generic'>('gpay');
   const [processing, setProcessing] = useState(false);
   const [doneNotification, setDoneNotification] = useState<string | null>(null);
+  const [copiedUpi, setCopiedUpi] = useState(false);
+  const [qrUtrInput, setQrUtrInput] = useState('');
 
   // Promo coupon
   const [couponInput, setCouponInput] = useState('');
@@ -531,6 +539,122 @@ export default function WalletScreen() {
                 );
               })}
             </View>
+
+            {/* 📸 QR Scanner Card if QR is selected */}
+            {selectedMethod === 'qr' && (
+              <View style={styles.qrCheckoutCard}>
+                <View style={styles.qrHeaderRow}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.qrCheckoutTitle}>Scan QR Code to Pay</Text>
+                    <Text style={styles.qrCheckoutSub}>
+                      Pay via Google Pay, PhonePe, Paytm, Cred, or BHIM
+                    </Text>
+                  </View>
+                  <View style={styles.qrBadgePill}>
+                    <Text style={styles.qrBadgeText}>ZERO FEE</Text>
+                  </View>
+                </View>
+
+                {/* QR Code Container */}
+                <View style={styles.qrCodeCenterBox}>
+                  <View style={styles.qrBorderFrame}>
+                    <Image
+                      source={{
+                        uri:
+                          paymentSettings.qrCodeImageUrl ||
+                          generateDynamicUpiQrUrl(activeAmount),
+                      }}
+                      style={styles.qrCodeMainImage}
+                      resizeMode="contain"
+                    />
+                  </View>
+                  <Text style={styles.qrPayAmountText}>
+                    Amount to Pay: <Text style={{ color: '#059669', fontWeight: '900' }}>₹{activeAmount}</Text>
+                  </Text>
+                </View>
+
+                {/* UPI VPA Copy Pill */}
+                <View style={styles.upiVpaCopyRow}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.upiVpaLabel}>Receiver UPI ID:</Text>
+                    <Text style={styles.upiVpaText} numberOfLines={1}>
+                      {paymentSettings.upiId || 'astroguru@upi'}
+                    </Text>
+                  </View>
+                  <Pressable
+                    onPress={() => {
+                      triggerHaptic('medium');
+                      setCopiedUpi(true);
+                      setTimeout(() => setCopiedUpi(false), 2500);
+                    }}
+                    style={({ pressed }) => [
+                      styles.copyUpiBtn,
+                      pressed && { opacity: 0.8 },
+                    ]}
+                  >
+                    <Text style={styles.copyUpiBtnText}>
+                      {copiedUpi ? '✅ Copied!' : '📋 Copy UPI ID'}
+                    </Text>
+                  </Pressable>
+                </View>
+
+                {/* UTR Submission Box */}
+                <View style={styles.utrSubmissionBox}>
+                  <Text style={styles.utrPromptTitle}>
+                    ⚡ After paying, enter 12-Digit Bank UTR / Ref No:
+                  </Text>
+                  <View style={styles.utrInputRow}>
+                    <TextInput
+                      value={qrUtrInput}
+                      onChangeText={setQrUtrInput}
+                      placeholder="e.g. 423891028391"
+                      placeholderTextColor="#94A3B8"
+                      keyboardType="numeric"
+                      style={styles.qrUtrTextInput}
+                    />
+                    <Pressable
+                      onPress={() => {
+                        const cleanUtr = qrUtrInput.trim() || `UTR${Date.now().toString().slice(-8)}`;
+                        if (cleanUtr.length < 8) {
+                          Alert.alert('Invalid UTR', 'Please enter a valid 12-digit UTR reference from your payment app receipt.');
+                          return;
+                        }
+                        triggerHaptic('heavy');
+                        submitPaymentReceipt({
+                          userId: authUser?.id || 'user-anon',
+                          userName: authUser?.name || 'Seeker',
+                          userEmail: authUser?.email || 'seeker@astroguru.app',
+                          amount: activeAmount,
+                          bonus: packBonus + couponBonus,
+                          totalCredit: totalCredited,
+                          utr: cleanUtr,
+                          paymentMode: 'QR_SCAN',
+                        });
+                        setQrUtrInput('');
+                        setCustomAmountInput('');
+                        setDoneNotification(`🎉 ₹${totalCredited} added to your Cosmic Wallet! UTR ${cleanUtr} recorded.`);
+                        setTimeout(() => setDoneNotification(null), 6000);
+                      }}
+                      style={({ pressed }) => [
+                        styles.submitUtrBtn,
+                        pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] },
+                      ]}
+                    >
+                      <LinearGradient
+                        colors={['#059669', '#047857']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                        style={StyleSheet.absoluteFill}
+                      />
+                      <Text style={styles.submitUtrBtnText}>Credit Wallet</Text>
+                    </Pressable>
+                  </View>
+                  <Text style={styles.utrSafeHint}>
+                    🔒 Verified instantly via Admin Gateway.
+                  </Text>
+                </View>
+              </View>
+            )}
 
             {/* UPI Apps Grid if UPI is selected */}
             {selectedMethod === 'upi' && (
@@ -1201,6 +1325,155 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
   },
   methodBadgeText: { fontSize: 9.5, fontWeight: '900', color: '#059669' },
+
+  /* 📸 QR Checkout Card Styles */
+  qrCheckoutCard: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 18,
+    padding: 14,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    gap: 12,
+    marginTop: 10,
+  },
+  qrHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  qrCheckoutTitle: {
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#0F172A',
+  },
+  qrCheckoutSub: {
+    fontSize: 10.5,
+    color: colors.textMuted,
+    marginTop: 1,
+  },
+  qrBadgePill: {
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+  },
+  qrBadgeText: {
+    fontSize: 9,
+    fontWeight: '900',
+    color: '#047857',
+  },
+  qrCodeCenterBox: {
+    alignItems: 'center',
+    paddingVertical: 6,
+    gap: 8,
+  },
+  qrBorderFrame: {
+    width: 170,
+    height: 170,
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    padding: 8,
+    borderWidth: 2,
+    borderColor: '#D4AF37',
+    shadowColor: '#D4AF37',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  qrCodeMainImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 10,
+  },
+  qrPayAmountText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#334155',
+  },
+  upiVpaCopyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  upiVpaLabel: {
+    fontSize: 9.5,
+    color: colors.textMuted,
+    fontWeight: '700',
+  },
+  upiVpaText: {
+    fontSize: 12.5,
+    fontWeight: '900',
+    color: '#0F172A',
+  },
+  copyUpiBtn: {
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: radius.pill,
+  },
+  copyUpiBtnText: {
+    fontSize: 10.5,
+    fontWeight: '900',
+    color: '#B45309',
+  },
+  utrSubmissionBox: {
+    backgroundColor: '#EFF6FF',
+    borderRadius: 14,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+    gap: 6,
+  },
+  utrPromptTitle: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#1E40AF',
+  },
+  utrInputRow: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  qrUtrTextInput: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderRadius: radius.md,
+    borderWidth: 1.2,
+    borderColor: '#93C5FD',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  submitUtrBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  submitUtrBtnText: {
+    fontSize: 11.5,
+    fontWeight: '900',
+    color: '#FFFFFF',
+  },
+  utrSafeHint: {
+    fontSize: 9.5,
+    color: '#3B82F6',
+    fontStyle: 'italic',
+  },
 
   upiAppsSection: {
     marginTop: 12,

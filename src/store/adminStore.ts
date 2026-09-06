@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useWalletStore } from './walletStore';
 
 export interface KycApprovalItem {
   id: string;
@@ -20,7 +21,7 @@ export interface PayoutRequest {
   astrologerName: string;
   amount: number;
   payoutMethod: 'UPI' | 'IMPS_BANK';
-  payoutDetails: string; // e.g. "devsharma@okhdfcbank" or "HDFC 501002948291 IFSC: HDFC0001234"
+  payoutDetails: string;
   requestedAt: string;
   status: 'pending' | 'processed' | 'rejected';
   utrNumber?: string;
@@ -30,7 +31,7 @@ export interface PromoCoupon {
   code: string;
   title: string;
   discountType: 'percentage' | 'flat';
-  discountValue: number; // e.g. 50 (%) or 100 (₹)
+  discountValue: number;
   minRecharge: number;
   maxUsage: number;
   redeemedCount: number;
@@ -47,7 +48,7 @@ export interface LiveSessionMonitor {
   billedAmount: number;
   status: 'active' | 'completed' | 'disputed' | 'refunded';
   disputeReason?: string;
-  toxicityScore: number; // 0 - 100 (0 = clean, 90 = toxic)
+  toxicityScore: number;
   startedAt: string;
 }
 
@@ -58,6 +59,39 @@ export interface SecurityIncident {
   ipAddress: string;
   timestamp: string;
   actionTaken: 'BLOCKED' | 'RESTRICTED' | 'BANNED';
+}
+
+export interface PaymentGatewaySettings {
+  upiId: string; // e.g. "astroguru@upi" or admin's personal/merchant VPA
+  merchantName: string; // e.g. "AstroGuru Vedic Services"
+  qrCodeImageUrl: string; // Custom uploaded QR Scanner Image URL
+  bankAccountNumber: string;
+  bankIfsc: string;
+  bankName: string;
+  accountHolderName: string;
+  autoApproveUpi: boolean; // Auto-verify vs manual review
+  minRechargeAmount: number;
+  maxRechargeAmount: number;
+  supportPhone: string;
+  instructions: string;
+  qrPreset: 'custom' | 'gpay' | 'phonepe' | 'paytm' | 'bhim';
+}
+
+export interface IncomingPaymentRequest {
+  id: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  amount: number;
+  bonus: number;
+  totalCredit: number;
+  utr: string; // 12-digit bank UTR reference
+  paymentMode: 'QR_SCAN' | 'UPI_INTENT' | 'BANK_TRANSFER';
+  screenshotUri?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: string;
+  processedAt?: string;
+  adminNotes?: string;
 }
 
 export interface AdminState {
@@ -73,9 +107,13 @@ export interface AdminState {
   securityIncidents: SecurityIncident[];
   bannedFingerprints: string[];
   // Global Pricing & Commission
-  platformFeePercent: number; // e.g. 20 = 20%
-  vipMonthlyPrice: number; // ₹299
-  vipAnnualPrice: number; // ₹1,999
+  platformFeePercent: number;
+  vipMonthlyPrice: number;
+  vipAnnualPrice: number;
+
+  // Payment Gateway & QR Scanner Hub
+  paymentSettings: PaymentGatewaySettings;
+  incomingPaymentsQueue: IncomingPaymentRequest[];
 
   // Actions
   approveKyc: (id: string) => void;
@@ -96,6 +134,12 @@ export interface AdminState {
 
   updatePlatformFee: (fee: number) => void;
   updateVipPricing: (monthly: number, annual: number) => void;
+
+  // Payment Actions
+  updatePaymentSettings: (settings: Partial<PaymentGatewaySettings>) => void;
+  approveIncomingPayment: (paymentId: string) => void;
+  rejectIncomingPayment: (paymentId: string, reason: string) => void;
+  submitPaymentReceipt: (request: Omit<IncomingPaymentRequest, 'id' | 'createdAt' | 'status'>) => string;
 }
 
 const DEFAULT_KYC: KycApprovalItem[] = [
@@ -159,109 +203,104 @@ const DEFAULT_PAYOUTS: PayoutRequest[] = [
     astrologerName: 'Guru Ananya Nair',
     amount: 22100,
     payoutMethod: 'UPI',
-    payoutDetails: 'ananyanair@icici',
-    requestedAt: '2026-08-21 13:00 IST',
+    payoutDetails: 'ananya.nair@icici',
+    requestedAt: '2026-08-21 08:30 IST',
     status: 'pending',
   },
 ];
 
 const DEFAULT_COUPONS: PromoCoupon[] = [
   {
-    code: 'FIRSTCALLFREE',
-    title: '100% Cashback on First Consultation',
+    code: 'ASTRO50',
+    title: '50% Extra Consultation Bonus',
     discountType: 'percentage',
-    discountValue: 100,
-    minRecharge: 200,
-    maxUsage: 5000,
-    redeemedCount: 1420,
+    discountValue: 50,
+    minRecharge: 250,
+    maxUsage: 1000,
+    redeemedCount: 412,
     expiresAt: '2026-12-31',
     active: true,
   },
   {
-    code: 'DIWALI50',
-    title: 'Flat 50% Off On All Vedic Remedies & Spells',
-    discountType: 'percentage',
-    discountValue: 50,
+    code: 'SHUBH100',
+    title: '₹100 Flat Free Vedic Cash',
+    discountType: 'flat',
+    discountValue: 100,
     minRecharge: 500,
-    maxUsage: 10000,
-    redeemedCount: 3840,
+    maxUsage: 500,
+    redeemedCount: 289,
+    expiresAt: '2026-10-31',
+    active: true,
+  },
+  {
+    code: 'VIPGOLD',
+    title: '20% Off AstroVIP Membership',
+    discountType: 'percentage',
+    discountValue: 20,
+    minRecharge: 1000,
+    maxUsage: 250,
+    redeemedCount: 178,
     expiresAt: '2026-11-15',
     active: true,
   },
-  {
-    code: 'KUNDLI100',
-    title: 'Flat ₹100 Off on 10-Page Kundli PDF Report',
-    discountType: 'flat',
-    discountValue: 100,
-    minRecharge: 100,
-    maxUsage: 2000,
-    redeemedCount: 890,
-    expiresAt: '2026-10-30',
-    active: true,
-  },
 ];
 
-const DEFAULT_SESSIONS: LiveSessionMonitor[] = [
-  {
-    id: 'sess-101',
-    seekerName: 'Amitabh Sen',
-    astrologerName: 'Acharya Dev Sharma',
-    channel: 'Audio Call',
-    durationMins: 14,
-    billedAmount: 350,
-    status: 'active',
-    toxicityScore: 0,
-    startedAt: '15 mins ago',
-  },
-  {
-    id: 'sess-102',
-    seekerName: 'Pooja Hegde',
-    astrologerName: 'Dr. Radhika Veda',
-    channel: 'Live Video',
-    durationMins: 22,
-    billedAmount: 440,
-    status: 'active',
-    toxicityScore: 2,
-    startedAt: '23 mins ago',
-  },
-  {
-    id: 'sess-103',
-    seekerName: 'Rahul Verma',
-    astrologerName: 'Pandit Krishna Shastri',
-    channel: 'Direct Chat',
-    durationMins: 18,
-    billedAmount: 270,
-    status: 'disputed',
-    disputeReason: 'Astrologer disconnected abruptly after 3 minutes due to network lag.',
-    toxicityScore: 12,
-    startedAt: '1 hour ago',
-  },
-];
+const DEFAULT_PAYMENT_SETTINGS: PaymentGatewaySettings = {
+  upiId: 'astroguru@upi',
+  merchantName: 'AstroGuru Vedic Services',
+  qrCodeImageUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=upi%3A%2F%2Fpay%3Fpa%3Dastroguru%40upi%26pn%3DAstroGuru%2520Vedic%2520Services%26cu%3DINR',
+  bankAccountNumber: '50100482910128',
+  bankIfsc: 'HDFC0000128',
+  bankName: 'HDFC Bank Ltd.',
+  accountHolderName: 'AstroGuru Technologies Pvt. Ltd.',
+  autoApproveUpi: true,
+  minRechargeAmount: 50,
+  maxRechargeAmount: 50000,
+  supportPhone: '+91 98765 43210',
+  instructions: 'Scan QR code using Google Pay, PhonePe, Paytm or BHIM. Enter amount and paste 12-digit UTR below.',
+  qrPreset: 'custom',
+};
 
-const DEFAULT_INCIDENTS: SecurityIncident[] = [
+const DEFAULT_INCOMING_PAYMENTS: IncomingPaymentRequest[] = [
   {
-    id: 'inc-1',
-    threatType: 'DUPLICATE_NONCE_REPLAY',
-    deviceFingerprint: 'AGY-FP-8E1A-49F2',
-    ipAddress: '103.21.144.82',
-    timestamp: '2026-08-21 14:32 IST',
-    actionTaken: 'BLOCKED',
+    id: 'pay-req-1',
+    userId: 'user-101',
+    userName: 'Rohan Sharma',
+    userEmail: 'rohan.sharma@gmail.com',
+    amount: 500,
+    bonus: 75,
+    totalCredit: 575,
+    utr: '423891028391',
+    paymentMode: 'QR_SCAN',
+    status: 'approved',
+    createdAt: '2026-09-06 10:15 IST',
+    processedAt: '2026-09-06 10:16 IST',
   },
   {
-    id: 'inc-2',
-    threatType: 'ROOT_JAILBREAK',
-    deviceFingerprint: 'AGY-FP-7B9C-11D0',
-    ipAddress: '49.207.218.14',
-    timestamp: '2026-08-21 15:10 IST',
-    actionTaken: 'RESTRICTED',
+    id: 'pay-req-2',
+    userId: 'user-102',
+    userName: 'Pooja Verma',
+    userEmail: 'pooja.verma@outlook.com',
+    amount: 1000,
+    bonus: 200,
+    totalCredit: 1200,
+    utr: '423892019482',
+    paymentMode: 'QR_SCAN',
+    status: 'pending',
+    createdAt: '2026-09-06 11:30 IST',
   },
   {
-    id: 'inc-3',
-    threatType: 'MITM_PROXY_ATTEMPT',
-    deviceFingerprint: 'AGY-FP-3A4E-99C1',
-    ipAddress: '182.74.19.122',
-    timestamp: '2026-08-21 15:45 IST',
-    actionTaken: 'BANNED',
+    id: 'pay-req-3',
+    userId: 'user-103',
+    userName: 'Vikram Mehta',
+    userEmail: 'vikram.m@techcorp.in',
+    amount: 250,
+    bonus: 25,
+    totalCredit: 275,
+    utr: '423899482019',
+    paymentMode: 'UPI_INTENT',
+    status: 'pending',
+    createdAt: '2026-09-06 12:05 IST',
   },
 ];
 
@@ -271,12 +310,27 @@ export const useAdminStore = create<AdminState>()(
       kycQueue: DEFAULT_KYC,
       payoutQueue: DEFAULT_PAYOUTS,
       coupons: DEFAULT_COUPONS,
-      liveSessions: DEFAULT_SESSIONS,
-      securityIncidents: DEFAULT_INCIDENTS,
-      bannedFingerprints: ['AGY-FP-3A4E-99C1'],
+      liveSessions: [
+        {
+          id: 'sess-1',
+          seekerName: 'Priya Mehta',
+          astrologerName: 'Acharya Dev Sharma',
+          channel: 'Direct Chat',
+          durationMins: 14,
+          billedAmount: 420,
+          status: 'active',
+          toxicityScore: 2,
+          startedAt: '12:40 PM',
+        },
+      ],
+      securityIncidents: [],
+      bannedFingerprints: [],
       platformFeePercent: 20,
       vipMonthlyPrice: 299,
       vipAnnualPrice: 1999,
+
+      paymentSettings: DEFAULT_PAYMENT_SETTINGS,
+      incomingPaymentsQueue: DEFAULT_INCOMING_PAYMENTS,
 
       approveKyc: (id) => {
         set((state) => ({
@@ -295,7 +349,7 @@ export const useAdminStore = create<AdminState>()(
       },
 
       approvePayout: (id) => {
-        const utr = `UTR-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(100000000 + Math.random() * 900000000)}`;
+        const utr = `UTR-${Date.now().toString().slice(-8)}`;
         set((state) => ({
           payoutQueue: state.payoutQueue.map((p) =>
             p.id === id ? { ...p, status: 'processed', utrNumber: utr } : p
@@ -369,6 +423,79 @@ export const useAdminStore = create<AdminState>()(
 
       updateVipPricing: (monthly, annual) => {
         set({ vipMonthlyPrice: monthly, vipAnnualPrice: annual });
+      },
+
+      // Payment Gateway & QR Scanner actions
+      updatePaymentSettings: (settings) => {
+        set((state) => {
+          const updated = { ...state.paymentSettings, ...settings };
+          // If UPI ID or merchant name changed, update dynamic QR if custom not provided
+          if (settings.upiId || settings.merchantName) {
+            const upi = settings.upiId || state.paymentSettings.upiId;
+            const name = settings.merchantName || state.paymentSettings.merchantName;
+            if (!settings.qrCodeImageUrl) {
+              updated.qrCodeImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=upi%3A%2F%2Fpay%3Fpa%3D${encodeURIComponent(upi)}%26pn%3D${encodeURIComponent(name)}%26cu%3DINR`;
+            }
+          }
+          return { paymentSettings: updated };
+        });
+      },
+
+      approveIncomingPayment: (paymentId) => {
+        const item = get().incomingPaymentsQueue.find((p) => p.id === paymentId);
+        if (item) {
+          // Top up user wallet
+          try {
+            useWalletStore.getState().topup(item.totalCredit, `UPI Recharge Verified (UTR: ${item.utr})`);
+          } catch (_) {}
+
+          set((state) => ({
+            incomingPaymentsQueue: state.incomingPaymentsQueue.map((p) =>
+              p.id === paymentId
+                ? { ...p, status: 'approved', processedAt: new Date().toLocaleString('en-IN') }
+                : p
+            ),
+          }));
+        }
+      },
+
+      rejectIncomingPayment: (paymentId, reason) => {
+        set((state) => ({
+          incomingPaymentsQueue: state.incomingPaymentsQueue.map((p) =>
+            p.id === paymentId
+              ? {
+                  ...p,
+                  status: 'rejected',
+                  adminNotes: reason || 'Invalid UTR / Payment not received',
+                  processedAt: new Date().toLocaleString('en-IN'),
+                }
+              : p
+          ),
+        }));
+      },
+
+      submitPaymentReceipt: (request) => {
+        const id = `pay-req-${Date.now().toString().slice(-6)}`;
+        const newReq: IncomingPaymentRequest = {
+          ...request,
+          id,
+          status: get().paymentSettings.autoApproveUpi ? 'approved' : 'pending',
+          createdAt: new Date().toLocaleString('en-IN'),
+          processedAt: get().paymentSettings.autoApproveUpi ? new Date().toLocaleString('en-IN') : undefined,
+        };
+
+        // If auto approve enabled, credit wallet immediately
+        if (get().paymentSettings.autoApproveUpi) {
+          try {
+            useWalletStore.getState().topup(request.totalCredit, `UPI Instant Recharge (UTR: ${request.utr})`);
+          } catch (_) {}
+        }
+
+        set((state) => ({
+          incomingPaymentsQueue: [newReq, ...state.incomingPaymentsQueue],
+        }));
+
+        return id;
       },
     }),
     {

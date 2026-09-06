@@ -36,9 +36,11 @@ import {
   scheduleLocalPushNotification,
 } from '../../src/services/pushNotificationService';
 import { useUpdateStore } from '../../src/store/updateStore';
+import { AdminPaymentGatewayPanel } from '../../src/components/admin/AdminPaymentGatewayPanel';
 
 type AdminTab =
   | 'overview'
+  | 'payments'
   | 'kyc'
   | 'payouts'
   | 'coupons'
@@ -294,6 +296,7 @@ export default function AdminDashboard() {
           >
             {[
               { id: 'overview', label: '📊 Overview' },
+              { id: 'payments', label: '💳 Payment & QR Scanner' },
               { id: 'kyc', label: `🪪 KYC Desk (${pendingKycCount})` },
               { id: 'payouts', label: `💸 Payouts (${pendingPayoutCount})` },
               { id: 'coupons', label: `🏷️ Coupons (${coupons.length})` },
@@ -386,8 +389,16 @@ export default function AdminDashboard() {
                 <SectionHeader title="⚡ Instant Operational Actions" />
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                   <Button
-                    label="🪪 Review KYC"
+                    label="💳 Payment & QR Setup"
                     variant="gold"
+                    size="sm"
+                    fullWidth={false}
+                    style={{ flex: 1, minWidth: 140 }}
+                    onPress={() => setTab('payments')}
+                  />
+                  <Button
+                    label="🪪 Review KYC"
+                    variant="outline"
                     size="sm"
                     fullWidth={false}
                     style={{ flex: 1, minWidth: 140 }}
@@ -409,18 +420,15 @@ export default function AdminDashboard() {
                     style={{ flex: 1, minWidth: 140 }}
                     onPress={() => setTab('coupons')}
                   />
-                  <Button
-                    label="📞 Live Radar"
-                    variant="gold"
-                    size="sm"
-                    fullWidth={false}
-                    style={{ flex: 1, minWidth: 140 }}
-                    onPress={() => setTab('radar')}
-                  />
                 </View>
               </Card>
             </View>
           )}
+
+          {/* ══════════════════════════════════════════════════
+              1.1 PAYMENT GATEWAY & QR SCANNER HUB
+             ══════════════════════════════════════════════════ */}
+          {tab === 'payments' && <AdminPaymentGatewayPanel />}
 
           {/* ══════════════════════════════════════════════════
               2. KYC APPROVALS DESK TAB
