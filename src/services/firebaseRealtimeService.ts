@@ -394,7 +394,7 @@ export async function syncLatestAppVersionToFirebase(
     await set(metaRef, {
       latestVersion: version,
       releaseNotes: notes,
-      apkUrl: apkUrl || 'https://expo.dev/artifacts/eas/u4tpx1IXSB9hLkluVHqFoehWSm73P2JSIxJvs8qQwIY.apk',
+      apkUrl: apkUrl || 'https://expo.dev/artifacts/eas/hzQ4s-kBQ2MUA_GVtD_FcJqMlJk4lmZXrN5nYB1QdnA.apk',
       updatedAt: Date.now(),
     });
   } catch (e) {
