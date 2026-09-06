@@ -36,8 +36,8 @@ export const GITHUB_REPO = 'astroguru-app';
 export const GITHUB_API_ALL_RELEASES = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/releases`;
 export const GITHUB_API_LATEST_RELEASE = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/releases/latest`;
 
-// Direct verified APK artifact URL for v2.8.8 release
-export const FALLBACK_RELEASE_APK_URL = `https://expo.dev/artifacts/eas/u4tpx1IXSB9hLkluVHqFoehWSm73P2JSIxJvs8qQwIY.apk`;
+// Direct verified APK artifact URL for v2.8.9 release
+export const FALLBACK_RELEASE_APK_URL = `https://expo.dev/artifacts/eas/hzQ4s-kBQ2MUA_GVtD_FcJqMlJk4lmZXrN5nYB1QdnA.apk`;
 
 export function getDirectApkDownloadUrl(version: string, assetName: string = 'app-release.apk'): string {
   const cleanVer = version.replace(/^v/i, '').trim();
