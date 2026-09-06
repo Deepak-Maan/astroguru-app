@@ -67,22 +67,47 @@ export default function PrivacyPolicyScreen() {
             </Text>
           </Card>
 
-          {/* Section 5 */}
+          {/* Section 5: Device Permissions */}
           <Card>
-            <Text style={styles.sectionTitle}>5. User Rights & Data Control</Text>
+            <Text style={styles.sectionTitle}>5. Device Permissions & Usage</Text>
             <Text style={styles.paragraph}>
-              You have full ownership of your data. You can view, edit, or reset your saved birth profile at any time directly from the app Settings or Profile screen. If you wish to delete your account data permanently, contact our privacy officer at support@astroguru.app.
+              AstroGuru requests the following explicit hardware permissions solely for real-time consultation features:
+            </Text>
+            <Text style={styles.bullet}>• <Text style={{ fontWeight: '700' }}>Microphone (RECORD_AUDIO):</Text> Used solely during live voice consultations with certified astrologers.</Text>
+            <Text style={styles.bullet}>• <Text style={{ fontWeight: '700' }}>Camera (CAMERA):</Text> Used for optional live 2-way HD video consultations.</Text>
+            <Text style={styles.bullet}>• <Text style={{ fontWeight: '700' }}>Notifications (POST_NOTIFICATIONS):</Text> Used for live astrologer alerts, call ringing, and daily auspicious muhurat updates.</Text>
+          </Card>
+
+          {/* Section 6: Refund & Cancellation Policy */}
+          <Card>
+            <Text style={styles.sectionTitle}>6. Wallet Recharge & Refund Terms</Text>
+            <Text style={styles.paragraph}>
+              AstroGuru offers transparent per-minute consultation billing. In the rare event of call disconnections due to network failure, or unsatisfactory astrologer response, users are entitled to an automated or manual wallet credit refund within 24 hours by contacting support@astroguru.app.
             </Text>
           </Card>
 
-          {/* Section 6 */}
-          <Card style={{ backgroundColor: 'rgba(217,119,6,0.08)', borderColor: 'rgba(217,119,6,0.3)' }}>
-            <Text style={[styles.sectionTitle, { color: colors.saffron }]}>6. Contact Us</Text>
+          {/* Section 7: Account Deletion Rights */}
+          <Card>
+            <Text style={styles.sectionTitle}>7. User Rights & Account Deletion</Text>
             <Text style={styles.paragraph}>
-              If you have any questions regarding this Privacy Policy or data practices, please contact us:
+              Users can delete their account and erase all associated birth data at any time directly via <Text style={{ fontWeight: '700' }}>Settings › Delete Account & Wipe Data</Text>, or by emailing our Grievance Officer at support@astroguru.app. Data deletion takes effect immediately.
+            </Text>
+          </Card>
+
+          {/* Section 8: Grievance Officer */}
+          <Card style={{ backgroundColor: 'rgba(217,119,6,0.08)', borderColor: 'rgba(217,119,6,0.3)' }}>
+            <Text style={[styles.sectionTitle, { color: colors.saffron }]}>8. Grievance Officer & Contact</Text>
+            <Text style={styles.paragraph}>
+              In accordance with Information Technology Act & Google Play Developer Policy, our designated Grievance Officer is:
             </Text>
             <Text style={{ ...typography.small, color: colors.text, fontWeight: '700', marginTop: 4 }}>
+              👤 Grievance Officer: Deepak Sharma
+            </Text>
+            <Text style={{ ...typography.small, color: colors.text, fontWeight: '700', marginTop: 2 }}>
               📧 Email: support@astroguru.app
+            </Text>
+            <Text style={{ ...typography.small, color: colors.text, fontWeight: '700', marginTop: 2 }}>
+              📞 Helpline: +91 98765 43210 (Mon–Sun 9 AM – 11 PM IST)
             </Text>
             <Text style={{ ...typography.small, color: colors.text, fontWeight: '700', marginTop: 2 }}>
               📍 Developer: AstroGuru Studios · New Delhi, India

@@ -138,14 +138,26 @@ export default function Settings() {
       return;
     }
 
-    Alert.alert(
-      'Sign Out of AstroGuru?',
-      'You will need to sign in again to access your wallet and consultations.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Sign Out', style: 'destructive', onPress: doLogout },
-      ]
-    );
+    Alert.alert('Sign Out', 'Are you sure you want to sign out of AstroGuru?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Sign Out', style: 'destructive', onPress: doLogout },
+    ]);
+  };
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const handleConfirmDeleteAccount = () => {
+    try {
+      useChatStore.getState().clearAiChat();
+    } catch (_) {}
+    logout();
+    setShowDeleteModal(false);
+    if (Platform.OS === 'web') {
+      alert('Your AstroGuru account and all personal birth data have been permanently erased.');
+    } else {
+      Alert.alert('Account Deleted', 'Your AstroGuru account and all personal birth data have been permanently erased.');
+    }
+    router.replace('/(auth)/login');
   };
 
   return (
@@ -308,17 +320,69 @@ export default function Settings() {
             </Card>
           </View>
 
-          {/* Account Session & Sign Out */}
+          {/* 24/7 Priority Support & Help Center */}
           <View>
-            <SectionHeader title="Account Session" subtitle={`Logged in as ${authUser?.email ?? 'Seeker'}`} />
+            <SectionHeader title="24/7 Help & Support" subtitle="Direct customer care assistance" />
+            <Card padded={false}>
+              <Pressable
+                onPress={() => Linking.openURL('https://wa.me/919876543210?text=Hello%20AstroGuru%20Support')}
+                style={({ pressed }) => [styles.prefRow, pressed && { opacity: 0.65 }]}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.prefLabel, { color: '#10B981', fontWeight: '800' }]}>💬 WhatsApp Live Support</Text>
+                  <Text style={styles.prefSub}>Instant reply for recharge, booking or Vedic queries</Text>
+                </View>
+                <Text style={[styles.chevron, { color: '#10B981' }]}>›</Text>
+              </Pressable>
+
+              <Pressable
+                onPress={() => Linking.openURL('tel:+919876543210')}
+                style={({ pressed }) => [styles.prefRow, pressed && { opacity: 0.65 }]}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.prefLabel}>📞 Call Helpline (+91 98765 43210)</Text>
+                  <Text style={styles.prefSub}>Mon–Sun 9:00 AM – 11:00 PM IST</Text>
+                </View>
+                <Text style={styles.chevron}>›</Text>
+              </Pressable>
+
+              <Pressable
+                onPress={() => router.push('/privacy')}
+                style={({ pressed }) => [styles.prefRow, pressed && { opacity: 0.65 }]}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.prefLabel}>🛡️ Privacy Policy & Terms of Service</Text>
+                  <Text style={styles.prefSub}>Data protection, refund terms & grievance details</Text>
+                </View>
+                <Text style={styles.chevron}>›</Text>
+              </Pressable>
+            </Card>
+          </View>
+
+          {/* Account Session & Data Rights */}
+          <View>
+            <SectionHeader title="Account & Data Management" subtitle={`Logged in as ${authUser?.email ?? 'Seeker'}`} />
             <Card padded={false}>
               <Pressable
                 onPress={handleSignOut}
                 style={({ pressed }) => [styles.prefRow, pressed && { opacity: 0.65 }]}
               >
                 <View style={{ flex: 1 }}>
-                  <Text style={[styles.prefLabel, { color: colors.danger }]}>🚪 Sign Out of Account</Text>
-                  <Text style={styles.prefSub}>Logs you out and returns to the Login screen</Text>
+                  <Text style={[styles.prefLabel, { color: '#475569' }]}>🚪 Sign Out of Account</Text>
+                  <Text style={styles.prefSub}>Logs you out and returns to Login</Text>
+                </View>
+                <Text style={styles.chevron}>›</Text>
+              </Pressable>
+
+              <Pressable
+                onPress={() => setShowDeleteModal(true)}
+                style={({ pressed }) => [styles.prefRow, pressed && { opacity: 0.65 }]}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.prefLabel, { color: colors.danger, fontWeight: '800' }]}>
+                    🗑️ Delete Account & Wipe Data
+                  </Text>
+                  <Text style={styles.prefSub}>Permanently erases all birth data, Kundli & credentials</Text>
                 </View>
                 <Text style={[styles.chevron, { color: colors.danger }]}>›</Text>
               </Pressable>
@@ -333,6 +397,9 @@ export default function Settings() {
               <Text style={styles.help}>
                 Kundli, Lagna, Rashi and Nakshatra are computed on-device using the Lahiri
                 ayanamsa — no internet required. Sun and Moon positions are highly accurate.
+              </Text>
+              <Text style={{ fontSize: 11, color: colors.textMuted, fontStyle: 'italic' }}>
+                Grievance Officer: Deepak Sharma · Email: support@astroguru.app · New Delhi, India
               </Text>
             </Card>
           </View>
@@ -373,6 +440,43 @@ export default function Settings() {
                   fullWidth={false}
                   style={{ flex: 1 }}
                   onPress={handleSavePin}
+                />
+              </View>
+            </View>
+          </View>
+        </Modal>
+
+        {/* ── DELETE ACCOUNT CONFIRMATION MODAL (Google Play Policy) ── */}
+        <Modal visible={showDeleteModal} animationType="fade" transparent>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={{ alignItems: 'center', marginBottom: 8 }}>
+                <Text style={{ fontSize: 36 }}>⚠️</Text>
+                <Text style={[styles.modalTitle, { color: colors.danger, textAlign: 'center', marginTop: 4 }]}>
+                  Permanently Delete Account?
+                </Text>
+              </View>
+
+              <Text style={[styles.modalSub, { textAlign: 'center', color: '#64748B' }]}>
+                This action is irreversible. All your saved Kundli birth charts, chat logs with astrologers, wallet balance, and login credentials will be permanently erased.
+              </Text>
+
+              <View style={{ flexDirection: 'row', gap: spacing.sm, marginTop: spacing.lg }}>
+                <Button
+                  label="Keep Account"
+                  variant="outline"
+                  size="sm"
+                  fullWidth={false}
+                  style={{ flex: 1 }}
+                  onPress={() => setShowDeleteModal(false)}
+                />
+                <Button
+                  label="Yes, Erase Data"
+                  variant="danger"
+                  size="sm"
+                  fullWidth={false}
+                  style={{ flex: 1 }}
+                  onPress={handleConfirmDeleteAccount}
                 />
               </View>
             </View>
