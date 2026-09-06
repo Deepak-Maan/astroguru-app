@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Alert,
   Animated,
@@ -69,6 +69,10 @@ export default function WalletScreen() {
 
   const paymentSettings = useAdminStore((s) => s.paymentSettings);
   const submitPaymentReceipt = useAdminStore((s) => s.submitPaymentReceipt);
+
+  useEffect(() => {
+    useWalletStore.getState().syncUserSessionWallet();
+  }, []);
 
   const [selectedPackAmount, setSelectedPackAmount] = useState<number | null>(500);
   const [customAmountInput, setCustomAmountInput] = useState('');

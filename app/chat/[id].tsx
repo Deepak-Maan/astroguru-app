@@ -180,22 +180,30 @@ export default function ChatScreen() {
     requestAnimationFrame(() => scrollRef.current?.scrollToEnd({ animated: true }));
   }, []);
 
+  const lastBilledMinuteRef = useRef(0);
+  const elapsedCountRef = useRef(0);
+
   const begin = useCallback(() => {
     if (!astrologer) return;
     
     // Auto-topup welcome trial if user has insufficient funds for first minute
-    if (balance < astrologer.pricePerMin) {
+    const freshBalance = useWalletStore.getState().balance;
+    const rate = astrologer.pricePerMin || 25;
+    if (freshBalance < rate) {
       topup(100, 'Welcome Consultation Bonus');
     }
 
-    const ok = debit(astrologer.pricePerMin, `Consult · ${astrologer.name} (min 1)`);
-    if (!ok) {
-      setRanOut(true);
-      return;
+    if (lastBilledMinuteRef.current < 1) {
+      const ok = debit(rate, `Chat Consultation · ${astrologer.name} (Min 1)`);
+      if (!ok) {
+        setRanOut(true);
+        return;
+      }
+      lastBilledMinuteRef.current = 1;
+      billMinute(astrologer.id, rate);
     }
 
     startSession(astrologer.id);
-    billMinute(astrologer.id, astrologer.pricePerMin);
     setElapsed(0);
     setRanOut(false);
 
@@ -207,7 +215,7 @@ export default function ChatScreen() {
         astrologerId: astrologer.id,
         astrologerName: astrologer.name,
         topic: QUICK_PROMPTS[0],
-        ratePerMin: astrologer.pricePerMin,
+        ratePerMin: rate,
       });
 
       if ((useChatStore.getState().sessions[astrologer.id]?.messages.length ?? 0) === 0) {
@@ -223,7 +231,7 @@ export default function ChatScreen() {
         }
       }
     }, 0);
-  }, [astrologer, balance, topup, debit, startSession, billMinute, addMessage, createRoom, currentSeekerId, currentSeekerName, liveRoomId, sendLiveMessage]);
+  }, [astrologer, topup, debit, startSession, billMinute, addMessage, createRoom, currentSeekerId, currentSeekerName, liveRoomId, sendLiveMessage]);
 
   useEffect(() => {
     if (astrologer && !session?.startedAt && !session?.ended) {
@@ -233,8 +241,6 @@ export default function ChatScreen() {
       return () => clearTimeout(timer);
     }
   }, [astrologer?.id]);
-
-  const elapsedCountRef = useRef(0);
 
   useEffect(() => {
     if (!active || !astrologer) return;
@@ -246,14 +252,23 @@ export default function ChatScreen() {
       const count = elapsedCountRef.current;
       setElapsed(count);
 
-      if (count > 0 && count % 60 === 0) {
-        const minute = Math.floor(count / 60) + 1;
+      const targetMinute = Math.floor(count / 60) + 1;
+      if (targetMinute > lastBilledMinuteRef.current) {
+        const freshBalance = useWalletStore.getState().balance;
+        const rate = astrologer.pricePerMin || 25;
+        if (freshBalance < rate) {
+          setRanOut(true);
+          endSession(astrologer.id);
+          return;
+        }
+
         const ok = debit(
-          astrologer.pricePerMin,
-          `Consult · ${astrologer.name} (min ${minute})`,
+          rate,
+          `Chat Consultation · ${astrologer.name} (Min ${targetMinute})`
         );
         if (ok) {
-          billMinute(astrologer.id, astrologer.pricePerMin);
+          lastBilledMinuteRef.current = targetMinute;
+          billMinute(astrologer.id, rate);
         } else {
           setRanOut(true);
           endSession(astrologer.id);
@@ -262,7 +277,7 @@ export default function ChatScreen() {
     }, 1000);
 
     return () => clearInterval(t);
-  }, [active, astrologer?.id]);
+  }, [active, astrologer?.id, astrologer?.name, astrologer?.pricePerMin, billMinute, debit, endSession]);
 
   function send(textToSend?: string) {
     const text = (textToSend || draft).trim();

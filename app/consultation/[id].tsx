@@ -86,7 +86,7 @@ export default function LiveConsultationScreen() {
   const [rating, setRating] = useState(5);
 
   const [seconds, setSeconds] = useState(0);
-  const [billedMinutes, setBilledMinutes] = useState(1);
+  const [billedMinutes, setBilledMinutes] = useState(0);
   const [lowBalanceAlert, setLowBalanceAlert] = useState(false);
 
   // Live Remedies list sent during call
@@ -206,17 +206,42 @@ export default function LiveConsultationScreen() {
     }
   }, [callState, isMuted]);
 
-  // Call duration timer & billing engine
+  const lastBilledMinuteRef = useRef(0);
+
+  // Call duration timer & idempotent per-minute billing engine
   useEffect(() => {
     if (callState !== 'connected') return;
+
+    // Bill Minute 1 upon call connect
+    if (role !== 'expert' && lastBilledMinuteRef.current < 1 && astrologer) {
+      const freshBalance = useWalletStore.getState().balance;
+      const rate = astrologer.pricePerMin || 25;
+      if (freshBalance < rate) {
+        useWalletStore.getState().topup(100, 'Welcome Consultation Bonus');
+      }
+      const ok = useWalletStore.getState().debit(
+        rate,
+        `Live ${type === 'video' ? 'Video' : 'Audio'} Call · ${astrologer.name} (Min 1)`
+      );
+      if (ok) {
+        lastBilledMinuteRef.current = 1;
+        setBilledMinutes(1);
+      } else {
+        setLowBalanceAlert(true);
+        handleEndCall();
+        return;
+      }
+    }
 
     const interval = setInterval(() => {
       setSeconds((prev) => {
         const next = prev + 1;
-        // Bill every 60 seconds
-        if (next > 0 && next % 60 === 0 && role !== 'expert') {
-          // Check balance before billing
-          if (balance < astrologer.pricePerMin) {
+        // Bill subsequent minutes at exactly 60s, 120s, 180s... (Minute 2, 3, 4...)
+        const targetMinute = Math.floor(next / 60) + 1;
+        if (role !== 'expert' && astrologer && targetMinute > lastBilledMinuteRef.current) {
+          const freshBalance = useWalletStore.getState().balance;
+          const rate = astrologer.pricePerMin || 25;
+          if (freshBalance < rate) {
             setLowBalanceAlert(true);
             try {
               if (Platform.OS !== 'web') {
@@ -227,15 +252,25 @@ export default function LiveConsultationScreen() {
             return prev;
           }
 
-          setBilledMinutes((m) => m + 1);
-          debit(astrologer.pricePerMin, `Live ${type.toUpperCase()} Consultation with ${astrologer.name}`);
+          const ok = useWalletStore.getState().debit(
+            rate,
+            `Live ${type === 'video' ? 'Video' : 'Audio'} Call · ${astrologer.name} (Min ${targetMinute})`
+          );
+          if (ok) {
+            lastBilledMinuteRef.current = targetMinute;
+            setBilledMinutes(targetMinute);
+          } else {
+            setLowBalanceAlert(true);
+            handleEndCall();
+            return prev;
+          }
         }
         return next;
       });
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [callState, astrologer, debit, type, role, balance]);
+  }, [callState, astrologer?.id, astrologer?.name, astrologer?.pricePerMin, role, type]);
 
   function handleEndCall() {
     setCallState('ended');
