@@ -6,7 +6,7 @@ import * as Updates from 'expo-updates';
 import { inAppUpdateEngine, UpdateDownloadProgress, FALLBACK_APK_URL } from '../services/updates/inAppUpdateEngine';
 import { getAppVersionFromFirebase, syncLatestAppVersionToFirebase } from '../services/firebaseRealtimeService';
 
-export const LATEST_RELEASE_VERSION = '2.8.9';
+export const LATEST_RELEASE_VERSION = '2.9.0';
 
 export interface UpdateInfo {
   currentVersion: string;
@@ -46,7 +46,7 @@ export const useUpdateStore = create<UpdateState>()(
       updateAvailable: false,
       isMandatory: false,
       releaseNotes: [
-        '🚀 Release v2.8.9: Major AstroGuru Platform Upgrade',
+        '🚀 Release v2.9.0: Major AstroGuru Platform Upgrade',
         '💳 AstroGold Luxury Metal Card & 1-Tap UPI Wallet Recharge',
         '🔥 Cosmic Retention Streak & 7-Day Astro-Coin Check-in Track',
         '🎡 6-Segment Navagraha Spin & Win Chakra (Instant Cash & Vouchers)',
