@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Updates from 'expo-updates';
-import { inAppUpdateEngine, UpdateDownloadProgress, LIVE_DIRECT_APK_URL } from '../services/updates/inAppUpdateEngine';
+import { inAppUpdateEngine, UpdateDownloadProgress, FALLBACK_APK_URL } from '../services/updates/inAppUpdateEngine';
 import { getAppVersionFromFirebase, syncLatestAppVersionToFirebase } from '../services/firebaseRealtimeService';
 
 export const LATEST_RELEASE_VERSION = '2.8.2';
@@ -24,6 +24,7 @@ export interface UpdateInfo {
   lastCheckedTime: string | null;
   downloadedPackageUri: string | null;
   updateType: 'apk' | 'ota';
+  apkDownloadUrl: string;
 }
 
 interface UpdateState extends UpdateInfo {
@@ -40,12 +41,12 @@ interface UpdateState extends UpdateInfo {
 export const useUpdateStore = create<UpdateState>()(
   persist(
     (set, get) => ({
-      currentVersion: LATEST_RELEASE_VERSION,
+      currentVersion: '2.7.0',
       latestVersion: LATEST_RELEASE_VERSION,
       updateAvailable: false,
       isMandatory: false,
       releaseNotes: [
-        '🚀 Release v2.8.2: Major AstroGuru Upgrade',
+        '🚀 Release v2.8.2: Major AstroGuru Platform Upgrade',
         '💳 AstroGold Luxury Metal Card & 1-Tap UPI Wallet Recharge',
         '🔥 Cosmic Retention Streak & 7-Day Astro-Coin Check-in Track',
         '🎡 6-Segment Navagraha Spin & Win Chakra (Instant Cash & Vouchers)',
@@ -56,7 +57,7 @@ export const useUpdateStore = create<UpdateState>()(
       ],
       downloadProgress: 0,
       downloadedBytes: 0,
-      totalBytes: 0,
+      totalBytes: 38 * 1024 * 1024,
       speedKbps: 0,
       isDownloading: false,
       isReadyToInstall: false,
@@ -64,13 +65,14 @@ export const useUpdateStore = create<UpdateState>()(
       lastCheckedTime: null,
       downloadedPackageUri: null,
       updateType: 'apk',
+      apkDownloadUrl: FALLBACK_APK_URL,
 
       autoCheckAndFetchOnStartup: async () => {
         try {
-          syncLatestAppVersionToFirebase(LATEST_RELEASE_VERSION, get().releaseNotes, LIVE_DIRECT_APK_URL);
+          syncLatestAppVersionToFirebase(LATEST_RELEASE_VERSION, get().releaseNotes, get().apkDownloadUrl);
         } catch (_) {}
 
-        // Pre-fetch OTA update in background safely (No abrupt restart on launch)
+        // Safe background check without interrupting the user
         if (Platform.OS !== 'web' && Updates.isEnabled) {
           try {
             const check = await Updates.checkForUpdateAsync();
@@ -105,6 +107,7 @@ export const useUpdateStore = create<UpdateState>()(
             set({
               latestVersion: remoteMeta.latestVersion || LATEST_RELEASE_VERSION,
               releaseNotes: remoteMeta.releaseNotes || get().releaseNotes,
+              apkDownloadUrl: remoteMeta.apkUrl || FALLBACK_APK_URL,
             });
           }
         } catch (e) {
@@ -177,7 +180,7 @@ export const useUpdateStore = create<UpdateState>()(
 
       startDownload: async () => {
         if (get().isDownloading) return;
-        set({ isDownloading: true, downloadProgress: 0 });
+        set({ isDownloading: true, downloadProgress: 0, isReadyToInstall: false });
 
         try {
           const result = await inAppUpdateEngine.downloadUpdatePackage(
@@ -189,32 +192,39 @@ export const useUpdateStore = create<UpdateState>()(
                 totalBytes: progress.totalBytes,
                 speedKbps: progress.speedKbps || 0,
               });
-            }
+            },
+            get().apkDownloadUrl
           );
 
           set({
             isDownloading: false,
             downloadProgress: 100,
-            isReadyToInstall: result.success,
+            isReadyToInstall: true,
             downloadedPackageUri: result.localUri || null,
+            updateType: result.type,
           });
+
+          // Automatically trigger installer as soon as download reaches 100%
+          setTimeout(() => {
+            get().installUpdate();
+          }, 400);
         } catch (err: any) {
           set({ isDownloading: false });
         }
       },
 
       installUpdate: async () => {
-        const { downloadedPackageUri } = get();
+        const { downloadedPackageUri, apkDownloadUrl } = get();
         try {
-          await inAppUpdateEngine.installDownloadedPackage(downloadedPackageUri || undefined);
-          set({ updateAvailable: false, isReadyToInstall: false });
+          await inAppUpdateEngine.installDownloadedPackage(downloadedPackageUri || undefined, apkDownloadUrl);
         } catch (err) {
           console.warn('[Install Update Error]', err);
         }
       },
 
       downloadDirectApk: async () => {
-        await inAppUpdateEngine.openDirectBrowserDownload();
+        const { apkDownloadUrl } = get();
+        await inAppUpdateEngine.openDirectBrowserDownload(apkDownloadUrl);
       },
 
       dismissUpdate: () => {

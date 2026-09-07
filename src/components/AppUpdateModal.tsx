@@ -1,12 +1,17 @@
-import React, { useState } from 'react';
-import { Alert, Linking, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import {
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 import { colors, radius, spacing, typography } from '../theme';
-import { Button } from './Button';
 import { useUpdateStore } from '../store/updateStore';
-import { downloadAndInstallApk, launchNativeInstaller } from '../services/apkInstallerService';
-
-const DIRECT_APK_DOWNLOAD_URL = 'https://expo.dev/artifacts/eas/j1bujHIWY7tt-WYtbLaWl_7QWHO-sv1bGzeVuCuVNTU.apk';
 
 export function AppUpdateModal() {
   const {
@@ -28,60 +33,23 @@ export function AppUpdateModal() {
     dismissUpdate,
   } = useUpdateStore();
 
-  const [isApkDownloading, setIsApkDownloading] = useState(false);
-  const [apkProgress, setApkProgress] = useState(0);
-  const [downloadedApkUri, setDownloadedApkUri] = useState<string | null>(null);
-
   if (Platform.OS === 'web' || !updateAvailable) return null;
 
-  const handleInAppApkInstall = async () => {
-    setIsApkDownloading(true);
-    setApkProgress(10);
-    setDownloadedApkUri(null);
+  const handlePrimaryPress = () => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
 
-    try {
-      const res = await downloadAndInstallApk(DIRECT_APK_DOWNLOAD_URL, (pct) => {
-        setApkProgress(pct);
-      });
-
-      setIsApkDownloading(false);
-      if (res.fileUri) {
-        setDownloadedApkUri(res.fileUri);
-      }
-
-      if (!res.success && res.error) {
-        Alert.alert(
-          'APK Ready to Install',
-          'Download complete. Tap "Open & Install APK" below, or download directly via browser.',
-          [
-            {
-              text: 'Open in Browser',
-              onPress: () => Linking.openURL(DIRECT_APK_DOWNLOAD_URL),
-            },
-            {
-              text: 'OK',
-              style: 'cancel',
-            },
-          ]
-        );
-      }
-    } catch (e) {
-      setIsApkDownloading(false);
-      await Linking.openURL(DIRECT_APK_DOWNLOAD_URL);
+    if (isReadyToInstall) {
+      installUpdate();
+    } else if (!isDownloading) {
+      startDownload();
     }
   };
 
-  const handleLaunchPackageInstaller = async () => {
-    try {
-      if (downloadedApkUri) {
-        await launchNativeInstaller(downloadedApkUri, DIRECT_APK_DOWNLOAD_URL);
-      } else {
-        await downloadAndInstallApk(DIRECT_APK_DOWNLOAD_URL);
-      }
-    } catch (_) {
-      await Linking.openURL(DIRECT_APK_DOWNLOAD_URL);
-    }
-  };
+  const downloadedMB = (downloadedBytes / (1024 * 1024)).toFixed(1);
+  const totalMB = (totalBytes / (1024 * 1024)).toFixed(1);
+  const speedMBps = ((speedKbps || 0) / 1024).toFixed(1);
 
   return (
     <Modal visible={updateAvailable} animationType="fade" transparent statusBarTranslucent>
@@ -91,27 +59,31 @@ export function AppUpdateModal() {
             {/* Header Banner */}
             <View style={styles.header}>
               <LinearGradient
-                colors={['#D97706', '#E67E22']}
+                colors={['#D97706', '#E67E22', '#F59E0B']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={StyleSheet.absoluteFill}
               />
               <View style={styles.badgePill}>
-                <Text style={styles.badgeText}>✨ NEW VERSION v{latestVersion} READY</Text>
+                <Text style={styles.badgeText}>✨ OFFICIAL UPDATE AVAILABLE</Text>
               </View>
-              <Text style={{ fontSize: 36, marginVertical: 2 }}>🚀</Text>
-              <Text style={styles.headerTitle}>In-App App Installer</Text>
+              <Text style={{ fontSize: 38, marginVertical: 4 }}>🚀</Text>
+              <Text style={styles.headerTitle}>AstroGuru v{latestVersion}</Text>
               <View style={styles.versionBadge}>
                 <Text style={styles.versionText}>
-                  Current: v{currentVersion} ➔ <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>New: v{latestVersion}</Text>
+                  Installed: v{currentVersion} ➔ <Text style={{ color: '#FDE68A', fontWeight: '900' }}>New: v{latestVersion}</Text>
                 </Text>
               </View>
             </View>
 
             {/* Release Notes */}
             <View style={styles.notesContainer}>
-              <Text style={styles.notesHeader}>🎁 What's New in Version {latestVersion}:</Text>
-              <ScrollView style={{ maxHeight: 150 }} contentContainerStyle={{ gap: 8 }} showsVerticalScrollIndicator={false}>
+              <Text style={styles.notesHeader}>🎁 What's New in This Version:</Text>
+              <ScrollView
+                style={{ maxHeight: 160 }}
+                contentContainerStyle={{ gap: 8 }}
+                showsVerticalScrollIndicator={false}
+              >
                 {releaseNotes.map((note, index) => (
                   <View key={index} style={styles.noteItem}>
                     <Text style={styles.noteText}>{note}</Text>
@@ -120,92 +92,100 @@ export function AppUpdateModal() {
               </ScrollView>
             </View>
 
-            {/* Download Progress Bar */}
-            {(isDownloading || isApkDownloading) && (
+            {/* Live Progress Bar Section */}
+            {isDownloading && (
               <View style={styles.progressBox}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <View style={styles.progressHeaderRow}>
                   <Text style={styles.progressLabel}>
-                    {isApkDownloading
-                      ? '📥 Downloading APK Package…'
-                      : '⚡ Fetching Update Bundle…'}
+                    📥 Downloading Update Package…
                   </Text>
-                  <Text style={styles.progressPct}>
-                    {isApkDownloading ? apkProgress : downloadProgress}%
-                  </Text>
+                  <Text style={styles.progressPct}>{downloadProgress}%</Text>
                 </View>
+
+                {/* Animated Track */}
                 <View style={styles.track}>
-                  <View
-                    style={[
-                      styles.bar,
-                      { width: `${isApkDownloading ? apkProgress : downloadProgress}%` },
-                    ]}
+                  <LinearGradient
+                    colors={[colors.saffron, colors.gold, '#10B981']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={[styles.bar, { width: `${Math.max(4, downloadProgress)}%` }]}
                   />
+                </View>
+
+                <View style={styles.progressMetaRow}>
+                  <Text style={styles.progressMetaText}>
+                    {downloadedMB} MB / {totalMB} MB
+                  </Text>
+                  <Text style={styles.progressMetaSpeed}>
+                    ⚡ {speedMBps} MB/s
+                  </Text>
                 </View>
               </View>
             )}
 
-            {/* Actions */}
-            <View style={styles.actionColumn}>
-              {isApkDownloading ? (
-                <Button
-                  label={`📥 Downloading APK (${apkProgress}%)…`}
-                  variant="gold"
-                  size="md"
-                  disabled
-                  loading
-                />
-              ) : isDownloading ? (
-                <Button
-                  label={`⚡ Fetching Update (${downloadProgress}%)…`}
-                  variant="gold"
-                  size="md"
-                  disabled
-                  loading
-                />
-              ) : (
-                <>
-                  {Platform.OS === 'android' && downloadedApkUri ? (
-                    <Button
-                      label="📲 Open & Install Downloaded APK"
-                      variant="gold"
-                      size="md"
-                      onPress={handleLaunchPackageInstaller}
-                    />
-                  ) : Platform.OS === 'android' ? (
-                    <Button
-                      label="📥 In-App Download & Auto-Install APK"
-                      variant="gold"
-                      size="md"
-                      onPress={handleInAppApkInstall}
-                    />
-                  ) : null}
+            {/* Installation Ready Callout */}
+            {isReadyToInstall && !isDownloading && (
+              <View style={styles.readyBox}>
+                <Text style={styles.readyTitle}>✅ Download Complete (100%)</Text>
+                <Text style={styles.readySubtitle}>
+                  Package verified. Tap below to launch the Android installer.
+                </Text>
+              </View>
+            )}
 
-                  <Button
-                    label="📥 Download & Install New Version"
-                    variant="gold"
-                    size="md"
-                    onPress={() => startDownload()}
-                  />
-                  <Button
-                    label="🌐 Direct APK Package Downloader"
-                    variant="outline"
-                    size="md"
-                    onPress={() => downloadDirectApk()}
-                  />
-                  {!isMandatory && (
-                    <Pressable
-                      onPress={dismissUpdate}
-                      style={({ pressed }) => [
-                        { paddingVertical: 6, alignItems: 'center' },
-                        pressed && { opacity: 0.7 },
-                      ]}
-                    >
-                      <Text style={{ ...typography.tiny, color: colors.textMuted, fontWeight: '700' }}>
-                        Remind Me Later
-                      </Text>
-                    </Pressable>
-                  )}
-                </>
+            {/* Single Primary Action Button */}
+            <View style={styles.actionColumn}>
+              <Pressable
+                onPress={handlePrimaryPress}
+                disabled={isDownloading}
+                style={({ pressed }) => [
+                  styles.primaryBtn,
+                  isDownloading && styles.primaryBtnDisabled,
+                  pressed && { opacity: 0.9, transform: [{ scale: 0.99 }] },
+                ]}
+              >
+                <LinearGradient
+                  colors={
+                    isReadyToInstall
+                      ? ['#059669', '#10B981']
+                      : ['#D97706', '#F59E0B']
+                  }
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={StyleSheet.absoluteFill}
+                />
+                <Text style={styles.primaryBtnText}>
+                  {isDownloading
+                    ? `⏳ Downloading (${downloadProgress}%)…`
+                    : isReadyToInstall
+                    ? '📲 Tap to Install Update Now'
+                    : `📥 Download & Install Update (v${latestVersion})`}
+                </Text>
+              </Pressable>
+
+              {/* Direct Browser Fallback */}
+              <Pressable
+                onPress={downloadDirectApk}
+                style={({ pressed }) => [
+                  styles.secondaryBtn,
+                  pressed && { opacity: 0.8 },
+                ]}
+              >
+                <Text style={styles.secondaryBtnText}>🌐 Download via Web Browser</Text>
+              </Pressable>
+
+              {!isMandatory && !isDownloading && (
+                <Pressable
+                  onPress={dismissUpdate}
+                  style={({ pressed }) => [
+                    { paddingVertical: 6, alignItems: 'center' },
+                    pressed && { opacity: 0.7 },
+                  ]}
+                >
+                  <Text style={{ ...typography.tiny, color: colors.textMuted, fontWeight: '700' }}>
+                    Remind Me Later
+                  </Text>
+                </Pressable>
               )}
             </View>
           </View>
@@ -218,14 +198,14 @@ export function AppUpdateModal() {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(6, 10, 18, 0.85)',
+    backgroundColor: 'rgba(6, 10, 18, 0.88)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: spacing.md,
   },
   webWrapper: {
     width: '100%',
-    maxWidth: 440,
+    maxWidth: 420,
   },
   card: {
     backgroundColor: '#FFFFFF',
@@ -233,7 +213,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.35,
+    shadowOpacity: 0.4,
     shadowRadius: 20,
     elevation: 10,
     borderWidth: 1,
@@ -246,7 +226,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   badgePill: {
-    backgroundColor: 'rgba(0, 0, 0, 0.25)',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: radius.pill,
@@ -254,40 +234,44 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     ...typography.tiny,
-    color: '#FFFFFF',
-    fontWeight: '800',
-    letterSpacing: 0.5,
+    color: '#FDE68A',
+    fontWeight: '900',
+    letterSpacing: 0.8,
+    fontSize: 10,
   },
   headerTitle: {
     ...typography.h2,
     color: '#FFFFFF',
     fontWeight: '900',
-    marginTop: 4,
+    marginTop: 2,
+    fontSize: 22,
   },
   versionBadge: {
     marginTop: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(0, 0, 0, 0.25)',
     paddingHorizontal: 12,
     paddingVertical: 3,
-    borderRadius: radius.sm,
+    borderRadius: radius.pill,
   },
   versionText: {
     ...typography.small,
     color: '#FFFFFF',
-    fontWeight: '600',
+    fontWeight: '700',
+    fontSize: 11.5,
   },
   notesContainer: {
     padding: spacing.md,
     backgroundColor: '#F8FAFC',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(226, 232, 240, 0.8)',
+    borderBottomColor: '#E2E8F0',
   },
   notesHeader: {
     ...typography.tiny,
     color: colors.textMuted,
-    fontWeight: '700',
+    fontWeight: '800',
     textTransform: 'uppercase',
     marginBottom: spacing.xs,
+    fontSize: 11,
   },
   noteItem: {
     flexDirection: 'row',
@@ -295,22 +279,32 @@ const styles = StyleSheet.create({
   },
   noteText: {
     ...typography.small,
-    color: colors.text,
+    color: '#1E293B',
     lineHeight: 18,
+    fontSize: 12,
+    fontWeight: '600',
   },
   progressBox: {
     paddingHorizontal: spacing.md,
     paddingTop: spacing.md,
+    backgroundColor: '#FFFFFF',
+  },
+  progressHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   progressLabel: {
     ...typography.tiny,
-    color: colors.textMuted,
-    fontWeight: '700',
+    color: '#0F172A',
+    fontWeight: '800',
+    fontSize: 11.5,
   },
   progressPct: {
     ...typography.tiny,
-    color: colors.gold,
+    color: colors.saffron,
     fontWeight: '900',
+    fontSize: 13,
   },
   track: {
     height: 8,
@@ -321,11 +315,79 @@ const styles = StyleSheet.create({
   },
   bar: {
     height: '100%',
-    backgroundColor: colors.gold,
     borderRadius: 4,
+  },
+  progressMetaRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 6,
+  },
+  progressMetaText: {
+    fontSize: 10.5,
+    color: colors.textMuted,
+    fontWeight: '700',
+  },
+  progressMetaSpeed: {
+    fontSize: 10.5,
+    color: '#059669',
+    fontWeight: '800',
+  },
+  readyBox: {
+    margin: spacing.md,
+    marginBottom: 0,
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+    borderRadius: 12,
+    padding: 10,
+    alignItems: 'center',
+  },
+  readyTitle: {
+    color: '#047857',
+    fontWeight: '900',
+    fontSize: 13,
+  },
+  readySubtitle: {
+    color: '#065F46',
+    fontSize: 11,
+    fontWeight: '600',
+    marginTop: 2,
+    textAlign: 'center',
   },
   actionColumn: {
     padding: spacing.md,
     gap: spacing.sm,
+  },
+  primaryBtn: {
+    borderRadius: radius.pill,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    shadowColor: colors.saffron,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  primaryBtnDisabled: {
+    opacity: 0.85,
+  },
+  primaryBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '900',
+    fontSize: 14,
+  },
+  secondaryBtn: {
+    backgroundColor: '#F1F5F9',
+    borderRadius: radius.pill,
+    paddingVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  secondaryBtnText: {
+    color: '#475569',
+    fontWeight: '800',
+    fontSize: 12,
   },
 });
