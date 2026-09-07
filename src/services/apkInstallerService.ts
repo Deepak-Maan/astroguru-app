@@ -1,7 +1,7 @@
 /**
  * AstroGuru Direct APK In-App Downloader & Auto-Installer Service
  * Downloads the latest .apk directly inside the app with real progress (0-100%)
- * and launches the native Android Package Installer without leaving the app!
+ * and launches the native Android Package Installer with Unknown App Sources permission support.
  */
 import { Linking, Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system';
@@ -11,8 +11,36 @@ import * as Sharing from 'expo-sharing';
 // FLAG_GRANT_READ_URI_PERMISSION (1) | FLAG_ACTIVITY_NEW_TASK (268435456)
 const ANDROID_INSTALL_FLAGS = 1 | 268435456;
 
-export async function launchNativeInstaller(targetFileUri: string, apkUrl: string): Promise<boolean> {
-  // Strategy 1: Sharing with system-level package-archive MIME type
+/**
+ * Opens Android "Install Unknown Apps" permission screen directly for AstroGuru
+ */
+export async function openUnknownAppSourcesSettings(): Promise<boolean> {
+  if (Platform.OS !== 'android') return false;
+  try {
+    await IntentLauncher.startActivityAsync('android.settings.MANAGE_UNKNOWN_APP_SOURCES', {
+      data: 'package:com.astroguru.app',
+    });
+    return true;
+  } catch (e) {
+    try {
+      await IntentLauncher.startActivityAsync('android.settings.SECURITY_SETTINGS');
+      return true;
+    } catch (_) {
+      try {
+        await Linking.openSettings();
+        return true;
+      } catch (err) {
+        console.warn('[OpenSettings Error]', err);
+        return false;
+      }
+    }
+  }
+}
+
+export async function launchNativeInstaller(targetFileUri: string, apkUrl?: string): Promise<{ success: boolean; requiresPermission?: boolean }> {
+  if (Platform.OS !== 'android') return { success: false };
+
+  // Strategy 1: System-level sharing with package-archive MIME type
   try {
     const isSharingAvailable = await Sharing.isAvailableAsync();
     if (isSharingAvailable) {
@@ -21,13 +49,13 @@ export async function launchNativeInstaller(targetFileUri: string, apkUrl: strin
         dialogTitle: 'Install AstroGuru Update',
         UTI: 'com.android.package-archive',
       });
-      return true;
+      return { success: true };
     }
   } catch (shareErr) {
     console.warn('[Installer Strategy 1 - Sharing]', shareErr);
   }
 
-  // Strategy 2: IntentLauncher VIEW
+  // Strategy 2: IntentLauncher VIEW with content URI
   try {
     const fsAny = FileSystem as any;
     const getContentUri = fsAny.getContentUriAsync || FileSystem.getContentUriAsync;
@@ -42,25 +70,18 @@ export async function launchNativeInstaller(targetFileUri: string, apkUrl: strin
       flags: ANDROID_INSTALL_FLAGS,
       type: 'application/vnd.android.package-archive',
     });
-    return true;
-  } catch (intentErr) {
+    return { success: true };
+  } catch (intentErr: any) {
     console.warn('[Installer Strategy 2 - Intent VIEW]', intentErr);
-  }
-
-  // Strategy 3: Direct browser download fallback
-  try {
-    await Linking.openURL(apkUrl);
-    return true;
-  } catch (linkErr) {
-    console.warn('[Installer Strategy 3 - Browser]', linkErr);
-    return false;
+    // If blocked by Unknown Sources permission, prompt user to enable
+    return { success: false, requiresPermission: true };
   }
 }
 
 export async function downloadAndInstallApk(
   apkUrl: string,
   onProgress?: (percent: number) => void
-): Promise<{ success: boolean; error?: string; fileUri?: string }> {
+): Promise<{ success: boolean; error?: string; fileUri?: string; requiresPermission?: boolean }> {
   if (Platform.OS !== 'android') {
     return { success: false, error: 'Direct APK installation is only supported on Android devices.' };
   }
@@ -68,7 +89,7 @@ export async function downloadAndInstallApk(
   try {
     const fsAny = FileSystem as any;
     const targetDir = fsAny.cacheDirectory || fsAny.documentDirectory;
-    const filename = 'astroguru_latest_update.apk';
+    const filename = 'astroguru_update.apk';
     const targetFileUri = `${targetDir}${filename}`;
 
     // Delete previous downloaded apk if exists
@@ -101,8 +122,8 @@ export async function downloadAndInstallApk(
       if (onProgress) onProgress(100);
 
       // Launch package installer
-      const launched = await launchNativeInstaller(result.uri, apkUrl);
-      return { success: launched, fileUri: result.uri };
+      const launchResult = await launchNativeInstaller(result.uri, apkUrl);
+      return { success: launchResult.success, fileUri: result.uri, requiresPermission: launchResult.requiresPermission };
     }
 
     // Direct browser fallback

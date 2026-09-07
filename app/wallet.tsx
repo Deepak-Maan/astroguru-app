@@ -172,13 +172,22 @@ export default function WalletScreen() {
 
   const handleVerify = async () => {
     if (!activeIntent) return;
+    const cleanUtr = utrInput.trim();
+    if (!cleanUtr) {
+      setVerifyError('Please enter the 12-digit Bank UTR / Reference Number from your payment app.');
+      return;
+    }
+    if (cleanUtr.length !== 12 || !/^\d{12}$/.test(cleanUtr)) {
+      setVerifyError('UTR must be an exact 12-digit numeric transaction reference number.');
+      return;
+    }
+
     setVerifying(true);
     setVerifyError(null);
     setVerifyResult(null);
     triggerHaptic('medium');
 
-    const checkUtr = utrInput.trim() || '420192837465';
-    const result = await verifyPaymentWithBankServer(activeIntent.txnId, checkUtr, activeIntent.totalCredited);
+    const result = await verifyPaymentWithBankServer(activeIntent.txnId, cleanUtr, activeIntent.totalCredited);
 
     setTimeout(() => {
       setVerifying(false);

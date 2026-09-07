@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
+  Alert,
   Modal,
   Platform,
   Pressable,
@@ -12,6 +13,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { colors, radius, spacing, typography } from '../theme';
 import { useUpdateStore } from '../store/updateStore';
+import { openUnknownAppSourcesSettings } from '../services/apkInstallerService';
 
 export function AppUpdateModal() {
   const {
@@ -26,12 +28,13 @@ export function AppUpdateModal() {
     speedKbps,
     isDownloading,
     isReadyToInstall,
-    updateType,
     startDownload,
     installUpdate,
     downloadDirectApk,
     dismissUpdate,
   } = useUpdateStore();
+
+  const [showPermissionGuide, setShowPermissionGuide] = useState(false);
 
   if (Platform.OS === 'web' || !updateAvailable) return null;
 
@@ -45,6 +48,13 @@ export function AppUpdateModal() {
     } else if (!isDownloading) {
       startDownload();
     }
+  };
+
+  const handleOpenSettings = async () => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    await openUnknownAppSourcesSettings();
   };
 
   const downloadedMB = (downloadedBytes / (1024 * 1024)).toFixed(1);
@@ -80,7 +90,7 @@ export function AppUpdateModal() {
             <View style={styles.notesContainer}>
               <Text style={styles.notesHeader}>🎁 What's New in This Version:</Text>
               <ScrollView
-                style={{ maxHeight: 160 }}
+                style={{ maxHeight: 150 }}
                 contentContainerStyle={{ gap: 8 }}
                 showsVerticalScrollIndicator={false}
               >
@@ -123,17 +133,32 @@ export function AppUpdateModal() {
               </View>
             )}
 
-            {/* Installation Ready Callout */}
+            {/* Installation Ready Callout with Unknown Apps Helper */}
             {isReadyToInstall && !isDownloading && (
               <View style={styles.readyBox}>
-                <Text style={styles.readyTitle}>✅ Download Complete (100%)</Text>
+                <Text style={styles.readyTitle}>✅ Package Downloaded Successfully!</Text>
                 <Text style={styles.readySubtitle}>
-                  Package verified. Tap below to launch the Android installer.
+                  If Android asks for permission: Tap "Allow from this source" in Settings.
                 </Text>
               </View>
             )}
 
-            {/* Single Primary Action Button */}
+            {/* Unknown Apps Permission Helper Box */}
+            {Platform.OS === 'android' && (
+              <View style={styles.permissionBox}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.permissionTitle}>🛡️ Android Security Tip:</Text>
+                  <Text style={styles.permissionDesc}>
+                    If install is blocked, turn ON "Allow from this source".
+                  </Text>
+                </View>
+                <Pressable onPress={handleOpenSettings} style={styles.settingsPill}>
+                  <Text style={styles.settingsPillText}>⚙️ Settings</Text>
+                </Pressable>
+              </View>
+            )}
+
+            {/* Action Buttons */}
             <View style={styles.actionColumn}>
               <Pressable
                 onPress={handlePrimaryPress}
@@ -353,6 +378,40 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: 2,
     textAlign: 'center',
+  },
+  permissionBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+    borderRadius: 12,
+    marginHorizontal: spacing.md,
+    marginTop: spacing.sm,
+    padding: 10,
+    gap: 8,
+  },
+  permissionTitle: {
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#1E40AF',
+  },
+  permissionDesc: {
+    fontSize: 10,
+    color: '#1E3A8A',
+    fontWeight: '600',
+    marginTop: 1,
+  },
+  settingsPill: {
+    backgroundColor: '#2563EB',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: radius.pill,
+  },
+  settingsPillText: {
+    color: '#FFFFFF',
+    fontWeight: '900',
+    fontSize: 11,
   },
   actionColumn: {
     padding: spacing.md,
