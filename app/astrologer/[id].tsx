@@ -14,8 +14,9 @@ import { colors, radius, spacing, typography } from '../../src/theme';
 import { astrologerById } from '../../src/data/astrologers';
 import { useWalletStore } from '../../src/store/walletStore';
 import { formatCurrency } from '../../src/utils';
-import { getAstrologerByIdFromFirebase } from '../../src/services/firebaseAuthService';
 import { Astrologer } from '../../src/types';
+import { getAstrologerByIdFromFirebase } from '../../src/services/firebaseAuthService';
+import { NotifyWhenOnlineModal } from '../../src/components/widgets/NotifyWhenOnlineModal';
 
 export default function AstrologerProfile() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -23,6 +24,7 @@ export default function AstrologerProfile() {
   const balance = useWalletStore((s) => s.balance);
   const [astrologer, setAstrologer] = useState<Astrologer | null>(() => astrologerById(String(id)) || null);
   const [loading, setLoading] = useState(!astrologer);
+  const [notifyModalVisible, setNotifyModalVisible] = useState(false);
 
   useEffect(() => {
     if (id && !astrologer) {
@@ -205,35 +207,59 @@ export default function AstrologerProfile() {
             colors={['rgba(239,246,255,0.0)', 'rgba(255,255,255,0.98)']}
             style={styles.actionsGradient}
           />
-          <Pressable
-            onPress={() => router.push(`/consultation/${astrologer.id}?type=audio`)}
-            style={({ pressed }) => [styles.mediaCallBtn, pressed && { opacity: 0.8 }]}
-          >
-            <Text style={{ fontSize: 15 }}>📞</Text>
-            <Text style={styles.mediaCallText}>Audio</Text>
-          </Pressable>
+          {astrologer.online ? (
+            <>
+              <Pressable
+                onPress={() => router.push(`/consultation/${astrologer.id}?type=audio`)}
+                style={({ pressed }) => [styles.mediaCallBtn, pressed && { opacity: 0.8 }]}
+              >
+                <Text style={{ fontSize: 15 }}>📞</Text>
+                <Text style={styles.mediaCallText}>Audio</Text>
+              </Pressable>
 
-          <Pressable
-            onPress={() => router.push(`/consultation/${astrologer.id}?type=video`)}
-            style={({ pressed }) => [
-              styles.mediaCallBtn,
-              { borderColor: colors.teal, backgroundColor: 'rgba(5,150,105,0.12)' },
-              pressed && { opacity: 0.8 },
-            ]}
-          >
-            <Text style={{ fontSize: 15 }}>📹</Text>
-            <Text style={[styles.mediaCallText, { color: colors.teal }]}>Video</Text>
-          </Pressable>
+              <Pressable
+                onPress={() => router.push(`/consultation/${astrologer.id}?type=video`)}
+                style={({ pressed }) => [
+                  styles.mediaCallBtn,
+                  { borderColor: colors.teal, backgroundColor: 'rgba(5,150,105,0.12)' },
+                  pressed && { opacity: 0.8 },
+                ]}
+              >
+                <Text style={{ fontSize: 15 }}>📹</Text>
+                <Text style={[styles.mediaCallText, { color: colors.teal }]}>Video</Text>
+              </Pressable>
 
-          <Button
-            label={canAfford ? '💬 Chat' : 'Add Money'}
-            variant={canAfford ? 'gold' : 'primary'}
-            size="md"
-            fullWidth={false}
-            style={{ flex: 1 }}
-            onPress={startChat}
-          />
+              <Button
+                label={canAfford ? '💬 Chat' : 'Add Money'}
+                variant={canAfford ? 'gold' : 'primary'}
+                size="md"
+                fullWidth={false}
+                style={{ flex: 1 }}
+                onPress={startChat}
+              />
+            </>
+          ) : (
+            <Pressable
+              onPress={() => setNotifyModalVisible(true)}
+              style={({ pressed }) => [styles.notifyOfflineBtn, pressed && { opacity: 0.9 }]}
+            >
+              <LinearGradient
+                colors={['#F59E0B', '#D97706']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={StyleSheet.absoluteFill}
+              />
+              <Text style={styles.notifyOfflineBtnText}>🔔 Notify Me When {astrologer.name.split(' ')[0]} Is Online</Text>
+            </Pressable>
+          )}
         </View>
+
+        {/* Notify When Online Modal */}
+        <NotifyWhenOnlineModal
+          visible={notifyModalVisible}
+          onClose={() => setNotifyModalVisible(false)}
+          astrologer={astrologer}
+        />
       </SafeAreaView>
     </GradientBackground>
   );
@@ -378,5 +404,18 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 20,
+  },
+  notifyOfflineBtn: {
+    flex: 1,
+    borderRadius: radius.pill,
+    overflow: 'hidden',
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  notifyOfflineBtnText: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#FFFFFF',
   },
 });

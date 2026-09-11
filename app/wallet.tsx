@@ -26,6 +26,8 @@ import { useAdminStore } from '../src/store/adminStore';
 import { formatCurrency, timeAgo } from '../src/utils';
 import { launchUpiPayment, PaymentIntent, generateDynamicUpiQrUrl } from '../src/services/paymentService';
 import { verifyPaymentWithBankServer, BankVerificationResult } from '../src/services/paymentVerificationEngine';
+import { RechargeReceiptModal } from '../src/components/widgets/RechargeReceiptModal';
+import { Transaction } from '../src/store/walletStore';
 
 const { width } = Dimensions.get('window');
 
@@ -98,6 +100,7 @@ export default function WalletScreen() {
   const [verifying, setVerifying] = useState(false);
   const [verifyResult, setVerifyResult] = useState<BankVerificationResult | null>(null);
   const [verifyError, setVerifyError] = useState<string | null>(null);
+  const [selectedReceiptTxn, setSelectedReceiptTxn] = useState<Transaction | null>(null);
 
   function triggerHaptic(type: 'light' | 'medium' | 'heavy' = 'light') {
     if (Platform.OS !== 'web') {
@@ -803,14 +806,34 @@ export default function WalletScreen() {
                         </Text>
                         <Text style={styles.txnTime}>{timeAgo(t.at)}</Text>
                       </View>
-                      <Text
-                        style={[
-                          styles.txnAmount,
-                          isTopup ? { color: '#059669' } : { color: '#0F172A' },
-                        ]}
-                      >
-                        {isTopup ? `+${formatCurrency(t.amount)}` : `-${formatCurrency(t.amount)}`}
-                      </Text>
+                      <View style={{ alignItems: 'flex-end', gap: 4 }}>
+                        <Text
+                          style={[
+                            styles.txnAmount,
+                            isTopup ? { color: '#059669' } : { color: '#0F172A' },
+                          ]}
+                        >
+                          {isTopup ? `+${formatCurrency(t.amount)}` : `-${formatCurrency(t.amount)}`}
+                        </Text>
+                        {isTopup && (
+                          <Pressable
+                            onPress={() => {
+                              triggerHaptic('light');
+                              setSelectedReceiptTxn({
+                                id: t.id,
+                                type: 'topup',
+                                amount: t.amount,
+                                timestamp: t.at,
+                                description: t.label,
+                                referenceId: t.id,
+                              });
+                            }}
+                            style={({ pressed }) => [styles.receiptBtn, pressed && { opacity: 0.7 }]}
+                          >
+                            <Text style={styles.receiptBtnText}>📄 Receipt</Text>
+                          </Pressable>
+                        )}
+                      </View>
                     </View>
                   );
                 })}
@@ -818,6 +841,13 @@ export default function WalletScreen() {
             )}
           </View>
         </ScrollView>
+
+        {/* ── 1-Click Recharge Receipt & Tax Invoice Modal ── */}
+        <RechargeReceiptModal
+          visible={!!selectedReceiptTxn}
+          transaction={selectedReceiptTxn}
+          onClose={() => setSelectedReceiptTxn(null)}
+        />
 
         {/* ── Real-Time Bank Verification Modal ── */}
         <Modal visible={showVerifyModal} transparent animationType="fade">
@@ -1576,6 +1606,19 @@ const styles = StyleSheet.create({
   txnLabel: { fontSize: 12.5, fontWeight: '800', color: '#0F172A' },
   txnTime: { fontSize: 10, color: colors.textMuted, marginTop: 1 },
   txnAmount: { fontSize: 13.5, fontWeight: '900' },
+  receiptBtn: {
+    backgroundColor: 'rgba(245, 158, 11, 0.12)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.3)',
+  },
+  receiptBtnText: {
+    fontSize: 9.5,
+    fontWeight: '800',
+    color: '#D97706',
+  },
 
   /* Modal */
   modalOverlay: {

@@ -20,6 +20,8 @@ import { NAKSHATRAS } from '../../src/data/nakshatras';
 import { formatCurrency } from '../../src/utils';
 import { useLiveChatStore } from '../../src/store/liveChatStore';
 import { subscribeToAcharyaRoomsInFirebase } from '../../src/services/firebaseRealtimeService';
+import { RemedySummaryCard } from '../../src/components/widgets/RemedySummaryCard';
+import { ReferralCard } from '../../src/components/widgets/ReferralCard';
 
 function AcharyaLiveQueue({ astrologerId }: { astrologerId: string }) {
   const router = useRouter();
@@ -148,8 +150,9 @@ export default function Profile() {
   const checkUpdatesManual = useUpdateStore((s) => s.checkUpdatesManual);
   const isCheckingUpdates = useUpdateStore((s) => s.isChecking);
   const manualCheckMessage = useUpdateStore((s) => s.manualCheckMessage);
-
   const [showLogoutOverlay, setShowLogoutOverlay] = useState(false);
+  const [showRemediesModal, setShowRemediesModal] = useState(false);
+  const [showReferralModal, setShowReferralModal] = useState(false);
 
   const handleSignOut = () => {
     setShowLogoutOverlay(true);
@@ -357,6 +360,8 @@ export default function Profile() {
               <View>
                 <SectionHeader title="🌟 Super App Cosmic Features" />
                 <Card padded={false}>
+                  <Row icon="📜" label="My Prescribed Remedies & Gemstones" onPress={() => setShowRemediesModal(true)} accent={colors.gold} />
+                  <Row icon="🎁" label="Refer & Earn ₹50 Wallet Credits" onPress={() => setShowReferralModal(true)} accent={colors.teal} />
                   <Row icon="🌌" label="Live Satsang & Virtual Prashad" onPress={() => router.push('/satsang')} accent={colors.gold} />
                   <Row icon="💎" label="AI Gemstone Finder & Lab Scanner" onPress={() => router.push('/gemstone-finder')} />
                   <Row icon="📜" label="432Hz Ambient Vedic Mantra Player" onPress={() => router.push('/mantra-player')} />
@@ -414,6 +419,42 @@ export default function Profile() {
             </ScrollView>
           </>
         )}
+
+        {/* ── Prescribed Remedies Modal ── */}
+        <Modal visible={showRemediesModal} transparent animationType="slide" onRequestClose={() => setShowRemediesModal(false)}>
+          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' }}>
+            <Pressable style={StyleSheet.absoluteFill} onPress={() => setShowRemediesModal(false)} />
+            <View style={{ backgroundColor: '#0F172A', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, maxHeight: '85%', borderWidth: 1.5, borderColor: 'rgba(245, 158, 11, 0.4)', borderBottomWidth: 0 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <Text style={{ fontSize: 17, fontWeight: '900', color: '#FFFFFF' }}>📜 Prescribed Remedies</Text>
+                <Pressable onPress={() => setShowRemediesModal(false)} style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: 'rgba(255,255,255,0.1)', alignItems: 'center', justifyContent: 'center' }}>
+                  <Text style={{ color: '#E2E8F0', fontWeight: '800' }}>✕</Text>
+                </Pressable>
+              </View>
+              <ScrollView showsVerticalScrollIndicator={false}>
+                <RemedySummaryCard />
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
+
+        {/* ── Refer & Earn Modal ── */}
+        <Modal visible={showReferralModal} transparent animationType="slide" onRequestClose={() => setShowReferralModal(false)}>
+          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' }}>
+            <Pressable style={StyleSheet.absoluteFill} onPress={() => setShowReferralModal(false)} />
+            <View style={{ backgroundColor: '#0F172A', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, maxHeight: '85%', borderWidth: 1.5, borderColor: 'rgba(245, 158, 11, 0.4)', borderBottomWidth: 0 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <Text style={{ fontSize: 17, fontWeight: '900', color: '#FFFFFF' }}>🎁 Refer & Earn</Text>
+                <Pressable onPress={() => setShowReferralModal(false)} style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: 'rgba(255,255,255,0.1)', alignItems: 'center', justifyContent: 'center' }}>
+                  <Text style={{ color: '#E2E8F0', fontWeight: '800' }}>✕</Text>
+                </Pressable>
+              </View>
+              <ScrollView showsVerticalScrollIndicator={false}>
+                <ReferralCard />
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
       </SafeAreaView>
     </GradientBackground>
   );

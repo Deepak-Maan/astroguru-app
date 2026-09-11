@@ -26,6 +26,11 @@ import { AstrotalkFortuneWheelBanner } from '../../src/components/astrotalk/Astr
 import { AstrotalkAstrologerCard } from '../../src/components/astrotalk/AstrotalkAstrologerCard';
 import { AstrotalkVideoTestimonials } from '../../src/components/astrotalk/AstrotalkVideoTestimonials';
 import { AstrotalkRechargeModal } from '../../src/components/astrotalk/AstrotalkRechargeModal';
+import { LuckyThreeWidget } from '../../src/components/widgets/LuckyThreeWidget';
+import { DailySankalpAudioCard } from '../../src/components/widgets/DailySankalpAudioCard';
+import { DoshaBadgesWidget } from '../../src/components/widgets/DoshaBadgesWidget';
+import { ReferralCard } from '../../src/components/widgets/ReferralCard';
+import { InstantMatchmakerModal } from '../../src/components/widgets/InstantMatchmakerModal';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { useUserStore } from '../../src/store/userStore';
 import { useAuthStore } from '../../src/store/authStore';
@@ -38,6 +43,7 @@ export default function Home() {
   const profile = useUserStore((s) => s.profile);
 
   const [rechargeModalVisible, setRechargeModalVisible] = useState(false);
+  const [matchmakerVisible, setMatchmakerVisible] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'vedic' | 'tarot' | 'love' | 'career'>('all');
 
   // If logging out or unauthenticated
@@ -82,8 +88,44 @@ export default function Home() {
           {/* Hero Promotional Carousel */}
           <AstrotalkHeroBannerCarousel />
 
+          {/* Today's Lucky 3: Number, Color & Shubh Muhurat */}
+          <LuckyThreeWidget />
+
           {/* New User Free Consultation Countdown Banner */}
           <AstrotalkFreeConsultBanner />
+
+          {/* 1-Tap Instant Matchmaker Floating Trigger Banner */}
+          <View style={{ paddingHorizontal: 16, marginTop: 4, marginBottom: 8 }}>
+            <Pressable
+              onPress={() => {
+                try {
+                  if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                } catch (_) {}
+                setMatchmakerVisible(true);
+              }}
+              style={({ pressed }) => [styles.instantMatchBanner, pressed && { opacity: 0.9, transform: [{ scale: 0.985 }] }]}
+            >
+              <LinearGradient
+                colors={['#1E1B4B', '#312E81', '#4338CA']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={StyleSheet.absoluteFill}
+              />
+              <View style={styles.instantMatchLeft}>
+                <View style={styles.instantMatchIconBubble}>
+                  <Text style={{ fontSize: 20 }}>⚡</Text>
+                </View>
+                <View>
+                  <Text style={styles.instantMatchTitle}>1-Tap Instant Connect</Text>
+                  <Text style={styles.instantMatchSub}>Auto-match top available Astrologer in 10s</Text>
+                </View>
+              </View>
+
+              <View style={styles.instantMatchCta}>
+                <Text style={styles.instantMatchCtaText}>Match ➔</Text>
+              </View>
+            </Pressable>
+          </View>
 
           {/* 4 Core Astrotalk Pillars (Chat, Call, Live, Store) */}
           <AstrotalkCorePillars />
@@ -91,8 +133,14 @@ export default function Home() {
           {/* 10-Grid Astrotalk Free Services */}
           <AstrotalkFreeServicesGrid />
 
+          {/* Daily Morning Sankalp & Gayatri Mantra Audio Card */}
+          <DailySankalpAudioCard />
+
           {/* Daily Cosmic Fortune Wheel Banner */}
           <AstrotalkFortuneWheelBanner />
+
+          {/* Kundli Dosha Health Badges (Manglik, Kaal Sarp, Sade Sati, Pitra) */}
+          <DoshaBadgesWidget />
 
           {/* Astrologers Online Now Horizontal Scroller */}
           <View style={styles.sectionHeaderRow}>
@@ -144,6 +192,9 @@ export default function Home() {
             </View>
             <Text style={styles.panchangArrow}>➔</Text>
           </Pressable>
+
+          {/* Refer & Earn ₹50 Viral Card */}
+          <ReferralCard />
 
           {/* Filterable Astrologer Directory Feed */}
           <View style={[styles.sectionHeaderRow, { marginTop: 16 }]}>
@@ -202,6 +253,12 @@ export default function Home() {
       <AstrotalkRechargeModal
         visible={rechargeModalVisible}
         onClose={() => setRechargeModalVisible(false)}
+      />
+
+      {/* 1-Tap Instant Astrologer Matchmaker Modal */}
+      <InstantMatchmakerModal
+        visible={matchmakerVisible}
+        onClose={() => setMatchmakerVisible(false)}
       />
     </View>
   );
@@ -303,5 +360,59 @@ const styles = StyleSheet.create({
   filterPillTextActive: {
     color: '#D97706',
     fontWeight: '900',
+  },
+  instantMatchBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 12,
+    borderRadius: 18,
+    borderWidth: 1.2,
+    borderColor: 'rgba(245, 158, 11, 0.5)',
+    overflow: 'hidden',
+    shadowColor: '#4338CA',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  instantMatchLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+  },
+  instantMatchIconBubble: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: 'rgba(245, 158, 11, 0.25)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.4)',
+  },
+  instantMatchTitle: {
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: 0.2,
+  },
+  instantMatchSub: {
+    fontSize: 11,
+    color: '#FCD34D',
+    fontWeight: '600',
+    marginTop: 1,
+  },
+  instantMatchCta: {
+    backgroundColor: '#F59E0B',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 12,
+  },
+  instantMatchCtaText: {
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#000000',
   },
 });

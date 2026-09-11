@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Application from 'expo-application';
-import { inAppUpdateEngine, UpdateDownloadProgress, getDirectApkDownloadUrl, FALLBACK_RELEASE_APK_URL } from '../services/updates/inAppUpdateEngine';
+import { inAppUpdateEngine, UpdateDownloadProgress, getDirectApkDownloadUrl, FALLBACK_RELEASE_APK_URL, isRemoteVersionNewer } from '../services/updates/inAppUpdateEngine';
 import { syncLatestAppVersionToFirebase } from '../services/firebaseRealtimeService';
 
 export const LATEST_RELEASE_VERSION = '2.8.9';

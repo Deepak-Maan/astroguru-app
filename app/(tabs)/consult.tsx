@@ -20,6 +20,8 @@ import * as Haptics from 'expo-haptics';
 import { AstrotalkHeader } from '../../src/components/astrotalk/AstrotalkHeader';
 import { AstrotalkAstrologerCard } from '../../src/components/astrotalk/AstrotalkAstrologerCard';
 import { AstrotalkRechargeModal } from '../../src/components/astrotalk/AstrotalkRechargeModal';
+import { InstantMatchmakerModal } from '../../src/components/widgets/InstantMatchmakerModal';
+import { LinearGradient } from 'expo-linear-gradient';
 import { colors, radius, spacing } from '../../src/theme';
 import { ASTROLOGERS } from '../../src/data/astrologers';
 import { Astrologer } from '../../src/types';
@@ -54,6 +56,7 @@ export default function Consult() {
   const [sort, setSort] = useState<SortType>('popular');
   const [astrologersList, setAstrologersList] = useState<Astrologer[]>(ASTROLOGERS);
   const [rechargeModalVisible, setRechargeModalVisible] = useState(false);
+  const [matchmakerVisible, setMatchmakerVisible] = useState(false);
 
   useEffect(() => {
     fetchJyotishisFromFirebase()
@@ -127,6 +130,38 @@ export default function Consult() {
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
         {/* Astrotalk Fixed Header */}
         <AstrotalkHeader onOpenRecharge={() => setRechargeModalVisible(true)} />
+
+        {/* 1-Tap Smart Matchmaker Header Banner */}
+        <View style={{ paddingHorizontal: 16, marginTop: 6, marginBottom: 4 }}>
+          <Pressable
+            onPress={() => {
+              try {
+                if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              } catch (_) {}
+              setMatchmakerVisible(true);
+            }}
+            style={({ pressed }) => [styles.instantMatchBar, pressed && { opacity: 0.9, transform: [{ scale: 0.985 }] }]}
+          >
+            <LinearGradient
+              colors={['#1E1B4B', '#312E81', '#4338CA']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={StyleSheet.absoluteFill}
+            />
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <View style={styles.matchIconCircle}>
+                <Text style={{ fontSize: 18 }}>⚡</Text>
+              </View>
+              <View>
+                <Text style={styles.matchTitle}>Need instant guidance?</Text>
+                <Text style={styles.matchSub}>Auto-match top available Acharya in 1-tap</Text>
+              </View>
+            </View>
+            <View style={styles.matchBadge}>
+              <Text style={styles.matchBadgeText}>Instant ➔</Text>
+            </View>
+          </Pressable>
+        </View>
 
         {/* Search & Sort Bar */}
         <View style={styles.searchContainer}>
@@ -214,6 +249,12 @@ export default function Consult() {
         visible={rechargeModalVisible}
         onClose={() => setRechargeModalVisible(false)}
       />
+
+      {/* 1-Tap Instant Matchmaker Modal */}
+      <InstantMatchmakerModal
+        visible={matchmakerVisible}
+        onClose={() => setMatchmakerVisible(false)}
+      />
     </View>
   );
 }
@@ -222,6 +263,53 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F7F8FA',
+  },
+  instantMatchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 12,
+    borderRadius: 16,
+    borderWidth: 1.2,
+    borderColor: 'rgba(245, 158, 11, 0.4)',
+    overflow: 'hidden',
+    shadowColor: '#4338CA',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  matchIconCircle: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: 'rgba(245, 158, 11, 0.25)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.4)',
+  },
+  matchTitle: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#FFFFFF',
+  },
+  matchSub: {
+    fontSize: 10.5,
+    color: '#FCD34D',
+    fontWeight: '600',
+    marginTop: 1,
+  },
+  matchBadge: {
+    backgroundColor: '#F59E0B',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
+  },
+  matchBadgeText: {
+    fontSize: 10,
+    fontWeight: '900',
+    color: '#000000',
   },
   searchContainer: {
     paddingHorizontal: 16,

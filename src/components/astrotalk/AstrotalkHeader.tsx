@@ -13,6 +13,8 @@ import * as Haptics from 'expo-haptics';
 import { colors, radius, spacing } from '../../theme';
 import { useWalletStore } from '../../store/walletStore';
 import { useNotificationStore } from '../../store/notificationStore';
+import { useLanguageStore } from '../../store/languageStore';
+import { LanguageSelectorModal } from '../widgets/LanguageSelectorModal';
 
 interface Props {
   onOpenRecharge?: () => void;
@@ -22,6 +24,8 @@ export function AstrotalkHeader({ onOpenRecharge }: Props) {
   const router = useRouter();
   const balance = useWalletStore((s) => s.balance ?? 100);
   const unreadCount = useNotificationStore((s) => s.unreadCount);
+  const currentLang = useLanguageStore((s) => s.language || 'en');
+  const [langModalVisible, setLangModalVisible] = React.useState(false);
 
   const handleWalletPress = () => {
     try {
@@ -79,11 +83,21 @@ export function AstrotalkHeader({ onOpenRecharge }: Props) {
       {/* Right Action Tools Cluster */}
       <View style={styles.rightActions}>
         {/* Language Selector Pill */}
-        <View style={styles.langPill}>
-          <Text style={styles.langText}>EN</Text>
+        <Pressable
+          onPress={() => {
+            try {
+              if (Platform.OS !== 'web') {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              }
+            } catch (_) {}
+            setLangModalVisible(true);
+          }}
+          style={({ pressed }) => [styles.langPill, pressed && { opacity: 0.75 }]}
+        >
+          <Text style={styles.langText}>{currentLang.toUpperCase()}</Text>
           <Text style={styles.langDivider}>|</Text>
-          <Text style={styles.langTextInactive}>HI</Text>
-        </View>
+          <Text style={styles.langTextInactive}>🌐</Text>
+        </Pressable>
 
         {/* Imperial Gold Wallet Pill */}
         <Pressable
@@ -128,6 +142,12 @@ export function AstrotalkHeader({ onOpenRecharge }: Props) {
           )}
         </Pressable>
       </View>
+
+      {/* Language Selector Modal */}
+      <LanguageSelectorModal
+        visible={langModalVisible}
+        onClose={() => setLangModalVisible(false)}
+      />
     </View>
   );
 }
