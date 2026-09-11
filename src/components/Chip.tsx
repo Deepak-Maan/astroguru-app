@@ -83,7 +83,7 @@ export function Chip({ label, selected = false, onPress, style, tone = 'default'
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create<any>({
   chip: {
     paddingHorizontal: spacing.md,
     paddingVertical: 7,

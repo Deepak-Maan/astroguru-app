@@ -69,18 +69,14 @@ export default function Consult() {
               a.avatar ||
               'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200',
             rating: a.rating || 5.0,
-            reviewsCount: a.reviews || 1,
-            pricing: {
-              chatPerMin: a.pricePerMin || 25,
-              callPerMin: a.pricePerMin ? a.pricePerMin + 5 : 30,
-              report: 299,
-            },
-            experience: a.experienceYears || 10,
+            reviews: a.reviews || a.reviewsCount || 1,
+            pricePerMin: a.pricePerMin || (a.pricing?.chatPerMin ?? 25),
+            experienceYears: a.experienceYears || a.experience || 10,
             specialties: a.specialties || ['Vedic Astrology'],
             languages: a.languages || ['Hindi', 'English'],
-            consultationsCount: a.consultations || 1400,
+            consultations: a.consultations || a.consultationsCount || 1400,
             online: a.online ?? true,
-            bio: a.about || 'Certified Vedic Jyotish Expert',
+            about: a.about || a.bio || 'Certified Vedic Jyotish Expert',
           }));
           const existingIds = new Set(remoteList.map((r) => r.id));
           const localOnly = ASTROLOGERS.filter((l) => !existingIds.has(l.id));
@@ -119,9 +115,9 @@ export default function Consult() {
       })
       .sort((a, b) => {
         if (sort === 'rating') return b.rating - a.rating;
-        if (sort === 'price_low') return a.pricing.chatPerMin - b.pricing.chatPerMin;
-        if (sort === 'exp') return b.experience - a.experience;
-        return (b.consultationsCount || 0) - (a.consultationsCount || 0);
+        if (sort === 'price_low') return (a.pricePerMin || (a as any).pricing?.chatPerMin || 0) - (b.pricePerMin || (b as any).pricing?.chatPerMin || 0);
+        if (sort === 'exp') return (b.experienceYears || (b as any).experience || 0) - (a.experienceYears || (a as any).experience || 0);
+        return ((b.consultations ?? (b as any).consultationsCount) || 0) - ((a.consultations ?? (a as any).consultationsCount) || 0);
       });
   }, [astrologersList, query, filter, sort]);
 

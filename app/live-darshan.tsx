@@ -233,7 +233,6 @@ export default function LiveDarshanScreen() {
             {/* Live Comments Feed */}
             <View style={styles.chatSection}>
               <ScrollView
-                inverted
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.commentsList}
               >
@@ -589,7 +588,7 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   templeImg: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill as any,
   },
   templeLiveBadge: {
     alignSelf: 'flex-start',

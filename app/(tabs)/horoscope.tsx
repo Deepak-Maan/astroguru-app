@@ -412,7 +412,7 @@ export default function Horoscope() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create<any>({
   scroll: { paddingBottom: spacing.xxl, gap: spacing.lg },
 
   signStrip: { paddingHorizontal: spacing.lg, gap: spacing.sm, paddingVertical: spacing.xs },

@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { WalletTransaction } from '../types';
+export type { WalletTransaction as Transaction, WalletTransaction } from '../types';
 
 export interface UserWalletData {
   balance: number;

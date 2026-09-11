@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import {
   Platform,
   Pressable,
+  StyleProp,
   StyleSheet,
   View,
   ViewStyle,
@@ -10,7 +11,7 @@ import { colors, radius, spacing } from '../theme';
 
 interface Props {
   children: React.ReactNode;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   onPress?: () => void;
   padded?: boolean;
   glow?: boolean;
@@ -83,14 +84,15 @@ export function SpatialGlassCard({
   ];
 
   if (onPress) {
+    const PressableComponent = Pressable as any;
     return (
-      <Pressable
+      <PressableComponent
         ref={cardRef}
         accessibilityRole="button"
         onPress={onPress}
-        onMouseMove={handleMouseMove as any}
-        onMouseLeave={handleMouseLeave as any}
-        style={({ pressed }) => [
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        style={({ pressed }: any) => [
           ...containerStyle,
           tiltStyle as any,
           pressed && styles.pressed,
@@ -117,15 +119,16 @@ export function SpatialGlassCard({
           />
         )}
         {content}
-      </Pressable>
+      </PressableComponent>
     );
   }
 
+  const ViewComponent = View as any;
   return (
-    <View
+    <ViewComponent
       ref={cardRef}
-      onMouseMove={handleMouseMove as any}
-      onMouseLeave={handleMouseLeave as any}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
       style={[...containerStyle, tiltStyle as any]}
     >
       {/* Realistic top-edge specular glass highlight */}
@@ -148,11 +151,11 @@ export function SpatialGlassCard({
         />
       )}
       {content}
-    </View>
+    </ViewComponent>
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create<any>({
   card: {
     backgroundColor: 'rgba(255, 255, 255, 0.85)',
     borderRadius: radius.lg,

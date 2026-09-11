@@ -327,7 +327,7 @@ export function AstrotalkVideoTestimonials() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create<any>({
   container: {
     paddingTop: 18,
     paddingBottom: 8,

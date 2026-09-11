@@ -92,17 +92,17 @@ export function DailyHoroscopeHero({
           {/* Zodiac Title & Element/Ruling Lord Badges */}
           <View style={{ flex: 1, gap: 4 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Text style={styles.rashiName}>{selectedRashi.name}</Text>
+              <Text style={styles.rashiName}>{selectedRashi.english || (selectedRashi as any).name}</Text>
               <Text style={styles.sanskritName}>({selectedRashi.sanskrit})</Text>
             </View>
-            <Text style={styles.dateRange}>{selectedRashi.dates}</Text>
+            <Text style={styles.dateRange}>{selectedRashi.traits || (selectedRashi as any).dates || 'Sidereal Vedic Sign'}</Text>
 
             <View style={styles.tagsRow}>
               <View style={styles.elementTag}>
                 <Text style={styles.elementTagText}>🔥 {selectedRashi.element} Element</Text>
               </View>
               <View style={styles.lordTag}>
-                <Text style={styles.lordTagText}>👑 Lord: {selectedRashi.ruler}</Text>
+                <Text style={styles.lordTagText}>👑 Lord: {selectedRashi.lord || (selectedRashi as any).ruler}</Text>
               </View>
             </View>
           </View>

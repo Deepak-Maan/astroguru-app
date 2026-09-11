@@ -227,10 +227,10 @@ export default function LoginScreen() {
     setOtpLoading(false);
     if (res.success) {
       setOtpSent(true);
-      setDebugOtp(res.debugOtp || '123456');
+      setDebugOtp((res as any).debugOtp || res.otp || '123456');
       setInfoMessage(`OTP sent to +91 ${raw}`);
     } else {
-      setError(res.error || 'Failed to send OTP.');
+      setError((res as any).error || res.message || 'Failed to send OTP.');
       triggerShake();
     }
   };
@@ -940,7 +940,7 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create<any>({
   rootContainer: {
     flex: 1,
     height: '100%',

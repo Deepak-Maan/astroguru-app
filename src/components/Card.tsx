@@ -1,10 +1,10 @@
 import React from 'react';
-import { ViewStyle } from 'react-native';
+import { StyleProp, ViewStyle } from 'react-native';
 import { SpatialGlassCard } from './SpatialGlassCard';
 
 interface Props {
   children: React.ReactNode;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   onPress?: () => void;
   /** Inner content padding (default true). */
   padded?: boolean;

@@ -116,7 +116,7 @@ export function Button({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create<any>({
   base: {
     borderRadius: radius.pill,
     overflow: 'hidden',

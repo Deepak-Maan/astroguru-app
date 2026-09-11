@@ -65,19 +65,19 @@ export default function LoveMeterScreen() {
           <View style={styles.pickerSection}>
             {/* My Sign */}
             <View style={styles.pickerColumn}>
-              <Text style={styles.pickerTitle}>YOU ({mySign.name})</Text>
+              <Text style={styles.pickerTitle}>YOU ({mySign.english})</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }}>
                 {RASHIS.map((r, i) => {
                   const active = myRashiIdx === i;
                   return (
                     <Pressable
-                      key={r.name}
+                      key={r.english}
                       onPress={() => handleSelectSign(false, i)}
                       style={[styles.rashiPill, active && styles.rashiPillActive]}
                     >
                       <Text style={{ fontSize: 16 }}>{r.glyph}</Text>
                       <Text style={[styles.rashiName, active && styles.rashiNameActive]}>
-                        {r.name}
+                        {r.english}
                       </Text>
                     </Pressable>
                   );
@@ -91,19 +91,19 @@ export default function LoveMeterScreen() {
 
             {/* Partner Sign */}
             <View style={styles.pickerColumn}>
-              <Text style={[styles.pickerTitle, { color: '#E11D48' }]}>PARTNER ({partnerSign.name})</Text>
+              <Text style={[styles.pickerTitle, { color: '#E11D48' }]}>PARTNER ({partnerSign.english})</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }}>
                 {RASHIS.map((r, i) => {
                   const active = partnerRashiIdx === i;
                   return (
                     <Pressable
-                      key={r.name}
+                      key={r.english}
                       onPress={() => handleSelectSign(true, i)}
                       style={[styles.rashiPill, active && styles.partnerPillActive]}
                     >
                       <Text style={{ fontSize: 16 }}>{r.glyph}</Text>
                       <Text style={[styles.rashiName, active && styles.partnerNameActive]}>
-                        {r.name}
+                        {r.english}
                       </Text>
                     </Pressable>
                   );
@@ -122,7 +122,7 @@ export default function LoveMeterScreen() {
             <View style={styles.scoreHeader}>
               <View>
                 <Text style={styles.pairText}>
-                  {mySign.glyph} {mySign.name} + {partnerSign.glyph} {partnerSign.name}
+                  {mySign.glyph} {mySign.english} + {partnerSign.glyph} {partnerSign.english}
                 </Text>
                 <Text style={styles.verdictText}>
                   {overallScore >= 90
@@ -160,7 +160,7 @@ export default function LoveMeterScreen() {
 
             {/* Do's and Don'ts */}
             <View style={styles.dosDontsBox}>
-              <Text style={styles.dosTitle}>💡 Relationship Wisdom for {mySign.name} & {partnerSign.name}:</Text>
+              <Text style={styles.dosTitle}>💡 Relationship Wisdom for {mySign.english} & {partnerSign.english}:</Text>
               <Text style={styles.dosText}>
                 • <Text style={{ fontWeight: '800' }}>Strengths:</Text> Mutual natural admiration and immense mutual loyalty. You inspire each other's career ambitions.
               </Text>

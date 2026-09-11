@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
   Alert,
   Image,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -20,6 +21,7 @@ import { SectionHeader } from '../SectionHeader';
 import { colors, radius, spacing, typography } from '../../theme';
 import { useAdminStore, PaymentGatewaySettings, IncomingPaymentRequest } from '../../store/adminStore';
 import { generateDynamicUpiQrUrl } from '../../services/paymentService';
+import { formatCurrency } from '../../utils';
 
 export function AdminPaymentGatewayPanel() {
   const {
@@ -40,11 +42,15 @@ export function AdminPaymentGatewayPanel() {
   const [holderName, setHolderName] = useState(paymentSettings.accountHolderName || '');
   const [autoApprove, setAutoApprove] = useState(paymentSettings.autoApproveUpi ?? true);
   const [minRecharge, setMinRecharge] = useState(String(paymentSettings.minRechargeAmount || 50));
+  const [maxRecharge, setMaxRecharge] = useState(String(paymentSettings.maxRechargeAmount || 50000));
   const [supportPhone, setSupportPhone] = useState(paymentSettings.supportPhone || '+91 98765 43210');
-  const [instructions, setInstructions] = useState(paymentSettings.instructions || '');
+  const [instructions, setInstructions] = useState(
+    paymentSettings.instructions || 'Scan QR code using Google Pay, PhonePe, Paytm or BHIM. Enter amount and paste 12-digit UTR below.'
+  );
 
   // Filter for incoming payment requests
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [saveSuccessMsg, setSaveSuccessMsg] = useState<string | null>(null);
 
   // Reject modal state
@@ -73,6 +79,7 @@ export function AdminPaymentGatewayPanel() {
       accountHolderName: holderName.trim(),
       autoApproveUpi: autoApprove,
       minRechargeAmount: Number(minRecharge) || 50,
+      maxRechargeAmount: Number(maxRecharge) || 50000,
       supportPhone: supportPhone.trim(),
       instructions: instructions.trim(),
     });
@@ -98,9 +105,28 @@ export function AdminPaymentGatewayPanel() {
     } catch (_) {}
   };
 
+  const handleConfirmReject = () => {
+    if (!rejectModalId) return;
+    rejectIncomingPayment(rejectModalId, rejectReasonInput.trim() || 'Invalid UTR reference');
+    setRejectModalId(null);
+    try {
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      }
+    } catch (_) {}
+  };
+
   const filteredQueue = incomingPaymentsQueue.filter((p) => {
-    if (filterStatus === 'all') return true;
-    return p.status === filterStatus;
+    const matchesStatus = filterStatus === 'all' || p.status === filterStatus;
+    if (!matchesStatus) return false;
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      p.userName.toLowerCase().includes(query) ||
+      p.userEmail.toLowerCase().includes(query) ||
+      p.utr.toLowerCase().includes(query) ||
+      p.id.toLowerCase().includes(query)
+    );
   });
 
   const pendingCount = incomingPaymentsQueue.filter((p) => p.status === 'pending').length;
@@ -119,7 +145,7 @@ export function AdminPaymentGatewayPanel() {
           style={StyleSheet.absoluteFill}
         />
         <View style={styles.heroTopRow}>
-          <View>
+          <View style={{ flex: 1 }}>
             <View style={styles.heroBadge}>
               <Text style={styles.heroBadgeText}>⚡ DIRECT MERCHANT PAYMENTS</Text>
             </View>
@@ -255,11 +281,62 @@ export function AdminPaymentGatewayPanel() {
               💡 Leave blank to auto-generate a crisp, scan-ready QR code linked directly to your UPI ID above.
             </Text>
           </View>
+
+          {/* Min and Max Recharge Amount Configuration */}
+          <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+            <View style={[styles.field, { flex: 1 }]}>
+              <Text style={styles.fieldLabel}>Min Recharge Amount (₹)</Text>
+              <TextInput
+                value={minRecharge}
+                onChangeText={setMinRecharge}
+                placeholder="50"
+                placeholderTextColor={colors.textFaint}
+                keyboardType="numeric"
+                style={styles.fieldInput}
+              />
+            </View>
+            <View style={[styles.field, { flex: 1 }]}>
+              <Text style={styles.fieldLabel}>Max Recharge Amount (₹)</Text>
+              <TextInput
+                value={maxRecharge}
+                onChangeText={setMaxRecharge}
+                placeholder="50000"
+                placeholderTextColor={colors.textFaint}
+                keyboardType="numeric"
+                style={styles.fieldInput}
+              />
+            </View>
+          </View>
+
+          {/* Support Phone & Instructions */}
+          <View style={styles.field}>
+            <Text style={styles.fieldLabel}>Customer Support Helpline / WhatsApp Phone</Text>
+            <TextInput
+              value={supportPhone}
+              onChangeText={setSupportPhone}
+              placeholder="+91 98765 43210"
+              placeholderTextColor={colors.textFaint}
+              style={styles.fieldInput}
+            />
+          </View>
+
+          <View style={styles.field}>
+            <Text style={styles.fieldLabel}>Payment Instructions for Users</Text>
+            <TextInput
+              value={instructions}
+              onChangeText={setInstructions}
+              multiline
+              numberOfLines={3}
+              placeholder="Instructions displayed on user checkout screen..."
+              placeholderTextColor={colors.textFaint}
+              style={[styles.fieldInput, { height: 64, textAlignVertical: 'top' }]}
+            />
+          </View>
         </View>
 
         {/* Bank Details Dropdown / Sub-card */}
         <View style={styles.bankSubCard}>
-          <Text style={styles.bankSubTitle}>🏦 Bank Account Transfer Option (Optional)</Text>
+          <Text style={styles.bankSubTitle}>🏦 Direct Bank Transfer Option (IMPS / NEFT)</Text>
           <View style={{ flexDirection: 'row', gap: spacing.sm }}>
             <View style={[styles.field, { flex: 1 }]}>
               <Text style={styles.fieldLabel}>Account Number</Text>
@@ -314,7 +391,7 @@ export function AdminPaymentGatewayPanel() {
           <View style={{ flex: 1 }}>
             <Text style={styles.switchTitle}>Instant Auto-Approve on UTR Submission</Text>
             <Text style={styles.switchSub}>
-              When enabled, user's wallet is credited immediately when they submit their 12-digit bank UTR.
+              When enabled, user wallet is credited immediately upon submitting a 12-digit bank UTR reference.
             </Text>
           </View>
           <Switch
@@ -352,6 +429,23 @@ export function AdminPaymentGatewayPanel() {
           </View>
         </View>
 
+        {/* Search Bar */}
+        <View style={styles.searchBarWrap}>
+          <Text style={{ fontSize: 14 }}>🔍</Text>
+          <TextInput
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder="Search by Seeker Name, Email, or UTR..."
+            placeholderTextColor={colors.textFaint}
+            style={styles.searchInput}
+          />
+          {!!searchQuery && (
+            <Pressable onPress={() => setSearchQuery('')}>
+              <Text style={{ fontSize: 13, color: colors.textMuted, fontWeight: '700' }}>✕</Text>
+            </Pressable>
+          )}
+        </View>
+
         {/* Filter Pills */}
         <View style={styles.filterPillsRow}>
           {(['all', 'pending', 'approved', 'rejected'] as const).map((st) => (
@@ -371,7 +465,9 @@ export function AdminPaymentGatewayPanel() {
         {filteredQueue.length === 0 ? (
           <View style={styles.emptyQueue}>
             <Text style={{ fontSize: 32 }}>📭</Text>
-            <Text style={styles.emptyQueueText}>No payment requests in this filter.</Text>
+            <Text style={styles.emptyQueueText}>
+              {searchQuery ? 'No payment requests match your search.' : 'No payment requests in this filter.'}
+            </Text>
           </View>
         ) : (
           filteredQueue.map((req) => (
@@ -390,14 +486,14 @@ export function AdminPaymentGatewayPanel() {
               ]}
             >
               <View style={styles.paymentItemHeader}>
-                <View>
+                <View style={{ flex: 1 }}>
                   <Text style={styles.paymentSeekerName}>{req.userName}</Text>
                   <Text style={styles.paymentSeekerEmail}>{req.userEmail}</Text>
                 </View>
 
                 <View style={{ alignItems: 'flex-end' }}>
-                  <Text style={styles.paymentAmount}>₹{req.amount}</Text>
-                  <Text style={styles.paymentCredit}>+ ₹{req.bonus} Bonus = ₹{req.totalCredit}</Text>
+                  <Text style={styles.paymentAmount}>{formatCurrency(req.amount)}</Text>
+                  <Text style={styles.paymentCredit}>+ ₹{req.bonus} Bonus = {formatCurrency(req.totalCredit)}</Text>
                 </View>
               </View>
 
@@ -411,7 +507,7 @@ export function AdminPaymentGatewayPanel() {
                 <View style={styles.utrRow}>
                   <Text style={styles.utrLabel}>Payment Mode:</Text>
                   <Text style={styles.utrValue}>
-                    {req.paymentMode === 'QR_SCAN' ? '📸 QR Code Scanner' : '📱 1-Tap UPI App'}
+                    {req.paymentMode === 'QR_SCAN' ? '📸 QR Code Scanner' : req.paymentMode === 'BANK_TRANSFER' ? '🏦 Bank IMPS' : '📱 1-Tap UPI App'}
                   </Text>
                 </View>
 
@@ -423,7 +519,7 @@ export function AdminPaymentGatewayPanel() {
                 {req.adminNotes && (
                   <View style={styles.utrRow}>
                     <Text style={[styles.utrLabel, { color: '#EF4444' }]}>Rejection Note:</Text>
-                    <Text style={[styles.utrValue, { color: '#EF4444' }]}>{req.adminNotes}</Text>
+                    <Text style={[styles.utrValue, { color: '#EF4444', flex: 1, textAlign: 'right' }]}>{req.adminNotes}</Text>
                   </View>
                 )}
               </View>
@@ -433,12 +529,12 @@ export function AdminPaymentGatewayPanel() {
                 <View style={styles.statusBadgeWrap}>
                   <Chip
                     label={req.status.toUpperCase()}
-                    variant={
+                    tone={
                       req.status === 'approved'
-                        ? 'success'
+                        ? 'teal'
                         : req.status === 'rejected'
-                        ? 'error'
-                        : 'warning'
+                        ? 'rose'
+                        : 'gold'
                     }
                   />
                 </View>
@@ -447,11 +543,12 @@ export function AdminPaymentGatewayPanel() {
                   <View style={{ flexDirection: 'row', gap: 8 }}>
                     <Button
                       label="❌ Reject"
-                      variant="danger"
+                      variant="outline"
                       size="sm"
                       fullWidth={false}
                       onPress={() => {
-                        rejectIncomingPayment(req.id, 'Invalid UTR reference or payment not received');
+                        setRejectModalId(req.id);
+                        setRejectReasonInput('Invalid 12-digit UTR or payment not received.');
                       }}
                     />
                     <Button
@@ -475,6 +572,72 @@ export function AdminPaymentGatewayPanel() {
           ))
         )}
       </Card>
+
+      {/* ── REJECT PAYMENT MODAL ── */}
+      <Modal visible={!!rejectModalId} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Reject Payment Receipt</Text>
+            <Text style={{ fontSize: 12, color: colors.textMuted }}>
+              Provide a reason for the rejection (e.g. UTR not found in bank statement, amount mismatch):
+            </Text>
+
+            <View style={{ gap: 6 }}>
+              {[
+                'Invalid 12-digit UTR reference or fake receipt',
+                'Payment not credited to merchant bank account',
+                'Amount entered differs from credited amount',
+                'Duplicate UTR submitted multiple times',
+              ].map((reasonOption) => (
+                <Pressable
+                  key={reasonOption}
+                  onPress={() => setRejectReasonInput(reasonOption)}
+                  style={[
+                    styles.reasonOptionBtn,
+                    rejectReasonInput === reasonOption && styles.reasonOptionBtnActive,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.reasonOptionText,
+                      rejectReasonInput === reasonOption && styles.reasonOptionTextActive,
+                    ]}
+                  >
+                    • {reasonOption}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+
+            <TextInput
+              value={rejectReasonInput}
+              onChangeText={setRejectReasonInput}
+              multiline
+              numberOfLines={3}
+              placeholder="Custom reason note..."
+              placeholderTextColor={colors.textFaint}
+              style={[styles.fieldInput, { height: 60, textAlignVertical: 'top' }]}
+            />
+
+            <View style={{ flexDirection: 'row', gap: spacing.sm, marginTop: 6 }}>
+              <Button
+                label="Cancel"
+                variant="outline"
+                size="md"
+                style={{ flex: 1 }}
+                onPress={() => setRejectModalId(null)}
+              />
+              <Button
+                label="Confirm Reject"
+                variant="danger"
+                size="md"
+                style={{ flex: 1 }}
+                onPress={handleConfirmReject}
+              />
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -732,6 +895,23 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     color: '#B45309',
   },
+  searchBarWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: radius.md,
+    paddingHorizontal: 10,
+    gap: 8,
+  },
+  searchInput: {
+    flex: 1,
+    paddingVertical: 8,
+    fontSize: 12.5,
+    color: colors.text,
+    fontWeight: '600',
+  },
   filterPillsRow: {
     flexDirection: 'row',
     gap: 6,
@@ -826,4 +1006,41 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statusBadgeWrap: {},
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    justifyContent: 'center',
+    padding: spacing.lg,
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: radius.xl,
+    padding: spacing.lg,
+    gap: spacing.md,
+  },
+  modalTitle: {
+    fontSize: 17,
+    fontWeight: '900',
+    color: colors.text,
+  },
+  reasonOptionBtn: {
+    backgroundColor: '#F8FAFC',
+    padding: 8,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  reasonOptionBtnActive: {
+    backgroundColor: '#FEF2F2',
+    borderColor: '#F87171',
+  },
+  reasonOptionText: {
+    fontSize: 11.5,
+    color: colors.textMuted,
+    fontWeight: '600',
+  },
+  reasonOptionTextActive: {
+    color: '#DC2626',
+    fontWeight: '800',
+  },
 });

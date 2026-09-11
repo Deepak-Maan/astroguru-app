@@ -206,7 +206,7 @@ export function RashiChakra({ kundli, onPress }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create<any>({
   cardContainer: {
     borderRadius: radius.xl,
     padding: spacing.lg,

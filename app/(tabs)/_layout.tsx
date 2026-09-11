@@ -225,7 +225,7 @@ export default function TabsLayout() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create<any>({
   barContainer: {
     backgroundColor: 'transparent',
     paddingHorizontal: 16,

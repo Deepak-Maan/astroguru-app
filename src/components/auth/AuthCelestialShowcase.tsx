@@ -333,7 +333,7 @@ export function AuthCelestialShowcase({ style }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create<any>({
   showcaseContainer: {
     flex: 1,
     height: '100%',

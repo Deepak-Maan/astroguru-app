@@ -819,14 +819,7 @@ export default function WalletScreen() {
                           <Pressable
                             onPress={() => {
                               triggerHaptic('light');
-                              setSelectedReceiptTxn({
-                                id: t.id,
-                                type: 'topup',
-                                amount: t.amount,
-                                timestamp: t.at,
-                                description: t.label,
-                                referenceId: t.id,
-                              });
+                              setSelectedReceiptTxn(t);
                             }}
                             style={({ pressed }) => [styles.receiptBtn, pressed && { opacity: 0.7 }]}
                           >

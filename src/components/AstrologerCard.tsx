@@ -218,7 +218,7 @@ export function AstrologerCard({ astrologer: a, onPress, compact = false }: Prop
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create<any>({
   /* ── Compact Carousel Card ── */
   compact: {
     width: 112,

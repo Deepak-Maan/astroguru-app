@@ -15,12 +15,12 @@ import {
 import { Redirect, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 import { GradientBackground } from '../../src/components/GradientBackground';
 import { Avatar } from '../../src/components/Avatar';
 import { Button } from '../../src/components/Button';
 import { Card } from '../../src/components/Card';
 import { Chip } from '../../src/components/Chip';
-import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { SectionHeader } from '../../src/components/SectionHeader';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { ASTROLOGERS } from '../../src/data/astrologers';
@@ -29,6 +29,7 @@ import { useRemediesStore } from '../../src/store/remediesStore';
 import { useSpellsStore } from '../../src/store/spellsStore';
 import { useAdminStore, PromoCoupon } from '../../src/store/adminStore';
 import { useAuthStore } from '../../src/store/authStore';
+import { useWalletStore } from '../../src/store/walletStore';
 import { useAntiHackingStore } from '../../src/store/antiHackingStore';
 import { formatCurrency } from '../../src/utils';
 import {
@@ -49,10 +50,19 @@ type AdminTab =
   | 'astrologers'
   | 'revenue'
   | 'users'
+  | 'push_notifications'
   | 'orders'
   | 'spells'
-  | 'inventory'
-  | 'push_notifications';
+  | 'inventory';
+
+interface AdminUserRecord {
+  id: string;
+  name: string;
+  email: string;
+  wallet: number;
+  role: 'User' | 'Admin' | 'Astrologer';
+  joinedAt: string;
+}
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -62,6 +72,8 @@ export default function AdminDashboard() {
 
   const [tab, setTab] = useState<AdminTab>('overview');
   const [astrologers, setAstrologers] = useState<Astrologer[]>([...ASTROLOGERS]);
+  const [astroSearch, setAstroSearch] = useState('');
+  const [astroStatusFilter, setAstroStatusFilter] = useState<'all' | 'online' | 'offline'>('all');
 
   // Admin Expanded Store
   const {
@@ -91,12 +103,30 @@ export default function AdminDashboard() {
 
   const antiHackingAudit = useAntiHackingStore((s) => s.lastAudit);
 
+  // VIP Pricing inputs local state
+  const [monthlyVipInput, setMonthlyVipInput] = useState(String(vipMonthlyPrice || 299));
+  const [annualVipInput, setAnnualVipInput] = useState(String(vipAnnualPrice || 1999));
+  const [vipPricingSavedMsg, setVipPricingSavedMsg] = useState<string | null>(null);
+
+  const handleSaveVipPricing = () => {
+    const monthly = Number(monthlyVipInput) || 299;
+    const annual = Number(annualVipInput) || 1999;
+    updateVipPricing(monthly, annual);
+    setVipPricingSavedMsg('✅ VIP Subscription Pricing updated successfully!');
+    try {
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+    } catch (_) {}
+    setTimeout(() => setVipPricingSavedMsg(null), 3500);
+  };
+
   // Manual App Update Broadcast States
   const broadcastUpdate = useUpdateStore((s) => s.broadcastUpdate);
   const currentAppVersion = useUpdateStore((s) => s.currentVersion);
-  const [updateVerInput, setUpdateVerInput] = useState('1.6.0');
+  const [updateVerInput, setUpdateVerInput] = useState('2.8.9');
   const [updateNotesInput, setUpdateNotesInput] = useState(
-    '⚡ New Performance Enhancements & Vedic Algorithms\n🛡️ High-Security RASP Anti-Hacking Protection\n🪪 Aadhaar Watermarking & KYC Verification'
+    '⚡ New Performance Enhancements & Vedic Algorithms\n🛡️ High-Security RASP Anti-Hacking Protection\n🪪 Aadhaar Watermarking & KYC Verification\n💳 Instant Direct UPI QR Recharge System'
   );
   const [otaBroadcastSuccess, setOtaBroadcastSuccess] = useState<string | null>(null);
 
@@ -109,8 +139,13 @@ export default function AdminDashboard() {
 
     broadcastUpdate(updateVerInput.trim(), notesArray, false);
     setOtaBroadcastSuccess(
-      `🎉 App Update v${updateVerInput.trim()} broadcasted! Mobile users will now receive the update modal.`
+      `🎉 App Update v${updateVerInput.trim()} broadcasted! Mobile users will now receive the update prompt.`
     );
+    try {
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+    } catch (_) {}
   };
 
   // Push Broadcast States
@@ -134,6 +169,11 @@ export default function AdminDashboard() {
     setBroadcastSuccess('🎉 Broadcast push notification successfully sent to 14,200 active devices!');
     setNotifTitle('');
     setNotifBody('');
+    try {
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+    } catch (_) {}
   };
 
   // Remedies & Spells Stores
@@ -150,13 +190,68 @@ export default function AdminDashboard() {
   const toggleSpellAvailable = useSpellsStore((s) => s.toggleSpellAvailable);
   const updateSpellOrderStatus = useSpellsStore((s) => s.updateSpellOrderStatus);
 
+  // Users Desk Local Management State
+  const [usersList, setUsersList] = useState<AdminUserRecord[]>([
+    { id: 'usr-1', name: 'Demo Seeker', email: 'seeker@astroguru.app', wallet: 310, role: 'User', joinedAt: '12 Aug 2026' },
+    { id: 'usr-2', name: 'Master Admin', email: 'admin@astroguru.app', wallet: 9999, role: 'Admin', joinedAt: '01 Jan 2026' },
+    { id: 'usr-3', name: 'Rajesh Sharma', email: 'rajesh.sharma@gmail.com', wallet: 750, role: 'User', joinedAt: '24 Aug 2026' },
+    { id: 'usr-4', name: 'Priyanka Verma', email: 'priyanka.v@yahoo.com', wallet: 150, role: 'User', joinedAt: '02 Sep 2026' },
+    { id: 'usr-5', name: 'Dr. Radhika Veda', email: 'radhika@astroguru.app', wallet: 14200, role: 'Astrologer', joinedAt: '15 Jul 2026' },
+    { id: 'usr-6', name: 'Amitabh Sen', email: 'amitabh.sen@outlook.com', wallet: 520, role: 'User', joinedAt: '05 Sep 2026' },
+  ]);
+  const [userSearchQuery, setUserSearchQuery] = useState('');
+  const [walletAdjustModalUser, setWalletAdjustModalUser] = useState<AdminUserRecord | null>(null);
+  const [adjustAmountInput, setAdjustAmountInput] = useState('100');
+  const [adjustReasonInput, setAdjustReasonInput] = useState('Promotional Bonus');
+
+  const handleAdjustWallet = (isCredit: boolean) => {
+    if (!walletAdjustModalUser) return;
+    const amount = Number(adjustAmountInput) || 0;
+    if (amount <= 0) return;
+
+    setUsersList((prev) =>
+      prev.map((u) => {
+        if (u.id === walletAdjustModalUser.id) {
+          const newBal = isCredit ? u.wallet + amount : Math.max(0, u.wallet - amount);
+          return { ...u, wallet: newBal };
+        }
+        return u;
+      })
+    );
+
+    // If active user is the one adjusted, also top up active wallet store
+    if (walletAdjustModalUser.email === authUser?.email && isCredit) {
+      try {
+        useWalletStore.getState().topup(amount, `Admin Credit: ${adjustReasonInput}`);
+      } catch (_) {}
+    }
+
+    setWalletAdjustModalUser(null);
+    try {
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+    } catch (_) {}
+  };
+
+  // Filter states
+  const [kycFilter, setKycFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+  const [payoutFilter, setPayoutFilter] = useState<'all' | 'pending' | 'processed' | 'rejected'>('all');
+  const [radarFilter, setRadarFilter] = useState<'all' | 'active' | 'disputed' | 'completed' | 'refunded'>('all');
+  const [orderFilter, setOrderFilter] = useState<'all' | 'Placed' | 'Dispatched' | 'Delivered'>('all');
+  const [spellTabMode, setSpellTabMode] = useState<'catalog' | 'bookings'>('catalog');
+
+  // Manual Ban Fingerprint State
+  const [manualBanInput, setManualBanInput] = useState('');
+
   // Modal for adding new astrologer
   const [showAddModal, setShowAddModal] = useState(false);
   const [newName, setNewName] = useState('');
-  const [newSpecialty, setNewSpecialty] = useState('Vedic Astrology');
+  const [newSpecialty, setNewSpecialty] = useState('Vedic Astrology, Kundli');
   const [newPrice, setNewPrice] = useState('25');
   const [newExp, setNewExp] = useState('8');
   const [newLang, setNewLang] = useState('Hindi, English');
+  const [newAbout, setNewAbout] = useState('Senior Vedic Jyotishi with expertise in career and relationship remedies.');
 
   // Modal for creating promo coupon
   const [showCouponModal, setShowCouponModal] = useState(false);
@@ -189,6 +284,11 @@ export default function AdminDashboard() {
         return a;
       })
     );
+    try {
+      if (Platform.OS !== 'web') {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+    } catch (_) {}
   };
 
   const updateAstroPrice = (id: string, newP: number) => {
@@ -200,6 +300,28 @@ export default function AdminDashboard() {
   const updateAstroExp = (id: string, newE: number) => {
     setAstrologers((prev) =>
       prev.map((a) => (a.id === id ? { ...a, experienceYears: newE } : a))
+    );
+  };
+
+  const handleDeleteAstrologer = (id: string, name: string) => {
+    Alert.alert(
+      'Remove Astrologer',
+      `Are you sure you want to remove ${name} from the active panel?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Remove',
+          style: 'destructive',
+          onPress: () => {
+            setAstrologers((prev) => prev.filter((a) => a.id !== id));
+            try {
+              if (Platform.OS !== 'web') {
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+              }
+            } catch (_) {}
+          },
+        },
+      ]
     );
   };
 
@@ -217,11 +339,16 @@ export default function AdminDashboard() {
       languages: newLang.split(',').map((l) => l.trim()),
       consultations: 5,
       online: true,
-      about: 'Senior Vedic astrologer newly added to AstroGuru panel.',
+      about: newAbout.trim() || 'Senior Vedic astrologer newly added to AstroGuru panel.',
     };
     setAstrologers([newAstro, ...astrologers]);
     setShowAddModal(false);
     setNewName('');
+    try {
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+    } catch (_) {}
   };
 
   const handleCreateCoupon = () => {
@@ -239,12 +366,16 @@ export default function AdminDashboard() {
     setShowCouponModal(false);
     setNewCouponCode('');
     setNewCouponTitle('');
+    try {
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+    } catch (_) {}
   };
 
   const pendingKycCount = kycQueue.filter((k) => k.status === 'pending').length;
   const pendingPayoutCount = payoutQueue.filter((p) => p.status === 'pending').length;
   const activeConsultationsCount = liveSessions.filter((s) => s.status === 'active').length;
-  const activeCount = astrologers.filter((a) => a.online).length;
 
   const handleAdminSignOut = () => {
     router.replace('/(auth)/login');
@@ -257,6 +388,32 @@ export default function AdminDashboard() {
   if (!isAuthenticated || authUser?.role !== 'admin') {
     return <Redirect href="/(auth)/login" />;
   }
+
+  // Filtered lists
+  const filteredKyc = kycQueue.filter((k) => kycFilter === 'all' || k.status === kycFilter);
+  const filteredPayouts = payoutQueue.filter((p) => payoutFilter === 'all' || p.status === payoutFilter);
+  const filteredRadar = liveSessions.filter((s) => radarFilter === 'all' || s.status === radarFilter);
+  const filteredOrders = orders.filter((o) => orderFilter === 'all' || o.status === orderFilter);
+
+  const filteredAstrologers = astrologers.filter((a) => {
+    const matchesFilter =
+      astroStatusFilter === 'all' ||
+      (astroStatusFilter === 'online' && a.online) ||
+      (astroStatusFilter === 'offline' && !a.online);
+    if (!matchesFilter) return false;
+    if (!astroSearch.trim()) return true;
+    const query = astroSearch.toLowerCase();
+    return (
+      a.name.toLowerCase().includes(query) ||
+      a.specialties?.some((s) => s.toLowerCase().includes(query))
+    );
+  });
+
+  const filteredUsers = usersList.filter((u) => {
+    if (!userSearchQuery.trim()) return true;
+    const q = userSearchQuery.toLowerCase();
+    return u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.role.toLowerCase().includes(q);
+  });
 
   return (
     <GradientBackground>
@@ -296,7 +453,7 @@ export default function AdminDashboard() {
           >
             {[
               { id: 'overview', label: '📊 Overview' },
-              { id: 'payments', label: '💳 Payment & QR Scanner' },
+              { id: 'payments', label: '💳 Payment & QR' },
               { id: 'kyc', label: `🪪 KYC Desk (${pendingKycCount})` },
               { id: 'payouts', label: `💸 Payouts (${pendingPayoutCount})` },
               { id: 'coupons', label: `🏷️ Coupons (${coupons.length})` },
@@ -304,15 +461,22 @@ export default function AdminDashboard() {
               { id: 'security', label: '🚨 Cyber Defense' },
               { id: 'astrologers', label: `🔮 Experts (${astrologers.length})` },
               { id: 'revenue', label: '💰 Revenue & VIP' },
-              { id: 'users', label: '👥 Users' },
+              { id: 'users', label: `👥 Users (${usersList.length})` },
               { id: 'push_notifications', label: '📣 Broadcast Push' },
               { id: 'orders', label: `🛒 Orders (${orders.length})` },
               { id: 'spells', label: `🪄 Spells (${spells.length})` },
-              { id: 'inventory', label: '📦 Inventory' },
+              { id: 'inventory', label: `📦 Inventory (${inventory.length})` },
             ].map((t) => (
               <Pressable
                 key={t.id}
-                onPress={() => setTab(t.id as AdminTab)}
+                onPress={() => {
+                  setTab(t.id as AdminTab);
+                  try {
+                    if (Platform.OS !== 'web') {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    }
+                  } catch (_) {}
+                }}
                 style={[styles.tabBtn, tab === t.id && styles.tabBtnActive]}
               >
                 {tab === t.id && (
@@ -362,6 +526,18 @@ export default function AdminDashboard() {
                   <Text style={[styles.statNum, { color: '#EC4899' }]}>{pendingPayoutCount} Requests</Text>
                   <Text style={styles.statTitle}>Pending Payouts</Text>
                 </View>
+
+                <View style={styles.statBox}>
+                  <Text style={styles.statIcon}>👥</Text>
+                  <Text style={[styles.statNum, { color: '#3B82F6' }]}>{usersList.length}</Text>
+                  <Text style={styles.statTitle}>Registered Users</Text>
+                </View>
+
+                <View style={styles.statBox}>
+                  <Text style={styles.statIcon}>🛒</Text>
+                  <Text style={[styles.statNum, { color: '#8B5CF6' }]}>{orders.length} Orders</Text>
+                  <Text style={styles.statTitle}>Remedies Fulfillments</Text>
+                </View>
               </View>
 
               {/* RASP Cyber Sentinel Snapshot */}
@@ -386,7 +562,7 @@ export default function AdminDashboard() {
 
               {/* Quick Operation Jumpers */}
               <Card style={{ gap: spacing.md }}>
-                <SectionHeader title="⚡ Instant Operational Actions" />
+                <SectionHeader title="⚡ Instant Operational Desks" subtitle="1-Tap access to high-priority management stations" />
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                   <Button
                     label="💳 Payment & QR Setup"
@@ -420,18 +596,34 @@ export default function AdminDashboard() {
                     style={{ flex: 1, minWidth: 140 }}
                     onPress={() => setTab('coupons')}
                   />
+                  <Button
+                    label="🔮 Manage Experts"
+                    variant="outline"
+                    size="sm"
+                    fullWidth={false}
+                    style={{ flex: 1, minWidth: 140 }}
+                    onPress={() => setTab('astrologers')}
+                  />
+                  <Button
+                    label="📣 Broadcast Push"
+                    variant="outline"
+                    size="sm"
+                    fullWidth={false}
+                    style={{ flex: 1, minWidth: 140 }}
+                    onPress={() => setTab('push_notifications')}
+                  />
                 </View>
               </Card>
             </View>
           )}
 
           {/* ══════════════════════════════════════════════════
-              1.1 PAYMENT GATEWAY & QR SCANNER HUB
+              2. PAYMENT GATEWAY & QR SCANNER HUB
              ══════════════════════════════════════════════════ */}
           {tab === 'payments' && <AdminPaymentGatewayPanel />}
 
           {/* ══════════════════════════════════════════════════
-              2. KYC APPROVALS DESK TAB
+              3. KYC APPROVALS DESK TAB
              ══════════════════════════════════════════════════ */}
           {tab === 'kyc' && (
             <View style={{ gap: spacing.md }}>
@@ -440,62 +632,84 @@ export default function AdminDashboard() {
                 subtitle="Review watermarked Aadhaar, PAN and Jyotish certificates"
               />
 
-              {kycQueue.map((item) => (
-                <Card key={item.id} style={{ gap: 10, borderLeftWidth: 4, borderLeftColor: item.status === 'approved' ? '#10B981' : item.status === 'rejected' ? '#EF4444' : '#F59E0B' }}>
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ fontSize: 15, fontWeight: '900', color: colors.text }}>
-                        {item.astrologerName}
-                      </Text>
-                      <Text style={{ fontSize: 12, color: colors.textMuted, fontWeight: '700', textTransform: 'capitalize', marginTop: 2 }}>
-                        📄 {item.docType.replace('_', ' ')} · {item.docNumberMasked}
-                      </Text>
-                      <Text style={{ fontSize: 10.5, color: colors.textFaint, marginTop: 2 }}>
-                        🔒 Cryptographic Hash: {item.securityHash} · Submitted {item.submittedAt}
-                      </Text>
-                    </View>
+              {/* Filter Pills */}
+              <View style={styles.filterPillsRow}>
+                {(['all', 'pending', 'approved', 'rejected'] as const).map((st) => (
+                  <Pressable
+                    key={st}
+                    onPress={() => setKycFilter(st)}
+                    style={[styles.filterPill, kycFilter === st && styles.filterPillActive]}
+                  >
+                    <Text style={[styles.filterPillText, kycFilter === st && styles.filterPillTextActive]}>
+                      {st.toUpperCase()} {st === 'pending' ? `(${pendingKycCount})` : ''}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
 
-                    <Chip
-                      label={item.status.toUpperCase()}
-                      tone={item.status === 'approved' ? 'teal' : item.status === 'rejected' ? 'rose' : 'gold'}
-                    />
-                  </View>
+              {filteredKyc.length === 0 ? (
+                <View style={styles.emptyCard}>
+                  <Text style={{ fontSize: 32 }}>📭</Text>
+                  <Text style={styles.emptyCardText}>No KYC documents in this filter.</Text>
+                </View>
+              ) : (
+                filteredKyc.map((item) => (
+                  <Card key={item.id} style={{ gap: 10, borderLeftWidth: 4, borderLeftColor: item.status === 'approved' ? '#10B981' : item.status === 'rejected' ? '#EF4444' : '#F59E0B' }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontSize: 15, fontWeight: '900', color: colors.text }}>
+                          {item.astrologerName}
+                        </Text>
+                        <Text style={{ fontSize: 12, color: colors.textMuted, fontWeight: '700', textTransform: 'capitalize', marginTop: 2 }}>
+                          📄 {item.docType.replace('_', ' ')} · {item.docNumberMasked}
+                        </Text>
+                        <Text style={{ fontSize: 10.5, color: colors.textFaint, marginTop: 2 }}>
+                          🔒 Cryptographic Hash: {item.securityHash} · Submitted {item.submittedAt}
+                        </Text>
+                      </View>
 
-                  {item.rejectionReason && (
-                    <View style={{ backgroundColor: '#FEF2F2', padding: 8, borderRadius: 8, borderWidth: 1, borderColor: '#FECACA' }}>
-                      <Text style={{ fontSize: 11, color: '#DC2626', fontWeight: '700' }}>
-                        ❌ Rejection Note: {item.rejectionReason}
-                      </Text>
-                    </View>
-                  )}
-
-                  {item.status === 'pending' && (
-                    <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
-                      <Button
-                        label="❌ Reject Document"
-                        variant="outline"
-                        size="sm"
-                        style={{ flex: 1 }}
-                        onPress={() => {
-                          setRejectKycModal(item.id);
-                        }}
-                      />
-                      <Button
-                        label="✅ Approve & Issue Badge"
-                        variant="gold"
-                        size="sm"
-                        style={{ flex: 1 }}
-                        onPress={() => approveKyc(item.id)}
+                      <Chip
+                        label={item.status.toUpperCase()}
+                        tone={item.status === 'approved' ? 'teal' : item.status === 'rejected' ? 'rose' : 'gold'}
                       />
                     </View>
-                  )}
-                </Card>
-              ))}
+
+                    {item.rejectionReason && (
+                      <View style={{ backgroundColor: '#FEF2F2', padding: 8, borderRadius: 8, borderWidth: 1, borderColor: '#FECACA' }}>
+                        <Text style={{ fontSize: 11, color: '#DC2626', fontWeight: '700' }}>
+                          ❌ Rejection Note: {item.rejectionReason}
+                        </Text>
+                      </View>
+                    )}
+
+                    {item.status === 'pending' && (
+                      <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
+                        <Button
+                          label="❌ Reject Document"
+                          variant="outline"
+                          size="sm"
+                          style={{ flex: 1 }}
+                          onPress={() => {
+                            setRejectKycModal(item.id);
+                          }}
+                        />
+                        <Button
+                          label="✅ Approve & Issue Badge"
+                          variant="gold"
+                          size="sm"
+                          style={{ flex: 1 }}
+                          onPress={() => approveKyc(item.id)}
+                        />
+                      </View>
+                    )}
+                  </Card>
+                ))
+              )}
             </View>
           )}
 
           {/* ══════════════════════════════════════════════════
-              3. PAYOUTS DESK TAB
+              4. PAYOUTS DESK TAB
              ══════════════════════════════════════════════════ */}
           {tab === 'payouts' && (
             <View style={{ gap: spacing.md }}>
@@ -504,69 +718,91 @@ export default function AdminDashboard() {
                 subtitle="Review and release net consultation earnings"
               />
 
-              {payoutQueue.map((p) => (
-                <Card key={p.id} style={{ gap: 10, borderLeftWidth: 4, borderLeftColor: p.status === 'processed' ? '#10B981' : p.status === 'rejected' ? '#EF4444' : '#F59E0B' }}>
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ fontSize: 16, fontWeight: '900', color: colors.text }}>
-                        {p.astrologerName}
-                      </Text>
-                      <Text style={{ fontSize: 18, fontWeight: '900', color: colors.gold, marginTop: 2 }}>
-                        {formatCurrency(p.amount)}
-                      </Text>
-                      <Text style={{ fontSize: 11.5, color: colors.textMuted, marginTop: 2 }}>
-                        🏦 {p.payoutMethod}: {p.payoutDetails}
-                      </Text>
-                      <Text style={{ fontSize: 10, color: colors.textFaint, marginTop: 2 }}>
-                        Requested on: {p.requestedAt}
-                      </Text>
-                    </View>
+              {/* Filter Pills */}
+              <View style={styles.filterPillsRow}>
+                {(['all', 'pending', 'processed', 'rejected'] as const).map((st) => (
+                  <Pressable
+                    key={st}
+                    onPress={() => setPayoutFilter(st)}
+                    style={[styles.filterPill, payoutFilter === st && styles.filterPillActive]}
+                  >
+                    <Text style={[styles.filterPillText, payoutFilter === st && styles.filterPillTextActive]}>
+                      {st.toUpperCase()} {st === 'pending' ? `(${pendingPayoutCount})` : ''}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
 
-                    <Chip
-                      label={p.status.toUpperCase()}
-                      tone={p.status === 'processed' ? 'teal' : p.status === 'rejected' ? 'rose' : 'gold'}
-                    />
-                  </View>
+              {filteredPayouts.length === 0 ? (
+                <View style={styles.emptyCard}>
+                  <Text style={{ fontSize: 32 }}>📭</Text>
+                  <Text style={styles.emptyCardText}>No payout requests in this filter.</Text>
+                </View>
+              ) : (
+                filteredPayouts.map((p) => (
+                  <Card key={p.id} style={{ gap: 10, borderLeftWidth: 4, borderLeftColor: p.status === 'processed' ? '#10B981' : p.status === 'rejected' ? '#EF4444' : '#F59E0B' }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontSize: 16, fontWeight: '900', color: colors.text }}>
+                          {p.astrologerName}
+                        </Text>
+                        <Text style={{ fontSize: 18, fontWeight: '900', color: colors.gold, marginTop: 2 }}>
+                          {formatCurrency(p.amount)}
+                        </Text>
+                        <Text style={{ fontSize: 11.5, color: colors.textMuted, marginTop: 2 }}>
+                          🏦 {p.payoutMethod}: {p.payoutDetails}
+                        </Text>
+                        <Text style={{ fontSize: 10, color: colors.textFaint, marginTop: 2 }}>
+                          Requested on: {p.requestedAt}
+                        </Text>
+                      </View>
 
-                  {p.utrNumber && (
-                    <View style={{ backgroundColor: '#ECFDF5', padding: 8, borderRadius: 8, borderWidth: 1, borderColor: '#A7F3D0' }}>
-                      <Text style={{ fontSize: 11, color: '#065F46', fontWeight: '800' }}>
-                        🧾 Bank Reference: {p.utrNumber}
-                      </Text>
-                    </View>
-                  )}
-
-                  {p.status === 'pending' && (
-                    <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
-                      <Button
-                        label="❌ Reject Request"
-                        variant="outline"
-                        size="sm"
-                        style={{ flex: 1 }}
-                        onPress={() => rejectPayout(p.id)}
-                      />
-                      <Button
-                        label="⚡ Approve & Release (Auto UTR)"
-                        variant="gold"
-                        size="sm"
-                        style={{ flex: 1 }}
-                        onPress={() => approvePayout(p.id)}
+                      <Chip
+                        label={p.status.toUpperCase()}
+                        tone={p.status === 'processed' ? 'teal' : p.status === 'rejected' ? 'rose' : 'gold'}
                       />
                     </View>
-                  )}
-                </Card>
-              ))}
+
+                    {p.utrNumber && (
+                      <View style={{ backgroundColor: '#ECFDF5', padding: 8, borderRadius: 8, borderWidth: 1, borderColor: '#A7F3D0' }}>
+                        <Text style={{ fontSize: 11, color: '#065F46', fontWeight: '800' }}>
+                          🧾 Bank Reference: {p.utrNumber}
+                        </Text>
+                      </View>
+                    )}
+
+                    {p.status === 'pending' && (
+                      <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
+                        <Button
+                          label="❌ Reject Request"
+                          variant="outline"
+                          size="sm"
+                          style={{ flex: 1 }}
+                          onPress={() => rejectPayout(p.id)}
+                        />
+                        <Button
+                          label="⚡ Approve & Release (Auto UTR)"
+                          variant="gold"
+                          size="sm"
+                          style={{ flex: 1 }}
+                          onPress={() => approvePayout(p.id)}
+                        />
+                      </View>
+                    )}
+                  </Card>
+                ))
+              )}
             </View>
           )}
 
           {/* ══════════════════════════════════════════════════
-              4. PROMO COUPONS & DISCOUNTS TAB
+              5. PROMO COUPONS & DISCOUNTS TAB
              ══════════════════════════════════════════════════ */}
           {tab === 'coupons' && (
             <View style={{ gap: spacing.md }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                 <SectionHeader
-                  title="🏷️ Promo Coupons & Cash Bonus Engine"
+                  title="🏷️ Promo Coupons & Bonus Engine"
                   subtitle="Manage discount codes for consultations & remedies"
                 />
                 <Button
@@ -578,173 +814,273 @@ export default function AdminDashboard() {
                 />
               </View>
 
-              {coupons.map((c) => (
-                <Card key={c.code} style={{ gap: 8 }}>
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                      <View style={{ backgroundColor: '#EFF6FF', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, borderWidth: 1, borderColor: '#BFDBFE' }}>
-                        <Text style={{ fontSize: 13, fontWeight: '900', color: '#1D4ED8', fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace' }}>
-                          {c.code}
+              {coupons.length === 0 ? (
+                <View style={styles.emptyCard}>
+                  <Text style={{ fontSize: 32 }}>🎟️</Text>
+                  <Text style={styles.emptyCardText}>No active coupons. Create one above!</Text>
+                </View>
+              ) : (
+                coupons.map((c) => (
+                  <Card key={c.code} style={{ gap: 8 }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        <View style={{ backgroundColor: '#EFF6FF', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, borderWidth: 1, borderColor: '#BFDBFE' }}>
+                          <Text style={{ fontSize: 13, fontWeight: '900', color: '#1D4ED8', fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace' }}>
+                            {c.code}
+                          </Text>
+                        </View>
+                        <Text style={{ fontSize: 13, fontWeight: '800', color: colors.text }}>
+                          {c.discountValue}% OFF
                         </Text>
                       </View>
-                      <Text style={{ fontSize: 13, fontWeight: '800', color: colors.text }}>
-                        {c.discountValue}% OFF
-                      </Text>
+
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                        <Switch
+                          value={c.active}
+                          onValueChange={() => toggleCouponActive(c.code)}
+                          trackColor={{ true: '#10B981', false: '#CBD5E1' }}
+                          thumbColor="#FFFFFF"
+                        />
+                        <Pressable
+                          onPress={() => {
+                            Alert.alert('Delete Coupon', `Delete coupon ${c.code}?`, [
+                              { text: 'Cancel', style: 'cancel' },
+                              { text: 'Delete', style: 'destructive', onPress: () => deleteCoupon(c.code) },
+                            ]);
+                          }}
+                          style={{ padding: 4 }}
+                        >
+                          <Text style={{ fontSize: 14 }}>🗑️</Text>
+                        </Pressable>
+                      </View>
                     </View>
 
-                    <Switch
-                      value={c.active}
-                      onValueChange={() => toggleCouponActive(c.code)}
-                      trackColor={{ true: '#10B981', false: '#CBD5E1' }}
-                      thumbColor="#FFFFFF"
-                    />
-                  </View>
+                    <Text style={{ fontSize: 12, color: colors.textMuted }}>{c.title}</Text>
 
-                  <Text style={{ fontSize: 12, color: colors.textMuted }}>{c.title}</Text>
-
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', backgroundColor: '#F8FAFC', padding: 8, borderRadius: 8 }}>
-                    <Text style={{ fontSize: 11, color: colors.textFaint }}>
-                      Min Recharge: ₹{c.minRecharge}
-                    </Text>
-                    <Text style={{ fontSize: 11, color: colors.teal, fontWeight: '700' }}>
-                      Redeemed: {c.redeemedCount} / {c.maxUsage}
-                    </Text>
-                    <Text style={{ fontSize: 11, color: colors.textFaint }}>
-                      Exp: {c.expiresAt}
-                    </Text>
-                  </View>
-                </Card>
-              ))}
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', backgroundColor: '#F8FAFC', padding: 8, borderRadius: 8 }}>
+                      <Text style={{ fontSize: 11, color: colors.textFaint }}>
+                        Min Recharge: ₹{c.minRecharge}
+                      </Text>
+                      <Text style={{ fontSize: 11, color: colors.teal, fontWeight: '700' }}>
+                        Redeemed: {c.redeemedCount} / {c.maxUsage}
+                      </Text>
+                      <Text style={{ fontSize: 11, color: colors.textFaint }}>
+                        Exp: {c.expiresAt}
+                      </Text>
+                    </View>
+                  </Card>
+                ))
+              )}
             </View>
           )}
 
           {/* ══════════════════════════════════════════════════
-              5. LIVE RADAR & DISPUTE REFUND DESK TAB
+              6. LIVE RADAR & DISPUTE REFUND DESK TAB
              ══════════════════════════════════════════════════ */}
           {tab === 'radar' && (
             <View style={{ gap: spacing.md }}>
               <SectionHeader
-                title="📞 Live Consultation Radar & Dispute Resolution"
+                title="📞 Live Consultation Radar & Dispute Desk"
                 subtitle="Monitor active sessions & settle seeker refund disputes"
               />
 
-              {liveSessions.map((sess) => (
-                <Card key={sess.id} style={{ gap: 10, borderLeftWidth: 4, borderLeftColor: sess.status === 'active' ? '#10B981' : sess.status === 'disputed' ? '#EF4444' : '#64748B' }}>
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ fontSize: 14.5, fontWeight: '900', color: colors.text }}>
-                        👤 {sess.seekerName} ↔ 🔮 {sess.astrologerName}
-                      </Text>
-                      <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>
-                        {sess.channel} · Duration: {sess.durationMins} mins · Billed: {formatCurrency(sess.billedAmount)}
-                      </Text>
-                      <Text style={{ fontSize: 10.5, color: colors.textFaint, marginTop: 2 }}>
-                        Session ID: {sess.id} · Started {sess.startedAt}
-                      </Text>
-                    </View>
+              {/* Filter Pills */}
+              <View style={styles.filterPillsRow}>
+                {(['all', 'active', 'disputed', 'completed', 'refunded'] as const).map((st) => (
+                  <Pressable
+                    key={st}
+                    onPress={() => setRadarFilter(st)}
+                    style={[styles.filterPill, radarFilter === st && styles.filterPillActive]}
+                  >
+                    <Text style={[styles.filterPillText, radarFilter === st && styles.filterPillTextActive]}>
+                      {st.toUpperCase()}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
 
-                    <Chip
-                      label={sess.status.toUpperCase()}
-                      tone={sess.status === 'active' ? 'teal' : sess.status === 'disputed' ? 'rose' : 'default'}
-                    />
-                  </View>
+              {filteredRadar.length === 0 ? (
+                <View style={styles.emptyCard}>
+                  <Text style={{ fontSize: 32 }}>📡</Text>
+                  <Text style={styles.emptyCardText}>No consultation sessions in this filter.</Text>
+                </View>
+              ) : (
+                filteredRadar.map((sess) => (
+                  <Card key={sess.id} style={{ gap: 10, borderLeftWidth: 4, borderLeftColor: sess.status === 'active' ? '#10B981' : sess.status === 'disputed' ? '#EF4444' : '#64748B' }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontSize: 14.5, fontWeight: '900', color: colors.text }}>
+                          👤 {sess.seekerName} ↔ 🔮 {sess.astrologerName}
+                        </Text>
+                        <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>
+                          {sess.channel} · Duration: {sess.durationMins} mins · Billed: {formatCurrency(sess.billedAmount)}
+                        </Text>
+                        <Text style={{ fontSize: 10.5, color: colors.textFaint, marginTop: 2 }}>
+                          Session ID: {sess.id} · Started {sess.startedAt}
+                        </Text>
+                      </View>
 
-                  {sess.disputeReason && (
-                    <View style={{ backgroundColor: '#FEF2F2', padding: 8, borderRadius: 8, borderWidth: 1, borderColor: '#FECACA' }}>
-                      <Text style={{ fontSize: 11.5, color: '#DC2626', fontWeight: '800' }}>
-                        ⚠️ Seeker Dispute: "{sess.disputeReason}"
-                      </Text>
-                    </View>
-                  )}
-
-                  {sess.status === 'disputed' && (
-                    <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
-                      <Button
-                        label="❌ Reject Dispute"
-                        variant="outline"
-                        size="sm"
-                        style={{ flex: 1 }}
-                        onPress={() => terminateSession(sess.id)}
-                      />
-                      <Button
-                        label={`💸 1-Tap Refund (${formatCurrency(sess.billedAmount)})`}
-                        variant="gold"
-                        size="sm"
-                        style={{ flex: 1 }}
-                        onPress={() => refundConsultation(sess.id)}
+                      <Chip
+                        label={sess.status.toUpperCase()}
+                        tone={sess.status === 'active' ? 'teal' : sess.status === 'disputed' ? 'rose' : 'default'}
                       />
                     </View>
-                  )}
-                </Card>
-              ))}
+
+                    {sess.disputeReason && (
+                      <View style={{ backgroundColor: '#FEF2F2', padding: 8, borderRadius: 8, borderWidth: 1, borderColor: '#FECACA' }}>
+                        <Text style={{ fontSize: 11.5, color: '#DC2626', fontWeight: '800' }}>
+                          ⚠️ Seeker Dispute: "{sess.disputeReason}"
+                        </Text>
+                      </View>
+                    )}
+
+                    {sess.status === 'disputed' && (
+                      <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
+                        <Button
+                          label="❌ Reject Dispute"
+                          variant="outline"
+                          size="sm"
+                          style={{ flex: 1 }}
+                          onPress={() => terminateSession(sess.id)}
+                        />
+                        <Button
+                          label={`💸 1-Tap Refund (${formatCurrency(sess.billedAmount)})`}
+                          variant="gold"
+                          size="sm"
+                          style={{ flex: 1 }}
+                          onPress={() => refundConsultation(sess.id)}
+                        />
+                      </View>
+                    )}
+
+                    {sess.status === 'active' && (
+                      <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
+                        <Button
+                          label="🛑 Force End Session"
+                          variant="outline"
+                          size="sm"
+                          style={{ flex: 1 }}
+                          onPress={() => terminateSession(sess.id)}
+                        />
+                      </View>
+                    )}
+                  </Card>
+                ))
+              )}
             </View>
           )}
 
           {/* ══════════════════════════════════════════════════
-              6. CYBER DEFENSE & INCIDENT LOGS TAB
+              7. CYBER DEFENSE & INCIDENT LOGS TAB
              ══════════════════════════════════════════════════ */}
           {tab === 'security' && (
             <View style={{ gap: spacing.md }}>
               <SectionHeader
-                title="🚨 Cyber Defense & Security Incident Logs"
+                title="🚨 Cyber Defense & Security Logs"
                 subtitle="Live stream of blocked RASP threats, root hooks & banned devices"
               />
 
+              {/* Manual Device Ban Box */}
               <Card style={{ backgroundColor: '#090D16', borderColor: '#1E293B', gap: 8 }}>
                 <Text style={{ fontSize: 13, fontWeight: '900', color: '#FFFFFF' }}>
                   🚫 Blacklisted Device Fingerprints ({bannedFingerprints.length})
                 </Text>
-                {bannedFingerprints.map((fp) => (
-                  <View key={fp} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#1E293B', padding: 8, borderRadius: 8 }}>
-                    <Text style={{ fontSize: 11.5, color: '#F59E0B', fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace', fontWeight: '800' }}>
-                      {fp}
-                    </Text>
-                    <Pressable onPress={() => unbanDevice(fp)} style={{ backgroundColor: '#334155', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4 }}>
-                      <Text style={{ fontSize: 10, color: '#FFFFFF', fontWeight: '800' }}>UNBAN</Text>
-                    </Pressable>
-                  </View>
-                ))}
+
+                <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
+                  <TextInput
+                    value={manualBanInput}
+                    onChangeText={setManualBanInput}
+                    placeholder="Enter device fingerprint hash..."
+                    placeholderTextColor="#64748B"
+                    style={{
+                      flex: 1,
+                      backgroundColor: '#1E293B',
+                      color: '#FFFFFF',
+                      borderRadius: 6,
+                      paddingHorizontal: 10,
+                      paddingVertical: 6,
+                      fontSize: 12,
+                      fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+                    }}
+                  />
+                  <Button
+                    label="Ban Device"
+                    variant="danger"
+                    size="sm"
+                    fullWidth={false}
+                    onPress={() => {
+                      if (manualBanInput.trim()) {
+                        banDevice(manualBanInput.trim());
+                        setManualBanInput('');
+                      }
+                    }}
+                  />
+                </View>
+
+                {bannedFingerprints.length === 0 ? (
+                  <Text style={{ fontSize: 11, color: '#94A3B8', marginTop: 4 }}>
+                    No devices currently blacklisted. System is secure.
+                  </Text>
+                ) : (
+                  bannedFingerprints.map((fp) => (
+                    <View key={fp} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#1E293B', padding: 8, borderRadius: 8, marginTop: 4 }}>
+                      <Text style={{ fontSize: 11.5, color: '#F59E0B', fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace', fontWeight: '800' }}>
+                        {fp}
+                      </Text>
+                      <Pressable onPress={() => unbanDevice(fp)} style={{ backgroundColor: '#334155', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4 }}>
+                        <Text style={{ fontSize: 10, color: '#FFFFFF', fontWeight: '800' }}>UNBAN</Text>
+                      </Pressable>
+                    </View>
+                  ))
+                )}
               </Card>
 
-              {securityIncidents.map((inc) => (
-                <Card key={inc.id} style={{ gap: 6 }}>
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                      <Text style={{ fontSize: 16 }}>🚨</Text>
-                      <Text style={{ fontSize: 13, fontWeight: '900', color: '#DC2626' }}>
-                        {inc.threatType}
-                      </Text>
+              {securityIncidents.length === 0 ? (
+                <View style={styles.emptyCard}>
+                  <Text style={{ fontSize: 32 }}>🛡️</Text>
+                  <Text style={styles.emptyCardText}>Zero security breaches detected. RASP Shield active.</Text>
+                </View>
+              ) : (
+                securityIncidents.map((inc) => (
+                  <Card key={inc.id} style={{ gap: 6 }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Text style={{ fontSize: 16 }}>🚨</Text>
+                        <Text style={{ fontSize: 13, fontWeight: '900', color: '#DC2626' }}>
+                          {inc.threatType}
+                        </Text>
+                      </View>
+                      <Chip label={inc.actionTaken} tone={inc.actionTaken === 'BANNED' ? 'rose' : 'gold'} />
                     </View>
-                    <Chip label={inc.actionTaken} tone={inc.actionTaken === 'BANNED' ? 'rose' : 'gold'} />
-                  </View>
 
-                  <Text style={{ fontSize: 11, color: colors.textMuted }}>
-                    Device: <Text style={{ color: colors.text, fontWeight: '700' }}>{inc.deviceFingerprint}</Text> · IP: {inc.ipAddress}
-                  </Text>
-                  <Text style={{ fontSize: 10, color: colors.textFaint }}>
-                    Detected: {inc.timestamp}
-                  </Text>
+                    <Text style={{ fontSize: 11, color: colors.textMuted }}>
+                      Device: <Text style={{ color: colors.text, fontWeight: '700' }}>{inc.deviceFingerprint}</Text> · IP: {inc.ipAddress}
+                    </Text>
+                    <Text style={{ fontSize: 10, color: colors.textFaint }}>
+                      Detected: {inc.timestamp}
+                    </Text>
 
-                  <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
-                    <Button
-                      label="🔨 1-Tap Ban Device Fingerprint"
-                      variant="outline"
-                      size="sm"
-                      onPress={() => banDevice(inc.deviceFingerprint)}
-                    />
-                  </View>
-                </Card>
-              ))}
+                    <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
+                      <Button
+                        label="🔨 1-Tap Ban Device Fingerprint"
+                        variant="outline"
+                        size="sm"
+                        onPress={() => banDevice(inc.deviceFingerprint)}
+                      />
+                    </View>
+                  </Card>
+                ))
+              )}
             </View>
           )}
 
           {/* ══════════════════════════════════════════════════
-              7. ASTROLOGERS TAB
+              8. ASTROLOGERS TAB
              ══════════════════════════════════════════════════ */}
           {tab === 'astrologers' && (
             <View style={{ gap: spacing.md }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Text style={styles.tabHeading}>Manage Panel ({astrologers.length})</Text>
+                <Text style={styles.tabHeading}>Manage Panel ({filteredAstrologers.length})</Text>
                 <Button
                   label="➕ New Expert"
                   variant="gold"
@@ -754,27 +1090,65 @@ export default function AdminDashboard() {
                 />
               </View>
 
-              {astrologers.map((a) => (
+              {/* Search Bar */}
+              <View style={styles.searchBarWrap}>
+                <Text style={{ fontSize: 14 }}>🔍</Text>
+                <TextInput
+                  value={astroSearch}
+                  onChangeText={setAstroSearch}
+                  placeholder="Search astrologers by name or specialty..."
+                  placeholderTextColor={colors.textFaint}
+                  style={styles.searchInput}
+                />
+                {!!astroSearch && (
+                  <Pressable onPress={() => setAstroSearch('')}>
+                    <Text style={{ fontSize: 13, color: colors.textMuted, fontWeight: '700' }}>✕</Text>
+                  </Pressable>
+                )}
+              </View>
+
+              {/* Status Filter */}
+              <View style={styles.filterPillsRow}>
+                {(['all', 'online', 'offline'] as const).map((st) => (
+                  <Pressable
+                    key={st}
+                    onPress={() => setAstroStatusFilter(st)}
+                    style={[styles.filterPill, astroStatusFilter === st && styles.filterPillActive]}
+                  >
+                    <Text style={[styles.filterPillText, astroStatusFilter === st && styles.filterPillTextActive]}>
+                      {st.toUpperCase()}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+
+              {filteredAstrologers.map((a) => (
                 <Card key={a.id} style={styles.manageCard}>
                   <View style={{ flexDirection: 'row', gap: spacing.md, alignItems: 'center' }}>
                     <Avatar uri={a.avatar} name={a.name} size={50} online={a.online} showStatus />
                     <View style={{ flex: 1 }}>
                       <Text style={styles.manageName}>{a.name}</Text>
                       <Text style={styles.manageMeta}>
-                        ⭐ {a.rating} ({a.reviews} reviews) · {a.specialties.join(' · ')}
+                        ⭐ {a.rating} ({a.reviews} reviews) · {a.specialties?.join(' · ') || 'Vedic'}
                       </Text>
                     </View>
-                    <Pressable
-                      onPress={() => toggleStatus(a.id)}
-                      style={[
-                        styles.toggleBtn,
-                        a.online ? styles.toggleOnline : styles.toggleOffline,
-                      ]}
-                    >
-                      <Text style={[styles.toggleText, { color: a.online ? colors.success : colors.danger }]}>
-                        {a.online ? 'ONLINE' : 'OFFLINE'}
-                      </Text>
-                    </Pressable>
+                    <View style={{ alignItems: 'flex-end', gap: 6 }}>
+                      <Pressable
+                        onPress={() => toggleStatus(a.id)}
+                        style={[
+                          styles.toggleBtn,
+                          a.online ? styles.toggleOnline : styles.toggleOffline,
+                        ]}
+                      >
+                        <Text style={[styles.toggleText, { color: a.online ? colors.success : colors.danger }]}>
+                          {a.online ? 'ONLINE' : 'OFFLINE'}
+                        </Text>
+                      </Pressable>
+
+                      <Pressable onPress={() => handleDeleteAstrologer(a.id, a.name)}>
+                        <Text style={{ fontSize: 10, color: '#EF4444', fontWeight: '700' }}>Delete</Text>
+                      </Pressable>
+                    </View>
                   </View>
 
                   <View style={styles.invControlsRow}>
@@ -804,7 +1178,7 @@ export default function AdminDashboard() {
           )}
 
           {/* ══════════════════════════════════════════════════
-              8. REVENUE & VIP PRICING CONTROLLER TAB
+              9. REVENUE & VIP PRICING CONTROLLER TAB
              ══════════════════════════════════════════════════ */}
           {tab === 'revenue' && (
             <View style={{ gap: spacing.md }}>
@@ -822,10 +1196,10 @@ export default function AdminDashboard() {
                 </View>
 
                 <View style={{ flexDirection: 'row', gap: 8, marginTop: 6 }}>
-                  {[15, 20, 25, 30].map((fee) => (
+                  {[10, 15, 20, 25, 30].map((fee) => (
                     <Button
                       key={fee}
-                      label={`${fee}% Fee`}
+                      label={`${fee}%`}
                       variant={platformFeePercent === fee ? 'gold' : 'outline'}
                       size="sm"
                       style={{ flex: 1 }}
@@ -836,37 +1210,94 @@ export default function AdminDashboard() {
               </Card>
 
               <Card style={{ gap: 12 }}>
-                <SectionHeader title="👑 AstroVIP Pass Pricing Controller" subtitle="Configure subscription rates" />
+                <SectionHeader title="👑 AstroVIP Pass Pricing Controller" subtitle="Configure subscription rates for seekers" />
                 <View style={{ flexDirection: 'row', gap: 10 }}>
-                  <View style={{ flex: 1, backgroundColor: '#FFFBEB', padding: 12, borderRadius: 10, borderWidth: 1, borderColor: '#FDE68A' }}>
-                    <Text style={{ fontSize: 11, color: '#B45309', fontWeight: '800' }}>MONTHLY VIP PASS</Text>
-                    <Text style={{ fontSize: 18, color: '#D97706', fontWeight: '900', marginTop: 2 }}>₹{vipMonthlyPrice}</Text>
+                  <View style={{ flex: 1, backgroundColor: '#FFFBEB', padding: 12, borderRadius: 10, borderWidth: 1, borderColor: '#FDE68A', gap: 6 }}>
+                    <Text style={{ fontSize: 11, color: '#B45309', fontWeight: '800' }}>MONTHLY VIP PASS (₹)</Text>
+                    <TextInput
+                      value={monthlyVipInput}
+                      onChangeText={setMonthlyVipInput}
+                      keyboardType="numeric"
+                      style={{
+                        backgroundColor: '#FFFFFF',
+                        borderWidth: 1,
+                        borderColor: '#FCD34D',
+                        borderRadius: 6,
+                        paddingHorizontal: 8,
+                        paddingVertical: 6,
+                        fontSize: 16,
+                        fontWeight: '900',
+                        color: '#D97706',
+                      }}
+                    />
                   </View>
-                  <View style={{ flex: 1, backgroundColor: '#ECFDF5', padding: 12, borderRadius: 10, borderWidth: 1, borderColor: '#A7F3D0' }}>
-                    <Text style={{ fontSize: 11, color: '#065F46', fontWeight: '800' }}>ANNUAL VIP PASS</Text>
-                    <Text style={{ fontSize: 18, color: '#059669', fontWeight: '900', marginTop: 2 }}>₹{vipAnnualPrice}</Text>
+                  <View style={{ flex: 1, backgroundColor: '#ECFDF5', padding: 12, borderRadius: 10, borderWidth: 1, borderColor: '#A7F3D0', gap: 6 }}>
+                    <Text style={{ fontSize: 11, color: '#065F46', fontWeight: '800' }}>ANNUAL VIP PASS (₹)</Text>
+                    <TextInput
+                      value={annualVipInput}
+                      onChangeText={setAnnualVipInput}
+                      keyboardType="numeric"
+                      style={{
+                        backgroundColor: '#FFFFFF',
+                        borderWidth: 1,
+                        borderColor: '#6EE7B7',
+                        borderRadius: 6,
+                        paddingHorizontal: 8,
+                        paddingVertical: 6,
+                        fontSize: 16,
+                        fontWeight: '900',
+                        color: '#059669',
+                      }}
+                    />
                   </View>
                 </View>
+
+                {vipPricingSavedMsg && (
+                  <View style={{ backgroundColor: '#ECFDF5', padding: 8, borderRadius: 6, borderWidth: 1, borderColor: '#A7F3D0' }}>
+                    <Text style={{ fontSize: 11.5, color: '#065F46', fontWeight: '800', textAlign: 'center' }}>
+                      {vipPricingSavedMsg}
+                    </Text>
+                  </View>
+                )}
+
+                <Button
+                  label="💾 Save VIP Subscription Pricing"
+                  variant="gold"
+                  size="md"
+                  onPress={handleSaveVipPricing}
+                />
               </Card>
             </View>
           )}
 
           {/* ══════════════════════════════════════════════════
-              9. USERS TAB
+              10. USERS & WALLET DESK TAB
              ══════════════════════════════════════════════════ */}
           {tab === 'users' && (
             <View style={{ gap: spacing.md }}>
+              {/* Search */}
+              <View style={styles.searchBarWrap}>
+                <Text style={{ fontSize: 14 }}>🔍</Text>
+                <TextInput
+                  value={userSearchQuery}
+                  onChangeText={setUserSearchQuery}
+                  placeholder="Search user by name, email, or role..."
+                  placeholderTextColor={colors.textFaint}
+                  style={styles.searchInput}
+                />
+                {!!userSearchQuery && (
+                  <Pressable onPress={() => setUserSearchQuery('')}>
+                    <Text style={{ fontSize: 13, color: colors.textMuted, fontWeight: '700' }}>✕</Text>
+                  </Pressable>
+                )}
+              </View>
+
               <Card padded={false}>
                 <View style={{ padding: spacing.lg, paddingBottom: spacing.sm }}>
-                  <SectionHeader title="Registered Users (1,240)" subtitle="Account statuses & wallet balances" />
+                  <SectionHeader title={`Registered Accounts (${filteredUsers.length})`} subtitle="Manage user roles & wallet balances" />
                 </View>
-                {[
-                  { name: 'Demo Seeker', email: 'seeker@astroguru.app', wallet: '₹310', role: 'User' },
-                  { name: 'Master Admin', email: 'admin@astroguru.app', wallet: '₹9,999', role: 'Admin' },
-                  { name: 'Rajesh Sharma', email: 'rajesh@gmail.com', wallet: '₹750', role: 'User' },
-                  { name: 'Priyanka Verma', email: 'priyanka@gmail.com', wallet: '₹150', role: 'User' },
-                ].map((u, idx) => (
-                  <View key={idx} style={styles.userRow}>
+                {filteredUsers.map((u) => (
+                  <View key={u.id} style={styles.userRow}>
                     <Avatar name={u.name} size={42} />
                     <View style={{ flex: 1 }}>
                       <Text style={styles.userName}>
@@ -874,10 +1305,24 @@ export default function AdminDashboard() {
                         {u.role === 'Admin' && (
                           <Text style={{ color: colors.saffron, fontSize: 11 }}>⚡ ADMIN</Text>
                         )}
+                        {u.role === 'Astrologer' && (
+                          <Text style={{ color: colors.gold, fontSize: 11 }}>🔮 EXPERT</Text>
+                        )}
                       </Text>
                       <Text style={styles.userEmail}>{u.email}</Text>
                     </View>
-                    <Text style={styles.userWallet}>{u.wallet}</Text>
+                    <View style={{ alignItems: 'flex-end', gap: 4 }}>
+                      <Text style={styles.userWallet}>{formatCurrency(u.wallet)}</Text>
+                      <Pressable
+                        onPress={() => {
+                          setWalletAdjustModalUser(u);
+                          setAdjustAmountInput('100');
+                        }}
+                        style={{ backgroundColor: '#EFF6FF', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4, borderWidth: 1, borderColor: '#BFDBFE' }}
+                      >
+                        <Text style={{ fontSize: 10, color: '#1D4ED8', fontWeight: '800' }}>💳 Adjust</Text>
+                      </Pressable>
+                    </View>
                   </View>
                 ))}
               </Card>
@@ -885,7 +1330,7 @@ export default function AdminDashboard() {
           )}
 
           {/* ══════════════════════════════════════════════════
-              10. PUSH BROADCAST & OTA TAB
+              11. PUSH BROADCAST & OTA TAB
              ══════════════════════════════════════════════════ */}
           {tab === 'push_notifications' && (
             <View style={{ gap: spacing.md }}>
@@ -948,7 +1393,7 @@ export default function AdminDashboard() {
                   <TextInput
                     value={updateVerInput}
                     onChangeText={setUpdateVerInput}
-                    placeholder="e.g. 1.6.0"
+                    placeholder="e.g. 2.8.9"
                     placeholderTextColor={colors.textFaint}
                     style={styles.fieldInput}
                   />
@@ -984,96 +1429,183 @@ export default function AdminDashboard() {
           )}
 
           {/* ══════════════════════════════════════════════════
-              11. ORDERS TAB
+              12. ORDERS TAB
              ══════════════════════════════════════════════════ */}
           {tab === 'orders' && (
             <View style={{ gap: spacing.md }}>
               <SectionHeader title="User Shopping Orders" subtitle={`${orders.length} total orders recorded`} />
-              {orders.map((ord) => (
-                <Card key={ord.id} style={styles.orderCard}>
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Text style={styles.orderId}>{ord.id}</Text>
-                    <Chip
-                      label={ord.status}
-                      tone={ord.status === 'Delivered' ? 'teal' : ord.status === 'Dispatched' ? 'gold' : 'rose'}
-                    />
-                  </View>
 
-                  <Text style={styles.orderItemName}>{ord.itemName}</Text>
-                  <Text style={styles.orderPrice}>{formatCurrency(ord.price)}</Text>
+              {/* Filter Pills */}
+              <View style={styles.filterPillsRow}>
+                {(['all', 'Placed', 'Dispatched', 'Delivered'] as const).map((st) => (
+                  <Pressable
+                    key={st}
+                    onPress={() => setOrderFilter(st)}
+                    style={[styles.filterPill, orderFilter === st && styles.filterPillActive]}
+                  >
+                    <Text style={[styles.filterPillText, orderFilter === st && styles.filterPillTextActive]}>
+                      {st.toUpperCase()}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
 
-                  <View style={styles.userInfoBox}>
-                    <Text style={styles.userInfoText}>👤 Customer: <Text style={{ color: colors.text }}>{ord.userName}</Text></Text>
-                    <Text style={styles.userInfoText}>📞 Phone: <Text style={{ color: colors.text }}>{ord.phone}</Text></Text>
-                    <Text style={styles.userInfoText}>📍 Address: <Text style={{ color: colors.text }}>{ord.address}</Text></Text>
-                    <Text style={styles.userInfoText}>🕒 Placed On: <Text style={{ color: colors.textMuted }}>{ord.date}</Text></Text>
-                  </View>
+              {filteredOrders.length === 0 ? (
+                <View style={styles.emptyCard}>
+                  <Text style={{ fontSize: 32 }}>🛍️</Text>
+                  <Text style={styles.emptyCardText}>No remedies orders in this filter.</Text>
+                </View>
+              ) : (
+                filteredOrders.map((ord) => (
+                  <Card key={ord.id} style={styles.orderCard}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Text style={styles.orderId}>{ord.id}</Text>
+                      <Chip
+                        label={ord.status}
+                        tone={ord.status === 'Delivered' ? 'teal' : ord.status === 'Dispatched' ? 'gold' : 'rose'}
+                      />
+                    </View>
 
-                  <View style={styles.statusActionRow}>
-                    <Button
-                      label="Mark Dispatched"
-                      variant="outline"
-                      size="sm"
-                      disabled={ord.status === 'Dispatched' || ord.status === 'Delivered'}
-                      onPress={() => updateOrderStatus(ord.id, 'Dispatched')}
-                      style={{ flex: 1 }}
-                    />
-                    <Button
-                      label="Mark Delivered"
-                      variant="gold"
-                      size="sm"
-                      disabled={ord.status === 'Delivered'}
-                      onPress={() => updateOrderStatus(ord.id, 'Delivered')}
-                      style={{ flex: 1 }}
-                    />
-                  </View>
-                </Card>
-              ))}
+                    <Text style={styles.orderItemName}>{ord.itemName}</Text>
+                    <Text style={styles.orderPrice}>{formatCurrency(ord.price)}</Text>
+
+                    <View style={styles.userInfoBox}>
+                      <Text style={styles.userInfoText}>👤 Customer: <Text style={{ color: colors.text }}>{ord.userName}</Text></Text>
+                      <Text style={styles.userInfoText}>📞 Phone: <Text style={{ color: colors.text }}>{ord.phone}</Text></Text>
+                      <Text style={styles.userInfoText}>📍 Address: <Text style={{ color: colors.text }}>{ord.address}</Text></Text>
+                      <Text style={styles.userInfoText}>🕒 Placed On: <Text style={{ color: colors.textMuted }}>{ord.date}</Text></Text>
+                    </View>
+
+                    <View style={styles.statusActionRow}>
+                      <Button
+                        label="Mark Dispatched"
+                        variant="outline"
+                        size="sm"
+                        disabled={ord.status === 'Dispatched' || ord.status === 'Delivered'}
+                        onPress={() => updateOrderStatus(ord.id, 'Dispatched')}
+                        style={{ flex: 1 }}
+                      />
+                      <Button
+                        label="Mark Delivered"
+                        variant="gold"
+                        size="sm"
+                        disabled={ord.status === 'Delivered'}
+                        onPress={() => updateOrderStatus(ord.id, 'Delivered')}
+                        style={{ flex: 1 }}
+                      />
+                    </View>
+                  </Card>
+                ))
+              )}
             </View>
           )}
 
           {/* ══════════════════════════════════════════════════
-              12. SPELLS TAB
+              13. SPELLS TAB
              ══════════════════════════════════════════════════ */}
           {tab === 'spells' && (
             <View style={{ gap: spacing.md }}>
-              <SectionHeader title="Spells Catalog & Price Management" subtitle="Edit Spell Fees & Manage Availability" />
-              {spells.map((spell) => (
-                <Card key={spell.id} style={styles.inventoryCard}>
-                  <View style={{ flexDirection: 'row', gap: spacing.md, alignItems: 'center' }}>
-                    <Text style={{ fontSize: 28 }}>{spell.icon}</Text>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.invTitle}>{spell.title}</Text>
-                      <Text style={styles.invSub}>{spell.sanskritName} · {spell.category}</Text>
-                    </View>
-                    <Pressable
-                      onPress={() => toggleSpellAvailable(spell.id)}
-                      style={[styles.toggleBtn, spell.available ? styles.toggleOnline : styles.toggleOffline]}
-                    >
-                      <Text style={[styles.toggleText, { color: spell.available ? colors.success : colors.danger }]}>
-                        {spell.available ? 'ACTIVE' : 'DISABLED'}
-                      </Text>
-                    </Pressable>
-                  </View>
+              <SectionHeader title="Spells & Sacred Puja Management" subtitle="Edit Spell Fees & Manage Puja Fulfillments" />
 
-                  <View style={styles.invControlsRow}>
-                    <View style={styles.inputBoxCol}>
-                      <Text style={styles.inputColLabel}>Spell Fee (₹):</Text>
-                      <TextInput
-                        style={styles.invInput}
-                        value={String(spell.price)}
-                        keyboardType="numeric"
-                        onChangeText={(txt) => updateSpellPrice(spell.id, Number(txt) || 0)}
-                      />
+              {/* Sub Mode Switcher */}
+              <View style={styles.filterPillsRow}>
+                <Pressable
+                  onPress={() => setSpellTabMode('catalog')}
+                  style={[styles.filterPill, spellTabMode === 'catalog' && styles.filterPillActive]}
+                >
+                  <Text style={[styles.filterPillText, spellTabMode === 'catalog' && styles.filterPillTextActive]}>
+                    🪄 SPELLS CATALOG ({spells.length})
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => setSpellTabMode('bookings')}
+                  style={[styles.filterPill, spellTabMode === 'bookings' && styles.filterPillActive]}
+                >
+                  <Text style={[styles.filterPillText, spellTabMode === 'bookings' && styles.filterPillTextActive]}>
+                    🕉️ PUJA BOOKINGS ({spellOrders.length})
+                  </Text>
+                </Pressable>
+              </View>
+
+              {spellTabMode === 'catalog' ? (
+                spells.map((spell) => (
+                  <Card key={spell.id} style={styles.inventoryCard}>
+                    <View style={{ flexDirection: 'row', gap: spacing.md, alignItems: 'center' }}>
+                      <Text style={{ fontSize: 28 }}>{spell.icon}</Text>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.invTitle}>{spell.title}</Text>
+                        <Text style={styles.invSub}>{spell.sanskritName} · {spell.category}</Text>
+                      </View>
+                      <Pressable
+                        onPress={() => toggleSpellAvailable(spell.id)}
+                        style={[styles.toggleBtn, spell.available ? styles.toggleOnline : styles.toggleOffline]}
+                      >
+                        <Text style={[styles.toggleText, { color: spell.available ? colors.success : colors.danger }]}>
+                          {spell.available ? 'ACTIVE' : 'DISABLED'}
+                        </Text>
+                      </Pressable>
                     </View>
+
+                    <View style={styles.invControlsRow}>
+                      <View style={styles.inputBoxCol}>
+                        <Text style={styles.inputColLabel}>Spell Fee (₹):</Text>
+                        <TextInput
+                          style={styles.invInput}
+                          value={String(spell.price)}
+                          keyboardType="numeric"
+                          onChangeText={(txt) => updateSpellPrice(spell.id, Number(txt) || 0)}
+                        />
+                      </View>
+                    </View>
+                  </Card>
+                ))
+              ) : (
+                spellOrders.length === 0 ? (
+                  <View style={styles.emptyCard}>
+                    <Text style={{ fontSize: 32 }}>🕉️</Text>
+                    <Text style={styles.emptyCardText}>No puja bookings recorded yet.</Text>
                   </View>
-                </Card>
-              ))}
+                ) : (
+                  spellOrders.map((bo) => (
+                    <Card key={bo.id} style={{ gap: 8 }}>
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Text style={{ fontSize: 15, fontWeight: '900', color: colors.text }}>{bo.spellTitle}</Text>
+                        <Chip label={bo.status} tone={bo.status === 'Ritual Completed' ? 'teal' : bo.status === 'Casting in Progress' ? 'gold' : 'rose'} />
+                      </View>
+                      <Text style={{ fontSize: 12, color: colors.textMuted }}>
+                        Seeker: <Text style={{ color: colors.text, fontWeight: '700' }}>{bo.userName}</Text> · {bo.date}
+                      </Text>
+                      <Text style={{ fontSize: 11, color: colors.textFaint }}>Intention: "{bo.intention}"</Text>
+
+                      {bo.status !== 'Ritual Completed' && (
+                        <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
+                          {bo.status === 'Ritual Scheduled' && (
+                            <Button
+                              label="Mark In-Progress"
+                              variant="outline"
+                              size="sm"
+                              style={{ flex: 1 }}
+                              onPress={() => updateSpellOrderStatus(bo.id, 'Casting in Progress')}
+                            />
+                          )}
+                          <Button
+                            label="Mark Ritual Completed"
+                            variant="gold"
+                            size="sm"
+                            style={{ flex: 1 }}
+                            onPress={() => updateSpellOrderStatus(bo.id, 'Ritual Completed')}
+                          />
+                        </View>
+                      )}
+                    </Card>
+                  ))
+                )
+              )}
             </View>
           )}
 
           {/* ══════════════════════════════════════════════════
-              13. INVENTORY TAB
+              14. INVENTORY TAB
              ══════════════════════════════════════════════════ */}
           {tab === 'inventory' && (
             <View style={{ gap: spacing.md }}>
@@ -1241,7 +1773,7 @@ export default function AdminDashboard() {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>Add New Astrologer</Text>
-              <ScrollView style={{ maxHeight: 380 }} contentContainerStyle={{ gap: spacing.md }}>
+              <ScrollView style={{ maxHeight: 420 }} contentContainerStyle={{ gap: spacing.md }}>
                 <View style={styles.field}>
                   <Text style={styles.fieldLabel}>Full Name</Text>
                   <TextInput
@@ -1286,6 +1818,30 @@ export default function AdminDashboard() {
                   </View>
                 </View>
 
+                <View style={styles.field}>
+                  <Text style={styles.fieldLabel}>Languages (comma separated)</Text>
+                  <TextInput
+                    value={newLang}
+                    onChangeText={setNewLang}
+                    placeholder="Hindi, English, Sanskrit"
+                    placeholderTextColor={colors.textFaint}
+                    style={styles.fieldInput}
+                  />
+                </View>
+
+                <View style={styles.field}>
+                  <Text style={styles.fieldLabel}>About / Bio</Text>
+                  <TextInput
+                    value={newAbout}
+                    onChangeText={setNewAbout}
+                    multiline
+                    numberOfLines={3}
+                    placeholder="Brief background and expertise..."
+                    placeholderTextColor={colors.textFaint}
+                    style={[styles.fieldInput, { height: 60, textAlignVertical: 'top' }]}
+                  />
+                </View>
+
                 <View style={{ flexDirection: 'row', gap: spacing.sm, marginTop: 10 }}>
                   <Button
                     label="Cancel"
@@ -1303,6 +1859,72 @@ export default function AdminDashboard() {
                   />
                 </View>
               </ScrollView>
+            </View>
+          </View>
+        </Modal>
+
+        {/* ── ADJUST USER WALLET MODAL ── */}
+        <Modal visible={!!walletAdjustModalUser} animationType="slide" transparent>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Adjust User Wallet Balance</Text>
+              {walletAdjustModalUser && (
+                <View style={{ gap: spacing.sm }}>
+                  <Text style={{ fontSize: 13, color: colors.textMuted }}>
+                    User: <Text style={{ color: colors.text, fontWeight: '800' }}>{walletAdjustModalUser.name}</Text> ({walletAdjustModalUser.email})
+                  </Text>
+                  <Text style={{ fontSize: 13, color: colors.gold, fontWeight: '800' }}>
+                    Current Balance: {formatCurrency(walletAdjustModalUser.wallet)}
+                  </Text>
+
+                  <View style={styles.field}>
+                    <Text style={styles.fieldLabel}>Adjustment Amount (₹)</Text>
+                    <TextInput
+                      value={adjustAmountInput}
+                      onChangeText={setAdjustAmountInput}
+                      keyboardType="numeric"
+                      placeholder="100"
+                      placeholderTextColor={colors.textFaint}
+                      style={styles.fieldInput}
+                    />
+                  </View>
+
+                  <View style={styles.field}>
+                    <Text style={styles.fieldLabel}>Reason Note</Text>
+                    <TextInput
+                      value={adjustReasonInput}
+                      onChangeText={setAdjustReasonInput}
+                      placeholder="e.g. Promotional Bonus or Dispute Settlement"
+                      placeholderTextColor={colors.textFaint}
+                      style={styles.fieldInput}
+                    />
+                  </View>
+
+                  <View style={{ flexDirection: 'row', gap: spacing.sm, marginTop: 10 }}>
+                    <Button
+                      label="Cancel"
+                      variant="outline"
+                      size="sm"
+                      style={{ flex: 1 }}
+                      onPress={() => setWalletAdjustModalUser(null)}
+                    />
+                    <Button
+                      label="➖ Deduct"
+                      variant="danger"
+                      size="sm"
+                      style={{ flex: 1 }}
+                      onPress={() => handleAdjustWallet(false)}
+                    />
+                    <Button
+                      label="➕ Add Funds"
+                      variant="gold"
+                      size="sm"
+                      style={{ flex: 1 }}
+                      onPress={() => handleAdjustWallet(true)}
+                    />
+                  </View>
+                </View>
+              )}
             </View>
           </View>
         </Modal>
@@ -1627,5 +2249,58 @@ const styles = StyleSheet.create({
     fontSize: 11.5,
     color: colors.textMuted,
     marginTop: 2,
+  },
+  filterPillsRow: {
+    flexDirection: 'row',
+    gap: 6,
+    flexWrap: 'wrap',
+  },
+  filterPill: {
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: radius.pill,
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  filterPillActive: {
+    backgroundColor: '#0F172A',
+    borderColor: '#0F172A',
+  },
+  filterPillText: {
+    fontSize: 10.5,
+    fontWeight: '700',
+    color: '#64748B',
+  },
+  filterPillTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '900',
+  },
+  emptyCard: {
+    alignItems: 'center',
+    paddingVertical: 24,
+    gap: 6,
+  },
+  emptyCardText: {
+    fontSize: 12,
+    color: colors.textMuted,
+    fontWeight: '600',
+  },
+  searchBarWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: radius.md,
+    paddingHorizontal: 10,
+    gap: 8,
+  },
+  searchInput: {
+    flex: 1,
+    paddingVertical: 8,
+    fontSize: 12.5,
+    color: colors.text,
+    fontWeight: '600',
   },
 });

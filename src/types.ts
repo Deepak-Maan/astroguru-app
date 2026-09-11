@@ -108,3 +108,5 @@ export interface HoroscopeReading {
   luckyColor: string;
   mood: number; // 0..100
 }
+
+export type { Rashi } from './data/rashis';

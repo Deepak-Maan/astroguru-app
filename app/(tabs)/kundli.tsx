@@ -488,7 +488,7 @@ export default function KundliScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create<any>({
   tabsWrapper: {
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: 'rgba(163, 177, 198, 0.4)',

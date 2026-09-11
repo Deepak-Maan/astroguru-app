@@ -51,11 +51,21 @@ export async function registerUserAccount({
   email,
   phone,
   password,
+  role = 'user',
+  dob,
+  specialties,
+  experienceYears,
+  pricePerMin,
 }: {
   name: string;
   email: string;
   phone?: string;
   password?: string;
+  role?: 'user' | 'admin' | 'astrologer';
+  dob?: string;
+  specialties?: string[];
+  experienceYears?: number;
+  pricePerMin?: number;
 }): Promise<{ success: boolean; user?: UserAccount; error?: string }> {
   const cleanEmail = email.trim().toLowerCase();
   const cleanPhone = phone?.trim() || '';
@@ -73,7 +83,7 @@ export async function registerUserAccount({
           email: fbRes.user.email,
           phone: fbRes.user.phone || cleanPhone,
           password,
-          role: 'user',
+          role: role,
           createdAt: fbRes.user.createdAt,
         };
         accounts.push(localUser);
@@ -98,14 +108,14 @@ export async function registerUserAccount({
       return { success: false, error: 'An account with this phone number already exists.' };
     }
   }
-  const role = cleanEmail.includes('admin') ? 'admin' : 'user';
+  const assignedRole = cleanEmail.includes('admin') ? 'admin' : role;
   const newUser: UserAccount = {
     id: `usr_${Date.now()}`,
     name: name.trim() || 'Astro Seeker',
     email: cleanEmail,
     phone: cleanPhone,
     password: password || 'default123',
-    role,
+    role: assignedRole,
     createdAt: new Date().toISOString().split('T')[0],
   };
   accounts.push(newUser);
