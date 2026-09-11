@@ -108,8 +108,8 @@ class InAppUpdateEngine {
    * Checks GitHub and Firebase for the latest release metadata.
    */
   async checkForUpdate(currentVersion: string, fallbackVersion: string): Promise<InAppUpdateCheckResult> {
-    const currentCode = Application.nativeBuildVersion || '289';
-    const currentName = Application.nativeApplicationVersion || currentVersion || '2.8.9';
+    const currentCode = Application.nativeBuildVersion || '291';
+    const currentName = Application.nativeApplicationVersion || currentVersion || '2.9.1';
 
     // 1. Check Firebase first for any urgent/admin broadcasted version
     let fbData: any = null;

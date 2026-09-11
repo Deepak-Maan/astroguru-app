@@ -185,11 +185,14 @@
   ],
   "spellOrders": [],
   "updates": {
-    "currentVersion": "1.2.0",
-    "latestVersion": "1.2.0",
+    "currentVersion": "2.9.1",
+    "latestVersion": "2.9.1",
     "releaseNotes": [
-      "✨ Redesigned Modern Light UI",
-      "🛡️ Added Security Vault & PIN Lock"
+      "🎁 5-Minute Free Introductory Tier on first consultation",
+      "👑 Master Admin Control Center with 14 active operational desks",
+      "💳 Direct Merchant QR Scanner & Instant UPI Wallet Recharge",
+      "🛡️ Fortified RASP Cyber Shield with Anti-Tamper Protection",
+      "📲 Bulletproof In-App APK Streaming & Auto-Installer"
     ],
     "isMandatory": false
   },

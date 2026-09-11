@@ -124,9 +124,9 @@ export default function AdminDashboard() {
   // Manual App Update Broadcast States
   const broadcastUpdate = useUpdateStore((s) => s.broadcastUpdate);
   const currentAppVersion = useUpdateStore((s) => s.currentVersion);
-  const [updateVerInput, setUpdateVerInput] = useState('2.8.9');
+  const [updateVerInput, setUpdateVerInput] = useState('2.9.1');
   const [updateNotesInput, setUpdateNotesInput] = useState(
-    '⚡ New Performance Enhancements & Vedic Algorithms\n🛡️ High-Security RASP Anti-Hacking Protection\n🪪 Aadhaar Watermarking & KYC Verification\n💳 Instant Direct UPI QR Recharge System'
+    '🎁 5-Minute Free Introductory Tier on First Consultation\n👑 Master Admin Control Center with 14 Active Desks\n💳 Direct Merchant QR Scanner & Instant UPI Recharges\n🛡️ High-Security RASP Anti-Hacking Protection\n📲 Bulletproof In-App APK Streaming & Auto-Installer'
   );
   const [otaBroadcastSuccess, setOtaBroadcastSuccess] = useState<string | null>(null);
 

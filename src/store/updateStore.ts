@@ -6,7 +6,7 @@ import * as Application from 'expo-application';
 import { inAppUpdateEngine, UpdateDownloadProgress, getDirectApkDownloadUrl, FALLBACK_RELEASE_APK_URL, isRemoteVersionNewer } from '../services/updates/inAppUpdateEngine';
 import { syncLatestAppVersionToFirebase } from '../services/firebaseRealtimeService';
 
-export const LATEST_RELEASE_VERSION = '2.8.9';
+export const LATEST_RELEASE_VERSION = '2.9.1';
 
 export interface UpdateInfo {
   currentVersion: string;
@@ -48,7 +48,7 @@ export interface UpdateActions {
   clearDownloadError: () => void;
 }
 
-const defaultAppVersion = Application.nativeApplicationVersion || '2.8.9';
+const defaultAppVersion = Application.nativeApplicationVersion || '2.9.1';
 
 export const useUpdateStore = create<UpdateInfo & UpdateActions>()(
   persist(
@@ -58,10 +58,11 @@ export const useUpdateStore = create<UpdateInfo & UpdateActions>()(
       updateAvailable: false,
       isMandatory: false,
       releaseNotes: [
-        '• 📲 Bulletproof In-App APK Streaming & Auto-Installer.',
-        '• 💰 100% Idempotent Per-Minute Accurate Wallet Deductions.',
-        '• 📸 Custom QR Scanner & UPI Gateway for Instant Recharges.',
-        '• 📞 Glowing Aura HD Voice & Video Consultation System.',
+        '• 🎁 5-Minute Free Introductory Tier for first-time seekers.',
+        '• 👑 Master Admin Control Center with 14 active operational desks.',
+        '• 💳 Direct Merchant QR Scanner & Instant UPI Wallet Recharge.',
+        '• 🛡️ Fortified RASP Cyber Shield with Anti-Tamper Protection.',
+        '• 📲 Enhanced In-App Update Engine & Direct APK Auto-Installer.',
       ],
       downloadProgress: 0,
       downloadedBytes: 0,
