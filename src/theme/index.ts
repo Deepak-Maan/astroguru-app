@@ -119,7 +119,43 @@ export const shadow = {
     shadowRadius: 12,
     elevation: 6,
   },
+  button3D: {
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.22,
+    shadowRadius: 6,
+    elevation: 5,
+  },
+  card3D: {
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.16,
+    shadowRadius: 16,
+    elevation: 7,
+  },
+  floatingDock: {
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    elevation: 10,
+  },
 };
 
-export const theme = { colors, gradients, spacing, radius, typography, shadow };
+export const tactile3D = {
+  depth: {
+    sm: 2.5,
+    md: 4,
+    lg: 5.5,
+  },
+  bevel: {
+    primary: '#046A4E',
+    gold: '#B45309',
+    outline: '#CBD5E1',
+    danger: '#BE123C',
+  },
+  specular: 'rgba(255, 255, 255, 0.4)',
+};
+
+export const theme = { colors, gradients, spacing, radius, typography, shadow, tactile3D };
 export type Theme = typeof theme;

@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   ActivityIndicator,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -8,7 +9,8 @@ import {
   ViewStyle,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors, radius, spacing, typography } from '../theme';
+import * as Haptics from 'expo-haptics';
+import { colors, radius, spacing, typography, tactile3D, shadow } from '../theme';
 
 type Variant = 'primary' | 'gold' | 'outline' | 'ghost' | 'danger';
 type Size = 'sm' | 'md' | 'lg';
@@ -25,7 +27,7 @@ interface Props {
   fullWidth?: boolean;
 }
 
-const heights: Record<Size, number> = { sm: 36, md: 44, lg: 50 };
+const heights: Record<Size, number> = { sm: 38, md: 46, lg: 54 };
 const fontSizes: Record<Size, number> = { sm: 13, md: 14.5, lg: 15.5 };
 
 export function Button({
@@ -39,13 +41,33 @@ export function Button({
   icon,
   fullWidth = true,
 }: Props) {
-  const isFlat = variant === 'outline' || variant === 'ghost' || variant === 'danger';
+  const isFlat = variant === 'ghost';
   const inactive = disabled || loading;
+  const depth = tactile3D.depth[size];
+
+  const handlePress = () => {
+    if (inactive) return;
+    if (Platform.OS !== 'web') {
+      try {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      } catch (_) {}
+    }
+    onPress?.();
+  };
+
+  const bevelColor =
+    variant === 'gold'
+      ? tactile3D.bevel.gold
+      : variant === 'danger'
+      ? tactile3D.bevel.danger
+      : variant === 'outline'
+      ? tactile3D.bevel.outline
+      : tactile3D.bevel.primary;
 
   const content = (
     <View style={styles.inner}>
       {loading ? (
-        <ActivityIndicator size="small" color={isFlat ? colors.text : colors.white} />
+        <ActivityIndicator size="small" color={variant === 'outline' ? colors.text : colors.white} />
       ) : (
         <>
           {icon}
@@ -70,18 +92,30 @@ export function Button({
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ disabled: inactive }}
-      onPress={inactive ? undefined : onPress}
+      onPress={handlePress}
       style={({ pressed }) => [
         styles.base,
         { height: heights[size] },
         fullWidth && { alignSelf: 'stretch' },
-        isFlat && styles[variant],
-        pressed && !inactive && styles.pressed,
+        variant !== 'ghost' && {
+          borderBottomWidth: pressed ? 1 : depth,
+          borderBottomColor: bevelColor,
+          borderTopWidth: 1.2,
+          borderTopColor: variant === 'outline' ? '#FFFFFF' : 'rgba(255,255,255,0.45)',
+        },
+        isFlat && styles.ghost,
+        variant === 'outline' && styles.outline,
+        variant === 'danger' && styles.danger,
+        pressed && !inactive && {
+          transform: [{ translateY: depth - 1 }],
+          shadowOpacity: 0.1,
+          elevation: 1,
+        },
         inactive && styles.disabled,
         style,
       ]}
     >
-      {isFlat ? (
+      {isFlat || variant === 'outline' || variant === 'danger' ? (
         content
       ) : (
         <LinearGradient
@@ -106,11 +140,15 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     overflow: 'hidden',
     justifyContent: 'center',
-    shadowColor: '#BFDBFE',
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 0.6,
-    shadowRadius: 8,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 6,
     elevation: 4,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    borderLeftColor: 'rgba(255, 255, 255, 0.25)',
+    borderRightColor: 'rgba(0, 0, 0, 0.08)',
   },
   gradient: { flex: 1, justifyContent: 'center' },
   inner: {
@@ -120,24 +158,25 @@ const styles = StyleSheet.create({
     gap: spacing.xs + 2,
     paddingHorizontal: spacing.lg,
   },
-  label: { ...typography.h3, color: colors.white, fontWeight: '800' },
+  label: {
+    ...typography.h3,
+    color: colors.white,
+    fontWeight: '800',
+    letterSpacing: 0.2,
+  },
   outline: {
-    borderTopWidth: 1.5,
-    borderLeftWidth: 1.5,
+    backgroundColor: '#FFFFFF',
     borderTopColor: '#FFFFFF',
     borderLeftColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: 'rgba(191, 219, 254, 0.6)',
-    borderRightColor: 'rgba(191, 219, 254, 0.6)',
-    backgroundColor: '#FFFFFF',
   },
-  ghost: { backgroundColor: 'transparent', elevation: 0, shadowOpacity: 0 },
+  ghost: {
+    backgroundColor: 'transparent',
+    elevation: 0,
+    shadowOpacity: 0,
+    borderWidth: 0,
+  },
   danger: {
-    borderWidth: 1,
-    borderColor: 'rgba(225,29,72,0.30)',
-    backgroundColor: 'rgba(225,29,72,0.08)',
+    backgroundColor: '#FFF1F2',
   },
-  pressed: { opacity: 0.88, transform: [{ scale: 0.98 }] },
   disabled: { opacity: 0.45 },
 });

@@ -1,6 +1,7 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 import { Astrologer } from '../types';
 import { Avatar } from './Avatar';
 import { colors, radius, spacing, typography } from '../theme';
@@ -13,13 +14,24 @@ interface Props {
 }
 
 export function AstrologerCard({ astrologer: a, onPress, compact = false }: Props) {
+  const handlePress = () => {
+    if (onPress) {
+      if (Platform.OS !== 'web') {
+        try {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        } catch (_) {}
+      }
+      onPress();
+    }
+  };
+
   /* ── Compact (horizontal scroll) ── */
   if (compact) {
     return (
       <Pressable
-        onPress={onPress}
+        onPress={handlePress}
         accessibilityRole="button"
-        style={({ pressed }) => [styles.compact, pressed && { opacity: 0.75, transform: [{ scale: 0.96 }] }]}
+        style={({ pressed }) => [styles.compact, pressed && styles.compactPressed]}
       >
         <Avatar uri={a.avatar} name={a.name} size={50} online={a.online} showStatus />
         <Text style={styles.compactName} numberOfLines={1}>
@@ -36,12 +48,12 @@ export function AstrologerCard({ astrologer: a, onPress, compact = false }: Prop
   /* ── Full card ── */
   return (
     <Pressable
-      onPress={onPress}
+      onPress={handlePress}
       accessibilityRole="button"
       style={({ pressed }) => [
         styles.card,
         a.rating >= 4.8 && styles.cardVerifiedBorder,
-        pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] },
+        pressed && styles.cardPressed,
       ]}
     >
       {/* Left: Avatar with Glowing Halo */}
@@ -121,28 +133,34 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.md,
     padding: spacing.md,
-    backgroundColor: '#E6ECF5',
+    backgroundColor: '#FFFFFF',
     borderRadius: radius.lg,
     borderTopWidth: 1.5,
-    borderLeftWidth: 1.5,
-    borderTopColor: '#FFFFFF',
-    borderLeftColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
-    borderRightColor: 'rgba(163, 177, 198, 0.4)',
+    borderLeftWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.95)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderRightWidth: 1.2,
+    borderRightColor: '#E2E8F0',
+    borderBottomWidth: 3,
+    borderBottomColor: '#CBD5E1',
     marginBottom: spacing.sm + 2,
     overflow: 'hidden',
     alignItems: 'center',
-    shadowColor: '#A3B1C6',
-    shadowOffset: { width: 6, height: 6 },
-    shadowOpacity: 0.65,
-    shadowRadius: 10,
-    elevation: 4,
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  cardPressed: {
+    transform: [{ translateY: 2 }, { scale: 0.99 }],
+    borderBottomWidth: 1.5,
+    opacity: 0.92,
   },
   cardVerifiedBorder: {
-    borderBottomColor: 'rgba(217,119,6,0.4)',
-    borderRightColor: 'rgba(217,119,6,0.4)',
+    borderBottomColor: '#B45309',
+    shadowColor: colors.gold,
+    shadowOpacity: 0.2,
   },
   avatarCol: {},
   body: { flex: 1, gap: 2 },
@@ -261,27 +279,32 @@ const styles = StyleSheet.create({
 
   /* ── Compact card ── */
   compact: {
-    width: 100,
+    width: 104,
     alignItems: 'center',
     padding: spacing.sm + 2,
-    backgroundColor: '#E6ECF5',
+    backgroundColor: '#FFFFFF',
     borderRadius: radius.lg,
     borderTopWidth: 1.5,
-    borderLeftWidth: 1.5,
-    borderTopColor: '#FFFFFF',
-    borderLeftColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
-    borderRightColor: 'rgba(163, 177, 198, 0.4)',
+    borderLeftWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.95)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderRightWidth: 1.2,
+    borderRightColor: '#E2E8F0',
+    borderBottomWidth: 3,
+    borderBottomColor: '#CBD5E1',
     marginRight: spacing.sm + 2,
     overflow: 'hidden',
     gap: 3,
-    shadowColor: '#A3B1C6',
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 0.5,
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.12,
     shadowRadius: 6,
-    elevation: 3,
+    elevation: 2,
+  },
+  compactPressed: {
+    transform: [{ translateY: 2 }, { scale: 0.98 }],
+    borderBottomWidth: 1.5,
+    opacity: 0.9,
   },
   compactName: {
     ...typography.small,

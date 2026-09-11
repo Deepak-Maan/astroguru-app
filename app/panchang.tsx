@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GradientBackground } from '../src/components/GradientBackground';
@@ -28,8 +29,19 @@ export default function PanchangScreen() {
           ].map((t) => (
             <Pressable
               key={t.id}
-              onPress={() => setActiveTab(t.id as any)}
-              style={[styles.tabCell, activeTab === t.id && styles.tabCellActive]}
+              onPress={() => {
+                if (Platform.OS !== 'web') {
+                  try {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  } catch (_) {}
+                }
+                setActiveTab(t.id as any);
+              }}
+              style={({ pressed }) => [
+                styles.tabCell,
+                activeTab === t.id && styles.tabCellActive,
+                pressed && { transform: [{ translateY: 1.5 }], opacity: 0.85 },
+              ]}
             >
               {activeTab === t.id && (
                 <LinearGradient
@@ -177,21 +189,38 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.xs,
     gap: spacing.xs,
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.cardBorder,
+    backgroundColor: 'transparent',
   },
   tabCell: {
     flex: 1,
     alignItems: 'center',
     paddingVertical: 8,
     borderRadius: radius.pill,
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.95)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderRightWidth: 1.2,
+    borderRightColor: '#E2E8F0',
+    borderBottomWidth: 2.5,
+    borderBottomColor: '#CBD5E1',
     overflow: 'hidden',
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  tabCellActive: {},
+  tabCellActive: {
+    borderTopColor: 'rgba(255, 255, 255, 0.4)',
+    borderBottomWidth: 3,
+    borderBottomColor: '#B45309',
+    shadowColor: colors.saffron,
+    shadowOpacity: 0.3,
+  },
   tabText: { ...typography.tiny, color: colors.textMuted, fontWeight: '700' },
-  tabTextActive: { color: colors.bg },
+  tabTextActive: { color: colors.white, fontWeight: '800' },
 
   scroll: { paddingHorizontal: spacing.lg, paddingVertical: spacing.md, paddingBottom: spacing.xxl, gap: spacing.lg },
 
@@ -202,8 +231,20 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     padding: spacing.sm,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.cardBorder,
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.95)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderRightWidth: 1.2,
+    borderRightColor: '#E2E8F0',
+    borderBottomWidth: 2.5,
+    borderBottomColor: '#CBD5E1',
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   sunIcon: { fontSize: 22 },
   sunLabel: { ...typography.tiny, color: colors.textMuted, marginTop: 4 },

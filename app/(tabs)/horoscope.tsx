@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GradientBackground } from '../../src/components/GradientBackground';
@@ -202,11 +203,18 @@ export default function Horoscope() {
               return (
                 <Pressable
                   key={r.index}
-                  onPress={() => setSign(r.index)}
+                  onPress={() => {
+                    if (Platform.OS !== 'web') {
+                      try {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      } catch (_) {}
+                    }
+                    setSign(r.index);
+                  }}
                   style={({ pressed }) => [
                     styles.signCell,
                     active && styles.signCellActive,
-                    pressed && { opacity: 0.85 },
+                    pressed && styles.signCellPressed,
                   ]}
                 >
                   {active && (
@@ -236,8 +244,19 @@ export default function Horoscope() {
             {PERIODS.map((p) => (
               <Pressable
                 key={p.id}
-                onPress={() => setPeriod(p.id)}
-                style={[styles.period, period === p.id && styles.periodActive]}
+                onPress={() => {
+                  if (Platform.OS !== 'web') {
+                    try {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    } catch (_) {}
+                  }
+                  setPeriod(p.id);
+                }}
+                style={({ pressed }) => [
+                  styles.period,
+                  period === p.id && styles.periodActive,
+                  pressed && { transform: [{ translateY: 1.5 }], opacity: 0.85 },
+                ]}
               >
                 {period === p.id && (
                   <LinearGradient
@@ -404,25 +423,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.md,
     borderRadius: radius.lg,
-    backgroundColor: '#E6ECF5',
+    backgroundColor: '#FFFFFF',
     borderTopWidth: 1.5,
-    borderLeftWidth: 1.5,
-    borderTopColor: '#FFFFFF',
-    borderLeftColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
-    borderRightColor: 'rgba(163, 177, 198, 0.4)',
+    borderLeftWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.95)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderRightWidth: 1.2,
+    borderRightColor: '#E2E8F0',
+    borderBottomWidth: 3,
+    borderBottomColor: '#CBD5E1',
     marginRight: spacing.sm,
     overflow: 'hidden',
     gap: 3,
-    shadowColor: '#A3B1C6',
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 0.5,
-    shadowRadius: 5,
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
     elevation: 3,
   },
-  signCellActive: { borderColor: colors.gold },
+  signCellActive: {
+    borderTopColor: 'rgba(255, 255, 255, 0.5)',
+    borderBottomColor: '#B45309',
+    shadowColor: colors.saffron,
+    shadowOpacity: 0.3,
+  },
+  signCellPressed: {
+    transform: [{ translateY: 2 }],
+    borderBottomWidth: 1.5,
+  },
   signGlyph: { fontSize: 24, color: colors.gold },
   signName: { ...typography.tiny, fontSize: 10, color: colors.text, fontWeight: '700' },
   yourDot: {
@@ -440,23 +468,23 @@ const styles = StyleSheet.create({
   periodRow: {
     flexDirection: 'row',
     marginHorizontal: spacing.lg,
-    backgroundColor: '#E6ECF5',
+    backgroundColor: '#FFFFFF',
     borderRadius: radius.pill,
     padding: 4,
     borderTopWidth: 1.5,
-    borderLeftWidth: 1.5,
-    borderTopColor: '#FFFFFF',
-    borderLeftColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
-    borderRightColor: 'rgba(163, 177, 198, 0.4)',
+    borderLeftWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.95)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderRightWidth: 1.2,
+    borderRightColor: '#E2E8F0',
+    borderBottomWidth: 2.5,
+    borderBottomColor: '#CBD5E1',
     gap: 2,
-    shadowColor: '#A3B1C6',
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 0.5,
-    shadowRadius: 5,
-    elevation: 3,
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   period: {
     flex: 1,
@@ -509,7 +537,7 @@ const styles = StyleSheet.create({
   moodBarTrack: {
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#DFE6F0',
+    backgroundColor: '#E2E8F0',
     marginTop: spacing.lg,
     overflow: 'hidden',
   },
@@ -520,21 +548,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.md,
     marginHorizontal: spacing.lg,
-    backgroundColor: '#E6ECF5',
+    backgroundColor: '#FFFFFF',
     borderRadius: radius.lg,
     borderTopWidth: 1.5,
-    borderLeftWidth: 1.5,
-    borderTopColor: '#FFFFFF',
-    borderLeftColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
-    borderRightColor: 'rgba(163, 177, 198, 0.4)',
+    borderLeftWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.95)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderRightWidth: 1.2,
+    borderRightColor: '#E2E8F0',
+    borderBottomWidth: 3,
+    borderBottomColor: '#CBD5E1',
     padding: spacing.lg,
     alignItems: 'flex-start',
-    shadowColor: '#A3B1C6',
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 0.5,
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.12,
     shadowRadius: 6,
     elevation: 3,
   },
@@ -542,11 +570,11 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: '#DFE6F0',
+    backgroundColor: '#EFF6FF',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(163, 177, 198, 0.4)',
+    borderColor: 'rgba(191,219,254,0.8)',
   },
   areaIcon: { fontSize: 18 },
   areaTitle: { ...typography.h3, fontSize: 15, color: colors.text, fontWeight: '800' },
@@ -559,10 +587,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.md,
     borderRadius: radius.md,
-    backgroundColor: '#DFE6F0',
-    borderWidth: 1,
-    borderColor: 'rgba(163, 177, 198, 0.4)',
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.95)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderRightWidth: 1.2,
+    borderRightColor: '#E2E8F0',
+    borderBottomWidth: 2.5,
+    borderBottomColor: '#CBD5E1',
     gap: 4,
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   luckyLabel: { ...typography.tiny, color: colors.textFaint, fontWeight: '700' },
   luckyValue: { ...typography.h3, fontSize: 13, fontWeight: '800' },

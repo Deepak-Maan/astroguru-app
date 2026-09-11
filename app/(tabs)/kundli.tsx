@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -149,8 +150,19 @@ export default function KundliScreen() {
               return (
                 <Pressable
                   key={t.id}
-                  onPress={() => setTab(t.id)}
-                  style={[styles.tab, active && styles.tabActive]}
+                  onPress={() => {
+                    if (Platform.OS !== 'web') {
+                      try {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      } catch (_) {}
+                    }
+                    setTab(t.id);
+                  }}
+                  style={({ pressed }) => [
+                    styles.tab,
+                    active && styles.tabActive,
+                    pressed && styles.tabPressed,
+                  ]}
                 >
                   {active ? (
                     <LinearGradient
@@ -458,26 +470,34 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     paddingHorizontal: spacing.md,
     borderRadius: radius.pill,
-    backgroundColor: '#E6ECF5',
+    backgroundColor: '#FFFFFF',
     borderTopWidth: 1.5,
-    borderLeftWidth: 1.5,
-    borderTopColor: '#FFFFFF',
-    borderLeftColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
-    borderRightColor: 'rgba(163, 177, 198, 0.4)',
+    borderLeftWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.95)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderRightWidth: 1.2,
+    borderRightColor: '#E2E8F0',
+    borderBottomWidth: 2.5,
+    borderBottomColor: '#CBD5E1',
     overflow: 'hidden',
     alignSelf: 'flex-start',
     flexShrink: 0,
-    shadowColor: '#A3B1C6',
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 0.5,
-    shadowRadius: 5,
-    elevation: 3,
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   tabActive: {
-    borderColor: 'transparent',
+    borderTopColor: 'rgba(255, 255, 255, 0.4)',
+    borderBottomWidth: 3,
+    borderBottomColor: '#B45309',
+    shadowColor: colors.saffron,
+    shadowOpacity: 0.3,
+  },
+  tabPressed: {
+    transform: [{ translateY: 1.5 }],
+    borderBottomWidth: 1,
   },
   tabIcon: { fontSize: 13 },
   tabText: { ...typography.small, color: colors.textMuted, fontWeight: '700', fontSize: 13, lineHeight: 18 },
@@ -495,7 +515,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     paddingVertical: spacing.md,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(163, 177, 198, 0.3)',
+    borderTopColor: 'rgba(203, 213, 225, 0.6)',
   },
   detailLabel: { ...typography.small, color: colors.textMuted, flex: 1, fontWeight: '600' },
   detailValue: { ...typography.h3, fontSize: 15, color: colors.gold, textAlign: 'right', fontWeight: '800' },
@@ -526,7 +546,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     gap: spacing.sm,
-    backgroundColor: '#DFE6F0',
+    backgroundColor: '#F8FAFC',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
   },
   th: { ...typography.tiny, color: colors.gold, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: '800' },
   tableRow: {
@@ -591,11 +613,15 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     overflow: 'hidden',
     alignSelf: 'stretch',
-    shadowColor: '#A3B1C6',
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 6,
-    elevation: 3,
+    borderTopWidth: 1.5,
+    borderTopColor: 'rgba(255, 255, 255, 0.45)',
+    borderBottomWidth: 3.5,
+    borderBottomColor: '#B45309',
+    shadowColor: colors.saffron,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 4,
   },
   matchButtonGradient: {
     paddingVertical: spacing.md,

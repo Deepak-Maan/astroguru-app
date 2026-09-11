@@ -16,6 +16,7 @@ import {
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 import { GradientBackground } from '../src/components/GradientBackground';
 import { colors, radius, spacing, typography } from '../src/theme';
 import { useRewardsStore, RemedyItem, TarotCard } from '../src/store/rewardsStore';
@@ -186,9 +187,20 @@ export default function DailyRewardsScreen() {
                 </Text>
               </View>
               <Pressable
-                onPress={handleCheckIn}
+                onPress={() => {
+                  if (Platform.OS !== 'web') {
+                    try {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    } catch (_) {}
+                  }
+                  handleCheckIn();
+                }}
                 disabled={hasCheckedInToday}
-                style={[styles.claimBtn, hasCheckedInToday && styles.claimBtnDisabled]}
+                style={({ pressed }) => [
+                  styles.claimBtn,
+                  hasCheckedInToday && styles.claimBtnDisabled,
+                  pressed && !hasCheckedInToday && { transform: [{ translateY: 1.5 }], opacity: 0.85 },
+                ]}
               >
                 <LinearGradient
                   colors={hasCheckedInToday ? ['#64748B', '#475569'] : [colors.saffron, colors.gold]}
@@ -256,9 +268,20 @@ export default function DailyRewardsScreen() {
             </View>
 
             <Pressable
-              onPress={handleSpinWheel}
+              onPress={() => {
+                if (Platform.OS !== 'web') {
+                  try {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  } catch (_) {}
+                }
+                handleSpinWheel();
+              }}
               disabled={isSpinning || hasSpunToday}
-              style={[styles.spinBtn, (isSpinning || hasSpunToday) && styles.spinBtnDisabled]}
+              style={({ pressed }) => [
+                styles.spinBtn,
+                (isSpinning || hasSpunToday) && styles.spinBtnDisabled,
+                pressed && !isSpinning && !hasSpunToday && { transform: [{ translateY: 2 }], opacity: 0.88 },
+              ]}
             >
               <LinearGradient
                 colors={hasSpunToday ? ['#64748B', '#475569'] : [colors.teal, '#059669']}
@@ -497,11 +520,20 @@ const styles = StyleSheet.create({
   streakSub: { ...typography.tiny, color: '#CBD5E1', fontSize: 11, marginTop: 2 },
   claimBtn: {
     borderRadius: radius.pill,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     overflow: 'hidden',
+    borderTopWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.45)',
+    borderBottomWidth: 3,
+    borderBottomColor: '#B45309',
+    shadowColor: colors.saffron,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.35,
+    shadowRadius: 5,
+    elevation: 3,
   },
-  claimBtnDisabled: { opacity: 0.6 },
+  claimBtnDisabled: { opacity: 0.6, borderBottomColor: '#475569' },
   claimBtnText: { color: '#FFFFFF', fontWeight: '900', fontSize: 12 },
 
   trailRow: {
@@ -608,8 +640,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     overflow: 'hidden',
     marginTop: 6,
+    borderTopWidth: 1.5,
+    borderTopColor: 'rgba(255, 255, 255, 0.45)',
+    borderBottomWidth: 3.5,
+    borderBottomColor: '#046A4E',
+    shadowColor: colors.teal,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  spinBtnDisabled: { opacity: 0.65 },
+  spinBtnDisabled: { opacity: 0.65, borderBottomColor: '#334155' },
   spinBtnText: { color: '#FFFFFF', fontWeight: '900', fontSize: 13.5 },
 
   tarotCardContainer: {

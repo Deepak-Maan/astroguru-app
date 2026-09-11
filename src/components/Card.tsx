@@ -1,6 +1,7 @@
 import React from 'react';
-import { Pressable, StyleSheet, View, ViewStyle } from 'react-native';
-import { colors, radius, spacing } from '../theme';
+import { Platform, Pressable, StyleSheet, View, ViewStyle } from 'react-native';
+import * as Haptics from 'expo-haptics';
+import { colors, radius, spacing, shadow } from '../theme';
 
 interface Props {
   children: React.ReactNode;
@@ -20,6 +21,17 @@ export function Card({
   glow = false,
   elevated = false,
 }: Props) {
+  const handlePress = () => {
+    if (onPress) {
+      if (Platform.OS !== 'web') {
+        try {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        } catch (_) {}
+      }
+      onPress();
+    }
+  };
+
   const content = (
     <View style={[styles.inner, padded && styles.padded]}>
       {children}
@@ -37,7 +49,7 @@ export function Card({
     return (
       <Pressable
         accessibilityRole="button"
-        onPress={onPress}
+        onPress={handlePress}
         style={({ pressed }) => [
           ...containerStyle,
           pressed && styles.pressed,
@@ -56,35 +68,43 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: radius.lg,
     borderTopWidth: 1.5,
-    borderLeftWidth: 1.5,
-    borderTopColor: '#FFFFFF',
-    borderLeftColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: 'rgba(191, 219, 254, 0.6)',
-    borderRightColor: 'rgba(191, 219, 254, 0.6)',
-    shadowColor: '#BFDBFE',
-    shadowOffset: { width: 6, height: 6 },
-    shadowOpacity: 0.65,
-    shadowRadius: 12,
+    borderLeftWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.95)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderBottomWidth: 2.5,
+    borderRightWidth: 1.5,
+    borderBottomColor: '#E2E8F0',
+    borderRightColor: '#E2E8F0',
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
     elevation: 4,
     overflow: 'hidden',
   },
   cardGlow: {
-    borderBottomColor: 'rgba(5, 150, 105, 0.4)',
-    borderRightColor: 'rgba(5, 150, 105, 0.4)',
-    shadowColor: 'rgba(5, 150, 105, 0.25)',
+    borderBottomWidth: 3,
+    borderBottomColor: 'rgba(5, 150, 105, 0.35)',
+    borderRightColor: 'rgba(5, 150, 105, 0.25)',
+    shadowColor: colors.teal,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 6,
   },
   cardElevated: {
-    shadowOffset: { width: 8, height: 8 },
-    shadowOpacity: 0.8,
+    borderBottomWidth: 3.5,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.18,
     shadowRadius: 16,
     elevation: 8,
   },
   inner: { flex: 1 },
   padded: { padding: spacing.lg },
   pressed: {
-    opacity: 0.9,
-    transform: [{ scale: 0.985 }],
+    transform: [{ translateY: 2 }, { scale: 0.99 }],
+    shadowOpacity: 0.05,
+    elevation: 2,
+    borderBottomWidth: 1.2,
   },
 });

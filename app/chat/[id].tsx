@@ -15,6 +15,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 import { GradientBackground } from '../../src/components/GradientBackground';
 import { Avatar } from '../../src/components/Avatar';
 import { Button } from '../../src/components/Button';
@@ -496,8 +497,18 @@ export default function ChatScreen() {
                 {QUICK_PROMPTS.map((prompt) => (
                   <Pressable
                     key={prompt}
-                    onPress={() => send(prompt)}
-                    style={({ pressed }) => [styles.promptChip, pressed && { opacity: 0.75 }]}
+                    onPress={() => {
+                      if (Platform.OS !== 'web') {
+                        try {
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        } catch (_) {}
+                      }
+                      send(prompt);
+                    }}
+                    style={({ pressed }) => [
+                      styles.promptChip,
+                      pressed && { transform: [{ translateY: 1.5 }], opacity: 0.85 },
+                    ]}
                   >
                     <Text style={styles.promptText}>{prompt}</Text>
                   </Pressable>
@@ -536,12 +547,19 @@ export default function ChatScreen() {
                   returnKeyType="send"
                 />
                 <Pressable
-                  onPress={() => send()}
+                  onPress={() => {
+                    if (Platform.OS !== 'web') {
+                      try {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      } catch (_) {}
+                    }
+                    send();
+                  }}
                   disabled={!draft.trim()}
                   style={({ pressed }) => [
                     styles.sendBtn,
                     !draft.trim() && styles.sendBtnOff,
-                    pressed && { opacity: 0.8 },
+                    pressed && { transform: [{ translateY: 1.5 }], opacity: 0.85 },
                   ]}
                 >
                   <Animated.View style={{ transform: [{ scale: sendScaleAnim }], flex: 1, width: '100%', alignItems: 'center', justifyContent: 'center' }}>
@@ -756,19 +774,33 @@ const styles = StyleSheet.create({
     height: 66,
     borderRadius: 33,
     backgroundColor: '#FFFFFF',
-    borderWidth: 1.5,
-    borderColor: 'rgba(191,219,254,0.8)',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.95)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderRightWidth: 1.2,
+    borderRightColor: '#E2E8F0',
+    borderBottomWidth: 3.5,
+    borderBottomColor: '#CBD5E1',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 2,
-    shadowColor: 'rgba(15,23,42,0.10)',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.4,
+    shadowColor: 'rgba(15,23,42,0.12)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
     shadowRadius: 6,
-    elevation: 3,
+    elevation: 4,
   },
-  callBtnDanger: { backgroundColor: 'rgba(225,29,72,0.10)', borderColor: colors.danger },
-  callBtnGold: { backgroundColor: 'rgba(245,158,11,0.12)', borderColor: colors.saffron },
+  callBtnDanger: {
+    backgroundColor: 'rgba(225,29,72,0.10)',
+    borderColor: colors.danger,
+    borderBottomColor: '#BE123C',
+  },
+  callBtnGold: {
+    backgroundColor: 'rgba(245,158,11,0.12)',
+    borderColor: colors.saffron,
+    borderBottomColor: '#B45309',
+  },
   callBtnEnd: {
     width: 66,
     height: 66,
@@ -801,11 +833,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     borderRadius: radius.pill,
     backgroundColor: '#FFFFFF',
-    borderWidth: 1.5,
-    borderColor: 'rgba(245,158,11,0.30)',
-    shadowColor: 'rgba(15,23,42,0.06)',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.95)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderRightWidth: 1.2,
+    borderRightColor: '#E2E8F0',
+    borderBottomWidth: 2.5,
+    borderBottomColor: '#CBD5E1',
+    shadowColor: '#64748B',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
   },
@@ -861,8 +899,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
+    borderTopWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.45)',
+    borderBottomWidth: 2.5,
+    borderBottomColor: '#B45309',
+    shadowColor: colors.saffron,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  sendBtnOff: { opacity: 0.4 },
+  sendBtnOff: { opacity: 0.4, borderBottomColor: '#94A3B8' },
   sendIcon: { color: colors.white, fontSize: 16, fontWeight: '900', marginLeft: 2 },
 
   /* In-Session Quick Recharge Drawer */
@@ -914,20 +961,33 @@ const styles = StyleSheet.create({
   rechargeOption: {
     flex: 1,
     minWidth: '47%',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#FFFFFF',
     borderRadius: radius.lg,
     padding: 12,
-    borderWidth: 1.5,
-    borderColor: '#E2E8F0',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.95)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderRightWidth: 1.2,
+    borderRightColor: '#E2E8F0',
+    borderBottomWidth: 3,
+    borderBottomColor: '#CBD5E1',
     alignItems: 'center',
     position: 'relative',
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 2,
   },
   rechargeOptionPopular: {
     borderColor: colors.saffron,
+    borderBottomColor: '#B45309',
     backgroundColor: 'rgba(245,158,11,0.05)',
   },
   rechargeOptionBest: {
     borderColor: colors.gold,
+    borderBottomColor: '#B45309',
     backgroundColor: 'rgba(212,172,13,0.08)',
   },
   popularTag: {

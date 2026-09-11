@@ -113,6 +113,14 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
           const isFocused = state.index === index;
 
           const onPress = () => {
+            if (Platform.OS !== 'web') {
+              try {
+                // Micro-haptic feedback on tab press
+                const Haptics = require('expo-haptics');
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              } catch (_) {}
+            }
+
             const event = navigation.emit({
               type: 'tabPress',
               target: route.key,
@@ -131,12 +139,15 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
               accessibilityState={isFocused ? { selected: true } : {}}
               accessibilityLabel={options.tabBarAccessibilityLabel}
               onPress={onPress}
-              style={styles.tabItem}
+              style={({ pressed }) => [
+                styles.tabItem,
+                pressed && { transform: [{ translateY: 1.5 }], opacity: 0.85 },
+              ]}
             >
-              {/* Top Emerald Green Indicator Line for Active Tab */}
+              {/* Top Emerald Green 3D Pill Indicator for Active Tab */}
               {isFocused && <View style={styles.topIndicator} />}
 
-              <View style={styles.iconBox}>
+              <View style={[styles.iconBox, isFocused && styles.iconBoxFocused]}>
                 {route.name === 'index' && <HomeIcon focused={isFocused} />}
                 {route.name === 'kundli' && <BirthChartIcon focused={isFocused} />}
                 {route.name === 'consult' && (
@@ -153,7 +164,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
               <Text
                 style={[
                   styles.label,
-                  { color: isFocused ? colors.teal : '#64748B', fontWeight: isFocused ? '800' : '600' },
+                  { color: isFocused ? colors.teal : '#64748B', fontWeight: isFocused ? '900' : '600' },
                 ]}
                 numberOfLines={1}
               >
@@ -213,24 +224,29 @@ export default function TabsLayout() {
 const styles = StyleSheet.create({
   barContainer: {
     backgroundColor: 'transparent',
-    paddingHorizontal: 8,
-    paddingBottom: Platform.OS === 'ios' ? 14 : 6,
+    paddingHorizontal: 10,
+    paddingBottom: Platform.OS === 'ios' ? 16 : 8,
+    position: 'relative',
   },
   bar: {
     flexDirection: 'row',
-    height: 64,
+    height: 66,
     backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(191, 219, 254, 0.6)',
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: 'rgba(191, 219, 254, 0.4)',
-    shadowColor: '#BFDBFE',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.65,
-    shadowRadius: 10,
+    borderRadius: 26,
+    // 3D Tactile Borders: Specular top edge + Bottom bevel shadow edge
+    borderTopWidth: 1.5,
+    borderTopColor: 'rgba(255, 255, 255, 0.95)',
+    borderLeftWidth: 1.2,
+    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderRightWidth: 1.2,
+    borderRightColor: '#E2E8F0',
+    borderBottomWidth: 3.5,
+    borderBottomColor: '#CBD5E1',
+    // Ambient 3D floating dock shadow
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.14,
+    shadowRadius: 14,
     elevation: 8,
     alignItems: 'center',
     overflow: 'hidden',
@@ -246,15 +262,24 @@ const styles = StyleSheet.create({
   topIndicator: {
     position: 'absolute',
     top: 0,
-    width: 36,
-    height: 3.5,
-    borderRadius: 2,
+    width: 38,
+    height: 4,
+    borderBottomLeftRadius: 3,
+    borderBottomRightRadius: 3,
     backgroundColor: colors.teal,
+    shadowColor: colors.teal,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.6,
+    shadowRadius: 4,
+    elevation: 3,
   },
   iconBox: {
-    height: 26,
+    height: 28,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  iconBoxFocused: {
+    transform: [{ scale: 1.05 }],
   },
   tabBadge: {
     position: 'absolute',
@@ -279,7 +304,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 10,
     letterSpacing: 0.1,
-    marginTop: 3,
+    marginTop: 2,
     textAlign: 'center',
   },
 });

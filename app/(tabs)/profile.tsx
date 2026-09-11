@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Alert, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -86,11 +87,25 @@ function Row({
   onPress?: () => void;
   accent?: string;
 }) {
+  const handlePress = () => {
+    if (onPress) {
+      if (Platform.OS !== 'web') {
+        try {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        } catch (_) {}
+      }
+      onPress();
+    }
+  };
+
   return (
     <Pressable
-      onPress={onPress}
+      onPress={handlePress}
       disabled={!onPress}
-      style={({ pressed }) => [styles.row, pressed && onPress && { opacity: 0.65 }]}
+      style={({ pressed }) => [
+        styles.row,
+        pressed && onPress && { transform: [{ translateY: 1.5 }], opacity: 0.75 },
+      ]}
     >
       <View style={styles.rowIconWrap}>
         <Text style={styles.rowIcon}>{icon}</Text>
@@ -373,22 +388,22 @@ const styles = StyleSheet.create({
   identityCard: {
     alignItems: 'center',
     borderRadius: radius.xl,
-    backgroundColor: '#E6ECF5',
+    backgroundColor: '#FFFFFF',
     borderTopWidth: 1.5,
-    borderLeftWidth: 1.5,
-    borderTopColor: '#FFFFFF',
-    borderLeftColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
-    borderRightColor: 'rgba(163, 177, 198, 0.4)',
+    borderLeftWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.95)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderRightWidth: 1.2,
+    borderRightColor: '#E2E8F0',
+    borderBottomWidth: 3.5,
+    borderBottomColor: '#CBD5E1',
     padding: spacing.xl,
     gap: spacing.xs,
     overflow: 'hidden',
-    shadowColor: '#A3B1C6',
-    shadowOffset: { width: 6, height: 6 },
-    shadowOpacity: 0.65,
-    shadowRadius: 10,
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
     elevation: 4,
   },
   name: { ...typography.h1, color: colors.text, marginTop: spacing.sm, textAlign: 'center', fontWeight: '800' },
@@ -410,10 +425,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.md,
     borderRadius: radius.md,
-    backgroundColor: '#DFE6F0',
-    borderWidth: 1,
-    borderColor: 'rgba(163, 177, 198, 0.4)',
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.95)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderRightWidth: 1.2,
+    borderRightColor: '#E2E8F0',
+    borderBottomWidth: 2.5,
+    borderBottomColor: '#CBD5E1',
     gap: 3,
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   badgeLabel: { ...typography.tiny, color: colors.textMuted, fontWeight: '600' },
   badgeValue: { ...typography.small, color: colors.gold, fontWeight: '800', fontSize: 12 },
@@ -425,9 +451,13 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     borderRadius: radius.xl,
     overflow: 'hidden',
-    shadowColor: '#A3B1C6',
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 0.6,
+    borderTopWidth: 1.5,
+    borderTopColor: 'rgba(255, 255, 255, 0.45)',
+    borderBottomWidth: 3.5,
+    borderBottomColor: 'rgba(0, 0, 0, 0.25)',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 4,
   },
@@ -440,20 +470,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: radius.xl,
-    backgroundColor: '#E6ECF5',
+    backgroundColor: '#FFFFFF',
     borderTopWidth: 1.5,
-    borderLeftWidth: 1.5,
-    borderTopColor: '#FFFFFF',
-    borderLeftColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: 'rgba(217, 119, 6, 0.35)',
-    borderRightColor: 'rgba(217, 119, 6, 0.35)',
+    borderLeftWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.95)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderRightWidth: 1.2,
+    borderRightColor: '#E2E8F0',
+    borderBottomWidth: 3.5,
+    borderBottomColor: '#B45309',
     padding: spacing.xl,
     overflow: 'hidden',
-    shadowColor: '#A3B1C6',
-    shadowOffset: { width: 6, height: 6 },
-    shadowOpacity: 0.65,
+    shadowColor: colors.saffron,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.22,
     shadowRadius: 10,
     elevation: 4,
   },
@@ -469,17 +499,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md + 2,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(163, 177, 198, 0.3)',
+    borderTopColor: 'rgba(203, 213, 225, 0.6)',
   },
   rowIconWrap: {
     width: 32,
     height: 32,
     borderRadius: 10,
-    backgroundColor: '#DFE6F0',
+    backgroundColor: '#EFF6FF',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(163, 177, 198, 0.4)',
+    borderColor: 'rgba(191, 219, 254, 0.8)',
   },
   rowIcon: { fontSize: 16 },
   rowLabel: { ...typography.body, color: colors.text, flex: 1, fontWeight: '700' },

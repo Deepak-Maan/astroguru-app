@@ -3,6 +3,7 @@ import {
   Alert,
   FlatList,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -10,6 +11,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -313,8 +315,19 @@ export default function Consult() {
             return (
               <Pressable
                 key={f}
-                onPress={() => setFilter(f)}
-                style={[styles.filterChip, active && styles.filterChipActive]}
+                onPress={() => {
+                  if (Platform.OS !== 'web') {
+                    try {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    } catch (_) {}
+                  }
+                  setFilter(f);
+                }}
+                style={({ pressed }) => [
+                  styles.filterChip,
+                  active && styles.filterChipActive,
+                  pressed && styles.filterChipPressed,
+                ]}
               >
                 {active && (
                   <LinearGradient
@@ -342,8 +355,19 @@ export default function Consult() {
             return (
               <Pressable
                 key={s.id}
-                onPress={() => setSort(s.id)}
-                style={[styles.sortPill, active && styles.sortPillActive]}
+                onPress={() => {
+                  if (Platform.OS !== 'web') {
+                    try {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    } catch (_) {}
+                  }
+                  setSort(s.id);
+                }}
+                style={({ pressed }) => [
+                  styles.sortPill,
+                  active && styles.sortPillActive,
+                  pressed && styles.sortPillPressed,
+                ]}
               >
                 {active && (
                   <LinearGradient
@@ -421,15 +445,21 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     marginBottom: spacing.sm,
     paddingHorizontal: spacing.md,
-    backgroundColor: '#DFE6F0',
+    backgroundColor: '#FFFFFF',
     borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: 'rgba(163, 177, 198, 0.4)',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.95)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderRightWidth: 1.2,
+    borderRightColor: '#E2E8F0',
+    borderBottomWidth: 2.5,
+    borderBottomColor: '#CBD5E1',
     height: 46,
-    shadowColor: '#A3B1C6',
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 0.5,
-    shadowRadius: 5,
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
     elevation: 2,
   },
   searchIcon: { fontSize: 16 },
@@ -446,20 +476,20 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: radius.lg,
     borderTopWidth: 1.5,
-    borderLeftWidth: 1.5,
-    borderTopColor: '#FFFFFF',
-    borderLeftColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
-    borderRightColor: 'rgba(163, 177, 198, 0.4)',
-    backgroundColor: '#E6ECF5',
+    borderLeftWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.95)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderRightWidth: 1.2,
+    borderRightColor: '#E2E8F0',
+    borderBottomWidth: 2.5,
+    borderBottomColor: 'rgba(5, 150, 105, 0.3)',
+    backgroundColor: '#FFFFFF',
     overflow: 'hidden',
-    shadowColor: '#A3B1C6',
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 0.5,
+    shadowColor: '#059669',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
     shadowRadius: 6,
-    elevation: 3,
+    elevation: 2,
   },
   onlinePulse: {
     width: 8,
@@ -485,24 +515,32 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: 7,
     borderRadius: radius.pill,
-    backgroundColor: '#E6ECF5',
+    backgroundColor: '#FFFFFF',
     borderTopWidth: 1.5,
-    borderLeftWidth: 1.5,
-    borderTopColor: '#FFFFFF',
-    borderLeftColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
-    borderRightColor: 'rgba(163, 177, 198, 0.4)',
+    borderLeftWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.95)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderRightWidth: 1.2,
+    borderRightColor: '#E2E8F0',
+    borderBottomWidth: 2.5,
+    borderBottomColor: '#CBD5E1',
     overflow: 'hidden',
-    shadowColor: '#A3B1C6',
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 0.5,
-    shadowRadius: 5,
-    elevation: 3,
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   filterChipActive: {
-    borderColor: colors.gold,
+    borderTopColor: 'rgba(255, 255, 255, 0.4)',
+    borderBottomWidth: 3,
+    borderBottomColor: '#B45309',
+    shadowColor: colors.saffron,
+    shadowOpacity: 0.3,
+  },
+  filterChipPressed: {
+    transform: [{ translateY: 1.5 }],
+    borderBottomWidth: 1,
   },
   filterChipText: {
     ...typography.small,
@@ -523,21 +561,21 @@ const styles = StyleSheet.create({
   sortPills: {
     flexDirection: 'row',
     gap: 4,
-    backgroundColor: '#E6ECF5',
+    backgroundColor: '#FFFFFF',
     borderRadius: radius.pill,
     padding: 3,
     borderTopWidth: 1.5,
-    borderLeftWidth: 1.5,
-    borderTopColor: '#FFFFFF',
-    borderLeftColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
-    borderRightColor: 'rgba(163, 177, 198, 0.4)',
-    shadowColor: '#A3B1C6',
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 0.5,
-    shadowRadius: 5,
+    borderLeftWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.95)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderRightWidth: 1.2,
+    borderRightColor: '#E2E8F0',
+    borderBottomWidth: 2.5,
+    borderBottomColor: '#CBD5E1',
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
     elevation: 2,
   },
   sortPill: {
@@ -547,6 +585,10 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   sortPillActive: {},
+  sortPillPressed: {
+    transform: [{ translateY: 1.5 }],
+    opacity: 0.85,
+  },
   sortPillText: { ...typography.tiny, color: colors.textMuted, fontWeight: '700', fontSize: 12 },
   sortPillTextActive: { color: colors.white, fontWeight: '800' },
 

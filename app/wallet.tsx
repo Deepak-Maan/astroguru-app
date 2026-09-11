@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 import { GradientBackground } from '../src/components/GradientBackground';
 import { Button } from '../src/components/Button';
 import { Card } from '../src/components/Card';
@@ -211,11 +212,18 @@ export default function Wallet() {
                 return (
                   <Pressable
                     key={p.amount}
-                    onPress={() => setSelected(p.amount)}
+                    onPress={() => {
+                      if (Platform.OS !== 'web') {
+                        try {
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        } catch (_) {}
+                      }
+                      setSelected(p.amount);
+                    }}
                     style={({ pressed }) => [
                       styles.pack,
                       active && styles.packActive,
-                      pressed && { opacity: 0.85 },
+                      pressed && styles.packPressed,
                     ]}
                   >
                     {active ? (
@@ -256,7 +264,14 @@ export default function Wallet() {
                 {METHODS.map((m) => (
                   <Pressable
                     key={m.id}
-                    onPress={() => setMethod(m.id)}
+                    onPress={() => {
+                      if (Platform.OS !== 'web') {
+                        try {
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        } catch (_) {}
+                      }
+                      setMethod(m.id);
+                    }}
                     style={({ pressed }) => [styles.method, pressed && { opacity: 0.85 }]}
                   >
                     <View style={styles.methodIconCircle}>
@@ -283,8 +298,19 @@ export default function Wallet() {
                       return (
                         <Pressable
                           key={app.id}
-                          onPress={() => setUpiApp(app.id as any)}
-                          style={[styles.upiAppCell, active && styles.upiAppCellActive]}
+                          onPress={() => {
+                            if (Platform.OS !== 'web') {
+                              try {
+                                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                              } catch (_) {}
+                            }
+                            setUpiApp(app.id as any);
+                          }}
+                          style={({ pressed }) => [
+                            styles.upiAppCell,
+                            active && styles.upiAppCellActive,
+                            pressed && styles.upiAppCellPressed,
+                          ]}
                         >
                           <Text style={{ fontSize: 20 }}>{app.icon}</Text>
                           <Text style={[styles.upiAppLabel, active && { color: colors.saffron }]}>
@@ -351,7 +377,20 @@ export default function Wallet() {
                         autoCapitalize="characters"
                         style={styles.couponInput}
                       />
-                      <Pressable onPress={applyCoupon} style={styles.couponApplyBtn}>
+                      <Pressable
+                        onPress={() => {
+                          if (Platform.OS !== 'web') {
+                            try {
+                              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                            } catch (_) {}
+                          }
+                          applyCoupon();
+                        }}
+                        style={({ pressed }) => [
+                          styles.couponApplyBtn,
+                          pressed && { transform: [{ translateY: 1.5 }], opacity: 0.85 },
+                        ]}
+                      >
                         <LinearGradient colors={[colors.saffron, colors.gold]} style={styles.couponApplyGrad}>
                           <Text style={styles.couponApplyText}>Apply</Text>
                         </LinearGradient>
@@ -385,8 +424,19 @@ export default function Wallet() {
               {(['all', 'topup', 'debit'] as const).map((f) => (
                 <Pressable
                   key={f}
-                  onPress={() => setFilterTxn(f)}
-                  style={[styles.filterTab, filterTxn === f && styles.filterTabActive]}
+                  onPress={() => {
+                    if (Platform.OS !== 'web') {
+                      try {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      } catch (_) {}
+                    }
+                    setFilterTxn(f);
+                  }}
+                  style={({ pressed }) => [
+                    styles.filterTab,
+                    filterTxn === f && styles.filterTabActive,
+                    pressed && { transform: [{ translateY: 1.5 }], opacity: 0.85 },
+                  ]}
                 >
                   {filterTxn === f && (
                     <LinearGradient colors={[colors.saffron, colors.gold]} style={StyleSheet.absoluteFill} />
@@ -509,11 +559,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.lg,
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.5,
+    borderTopColor: 'rgba(255, 255, 255, 0.45)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.35)',
+    borderBottomWidth: 4,
+    borderBottomColor: '#B45309',
     shadowColor: colors.saffron,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.35,
     shadowRadius: 12,
-    elevation: 6,
+    elevation: 7,
   },
   balanceInner: { flex: 1, gap: 2 },
   balanceRight: { alignItems: 'center', justifyContent: 'center' },
@@ -539,17 +595,37 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: radius.lg,
     backgroundColor: '#FFFFFF',
-    borderWidth: 1.5,
-    borderColor: 'rgba(191,219,254,0.80)',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.95)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderRightWidth: 1.2,
+    borderRightColor: '#E2E8F0',
+    borderBottomWidth: 3.5,
+    borderBottomColor: '#CBD5E1',
     overflow: 'hidden',
     gap: 3,
-    shadowColor: 'rgba(191,219,254,0.60)',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.5,
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
     shadowRadius: 6,
-    elevation: 2,
+    elevation: 3,
   },
-  packActive: { borderColor: colors.saffron },
+  packActive: {
+    borderTopColor: 'rgba(255, 255, 255, 0.5)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.4)',
+    borderBottomWidth: 4,
+    borderBottomColor: '#B45309',
+    shadowColor: colors.saffron,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  packPressed: {
+    transform: [{ translateY: 2.5 }],
+    borderBottomWidth: 1.5,
+  },
   packAmount: { ...typography.h3, color: colors.text, fontSize: 16, fontWeight: '900' },
   packBonusBadge: {
     backgroundColor: 'rgba(5,150,105,0.12)',
@@ -603,12 +679,33 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     padding: spacing.md,
     borderRadius: radius.lg,
-    borderWidth: 1.5,
-    borderColor: 'rgba(203,213,225,0.70)',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.95)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderRightWidth: 1.2,
+    borderRightColor: '#E2E8F0',
+    borderBottomWidth: 3,
+    borderBottomColor: '#CBD5E1',
     backgroundColor: '#FFFFFF',
     overflow: 'hidden',
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 2,
   },
-  upiAppCellActive: { borderColor: colors.saffron, backgroundColor: 'rgba(245,158,11,0.08)' },
+  upiAppCellActive: {
+    borderTopColor: 'rgba(255, 255, 255, 0.5)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.4)',
+    borderBottomWidth: 3.5,
+    borderBottomColor: '#B45309',
+    backgroundColor: 'rgba(245,158,11,0.08)',
+  },
+  upiAppCellPressed: {
+    transform: [{ translateY: 2 }],
+    borderBottomWidth: 1.5,
+  },
   upiAppLabel: { ...typography.small, color: colors.text, fontWeight: '800', fontSize: 13.5 },
 
   summaryTitle: { ...typography.h3, fontSize: 13.5, color: colors.textMuted, marginBottom: 2, fontWeight: '800' },
@@ -638,7 +735,19 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     fontWeight: '800',
   },
-  couponApplyBtn: { borderRadius: radius.md, overflow: 'hidden' },
+  couponApplyBtn: {
+    borderRadius: radius.md,
+    overflow: 'hidden',
+    borderTopWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.4)',
+    borderBottomWidth: 3,
+    borderBottomColor: '#B45309',
+    shadowColor: colors.saffron,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
   couponApplyGrad: { paddingHorizontal: spacing.lg, paddingVertical: 11, alignItems: 'center' },
   couponApplyText: { ...typography.small, color: '#FFFFFF', fontWeight: '900', fontSize: 13 },
   couponError: { ...typography.tiny, color: colors.rose, marginTop: 2, fontWeight: '700' },
@@ -667,8 +776,20 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     padding: 4,
   },
-  filterTab: { flex: 1, alignItems: 'center', paddingVertical: 8, borderRadius: radius.pill, overflow: 'hidden' },
-  filterTabActive: {},
+  filterTab: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderRadius: radius.pill,
+    overflow: 'hidden',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.6)',
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  filterTabActive: {
+    borderBottomColor: '#B45309',
+  },
   filterTabText: { ...typography.tiny, color: colors.textMuted, fontWeight: '800', fontSize: 12 },
   filterTabTextActive: { color: '#FFFFFF', fontWeight: '900' },
 
