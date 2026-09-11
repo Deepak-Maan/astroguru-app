@@ -2,11 +2,15 @@ import { Platform } from 'react-native';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
-import { inAppUpdateEngine, UpdateDownloadProgress, FALLBACK_APK_URL } from '../services/updates/inAppUpdateEngine';
+import { inAppUpdateEngine, UpdateDownloadProgress } from '../services/updates/inAppUpdateEngine';
 import { getAppVersionFromFirebase, syncLatestAppVersionToFirebase } from '../services/firebaseRealtimeService';
 
 export const LATEST_RELEASE_VERSION = '2.9.0';
+export const DIRECT_APK_URL = 'https://expo.dev/artifacts/eas/b3xhWTvdVpPcByASoUTly9BVrb1Bi9ZP5pnsQ6wn60Q.apk';
+
+const NATIVE_VERSION = Constants.expoConfig?.version || '2.9.0';
 
 export interface UpdateInfo {
   currentVersion: string;
@@ -41,12 +45,12 @@ interface UpdateState extends UpdateInfo {
 export const useUpdateStore = create<UpdateState>()(
   persist(
     (set, get) => ({
-      currentVersion: '2.7.0',
+      currentVersion: NATIVE_VERSION,
       latestVersion: LATEST_RELEASE_VERSION,
       updateAvailable: false,
       isMandatory: false,
       releaseNotes: [
-        '🚀 Release v2.9.0: Major AstroGuru Platform Upgrade',
+        '🚀 Release v2.9.0: Official AstroGuru Platform Upgrade',
         '💳 AstroGold Luxury Metal Card & 1-Tap UPI Wallet Recharge',
         '🔥 Cosmic Retention Streak & 7-Day Astro-Coin Check-in Track',
         '🎡 6-Segment Navagraha Spin & Win Chakra (Instant Cash & Vouchers)',
@@ -65,14 +69,23 @@ export const useUpdateStore = create<UpdateState>()(
       lastCheckedTime: null,
       downloadedPackageUri: null,
       updateType: 'apk',
-      apkDownloadUrl: FALLBACK_APK_URL,
+      apkDownloadUrl: DIRECT_APK_URL,
 
       autoCheckAndFetchOnStartup: async () => {
+        const currentVer = Constants.expoConfig?.version || NATIVE_VERSION;
+        set({ currentVersion: currentVer });
+
         try {
-          syncLatestAppVersionToFirebase(LATEST_RELEASE_VERSION, get().releaseNotes, get().apkDownloadUrl);
+          syncLatestAppVersionToFirebase(LATEST_RELEASE_VERSION, get().releaseNotes, DIRECT_APK_URL);
         } catch (_) {}
 
-        // Safe background check without interrupting the user
+        // If app is already on latest version, never show update modal
+        if (currentVer === LATEST_RELEASE_VERSION) {
+          set({ updateAvailable: false, isReadyToInstall: false });
+          return;
+        }
+
+        // Safe background OTA check without interrupting the user
         if (Platform.OS !== 'web' && Updates.isEnabled) {
           try {
             const check = await Updates.checkForUpdateAsync();
@@ -104,10 +117,13 @@ export const useUpdateStore = create<UpdateState>()(
         try {
           const remoteMeta = await getAppVersionFromFirebase();
           if (remoteMeta && remoteMeta.latestVersion) {
+            const remoteVersion = remoteMeta.latestVersion;
+            const hasNewer = remoteVersion !== currentVer;
             set({
-              latestVersion: remoteMeta.latestVersion || LATEST_RELEASE_VERSION,
+              latestVersion: remoteVersion,
               releaseNotes: remoteMeta.releaseNotes || get().releaseNotes,
-              apkDownloadUrl: remoteMeta.apkUrl || FALLBACK_APK_URL,
+              apkDownloadUrl: remoteMeta.apkUrl || DIRECT_APK_URL,
+              updateAvailable: hasNewer,
             });
           }
         } catch (e) {
@@ -117,6 +133,9 @@ export const useUpdateStore = create<UpdateState>()(
 
       checkForUpdates: async () => {
         set({ isChecking: true });
+
+        const currentVer = Constants.expoConfig?.version || get().currentVersion || NATIVE_VERSION;
+        set({ currentVersion: currentVer });
 
         // Check EAS OTA first
         if (Platform.OS !== 'web' && Updates.isEnabled) {
@@ -132,32 +151,34 @@ export const useUpdateStore = create<UpdateState>()(
                 updateType: 'ota',
                 lastCheckedTime: new Date().toISOString(),
               });
-              return { isNewAvailable: true, currentVersion: get().currentVersion, latestVersion: LATEST_RELEASE_VERSION };
+              return { isNewAvailable: true, currentVersion: currentVer, latestVersion: LATEST_RELEASE_VERSION };
             }
           } catch (e) {}
         }
 
-        const currentVer = get().currentVersion;
         try {
           const result = await inAppUpdateEngine.checkForUpdate(currentVer, LATEST_RELEASE_VERSION);
+          const isReallyNew = result.isAvailable && currentVer !== LATEST_RELEASE_VERSION;
+
           set({
             isChecking: false,
-            updateAvailable: true,
+            updateAvailable: isReallyNew,
             latestVersion: result.latestVersion,
             releaseNotes: result.releaseNotes,
-            isMandatory: result.isMandatory,
+            isMandatory: result.isMandatory && isReallyNew,
             updateType: result.type,
             lastCheckedTime: new Date().toISOString(),
           });
+
           return {
-            isNewAvailable: true,
+            isNewAvailable: isReallyNew,
             currentVersion: currentVer,
             latestVersion: result.latestVersion,
           };
         } catch (e) {
-          set({ isChecking: false, updateAvailable: true });
+          set({ isChecking: false, updateAvailable: false });
           return {
-            isNewAvailable: true,
+            isNewAvailable: false,
             currentVersion: currentVer,
             latestVersion: LATEST_RELEASE_VERSION,
           };
@@ -204,7 +225,6 @@ export const useUpdateStore = create<UpdateState>()(
             updateType: result.type,
           });
 
-          // Automatically trigger installer as soon as download reaches 100%
           setTimeout(() => {
             get().installUpdate();
           }, 400);

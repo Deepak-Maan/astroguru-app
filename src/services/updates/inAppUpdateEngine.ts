@@ -25,7 +25,7 @@ export interface InAppUpdateCheckResult {
   type: 'apk' | 'ota';
 }
 
-export const FALLBACK_APK_URL = 'https://expo.dev/accounts/deepak00007/projects/astrologer-app/builds';
+export const FALLBACK_APK_URL = 'https://expo.dev/artifacts/eas/b3xhWTvdVpPcByASoUTly9BVrb1Bi9ZP5pnsQ6wn60Q.apk';
 
 class InAppUpdateEngine {
   private activeDownload: any = null;
