@@ -48,7 +48,7 @@ export function SecurityLockModal() {
   return (
     <Modal visible={isPinEnabled && isLocked} animationType="fade" transparent={false}>
       <View style={styles.container}>
-        <LinearGradient colors={['#EEF2F7', '#E6ECF5', '#DFE6F0']} style={StyleSheet.absoluteFill} />
+        <LinearGradient colors={['#FFFFFF', '#F8FAFC', '#F1F5F9']} style={StyleSheet.absoluteFill} />
 
         {/* Security Shield Header */}
         <View style={styles.header}>
@@ -97,7 +97,7 @@ export function SecurityLockModal() {
             {isBiometricEnabled ? (
               <Pressable
                 onPress={handleBiometricClick}
-                style={({ pressed }) => [styles.keyBtn, styles.keyBtnAction, pressed && { opacity: 0.6 }]}
+                style={({ pressed }) => [styles.keyBtn, styles.keyBtnAction, pressed && styles.keyBtnPressed]}
               >
                 <Text style={{ fontSize: 24 }}>👆</Text>
               </Pressable>
@@ -114,7 +114,7 @@ export function SecurityLockModal() {
 
             <Pressable
               onPress={handleBackspace}
-              style={({ pressed }) => [styles.keyBtn, styles.keyBtnAction, pressed && { opacity: 0.6 }]}
+              style={({ pressed }) => [styles.keyBtn, styles.keyBtnAction, pressed && styles.keyBtnPressed]}
             >
               <Text style={{ fontSize: 22, color: colors.text }}>⌫</Text>
             </Pressable>
@@ -135,10 +135,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: spacing.xl,
-    backgroundColor: '#E6ECF5',
+    backgroundColor: '#FFFFFF',
   },
   header: { alignItems: 'center', gap: spacing.xs, marginBottom: spacing.xl },
-  title: { ...typography.h1, color: colors.text, fontSize: 22, fontWeight: '800' },
+  title: { ...typography.h1, color: '#0F172A', fontSize: 22, fontWeight: '800' },
   subtitle: { ...typography.small, color: colors.textMuted, fontSize: 13, fontWeight: '600' },
 
   dotsRow: { flexDirection: 'row', gap: spacing.md, marginVertical: spacing.lg },
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     height: 16,
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: '#A3B1C6',
+    borderColor: '#CBD5E1',
     backgroundColor: 'transparent',
   },
   dotFilled: {
@@ -167,27 +167,34 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: '#E6ECF5',
+    backgroundColor: '#FFFFFF',
     borderTopWidth: 1.5,
-    borderLeftWidth: 1.5,
-    borderTopColor: '#FFFFFF',
-    borderLeftColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
-    borderRightColor: 'rgba(163, 177, 198, 0.4)',
+    borderLeftWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.95)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderRightWidth: 1.2,
+    borderRightColor: '#E2E8F0',
+    borderBottomWidth: 3.5,
+    borderBottomColor: '#CBD5E1',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#A3B1C6',
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 0.6,
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
     shadowRadius: 6,
     elevation: 3,
   },
-  keyBtnPressed: { backgroundColor: colors.saffron, borderColor: colors.saffron },
+  keyBtnPressed: {
+    transform: [{ translateY: 2 }],
+    borderBottomWidth: 1.5,
+    backgroundColor: '#F8FAFC',
+  },
   keyBtnEmpty: { width: 72, height: 72 },
-  keyBtnAction: { backgroundColor: '#E6ECF5' },
-  keyText: { ...typography.h1, color: colors.text, fontSize: 26, fontWeight: '800' },
+  keyBtnAction: {
+    backgroundColor: '#F8FAFC',
+    borderBottomColor: '#E2E8F0',
+  },
+  keyText: { ...typography.h1, color: '#0F172A', fontSize: 26, fontWeight: '800' },
 
   securityNote: {
     ...typography.tiny,

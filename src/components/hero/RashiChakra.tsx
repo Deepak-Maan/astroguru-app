@@ -233,7 +233,7 @@ export function RashiChakra({ kundli, onPress }: Props) {
     return (
       <Pressable onPress={onPress}>
         <LinearGradient
-          colors={['#EEF2F7', '#E6ECF5']}
+          colors={['#FFFFFF', '#F8FAFC']}
           start={{ x: 0.1, y: 0 }}
           end={{ x: 0.9, y: 1 }}
           style={[styles.card, styles.fallback]}
@@ -248,9 +248,9 @@ export function RashiChakra({ kundli, onPress }: Props) {
     <GestureDetector gesture={gesture}>
       <View style={styles.card} onLayout={onLayout}>
         <GLView style={StyleSheet.absoluteFill} onContextCreate={onContextCreate} />
-        {/* Soft Neumorphic Light gradient overlay */}
+        {/* Crisp clean light gradient overlay */}
         <LinearGradient
-          colors={['rgba(238,242,247,0.10)', 'rgba(230,236,245,0.75)', '#E6ECF5']}
+          colors={['rgba(255,255,255,0.05)', 'rgba(248,250,252,0.65)', '#FFFFFF']}
           locations={[0.20, 0.60, 1]}
           style={StyleSheet.absoluteFill}
           pointerEvents="none"
@@ -266,22 +266,22 @@ const styles = StyleSheet.create({
     height: HERO_HEIGHT,
     borderRadius: radius.lg,
     overflow: 'hidden',
-    backgroundColor: '#E6ECF5',
+    backgroundColor: '#FFFFFF',
     borderTopWidth: 1.5,
-    borderLeftWidth: 1.5,
-    borderTopColor: '#FFFFFF',
-    borderLeftColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: 'rgba(163, 177, 198, 0.4)',
-    borderRightColor: 'rgba(163, 177, 198, 0.4)',
-    shadowColor: '#A3B1C6',
-    shadowOffset: { width: 6, height: 6 },
-    shadowOpacity: 0.65,
-    shadowRadius: 10,
-    elevation: 5,
+    borderLeftWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.95)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderRightWidth: 1.2,
+    borderRightColor: '#E2E8F0',
+    borderBottomWidth: 3.5,
+    borderBottomColor: '#CBD5E1',
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  fallback: { justifyContent: 'flex-end', backgroundColor: '#E6ECF5' },
+  fallback: { justifyContent: 'flex-end', backgroundColor: '#FFFFFF' },
 
   overlay: {
     position: 'absolute',
