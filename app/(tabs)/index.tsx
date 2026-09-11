@@ -15,7 +15,6 @@ import { useUserStore } from '../../src/store/userStore';
 import { useAuthStore } from '../../src/store/authStore';
 import { useSubscriptionStore } from '../../src/store/subscriptionStore';
 import { useLanguageStore } from '../../src/store/languageStore';
-import { useRewardsStore } from '../../src/store/rewardsStore';
 import { TranslationKey } from '../../src/i18n/translations';
 import { ASTROLOGERS } from '../../src/data/astrologers';
 import { RASHIS } from '../../src/data/rashis';
@@ -32,7 +31,6 @@ export default function Home() {
   const kundli = useUserStore((s) => s.kundli);
   const isVip = useSubscriptionStore((s) => s.isVip);
   const t = useLanguageStore((s) => s.t);
-  const { streakCount, astroCoins } = useRewardsStore();
 
   const signIndex = kundli?.moonRashiIndex ?? 0;
   const rashi = RASHIS[signIndex];
@@ -71,12 +69,12 @@ export default function Home() {
   }
 
   const quickActions = [
-    { icon: '🎡', label: 'Rewards', href: '/daily-rewards', bg: '#FEF3C7' },
     { icon: '🪐', label: 'Kundli', href: '/(tabs)/kundli', bg: '#FFEDD5' },
     { icon: '🔢', label: 'Numerology', href: '/numerology', bg: '#E0F2FE' },
-    { icon: '🔮', label: 'Daily Tarot', href: '/daily-rewards', bg: '#F3E8FF' },
+    { icon: '🪄', label: 'Vedic Spells', href: '/spells', bg: '#F3E8FF' },
+    { icon: '🔮', label: 'Crystal Ball', href: '/soulmate-ai', bg: '#EEF2FF' },
     { icon: '💬', label: 'Chat', href: '/instant-consult', bg: '#F5F3FF' },
-    { icon: '💰', label: 'Wallet', href: '/wallet', bg: '#DCFCE7' },
+    { icon: '💰', label: 'Wallet', href: '/wallet', bg: '#FEF3C7' },
   ];
 
   const today = new Date().toLocaleDateString('en-GB', {
@@ -129,51 +127,6 @@ export default function Home() {
             </View>
             <View style={styles.shlokaPlayBtn}>
               <Text style={styles.shlokaPlayText}>▶ Play</Text>
-            </View>
-          </Pressable>
-
-          {/* Daily Cosmic Rewards & Spin Wheel Banner */}
-          <Pressable
-            onPress={() => router.push('/daily-rewards')}
-            style={({ pressed }) => [pressed && { opacity: 0.88, transform: [{ scale: 0.98 }] }]}
-          >
-            <View style={styles.rewardsBanner}>
-              <LinearGradient
-                colors={['#1E1B4B', '#2E1065', '#0F172A']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={StyleSheet.absoluteFill}
-              />
-              <View style={styles.rewardsFlameBox}>
-                <LinearGradient
-                  colors={['#F59E0B', '#EA580C']}
-                  style={StyleSheet.absoluteFill}
-                />
-                <Text style={{ fontSize: 24 }}>🔥</Text>
-              </View>
-              <View style={{ flex: 1, gap: 2 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <Text style={styles.rewardsBannerTag}>COSMIC REWARDS</Text>
-                  <View style={styles.rewardsStreakPill}>
-                    <Text style={styles.rewardsStreakPillText}>{streakCount}D Streak</Text>
-                  </View>
-                  <View style={styles.rewardsCoinsHeaderPill}>
-                    <Text style={{ fontSize: 10 }}>🪙</Text>
-                    <Text style={styles.rewardsCoinsText}>{astroCoins}</Text>
-                  </View>
-                </View>
-                <Text style={styles.rewardsBannerTitle}>Daily Rewards & Navagraha Spin 🎡</Text>
-                <Text style={styles.rewardsBannerSub}>
-                  Spin wheel for wallet cash · Draw daily 3D Tarot · Prescribe Sadhana
-                </Text>
-              </View>
-              <View style={styles.rewardsActionBtn}>
-                <LinearGradient
-                  colors={[colors.saffron, colors.gold]}
-                  style={StyleSheet.absoluteFill}
-                />
-                <Text style={styles.rewardsActionText}>Play ›</Text>
-              </View>
             </View>
           </Pressable>
 
@@ -623,93 +576,4 @@ const styles = StyleSheet.create({
   aiTitle: { ...typography.h3, color: colors.white, fontWeight: '800', fontSize: 15 },
   aiSub: { ...typography.small, fontSize: 11.5, color: 'rgba(255,255,255,0.9)', marginTop: 1 },
   aiArrow: { fontSize: 22, color: colors.white, fontWeight: '700' },
-
-  /* Daily Cosmic Rewards Banner */
-  rewardsBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 22,
-    padding: spacing.md,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-    shadowColor: '#2E1065',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
-    elevation: 5,
-    gap: 12,
-  },
-  rewardsFlameBox: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-    shadowColor: '#F59E0B',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.4,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  rewardsBannerTag: {
-    fontSize: 9.5,
-    fontWeight: '900',
-    color: '#FDE68A',
-    letterSpacing: 1.1,
-  },
-  rewardsStreakPill: {
-    backgroundColor: 'rgba(245,158,11,0.25)',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: 'rgba(245,158,11,0.4)',
-  },
-  rewardsStreakPillText: {
-    color: '#FDE68A',
-    fontSize: 9.5,
-    fontWeight: '900',
-  },
-  rewardsCoinsHeaderPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: radius.pill,
-    gap: 3,
-  },
-  rewardsCoinsText: {
-    color: '#FFFFFF',
-    fontSize: 9.5,
-    fontWeight: '800',
-  },
-  rewardsBannerTitle: {
-    ...typography.h3,
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '900',
-  },
-  rewardsBannerSub: {
-    ...typography.tiny,
-    color: '#CBD5E1',
-    fontSize: 10.5,
-    fontWeight: '600',
-    lineHeight: 14,
-  },
-  rewardsActionBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: radius.pill,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  rewardsActionText: {
-    color: '#FFFFFF',
-    fontWeight: '900',
-    fontSize: 12.5,
-  },
 });
