@@ -63,15 +63,11 @@ export default function AstrologerProfile() {
     );
   }
 
-  const minutesAffordable = Math.floor(balance / astrologer.pricePerMin);
-  const canAfford = minutesAffordable >= 1;
+  const minutesAffordable = Math.floor(balance / (astrologer.pricePerMin || 25));
+  const canAfford = true; // Always allow starting 5-minute free consultation!
 
   function startChat() {
     if (!astrologer) return;
-    if (!canAfford) {
-      router.push('/wallet');
-      return;
-    }
     router.push(`/chat/${astrologer.id}`);
   }
 
@@ -178,24 +174,25 @@ export default function AstrologerProfile() {
                 colors={['rgba(245,158,11,0.10)', 'rgba(217,119,6,0.03)']}
                 style={styles.priceBox}
               >
-                <Text style={styles.price}>
-                  {formatCurrency(astrologer.pricePerMin)}
-                  <Text style={styles.perMin}> / min</Text>
-                </Text>
-                <Text style={styles.priceSub}>Billed per minute from your wallet balance</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Text style={styles.price}>
+                    {formatCurrency(astrologer.pricePerMin)}
+                    <Text style={styles.perMin}> / min</Text>
+                  </Text>
+                  <View style={styles.freeBadgePill}>
+                    <Text style={styles.freeBadgeText}>🎁 5 MINS FREE</Text>
+                  </View>
+                </View>
+                <Text style={styles.priceSub}>First 5 minutes 100% Free • Deducts from wallet after 5 mins</Text>
               </LinearGradient>
             </View>
 
-            <View style={[styles.affordBox, !canAfford && styles.affordBoxDanger]}>
-              <Text style={[styles.affordIcon, { color: canAfford ? colors.teal : colors.danger }]}>
-                {canAfford ? '✓' : '!'}
-              </Text>
-              <Text style={[styles.affordText, !canAfford && { color: colors.danger }]}>
-                {canAfford
-                  ? `Your balance of ${formatCurrency(balance)} covers about ${minutesAffordable} minute${
-                      minutesAffordable === 1 ? '' : 's'
-                    }.`
-                  : `Your balance of ${formatCurrency(balance)} is not enough. Add money to start.`}
+            <View style={styles.affordBox}>
+              <Text style={[styles.affordIcon, { color: colors.teal }]}>✓</Text>
+              <Text style={styles.affordText}>
+                {balance > 0
+                  ? `🎁 Free 5 mins + your wallet balance of ${formatCurrency(balance)} covers ~${minutesAffordable} additional paid mins.`
+                  : `🎁 Free 5 mins available right now! No recharge required to start.`}
               </Text>
             </View>
           </Card>
@@ -214,7 +211,7 @@ export default function AstrologerProfile() {
                 style={({ pressed }) => [styles.mediaCallBtn, pressed && { opacity: 0.8 }]}
               >
                 <Text style={{ fontSize: 15 }}>📞</Text>
-                <Text style={styles.mediaCallText}>Audio</Text>
+                <Text style={styles.mediaCallText}>Audio (5m Free)</Text>
               </Pressable>
 
               <Pressable
@@ -226,12 +223,12 @@ export default function AstrologerProfile() {
                 ]}
               >
                 <Text style={{ fontSize: 15 }}>📹</Text>
-                <Text style={[styles.mediaCallText, { color: colors.teal }]}>Video</Text>
+                <Text style={[styles.mediaCallText, { color: colors.teal }]}>Video (5m Free)</Text>
               </Pressable>
 
               <Button
-                label={canAfford ? '💬 Chat' : 'Add Money'}
-                variant={canAfford ? 'gold' : 'primary'}
+                label="💬 Chat (5m FREE)"
+                variant="gold"
                 size="md"
                 fullWidth={false}
                 style={{ flex: 1 }}
@@ -346,6 +343,19 @@ const styles = StyleSheet.create({
   price: { ...typography.display, fontSize: 22, color: colors.saffron, fontWeight: '900' },
   perMin: { ...typography.body, color: colors.textMuted, fontWeight: '700', fontSize: 13.5 },
   priceSub: { ...typography.tiny, color: colors.textMuted, marginTop: 2, fontWeight: '600', fontSize: 10.5 },
+  freeBadgePill: {
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: radius.pill,
+  },
+  freeBadgeText: {
+    fontSize: 10,
+    fontWeight: '900',
+    color: '#059669',
+  },
 
   affordBox: {
     flexDirection: 'row',

@@ -206,39 +206,29 @@ export default function LiveConsultationScreen() {
     }
   }, [callState, isMuted]);
 
-  const lastBilledMinuteRef = useRef(0);
+  const FREE_MINUTES = 5;
+  const lastBilledPaidMinuteRef = useRef(0);
 
-  // Call duration timer & idempotent per-minute billing engine
+  // Call duration timer & idempotent per-minute billing engine (First 5 Mins Free!)
   useEffect(() => {
     if (callState !== 'connected') return;
 
-    // Bill Minute 1 upon call connect
-    if (role !== 'expert' && lastBilledMinuteRef.current < 1 && astrologer) {
-      const freshBalance = useWalletStore.getState().balance;
-      const rate = astrologer.pricePerMin || 25;
-      if (freshBalance < rate) {
-        useWalletStore.getState().topup(100, 'Welcome Consultation Bonus');
-      }
-      const ok = useWalletStore.getState().debit(
-        rate,
-        `Live ${type === 'video' ? 'Video' : 'Audio'} Call · ${astrologer.name} (Min 1)`
-      );
-      if (ok) {
-        lastBilledMinuteRef.current = 1;
-        setBilledMinutes(1);
-      } else {
-        setLowBalanceAlert(true);
-        handleEndCall();
-        return;
-      }
-    }
+    // Reset tracking if new call connects
+    lastBilledPaidMinuteRef.current = 0;
 
     const interval = setInterval(() => {
       setSeconds((prev) => {
         const next = prev + 1;
-        // Bill subsequent minutes at exactly 60s, 120s, 180s... (Minute 2, 3, 4...)
-        const targetMinute = Math.floor(next / 60) + 1;
-        if (role !== 'expert' && astrologer && targetMinute > lastBilledMinuteRef.current) {
+        const currentMinute = Math.floor(next / 60) + 1;
+
+        // Minutes 1, 2, 3, 4, 5 (up to 300s) are 100% FREE!
+        if (currentMinute <= FREE_MINUTES) {
+          return next;
+        }
+
+        // Minutes 6, 7, 8... are Paid minutes
+        const paidMinute = currentMinute - FREE_MINUTES;
+        if (role !== 'expert' && astrologer && paidMinute > lastBilledPaidMinuteRef.current) {
           const freshBalance = useWalletStore.getState().balance;
           const rate = astrologer.pricePerMin || 25;
           if (freshBalance < rate) {
@@ -254,11 +244,11 @@ export default function LiveConsultationScreen() {
 
           const ok = useWalletStore.getState().debit(
             rate,
-            `Live ${type === 'video' ? 'Video' : 'Audio'} Call · ${astrologer.name} (Min ${targetMinute})`
+            `Live ${type === 'video' ? 'Video' : 'Audio'} Call · ${astrologer.name} (Min ${currentMinute})`
           );
           if (ok) {
-            lastBilledMinuteRef.current = targetMinute;
-            setBilledMinutes(targetMinute);
+            lastBilledPaidMinuteRef.current = paidMinute;
+            setBilledMinutes(paidMinute);
           } else {
             setLowBalanceAlert(true);
             handleEndCall();
@@ -413,7 +403,9 @@ export default function LiveConsultationScreen() {
                 ? '⏳ Ringing Astrologer…'
                 : callState === 'ended'
                 ? '🔴 Call Ended'
-                : `⏱️ ${formatTimer(seconds)} · ₹${totalCharged} billed (Bal: ₹${balance})`}
+                : seconds < 300
+                ? `🎁 5 Mins Free · ${formatTimer(seconds)} (${formatTimer(Math.max(0, 300 - seconds))} free left)`
+                : `⏱️ ${formatTimer(seconds)} · ₹${totalCharged} billed (5m Free applied)`}
             </Text>
           </View>
 
@@ -448,9 +440,9 @@ export default function LiveConsultationScreen() {
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 8 }}>
             {[
-              { label: 'Lagna Rashi', val: kundli?.lagna || 'Mesha (Aries)' },
-              { label: 'Moon Sign', val: kundli?.rashi || 'Vrishabha (Taurus)' },
-              { label: 'Current Dasha', val: kundli?.dasha || 'Rahu - Jupiter (2026)' },
+              { label: 'Lagna Rashi', val: (kundli as any)?.lagna || 'Mesha (Aries)' },
+              { label: 'Moon Sign', val: (kundli as any)?.rashi || 'Vrishabha (Taurus)' },
+              { label: 'Current Dasha', val: (kundli as any)?.dasha || 'Rahu - Jupiter (2026)' },
               { label: 'Sun Position', val: '10th House (Digbala)' },
               { label: 'Nakshatra', val: 'Rohini (Pada 2)' },
             ].map((item) => (
@@ -657,6 +649,13 @@ export default function LiveConsultationScreen() {
               <View style={styles.recapMetricItem}>
                 <Text style={styles.metricLabel}>Duration</Text>
                 <Text style={styles.metricVal}>{formatTimer(seconds)}</Text>
+              </View>
+              <View style={styles.metricDivider} />
+              <View style={styles.recapMetricItem}>
+                <Text style={styles.metricLabel}>Free Tier</Text>
+                <Text style={[styles.metricVal, { color: '#34D399' }]}>
+                  {seconds <= 300 ? `${Math.ceil(seconds / 60)}m Free` : '5m Free'}
+                </Text>
               </View>
               <View style={styles.metricDivider} />
               <View style={styles.recapMetricItem}>

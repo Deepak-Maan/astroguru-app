@@ -180,29 +180,15 @@ export default function ChatScreen() {
     requestAnimationFrame(() => scrollRef.current?.scrollToEnd({ animated: true }));
   }, []);
 
-  const lastBilledMinuteRef = useRef(0);
+  const FREE_MINUTES = 5;
+  const lastBilledPaidMinuteRef = useRef(0);
   const elapsedCountRef = useRef(0);
 
   const begin = useCallback(() => {
     if (!astrologer) return;
-    
-    // Auto-topup welcome trial if user has insufficient funds for first minute
-    const freshBalance = useWalletStore.getState().balance;
-    const rate = astrologer.pricePerMin || 25;
-    if (freshBalance < rate) {
-      topup(100, 'Welcome Consultation Bonus');
-    }
 
-    if (lastBilledMinuteRef.current < 1) {
-      const ok = debit(rate, `Chat Consultation · ${astrologer.name} (Min 1)`);
-      if (!ok) {
-        setRanOut(true);
-        return;
-      }
-      lastBilledMinuteRef.current = 1;
-      billMinute(astrologer.id, rate);
-    }
-
+    lastBilledPaidMinuteRef.current = 0;
+    elapsedCountRef.current = 0;
     startSession(astrologer.id);
     setElapsed(0);
     setRanOut(false);
@@ -215,7 +201,7 @@ export default function ChatScreen() {
         astrologerId: astrologer.id,
         astrologerName: astrologer.name,
         topic: QUICK_PROMPTS[0],
-        ratePerMin: rate,
+        ratePerMin: astrologer.pricePerMin || 25,
       });
 
       if ((useChatStore.getState().sessions[astrologer.id]?.messages.length ?? 0) === 0) {
@@ -231,7 +217,7 @@ export default function ChatScreen() {
         }
       }
     }, 0);
-  }, [astrologer, topup, debit, startSession, billMinute, addMessage, createRoom, currentSeekerId, currentSeekerName, liveRoomId, sendLiveMessage]);
+  }, [astrologer, startSession, addMessage, createRoom, currentSeekerId, currentSeekerName, liveRoomId, sendLiveMessage]);
 
   useEffect(() => {
     if (astrologer && !session?.startedAt && !session?.ended) {
@@ -253,7 +239,15 @@ export default function ChatScreen() {
       setElapsed(count);
 
       const targetMinute = Math.floor(count / 60) + 1;
-      if (targetMinute > lastBilledMinuteRef.current) {
+
+      // Minutes 1 to 5 (0 to 300s) are 100% FREE!
+      if (targetMinute <= FREE_MINUTES) {
+        return;
+      }
+
+      // Minutes 6, 7, 8... are Paid minutes
+      const targetPaidMinute = targetMinute - FREE_MINUTES;
+      if (targetPaidMinute > lastBilledPaidMinuteRef.current) {
         const freshBalance = useWalletStore.getState().balance;
         const rate = astrologer.pricePerMin || 25;
         if (freshBalance < rate) {
@@ -267,7 +261,7 @@ export default function ChatScreen() {
           `Chat Consultation · ${astrologer.name} (Min ${targetMinute})`
         );
         if (ok) {
-          lastBilledMinuteRef.current = targetMinute;
+          lastBilledPaidMinuteRef.current = targetPaidMinute;
           billMinute(astrologer.id, rate);
         } else {
           setRanOut(true);
@@ -354,6 +348,10 @@ export default function ChatScreen() {
   const mm = String(Math.floor(elapsed / 60)).padStart(2, '0');
   const ss = String(elapsed % 60).padStart(2, '0');
   const minLeft = Math.max(1, Math.floor(balance / Math.max(1, price)));
+  const isFree = elapsed < FREE_MINUTES * 60;
+  const freeSecsLeft = Math.max(0, FREE_MINUTES * 60 - elapsed);
+  const freeMm = String(Math.floor(freeSecsLeft / 60)).padStart(2, '0');
+  const freeSs = String(freeSecsLeft % 60).padStart(2, '0');
 
   return (
     <GradientBackground>
@@ -379,7 +377,11 @@ export default function ChatScreen() {
             <View style={styles.statusRow}>
               <View style={[styles.statusDot, { backgroundColor: active ? colors.online : colors.saffron }]} />
               <Text style={styles.hMeta}>
-                {active ? `Live Consultation · ${mm}:${ss}` : 'Online Jyotishi'}
+                {active
+                  ? isFree
+                    ? `🎁 5m Free · ${mm}:${ss} (${freeMm}:${freeSs} left)`
+                    : `Live Consultation · ${mm}:${ss}`
+                  : 'Online Jyotishi'}
               </Text>
             </View>
           </View>
@@ -391,14 +393,18 @@ export default function ChatScreen() {
               style={StyleSheet.absoluteFill}
             />
             <Text style={styles.walletVal}>{formatCurrency(balance)}</Text>
-            <Text style={styles.walletRate}>{formatCurrency(price)}/min ⚡</Text>
+            <Text style={styles.walletRate}>
+              {isFree ? '🎁 5m FREE' : `${formatCurrency(price)}/min ⚡`}
+            </Text>
           </Pressable>
         </View>
 
         {/* Sub-Header Session Info Strip */}
         <View style={styles.strip}>
           <Text style={styles.stripText}>
-            Spent: {formatCurrency(cost)} · ~{minLeft}m
+            {isFree
+              ? `🎁 Free Trial Active · ${freeMm}:${freeSs} left (₹0)`
+              : `Spent: ${formatCurrency(cost)} · ~${minLeft}m`}
           </Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             {/* Kundli Peek Button */}
@@ -458,7 +464,11 @@ export default function ChatScreen() {
 
             <Text style={styles.callName}>{astrologer.name}</Text>
             <Text style={[styles.callStatus, { color: active ? colors.saffron : colors.textMuted }]}>
-              {active ? `Live Audio Call · ${mm}:${ss}` : 'Ready to Connect'}
+              {active
+                ? isFree
+                  ? `🎁 Free Audio Call · ${mm}:${ss} (${freeMm}:${freeSs} free left)`
+                  : `Live Audio Call · ${mm}:${ss}`
+                : 'Ready to Connect'}
             </Text>
 
             {/* Soundwave Equalizer */}

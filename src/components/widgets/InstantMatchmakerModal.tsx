@@ -237,7 +237,7 @@ export function InstantMatchmakerModal({ visible, onClose, defaultTopic }: Props
               </View>
 
               <Text style={styles.matchedRate}>
-                Rate: <Text style={{ color: '#FCD34D', fontWeight: '900' }}>₹{matchedAstrologer.pricePerMin || 25}/min</Text> (Wallet: ₹{balance})
+                Rate: <Text style={{ color: '#FCD34D', fontWeight: '900' }}>₹{matchedAstrologer.pricePerMin || 25}/min</Text> (🎁 First 5 Mins Free)
               </Text>
 
               <Pressable

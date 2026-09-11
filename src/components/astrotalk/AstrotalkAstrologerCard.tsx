@@ -23,10 +23,10 @@ export function AstrotalkAstrologerCard({ astrologer, compact = false }: Props) 
 
   if (!astrologer) return null;
 
-  const chatPrice = astrologer.pricing?.chatPerMin ?? (astrologer as any).pricePerMin ?? 25;
-  const callPrice = astrologer.pricing?.callPerMin ?? ((astrologer as any).pricePerMin ? (astrologer as any).pricePerMin + 5 : 30);
-  const expYears = astrologer.experience ?? (astrologer as any).experienceYears ?? 10;
-  const totalOrders = astrologer.consultationsCount ?? (astrologer as any).consultations ?? (astrologer as any).reviews ?? 1400;
+  const chatPrice = (astrologer as any).pricing?.chatPerMin ?? astrologer.pricePerMin ?? 25;
+  const callPrice = (astrologer as any).pricing?.callPerMin ?? (astrologer.pricePerMin ? astrologer.pricePerMin + 5 : 30);
+  const expYears = (astrologer as any).experience ?? astrologer.experienceYears ?? 10;
+  const totalOrders = (astrologer as any).consultationsCount ?? astrologer.consultations ?? astrologer.reviews ?? 1400;
   const ratingValue = Number(astrologer.rating || 4.9).toFixed(1);
   const originalPrice = Math.round(chatPrice * 1.75);
 
@@ -115,12 +115,12 @@ export function AstrotalkAstrologerCard({ astrologer, compact = false }: Props) 
             </View>
           </View>
 
-          {/* Pricing Row with FREE 1st Deal */}
+          {/* Pricing Row with FREE 5 Mins Deal */}
           <View style={styles.priceRow}>
             <Text style={styles.priceCurrent}>₹{chatPrice}/min</Text>
             <Text style={styles.priceOriginal}>₹{originalPrice}/min</Text>
             <View style={styles.freeDealBadge}>
-              <Text style={styles.freeDealText}>🎁 FREE 1st Min</Text>
+              <Text style={styles.freeDealText}>🎁 5 MINS FREE</Text>
             </View>
           </View>
         </View>
@@ -138,7 +138,7 @@ export function AstrotalkAstrologerCard({ astrologer, compact = false }: Props) 
             end={{ x: 1, y: 0 }}
             style={StyleSheet.absoluteFill}
           />
-          <Text style={styles.chatBtnText}>💬 Chat (FREE)</Text>
+          <Text style={styles.chatBtnText}>💬 Chat (5m FREE)</Text>
         </Pressable>
 
         {astrologer.online ? (
@@ -146,7 +146,7 @@ export function AstrotalkAstrologerCard({ astrologer, compact = false }: Props) 
             onPress={handleCall}
             style={({ pressed }) => [styles.callBtn, pressed && { opacity: 0.85, backgroundColor: '#F0FDF4' }]}
           >
-            <Text style={styles.callBtnText}>📞 Call (₹{callPrice}/m)</Text>
+            <Text style={styles.callBtnText}>📞 Call (5m FREE)</Text>
           </Pressable>
         ) : (
           <Pressable
