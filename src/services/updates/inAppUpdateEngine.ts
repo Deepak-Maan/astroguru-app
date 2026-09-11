@@ -44,31 +44,39 @@ export function getDirectApkDownloadUrl(version: string, assetName: string = 'ap
   return `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases/download/v${cleanVer}/${assetName}`;
 }
 
+export function normalizeVersion(ver: string): { major: number; minor: number; patch: number; raw: string } {
+  if (!ver) return { major: 0, minor: 0, patch: 0, raw: '' };
+  const clean = ver.trim().replace(/^v/i, '');
+  if (!clean.includes('.') && /^\d{2,4}$/.test(clean)) {
+    // Convert 3-digit versionCode like "288" -> 2.8.8, "291" -> 2.9.1
+    const digits = clean.split('').map(Number);
+    if (digits.length === 3) {
+      return { major: digits[0], minor: digits[1], patch: digits[2], raw: clean };
+    }
+  }
+  const parts = clean.split('.').map((p) => parseInt(p, 10) || 0);
+  return {
+    major: parts[0] || 0,
+    minor: parts[1] || 0,
+    patch: parts[2] || 0,
+    raw: clean,
+  };
+}
+
 export function isRemoteVersionNewer(remoteVer: string, currentVer: string): boolean {
   if (!remoteVer || !currentVer) return false;
 
-  const cleanRemote = remoteVer.trim().replace(/^v/i, '');
-  const cleanCurrent = currentVer.trim().replace(/^v/i, '');
+  const r = normalizeVersion(remoteVer);
+  const c = normalizeVersion(currentVer);
 
-  if (cleanRemote === cleanCurrent) return false;
+  if (r.major > c.major) return true;
+  if (r.major < c.major) return false;
 
-  // Numeric versionCode check (e.g. "288" vs "287")
-  const remoteNum = parseInt(cleanRemote, 10);
-  const currentNum = parseInt(cleanCurrent, 10);
-  if (!isNaN(remoteNum) && !isNaN(currentNum) && !cleanRemote.includes('.') && !cleanCurrent.includes('.')) {
-    return remoteNum > currentNum;
-  }
+  if (r.minor > c.minor) return true;
+  if (r.minor < c.minor) return false;
 
-  // Semver check (e.g. "2.8.8" vs "2.8.7")
-  const rParts = cleanRemote.split('.').map((p) => parseInt(p, 10) || 0);
-  const cParts = cleanCurrent.split('.').map((p) => parseInt(p, 10) || 0);
-
-  for (let i = 0; i < Math.max(rParts.length, cParts.length); i++) {
-    const r = rParts[i] || 0;
-    const c = cParts[i] || 0;
-    if (r > c) return true;
-    if (r < c) return false;
-  }
+  if (r.patch > c.patch) return true;
+  if (r.patch < c.patch) return false;
 
   return false;
 }
@@ -108,8 +116,8 @@ class InAppUpdateEngine {
    * Checks GitHub and Firebase for the latest release metadata.
    */
   async checkForUpdate(currentVersion: string, fallbackVersion: string): Promise<InAppUpdateCheckResult> {
-    const currentCode = Application.nativeBuildVersion || '291';
-    const currentName = Application.nativeApplicationVersion || currentVersion || '2.9.1';
+    const currentCode = Application.nativeBuildVersion || '288';
+    const currentName = Application.nativeApplicationVersion || currentVersion || '2.8.8';
 
     // 1. Check Firebase first for any urgent/admin broadcasted version
     let fbData: any = null;
@@ -129,7 +137,7 @@ class InAppUpdateEngine {
       if (response.ok) {
         const releases = await response.json();
         if (Array.isArray(releases) && releases.length > 0) {
-          // Find the latest non-draft release
+          // Find valid non-draft releases
           const validReleases = releases.filter((r: any) => !r.draft);
           const topRelease = validReleases[0] || releases[0];
           const rawTag = topRelease.tag_name || '';
@@ -137,7 +145,6 @@ class InAppUpdateEngine {
 
           // Find first release in list that has an actual .apk asset
           let bestApkAsset: any = null;
-
           for (const rel of validReleases) {
             const asset = rel.assets?.find((a: any) =>
               typeof a.name === 'string' && a.name.toLowerCase().endsWith('.apk')
@@ -148,21 +155,48 @@ class InAppUpdateEngine {
             }
           }
 
-          const targetVer = fbData?.latestVersion || cleanTag || fallbackVersion;
+          // Gather all candidate versions and select the highest release version available
+          const candidateVersions = [
+            fallbackVersion,
+            fbData?.latestVersion,
+            cleanTag,
+            ...validReleases.map((r: any) => (r.tag_name || '').replace(/^v/i, '').trim()),
+          ].filter(Boolean);
+
+          let targetVer = fallbackVersion || '2.9.1';
+          for (const v of candidateVersions) {
+            if (v && isRemoteVersionNewer(v, targetVer)) {
+              targetVer = v;
+            }
+          }
+
           const isNewer =
             isRemoteVersionNewer(targetVer, currentCode) ||
             isRemoteVersionNewer(targetVer, currentName);
 
+          const matchingRelease = validReleases.find(
+            (r: any) => (r.tag_name || '').replace(/^v/i, '').trim() === targetVer
+          );
+          const matchingApkAsset = matchingRelease?.assets?.find((a: any) =>
+            typeof a.name === 'string' && a.name.toLowerCase().endsWith('.apk')
+          );
+
           const directUrl =
             fbData?.apkUrl ||
+            matchingApkAsset?.browser_download_url ||
+            getDirectApkDownloadUrl(targetVer) ||
             bestApkAsset?.browser_download_url ||
             FALLBACK_RELEASE_APK_URL;
 
-          const rawSize = bestApkAsset?.size ? (bestApkAsset.size / (1024 * 1024)).toFixed(1) : '44.8';
+          const rawSize = matchingApkAsset?.size
+            ? (matchingApkAsset.size / (1024 * 1024)).toFixed(1)
+            : bestApkAsset?.size
+            ? (bestApkAsset.size / (1024 * 1024)).toFixed(1)
+            : '44.8';
           const isMandatory = topRelease.body?.toLowerCase().includes('[mandatory]') || false;
 
           const formattedNotes: string[] = [];
-          const sourceBody = fbData?.releaseNotes ? fbData.releaseNotes.join('\n') : topRelease.body;
+          const sourceBody = fbData?.releaseNotes ? fbData.releaseNotes.join('\n') : (matchingRelease?.body || topRelease.body);
 
           if (sourceBody) {
             sourceBody
@@ -181,9 +215,10 @@ class InAppUpdateEngine {
           const notes = formattedNotes.length > 0
             ? formattedNotes
             : [
-                '• 👑 Ultra-Premium Imperial Gold & Crystal Glass Design System.',
-                '• 💬 Enhanced live consultation stability and chat responsiveness.',
-                '• 🧭 Vastu Compass, Love Meter & Daily Karma Rewards.',
+                '• 🎁 5-Minute Free Introductory Tier for first-time seekers.',
+                '• 👑 Master Admin Control Center with 14 active operational desks.',
+                '• 💳 Direct Merchant QR Scanner & Instant UPI Wallet Recharge.',
+                '• 🛡️ Fortified RASP Cyber Shield with Anti-Tamper Protection.',
                 '• 📲 100% In-App Direct APK Downloading & Auto-Installation.',
               ];
 
@@ -195,7 +230,7 @@ class InAppUpdateEngine {
             isMandatory,
             type: 'apk',
             downloadUrl: directUrl,
-            apkFileName: bestApkAsset?.name || `AstroGuru-v${targetVer}.apk`,
+            apkFileName: matchingApkAsset?.name || bestApkAsset?.name || `AstroGuru-v${targetVer}.apk`,
             apkSizeMb: parseFloat(rawSize),
           };
         }
@@ -205,22 +240,25 @@ class InAppUpdateEngine {
     }
 
     // 3. Fallback to Firebase or default
-    const finalFallbackVersion = fbData?.latestVersion || fallbackVersion;
-    const isNewerFallback = isRemoteVersionNewer(finalFallbackVersion, currentName);
+    const finalFallbackVersion = fbData?.latestVersion || fallbackVersion || '2.9.1';
+    const isNewerFallback =
+      isRemoteVersionNewer(finalFallbackVersion, currentCode) ||
+      isRemoteVersionNewer(finalFallbackVersion, currentName);
 
     return {
       isAvailable: isNewerFallback,
       currentVersion: currentName,
       latestVersion: finalFallbackVersion,
       releaseNotes: fbData?.releaseNotes || [
-        '• 👑 Ultra-Premium Imperial Gold & Crystal Glass Design System.',
-        '• 💬 Astrotalk-Grade 1-on-1 Chat, Voice Call & Live Streaming.',
-        '• 🧭 Vastu Compass, Love Meter & Daily Karma Rewards.',
+        '• 🎁 5-Minute Free Introductory Tier for first-time seekers.',
+        '• 👑 Master Admin Control Center with 14 active operational desks.',
+        '• 💳 Direct Merchant QR Scanner & Instant UPI Wallet Recharge.',
+        '• 🛡️ Fortified RASP Cyber Shield with Anti-Tamper Protection.',
         '• 📲 100% In-App Direct APK Streaming & Auto-Installer.',
       ],
       isMandatory: false,
       type: 'apk',
-      downloadUrl: fbData?.apkUrl || FALLBACK_RELEASE_APK_URL,
+      downloadUrl: fbData?.apkUrl || getDirectApkDownloadUrl(finalFallbackVersion) || FALLBACK_RELEASE_APK_URL,
       apkFileName: `AstroGuru-v${finalFallbackVersion}.apk`,
       apkSizeMb: 44.8,
     };

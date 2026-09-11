@@ -83,10 +83,11 @@ export const useUpdateStore = create<UpdateInfo & UpdateActions>()(
 
       autoCheckAndFetchOnStartup: async () => {
         try {
-          const currentVer = get().currentVersion || defaultAppVersion;
+          const currentVer = Application.nativeApplicationVersion || get().currentVersion || '2.8.8';
           const result = await inAppUpdateEngine.checkForUpdate(currentVer, LATEST_RELEASE_VERSION);
           if (result.isAvailable) {
             set({
+              currentVersion: currentVer,
               updateAvailable: true,
               latestVersion: result.latestVersion,
               releaseNotes: result.releaseNotes,
@@ -104,12 +105,13 @@ export const useUpdateStore = create<UpdateInfo & UpdateActions>()(
 
       checkForUpdates: async () => {
         set({ isChecking: true });
-        const currentVer = get().currentVersion || defaultAppVersion;
+        const currentVer = Application.nativeApplicationVersion || get().currentVersion || '2.8.8';
 
         try {
           const result = await inAppUpdateEngine.checkForUpdate(currentVer, LATEST_RELEASE_VERSION);
           set({
             isChecking: false,
+            currentVersion: currentVer,
             updateAvailable: result.isAvailable,
             latestVersion: result.latestVersion,
             releaseNotes: result.releaseNotes,
@@ -136,7 +138,7 @@ export const useUpdateStore = create<UpdateInfo & UpdateActions>()(
 
       checkUpdatesManual: async () => {
         set({ isChecking: true, manualCheckMessage: 'Checking for updates…' });
-        const currentVer = get().currentVersion || defaultAppVersion;
+        const currentVer = Application.nativeApplicationVersion || get().currentVersion || '2.8.8';
 
         try {
           const result = await inAppUpdateEngine.checkForUpdate(currentVer, LATEST_RELEASE_VERSION);
@@ -144,6 +146,7 @@ export const useUpdateStore = create<UpdateInfo & UpdateActions>()(
 
           if (result.isAvailable) {
             set({
+              currentVersion: currentVer,
               updateAvailable: true,
               latestVersion: result.latestVersion,
               releaseNotes: result.releaseNotes,
