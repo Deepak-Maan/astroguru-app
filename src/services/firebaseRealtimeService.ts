@@ -119,8 +119,12 @@ export async function syncUserToFirebase(user: { id: string; name: string; email
     await set(userRef, payload);
     await set(seekerRef, payload);
     console.log(`[Firebase Cloud Sync] User ${user.name} synced to Firebase /users and /seekers!`);
-  } catch (e) {
-    console.warn('[Firebase User Sync Warning]', e);
+  } catch (e: any) {
+    if (e?.message?.includes('PERMISSION_DENIED')) {
+      console.log('[Firebase Info] Database write permission locked. Update Realtime Database Rules in Firebase Console to allow write.');
+    } else {
+      console.warn('[Firebase User Sync Warning]', e);
+    }
   }
 }
 
@@ -151,8 +155,12 @@ export async function syncAstrologerToFirebase(astro: {
     await set(astroRef, payload);
     await set(jyotishiRef, payload);
     console.log(`[Firebase Cloud Sync] Jyotishi ${astro.name} synced to Firebase /astrologers and /jyotishis!`);
-  } catch (e) {
-    console.warn('[Firebase Jyotishi Sync Warning]', e);
+  } catch (e: any) {
+    if (e?.message?.includes('PERMISSION_DENIED')) {
+      console.log('[Firebase Info] Database write permission locked. Update Realtime Database Rules in Firebase Console to allow write.');
+    } else {
+      console.warn('[Firebase Jyotishi Sync Warning]', e);
+    }
   }
 }
 
