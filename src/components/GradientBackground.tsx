@@ -107,16 +107,16 @@ export function GradientBackground({ children, style, stars = true }: Props) {
 
   return (
     <View style={[styles.root, style]}>
-      {/* Base Modern Luminous Crystal Air Gradient */}
+      {/* Base Claymorphism 3D Soft Lavender Canvas */}
       <LinearGradient
-        colors={['#FFFFFF', '#F8FAFC', '#F1F5F9']}
+        colors={['#F8F6FC', '#F4F1FA', '#ECE7F6']}
         locations={[0, 0.5, 1]}
         start={{ x: 0.1, y: 0 }}
         end={{ x: 0.9, y: 1 }}
         style={StyleSheet.absoluteFill}
       />
 
-      {/* Glow Orb Top-Right (Electric Indigo) */}
+      {/* Glow Orb Top-Right (Soft Violet Clay Blob) */}
       <Animated.View
         ref={glowTopRef}
         pointerEvents="none"
@@ -126,7 +126,7 @@ export function GradientBackground({ children, style, stars = true }: Props) {
         ]}
       />
 
-      {/* Glow Orb Bottom-Left (Neon Coral Punch) */}
+      {/* Glow Orb Bottom-Left (Soft Punch Rose Clay Blob) */}
       <Animated.View
         ref={glowBottomRef}
         pointerEvents="none"
@@ -146,7 +146,7 @@ export function GradientBackground({ children, style, stars = true }: Props) {
         ]}
       />
 
-      {/* Constellation Stars for Modern Light Mode */}
+      {/* Constellation Stars for Claymorphism Light Mode */}
       {stars && (
         <View style={StyleSheet.absoluteFill} pointerEvents="none">
           {starList.map((s, i) => (
@@ -159,7 +159,7 @@ export function GradientBackground({ children, style, stars = true }: Props) {
                 width: s.size,
                 height: s.size,
                 borderRadius: s.size,
-                backgroundColor: i % 2 === 0 ? '#6366F1' : '#FF3366',
+                backgroundColor: i % 2 === 0 ? '#7C3AED' : '#DB2777',
                 opacity: Animated.multiply(s.opacity, starOpacityMult),
               }}
             />
@@ -173,28 +173,28 @@ export function GradientBackground({ children, style, stars = true }: Props) {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#F8FAFC', overflow: 'hidden' },
+  root: { flex: 1, backgroundColor: '#F4F1FA', overflow: 'hidden' },
   content: { flex: 1 },
 
   glowTop: {
     position: 'absolute',
     top: -140,
     right: -80,
-    width: 380,
-    height: 380,
-    borderRadius: 190,
-    backgroundColor: '#6366F1',
-    opacity: 0.09,
+    width: 400,
+    height: 400,
+    borderRadius: 200,
+    backgroundColor: '#7C3AED',
+    opacity: 0.08,
   },
   glowBottom: {
     position: 'absolute',
     bottom: -150,
     left: -90,
-    width: 390,
-    height: 390,
-    borderRadius: 195,
-    backgroundColor: '#FF3366',
-    opacity: 0.07,
+    width: 400,
+    height: 400,
+    borderRadius: 200,
+    backgroundColor: '#DB2777',
+    opacity: 0.06,
   },
 
   mandalaRing: {
@@ -205,8 +205,8 @@ const styles = StyleSheet.create({
     height: 520,
     borderRadius: 260,
     borderWidth: 1.5,
-    borderColor: 'rgba(99,102,241,0.16)',
+    borderColor: 'rgba(124, 58, 237, 0.12)',
     borderStyle: 'dashed',
-    opacity: 0.6,
+    opacity: 0.5,
   },
 });

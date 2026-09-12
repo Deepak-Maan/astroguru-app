@@ -219,7 +219,7 @@ export default function Horoscope() {
                 >
                   {active && (
                     <LinearGradient
-                      colors={['#6366F1', '#8B5CF6']}
+                      colors={['#A78BFA', '#7C3AED']}
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 1 }}
                       style={StyleSheet.absoluteFill}
@@ -260,7 +260,7 @@ export default function Horoscope() {
               >
                 {period === p.id && (
                   <LinearGradient
-                    colors={['#FF3366', '#F43F5E']}
+                    colors={['#F472B6', '#DB2777']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={StyleSheet.absoluteFill}
@@ -277,7 +277,7 @@ export default function Horoscope() {
           {/* 🎙️ AI VOICE HOROSCOPE AUDIO READER BANNER */}
           <Pressable onPress={handleToggleVoiceAudio} style={({ pressed }) => [pressed && { opacity: 0.9 }]}>
             <LinearGradient
-              colors={isSpeaking ? ['#FF3366', '#BE123C'] : ['#0F172A', '#1E293B']}
+              colors={isSpeaking ? ['#F472B6', '#DB2777'] : ['#7C3AED', '#5B21B6']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={{
@@ -444,15 +444,15 @@ const styles = StyleSheet.create({
   signCellActive: {
     borderTopColor: 'rgba(255, 255, 255, 0.5)',
     borderBottomWidth: 3,
-    borderBottomColor: '#4338CA',
+    borderBottomColor: '#5B21B6',
     shadowColor: colors.primary,
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.35,
   },
   signCellPressed: {
     transform: [{ translateY: 2 }],
     borderBottomWidth: 1.5,
   },
-  signGlyph: { fontSize: 24, color: '#6366F1' },
+  signGlyph: { fontSize: 24, color: colors.primary },
   signName: { ...typography.tiny, fontSize: 10, color: colors.text, fontWeight: '700' },
   yourDot: {
     position: 'absolute',
@@ -461,7 +461,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#6366F1',
+    backgroundColor: colors.primary,
     borderWidth: 1.5,
     borderColor: '#FFFFFF',
   },
@@ -472,20 +472,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: radius.pill,
     padding: 4,
-    borderTopWidth: 1.5,
-    borderLeftWidth: 1.2,
+    borderTopWidth: 2,
+    borderLeftWidth: 1.5,
     borderTopColor: 'rgba(255, 255, 255, 0.95)',
-    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.9)',
     borderRightWidth: 1.2,
-    borderRightColor: '#E2E8F0',
-    borderBottomWidth: 2.5,
-    borderBottomColor: '#CBD5E1',
+    borderRightColor: '#EDE9FE',
+    borderBottomWidth: 3,
+    borderBottomColor: '#DDD6FE',
     gap: 2,
-    shadowColor: '#64748B',
-    shadowOffset: { width: 0, height: 2 },
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowRadius: 6,
+    elevation: 3,
   },
   period: {
     flex: 1,
@@ -509,36 +509,36 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   readingGlyphCircle: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
-    backgroundColor: 'rgba(99,102,241,0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(99,102,241,0.30)',
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#EDE9FE',
+    borderWidth: 1.5,
+    borderColor: 'rgba(124,58,237,0.25)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  readingGlyph: { fontSize: 28, color: '#6366F1' },
+  readingGlyph: { fontSize: 28, color: colors.primary },
   readingSign: { ...typography.h2, color: colors.text, fontWeight: '800' },
   readingMeta: { ...typography.tiny, color: colors.textFaint, marginTop: 2, textTransform: 'capitalize', fontWeight: '600' },
   moodCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255,51,102,0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,51,102,0.30)',
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#FCE7F3',
+    borderWidth: 1.5,
+    borderColor: 'rgba(219,39,119,0.25)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  moodValue: { ...typography.h3, fontSize: 15, color: '#FF3366', lineHeight: 18, fontWeight: '800' },
-  moodPct: { ...typography.tiny, fontSize: 9.5, color: '#FF3366', fontWeight: '800' },
+  moodValue: { ...typography.h3, fontSize: 15, color: colors.coral, lineHeight: 18, fontWeight: '800' },
+  moodPct: { ...typography.tiny, fontSize: 9.5, color: colors.coral, fontWeight: '800' },
 
   summary: { ...typography.body, color: colors.text, lineHeight: 22, fontWeight: '600' },
   moodBarTrack: {
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: '#EDE9FE',
     marginTop: spacing.lg,
     overflow: 'hidden',
   },
@@ -550,22 +550,22 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     marginHorizontal: spacing.lg,
     backgroundColor: '#FFFFFF',
-    borderRadius: radius.lg,
-    borderTopWidth: 1.5,
-    borderLeftWidth: 1.2,
+    borderRadius: radius.xl,
+    borderTopWidth: 2,
+    borderLeftWidth: 1.5,
     borderTopColor: 'rgba(255, 255, 255, 0.95)',
-    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.9)',
     borderRightWidth: 1.2,
-    borderRightColor: '#E2E8F0',
-    borderBottomWidth: 3,
-    borderBottomColor: '#CBD5E1',
+    borderRightColor: '#EDE9FE',
+    borderBottomWidth: 3.5,
+    borderBottomColor: '#DDD6FE',
     padding: spacing.lg,
     alignItems: 'flex-start',
-    shadowColor: '#64748B',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    elevation: 3,
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.09,
+    shadowRadius: 14,
+    elevation: 4,
   },
   areaIconCircle: {
     width: 42,

@@ -331,7 +331,7 @@ export default function Consult() {
               >
                 {active && (
                   <LinearGradient
-                    colors={['#FF3366', '#F43F5E']}
+                    colors={['#F472B6', '#DB2777']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={StyleSheet.absoluteFill}
@@ -371,7 +371,7 @@ export default function Consult() {
               >
                 {active && (
                   <LinearGradient
-                    colors={['#6366F1', '#4F46E5']}
+                    colors={['#A78BFA', '#7C3AED']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={StyleSheet.absoluteFill}
@@ -512,35 +512,35 @@ const styles = StyleSheet.create({
     paddingRight: spacing.lg,
   },
   filterChip: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: 7,
+    paddingHorizontal: spacing.md + 2,
+    paddingVertical: 8,
     borderRadius: radius.pill,
     backgroundColor: '#FFFFFF',
-    borderTopWidth: 1.5,
-    borderLeftWidth: 1.2,
+    borderTopWidth: 2,
+    borderLeftWidth: 1.5,
     borderTopColor: 'rgba(255, 255, 255, 0.95)',
-    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.9)',
     borderRightWidth: 1.2,
-    borderRightColor: '#E2E8F0',
-    borderBottomWidth: 2.5,
-    borderBottomColor: '#CBD5E1',
+    borderRightColor: '#EDE9FE',
+    borderBottomWidth: 3,
+    borderBottomColor: '#DDD6FE',
     overflow: 'hidden',
-    shadowColor: '#64748B',
-    shadowOffset: { width: 0, height: 2 },
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowRadius: 6,
+    elevation: 3,
   },
   filterChipActive: {
     borderTopColor: 'rgba(255, 255, 255, 0.4)',
     borderBottomWidth: 3,
-    borderBottomColor: '#BE123C',
-    shadowColor: '#FF3366',
-    shadowOpacity: 0.3,
+    borderBottomColor: '#9D174D',
+    shadowColor: colors.coral,
+    shadowOpacity: 0.35,
   },
   filterChipPressed: {
     transform: [{ translateY: 1.5 }],
-    borderBottomWidth: 1,
+    borderBottomWidth: 1.5,
   },
   filterChipText: {
     ...typography.small,
@@ -563,23 +563,23 @@ const styles = StyleSheet.create({
     gap: 4,
     backgroundColor: '#FFFFFF',
     borderRadius: radius.pill,
-    padding: 3,
-    borderTopWidth: 1.5,
-    borderLeftWidth: 1.2,
+    padding: 4,
+    borderTopWidth: 2,
+    borderLeftWidth: 1.5,
     borderTopColor: 'rgba(255, 255, 255, 0.95)',
-    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.9)',
     borderRightWidth: 1.2,
-    borderRightColor: '#E2E8F0',
-    borderBottomWidth: 2.5,
-    borderBottomColor: '#CBD5E1',
-    shadowColor: '#64748B',
-    shadowOffset: { width: 0, height: 2 },
+    borderRightColor: '#EDE9FE',
+    borderBottomWidth: 3,
+    borderBottomColor: '#DDD6FE',
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowRadius: 6,
+    elevation: 3,
   },
   sortPill: {
-    paddingVertical: 6,
+    paddingVertical: 7,
     paddingHorizontal: spacing.md,
     borderRadius: radius.pill,
     overflow: 'hidden',

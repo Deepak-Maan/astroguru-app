@@ -13,24 +13,24 @@ interface ChipProps {
 }
 
 const TONE_COLORS = {
-  default: colors.teal,
-  gold: colors.gold,
+  default: colors.primary,
+  gold: colors.coral, // Replaced gold with punch rose
   teal: colors.teal,
   rose: colors.rose,
 };
 
 const TONE_BG = {
-  default: 'rgba(5,150,105,0.12)',
-  gold: 'rgba(217,119,6,0.12)',
-  teal: 'rgba(5,150,105,0.12)',
-  rose: 'rgba(225,29,72,0.12)',
+  default: 'rgba(124, 58, 237, 0.10)',
+  gold: 'rgba(219, 39, 119, 0.10)',
+  teal: 'rgba(6, 182, 212, 0.10)',
+  rose: 'rgba(219, 39, 119, 0.10)',
 };
 
 const TONE_BORDER = {
-  default: 'rgba(5,150,105,0.30)',
-  gold: 'rgba(217,119,6,0.30)',
-  teal: 'rgba(5,150,105,0.30)',
-  rose: 'rgba(225,29,72,0.30)',
+  default: 'rgba(124, 58, 237, 0.25)',
+  gold: 'rgba(219, 39, 119, 0.25)',
+  teal: 'rgba(6, 182, 212, 0.25)',
+  rose: 'rgba(219, 39, 119, 0.25)',
 };
 
 export function Chip({ label, selected = false, onPress, style, tone = 'default' }: ChipProps) {
@@ -94,7 +94,7 @@ export function Chip({ label, selected = false, onPress, style, tone = 'default'
 const styles = StyleSheet.create({
   chip: {
     paddingHorizontal: spacing.md,
-    paddingVertical: 6,
+    paddingVertical: 7,
     borderRadius: radius.pill,
     backgroundColor: '#FFFFFF',
     borderTopWidth: 1.5,
@@ -103,21 +103,21 @@ const styles = StyleSheet.create({
     borderLeftColor: 'rgba(255, 255, 255, 0.85)',
     borderRightWidth: 1.2,
     borderRightColor: '#E2E8F0',
-    borderBottomWidth: 2.5,
-    borderBottomColor: '#CBD5E1',
+    borderBottomWidth: 3,
+    borderBottomColor: '#DDD6FE',
     overflow: 'hidden',
     alignSelf: 'flex-start',
     flexShrink: 0,
-    shadowColor: '#64748B',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.12,
+    shadowRadius: 5,
     elevation: 2,
   },
   chipSelected: {
     borderColor: 'transparent',
-    borderBottomWidth: 2.5,
-    borderBottomColor: '#046A4E',
+    borderBottomWidth: 3,
+    borderBottomColor: '#5B21B6',
   },
   label: { ...typography.small, color: colors.text, lineHeight: 18, fontSize: 13, fontWeight: '700' },
 });

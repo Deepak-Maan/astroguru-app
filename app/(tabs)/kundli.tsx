@@ -166,7 +166,7 @@ export default function KundliScreen() {
                 >
                   {active ? (
                     <LinearGradient
-                      colors={['#6366F1', '#8B5CF6']}
+                      colors={['#A78BFA', '#7C3AED']}
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 1 }}
                       style={StyleSheet.absoluteFill}
@@ -362,15 +362,15 @@ export default function KundliScreen() {
                   >
                     {d.isActive && (
                       <LinearGradient
-                        colors={['rgba(217,119,6,0.12)', 'rgba(217,119,6,0.02)']}
+                        colors={['rgba(124, 58, 237, 0.12)', 'rgba(124, 58, 237, 0.02)']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 0 }}
                         style={StyleSheet.absoluteFill}
                       />
                     )}
-                    <View style={[styles.dashaDot, { backgroundColor: d.isActive ? colors.gold : colors.textFaint }]} />
+                    <View style={[styles.dashaDot, { backgroundColor: d.isActive ? colors.primary : colors.textFaint }]} />
                     <View style={{ flex: 1 }}>
-                      <Text style={[styles.dashaName, d.isActive && { color: colors.gold }]}>
+                      <Text style={[styles.dashaName, d.isActive && { color: colors.primary }]}>
                         {d.lordName} Mahadasha {d.isActive ? '⚡' : ''}
                       </Text>
                       <Text style={styles.dashaYears}>{d.years} years</Text>
@@ -467,37 +467,37 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingVertical: 7,
-    paddingHorizontal: spacing.md,
+    paddingVertical: 8,
+    paddingHorizontal: spacing.md + 2,
     borderRadius: radius.pill,
     backgroundColor: '#FFFFFF',
-    borderTopWidth: 1.5,
-    borderLeftWidth: 1.2,
+    borderTopWidth: 2,
+    borderLeftWidth: 1.5,
     borderTopColor: 'rgba(255, 255, 255, 0.95)',
-    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.9)',
     borderRightWidth: 1.2,
-    borderRightColor: '#E2E8F0',
-    borderBottomWidth: 2.5,
-    borderBottomColor: '#CBD5E1',
+    borderRightColor: '#EDE9FE',
+    borderBottomWidth: 3,
+    borderBottomColor: '#DDD6FE',
     overflow: 'hidden',
     alignSelf: 'flex-start',
     flexShrink: 0,
-    shadowColor: '#64748B',
-    shadowOffset: { width: 0, height: 2 },
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowRadius: 6,
+    elevation: 3,
   },
   tabActive: {
     borderTopColor: 'rgba(255, 255, 255, 0.4)',
     borderBottomWidth: 3,
-    borderBottomColor: '#4338CA',
+    borderBottomColor: '#5B21B6',
     shadowColor: colors.primary,
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.35,
   },
   tabPressed: {
     transform: [{ translateY: 1.5 }],
-    borderBottomWidth: 1,
+    borderBottomWidth: 1.5,
   },
   tabIcon: { fontSize: 13 },
   tabText: { ...typography.small, color: colors.textMuted, fontWeight: '700', fontSize: 13, lineHeight: 18 },
@@ -518,7 +518,7 @@ const styles = StyleSheet.create({
     borderTopColor: 'rgba(203, 213, 225, 0.6)',
   },
   detailLabel: { ...typography.small, color: colors.textMuted, flex: 1, fontWeight: '600' },
-  detailValue: { ...typography.h3, fontSize: 15, color: colors.gold, textAlign: 'right', fontWeight: '800' },
+  detailValue: { ...typography.h3, fontSize: 15, color: colors.primary, textAlign: 'right', fontWeight: '800' },
   detailSub: { ...typography.tiny, color: colors.textFaint, marginTop: 2, textAlign: 'right', fontWeight: '600' },
 
   doshaRow: { flexDirection: 'row', gap: spacing.md, alignItems: 'flex-start' },
@@ -546,11 +546,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     gap: spacing.sm,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#F4F1FA',
     borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
+    borderBottomColor: '#EDE9FE',
   },
-  th: { ...typography.tiny, color: colors.gold, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: '800' },
+  th: { ...typography.tiny, color: colors.primary, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: '800' },
   tableRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -566,16 +566,16 @@ const styles = StyleSheet.create({
 
   houseCard: { flexDirection: 'row', gap: spacing.md, alignItems: 'flex-start' },
   houseNum: {
-    width: 38,
-    height: 38,
+    width: 40,
+    height: 40,
     borderRadius: radius.pill,
-    backgroundColor: 'rgba(217,119,6,0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(217,119,6,0.30)',
+    backgroundColor: '#EDE9FE',
+    borderWidth: 1.5,
+    borderColor: 'rgba(124,58,237,0.25)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  houseNumText: { ...typography.h3, fontSize: 14, color: colors.gold, fontWeight: '900' },
+  houseNumText: { ...typography.h3, fontSize: 14, color: colors.primary, fontWeight: '900' },
   houseRashi: { ...typography.h3, fontSize: 15, color: colors.text, fontWeight: '800' },
   houseLord: { ...typography.tiny, color: colors.textFaint, marginTop: 3, fontWeight: '600' },
   occupants: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginTop: spacing.sm },
@@ -593,12 +593,12 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   dashaRowActive: {
-    borderColor: 'rgba(217,119,6,0.40)',
-    borderWidth: 1,
+    borderColor: 'rgba(124,58,237,0.35)',
+    borderWidth: 1.5,
     borderRadius: radius.md,
     marginHorizontal: -2,
     paddingHorizontal: spacing.md,
-    backgroundColor: 'rgba(217,119,6,0.06)',
+    backgroundColor: 'rgba(124,58,237,0.08)',
   },
   dashaDot: {
     width: 8,
@@ -607,21 +607,21 @@ const styles = StyleSheet.create({
   },
   dashaName: { ...typography.h3, fontSize: 14, color: colors.text, fontWeight: '800' },
   dashaYears: { ...typography.tiny, color: colors.textFaint, marginTop: 2, fontWeight: '600' },
-  dashaDate: { ...typography.small, color: colors.gold, fontWeight: '800', fontSize: 12 },
+  dashaDate: { ...typography.small, color: colors.primary, fontWeight: '800', fontSize: 12 },
 
   matchButton: {
     borderRadius: radius.pill,
     overflow: 'hidden',
     alignSelf: 'stretch',
-    borderTopWidth: 1.5,
+    borderTopWidth: 2,
     borderTopColor: 'rgba(255, 255, 255, 0.45)',
-    borderBottomWidth: 3.5,
-    borderBottomColor: '#BE123C',
-    shadowColor: '#FF3366',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 8,
-    elevation: 4,
+    borderBottomWidth: 4,
+    borderBottomColor: '#9D174D',
+    shadowColor: colors.coral,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 5,
   },
   matchButtonGradient: {
     paddingVertical: spacing.md,
@@ -638,11 +638,11 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xl,
     marginBottom: spacing.lg,
     overflow: 'hidden',
-    borderRadius: radius.md,
-    backgroundColor: 'rgba(99,102,241,0.08)',
+    borderRadius: radius.xl,
+    backgroundColor: 'rgba(124,58,237,0.08)',
   },
-  matchScoreNum: { fontSize: 52, fontWeight: '900', color: '#6366F1' },
-  matchScoreLabel: { ...typography.h3, color: '#FF3366', marginTop: 4, fontWeight: '800' },
+  matchScoreNum: { fontSize: 52, fontWeight: '900', color: colors.primary },
+  matchScoreLabel: { ...typography.h3, color: colors.coral, marginTop: 4, fontWeight: '800' },
   matchVerdict: { ...typography.small, color: colors.textMuted, textAlign: 'center', marginTop: spacing.sm, lineHeight: 18, paddingHorizontal: spacing.lg, fontWeight: '600' },
 
   kootaScore: {

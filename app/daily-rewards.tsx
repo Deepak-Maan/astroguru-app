@@ -169,7 +169,7 @@ export default function DailyRewardsScreen() {
           {/* ── Section 1: Cosmic Streak & Daily Check-in ── */}
           <View style={styles.card}>
             <LinearGradient
-              colors={['#1E1B4B', '#0F172A']}
+              colors={['#4C1D95', '#312E81']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={StyleSheet.absoluteFill}
@@ -203,7 +203,7 @@ export default function DailyRewardsScreen() {
                 ]}
               >
                 <LinearGradient
-                  colors={hasCheckedInToday ? ['#64748B', '#475569'] : [colors.saffron, colors.gold]}
+                  colors={hasCheckedInToday ? ['#94A3B8', '#64748B'] : ['#F472B6', '#DB2777']}
                   style={StyleSheet.absoluteFill}
                 />
                 <Text style={styles.claimBtnText}>{hasCheckedInToday ? '✅ Claimed' : '⚡ Claim'}</Text>
@@ -284,7 +284,7 @@ export default function DailyRewardsScreen() {
               ]}
             >
               <LinearGradient
-                colors={hasSpunToday ? ['#64748B', '#475569'] : [colors.teal, '#059669']}
+                colors={hasSpunToday ? ['#94A3B8', '#64748B'] : ['#A78BFA', '#7C3AED']}
                 style={StyleSheet.absoluteFill}
               />
               <Text style={styles.spinBtnText}>
@@ -313,7 +313,7 @@ export default function DailyRewardsScreen() {
                 ]}
               >
                 <LinearGradient
-                  colors={['#312E81', '#1E1B4B', '#0F172A']}
+                  colors={['#5B21B6', '#312E81']}
                   style={StyleSheet.absoluteFill}
                 />
                 <Text style={{ fontSize: 50 }}>🔮</Text>
@@ -330,7 +330,7 @@ export default function DailyRewardsScreen() {
                 ]}
               >
                 <LinearGradient
-                  colors={['#1E293B', '#0F172A']}
+                  colors={['#3B0764', '#1E1B4B']}
                   style={StyleSheet.absoluteFill}
                 />
                 <Text style={{ fontSize: 44, marginBottom: 4 }}>{dailyTarotCard?.imageEmoji}</Text>
@@ -407,7 +407,7 @@ export default function DailyRewardsScreen() {
               </View>
               <Text style={styles.prizeNote}>Prize added to your account instantly.</Text>
               <Pressable onPress={() => setSpinPrizeModal(null)} style={styles.prizeCloseBtn}>
-                <LinearGradient colors={[colors.saffron, colors.gold]} style={StyleSheet.absoluteFill} />
+                <LinearGradient colors={['#F472B6', '#DB2777']} style={StyleSheet.absoluteFill} />
                 <Text style={styles.prizeCloseText}>Namaste 🙏</Text>
               </Pressable>
             </View>
@@ -447,7 +447,7 @@ export default function DailyRewardsScreen() {
                   }}
                   style={styles.saveModalBtn}
                 >
-                  <LinearGradient colors={[colors.teal, '#059669']} style={StyleSheet.absoluteFill} />
+                  <LinearGradient colors={['#A78BFA', '#7C3AED']} style={StyleSheet.absoluteFill} />
                   <Text style={{ color: '#fff', fontWeight: '900' }}>Save Remedy</Text>
                 </Pressable>
               </View>
@@ -466,16 +466,35 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: 10,
     backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
+    borderBottomWidth: 3,
+    borderBottomColor: '#DDD6FE',
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 5,
+    elevation: 2,
   },
   backBtn: {
-    width: 36, height: 36,
+    width: 36,
+    height: 36,
     borderRadius: 18,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1.2,
+    borderLeftWidth: 1,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 2.5,
+    borderRightWidth: 1,
+    borderBottomColor: '#DDD6FE',
+    borderRightColor: '#DDD6FE',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   backIcon: { fontSize: 22, color: colors.text, fontWeight: '700', marginLeft: -2 },
   title: { ...typography.h3, fontSize: 16, fontWeight: '900', color: '#0F172A' },
@@ -483,16 +502,22 @@ const styles = StyleSheet.create({
   coinsBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(6,182,212,0.12)',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    backgroundColor: '#EDE9FE',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: 'rgba(6,182,212,0.25)',
+    borderWidth: 1.2,
+    borderColor: '#DDD6FE',
+    borderBottomWidth: 2.5,
+    borderBottomColor: '#C4B5FD',
     gap: 4,
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
   },
   coinsIcon: { fontSize: 14 },
-  coinsText: { ...typography.tiny, fontWeight: '900', color: '#0891B2' },
+  coinsText: { ...typography.tiny, fontWeight: '900', color: '#6D28D9' },
 
   scroll: {
     padding: spacing.md,
@@ -501,15 +526,21 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: radius.xl,
+    borderRadius: 24,
     padding: spacing.md,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.95)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderBottomWidth: 3.5,
+    borderRightWidth: 1.5,
+    borderBottomColor: '#DDD6FE',
+    borderRightColor: '#E2E8F0',
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.10,
+    shadowRadius: 12,
+    elevation: 3,
     overflow: 'hidden',
   },
   streakTop: {
@@ -517,20 +548,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   streakCount: { ...typography.h3, fontSize: 16, fontWeight: '900', color: '#FFFFFF' },
-  streakSub: { ...typography.tiny, color: '#CBD5E1', fontSize: 11, marginTop: 2 },
+  streakSub: { ...typography.tiny, color: '#DDD6FE', fontSize: 11, marginTop: 2 },
   claimBtn: {
     borderRadius: radius.pill,
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 9,
     overflow: 'hidden',
     borderTopWidth: 1.2,
     borderTopColor: 'rgba(255, 255, 255, 0.45)',
     borderBottomWidth: 3,
     borderBottomColor: '#BE123C',
-    shadowColor: colors.saffron,
+    shadowColor: '#DB2777',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.35,
-    shadowRadius: 5,
+    shadowRadius: 6,
     elevation: 3,
   },
   claimBtnDisabled: { opacity: 0.6, borderBottomColor: '#475569' },
@@ -542,23 +573,26 @@ const styles = StyleSheet.create({
     marginTop: 14,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.1)',
+    borderTopColor: 'rgba(255,255,255,0.15)',
   },
   trailNode: {
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    borderRadius: radius.md,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderRadius: 14,
     paddingVertical: 6,
     paddingHorizontal: 8,
     minWidth: 38,
+    borderBottomWidth: 2,
+    borderBottomColor: 'rgba(255,255,255,0.2)',
   },
   trailNodePassed: {
-    backgroundColor: 'rgba(99,102,241,0.2)',
+    backgroundColor: 'rgba(124, 58, 237, 0.35)',
     borderWidth: 1,
-    borderColor: '#6366F1',
+    borderColor: '#C4B5FD',
+    borderBottomColor: '#8B5CF6',
   },
-  trailDay: { fontSize: 10, fontWeight: '800', color: '#94A3B8' },
-  trailCoins: { fontSize: 9, color: '#CBD5E1', fontWeight: '700', marginTop: 2 },
+  trailDay: { fontSize: 10, fontWeight: '800', color: '#DDD6FE' },
+  trailCoins: { fontSize: 9, color: '#F4F1FA', fontWeight: '700', marginTop: 2 },
 
   cardHeaderRow: {
     flexDirection: 'row',
@@ -575,11 +609,13 @@ const styles = StyleSheet.create({
     ...typography.tiny,
     fontSize: 10,
     fontWeight: '800',
-    backgroundColor: '#ECFDF5',
-    color: '#059669',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+    backgroundColor: '#EDE9FE',
+    color: '#7C3AED',
+    paddingHorizontal: 10,
+    paddingVertical: 3,
     borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: '#DDD6FE',
   },
   cardDesc: {
     ...typography.tiny,
@@ -603,8 +639,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
-    borderWidth: 3,
-    borderColor: '#818CF8',
+    borderWidth: 3.5,
+    borderColor: '#DDD6FE',
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   wheelSliceText: {
     position: 'absolute',
@@ -624,8 +665,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
+    borderWidth: 2,
+    borderColor: '#DDD6FE',
+    shadowColor: '#7C3AED',
+    shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 3,
   },
@@ -635,17 +678,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   spinBtn: {
-    borderRadius: radius.lg,
-    paddingVertical: 12,
+    borderRadius: radius.pill,
+    paddingVertical: 13,
     alignItems: 'center',
     overflow: 'hidden',
-    marginTop: 6,
+    marginTop: 8,
     borderTopWidth: 1.5,
     borderTopColor: 'rgba(255, 255, 255, 0.45)',
     borderBottomWidth: 3.5,
-    borderBottomColor: '#046A4E',
-    shadowColor: colors.teal,
-    shadowOffset: { width: 0, height: 4 },
+    borderBottomColor: '#5B21B6',
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.35,
     shadowRadius: 8,
     elevation: 4,
@@ -663,14 +706,23 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: width - 56,
     height: 280,
-    borderRadius: radius.xl,
+    borderRadius: 24,
     padding: spacing.md,
     alignItems: 'center',
     justifyContent: 'center',
     backfaceVisibility: 'hidden',
     overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: '#6366F1',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.35)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.2)',
+    borderBottomWidth: 4,
+    borderBottomColor: '#4C1D95',
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 6,
   },
   tarotCardBack: {
     gap: 8,
@@ -678,12 +730,12 @@ const styles = StyleSheet.create({
   tarotBackText: {
     fontSize: 16,
     fontWeight: '900',
-    color: '#C7D2FE',
+    color: '#DDD6FE',
     letterSpacing: 1.5,
   },
   tarotBackSub: {
     fontSize: 11,
-    color: '#94A3B8',
+    color: '#C4B5FD',
     fontWeight: '600',
   },
   tarotCardFront: {
@@ -693,37 +745,41 @@ const styles = StyleSheet.create({
   tarotFrontName: {
     fontSize: 16,
     fontWeight: '900',
-    color: '#E0E7FF',
+    color: '#FFFFFF',
   },
   tarotFrontArcana: {
     fontSize: 10.5,
-    color: '#94A3B8',
+    color: '#DDD6FE',
     fontWeight: '600',
     marginTop: 1,
   },
   tarotPill: {
-    backgroundColor: 'rgba(99,102,241,0.15)',
-    paddingHorizontal: 10,
-    paddingVertical: 3,
+    backgroundColor: 'rgba(124, 58, 237, 0.25)',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
     borderRadius: radius.pill,
     marginVertical: 6,
+    borderWidth: 1,
+    borderColor: '#A78BFA',
   },
-  tarotPillText: { fontSize: 11, fontWeight: '800', color: '#818CF8' },
+  tarotPillText: { fontSize: 11, fontWeight: '800', color: '#DDD6FE' },
   tarotMeaning: {
     fontSize: 11,
-    color: '#E2E8F0',
+    color: '#F4F1FA',
     textAlign: 'center',
     lineHeight: 15,
   },
   tarotAffirmBox: {
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderRadius: radius.md,
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    borderRadius: 14,
     padding: 8,
     marginTop: 6,
     width: '100%',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.15)',
   },
-  tarotAffirmTitle: { fontSize: 9.5, fontWeight: '800', color: '#C7D2FE' },
+  tarotAffirmTitle: { fontSize: 9.5, fontWeight: '800', color: '#DDD6FE' },
   tarotAffirmText: { fontSize: 10.5, color: '#FFFFFF', fontStyle: 'italic', textAlign: 'center', marginTop: 2 },
   tarotMetaRow: {
     flexDirection: 'row',
@@ -732,42 +788,57 @@ const styles = StyleSheet.create({
     marginTop: 6,
     paddingHorizontal: 6,
   },
-  tarotMetaItem: { fontSize: 10, fontWeight: '700', color: '#94A3B8' },
+  tarotMetaItem: { fontSize: 10, fontWeight: '700', color: '#DDD6FE' },
 
   addRemedyBtn: {
-    backgroundColor: '#EFF6FF',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    backgroundColor: '#EDE9FE',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
     borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: '#DDD6FE',
+    borderBottomWidth: 2,
+    borderBottomColor: '#C4B5FD',
   },
-  addRemedyBtnText: { color: colors.teal, fontSize: 11, fontWeight: '800' },
+  addRemedyBtnText: { color: '#6D28D9', fontSize: 11, fontWeight: '800' },
   remedyItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
-    padding: 10,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF',
+    padding: 12,
+    borderRadius: 18,
+    borderTopWidth: 1.2,
+    borderLeftWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.95)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderBottomWidth: 3,
+    borderRightWidth: 1.2,
+    borderBottomColor: '#DDD6FE',
+    borderRightColor: '#E2E8F0',
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
     gap: 10,
   },
   remedyItemCompleted: {
-    backgroundColor: '#F0FDF4',
-    borderColor: '#BBF7D0',
+    backgroundColor: '#F5F3FF',
+    borderBottomColor: '#C4B5FD',
   },
   checkbox: {
-    width: 22,
-    height: 22,
-    borderRadius: 6,
-    borderWidth: 1.5,
-    borderColor: '#CBD5E1',
+    width: 24,
+    height: 24,
+    borderRadius: 8,
+    borderWidth: 1.8,
+    borderColor: '#C4B5FD',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FFFFFF',
   },
   checkboxActive: {
-    backgroundColor: '#10B981',
-    borderColor: '#10B981',
+    backgroundColor: '#7C3AED',
+    borderColor: '#7C3AED',
   },
   checkboxTick: { color: '#FFFFFF', fontWeight: '900', fontSize: 13 },
   remedyTitle: { fontSize: 12.5, fontWeight: '700', color: '#0F172A' },
@@ -785,22 +856,32 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 320,
     backgroundColor: '#FFFFFF',
-    borderRadius: radius.xl,
+    borderRadius: 28,
     padding: spacing.lg,
     alignItems: 'center',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.95)',
+    borderBottomWidth: 4,
+    borderBottomColor: '#DDD6FE',
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 5,
   },
   prizeTitle: { ...typography.h2, fontSize: 20, fontWeight: '900', color: '#0F172A', marginTop: 8 },
   prizeSub: { fontSize: 12, color: colors.textMuted, marginTop: 4 },
   prizeBadge: {
-    backgroundColor: 'rgba(6,182,212,0.12)',
+    backgroundColor: '#EDE9FE',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: radius.pill,
     marginVertical: 14,
     borderWidth: 1,
-    borderColor: 'rgba(6,182,212,0.25)',
+    borderColor: '#DDD6FE',
   },
-  prizeBadgeText: { fontSize: 16, fontWeight: '900', color: '#0891B2' },
+  prizeBadgeText: { fontSize: 16, fontWeight: '900', color: '#6D28D9' },
   prizeNote: { fontSize: 11, color: colors.textMuted, marginBottom: 16 },
   prizeCloseBtn: {
     width: '100%',
@@ -810,8 +891,13 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderTopWidth: 1.2,
     borderTopColor: 'rgba(255, 255, 255, 0.45)',
-    borderBottomWidth: 3,
+    borderBottomWidth: 3.5,
     borderBottomColor: '#BE123C',
+    shadowColor: '#DB2777',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.35,
+    shadowRadius: 5,
+    elevation: 3,
   },
   prizeCloseText: { color: '#FFFFFF', fontWeight: '900', fontSize: 14 },
 
@@ -819,33 +905,47 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 340,
     backgroundColor: '#FFFFFF',
-    borderRadius: radius.xl,
+    borderRadius: 28,
     padding: spacing.lg,
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.95)',
+    borderBottomWidth: 4,
+    borderBottomColor: '#DDD6FE',
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 5,
   },
   addModalTitle: { ...typography.h3, fontSize: 16, fontWeight: '900', color: '#0F172A', marginBottom: 12 },
   addInput: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#F8F6FC',
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    borderRadius: radius.md,
+    borderBottomWidth: 2.5,
+    borderBottomColor: '#DDD6FE',
+    borderRadius: 14,
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 10,
     fontSize: 13,
     color: '#0F172A',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   cancelModalBtn: {
     flex: 1,
     paddingVertical: 10,
     alignItems: 'center',
     backgroundColor: '#F1F5F9',
-    borderRadius: radius.md,
+    borderRadius: 14,
   },
   saveModalBtn: {
     flex: 1,
     paddingVertical: 10,
     alignItems: 'center',
-    borderRadius: radius.md,
+    borderRadius: 14,
     overflow: 'hidden',
+    borderBottomWidth: 2.5,
+    borderBottomColor: '#5B21B6',
   },
 });

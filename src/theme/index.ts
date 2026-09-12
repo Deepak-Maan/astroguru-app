@@ -24,53 +24,56 @@ export const isSmallDevice = SCREEN_WIDTH < 375;
 export const isTablet = SCREEN_WIDTH >= 768;
 
 export const colors = {
-  // Backgrounds (Clean, luminous crystal air)
-  bg: '#F8FAFC',
+  // Backgrounds (Silky Soft Clay Canvas)
+  bg: '#F4F1FA',
   bgElevated: '#FFFFFF',
   card: '#FFFFFF',
   cardSolid: '#FFFFFF',
-  cardBorder: '#E2E8F0',
-  cardGlowBorder: '#6366F1',
+  cardBorder: 'rgba(124, 58, 237, 0.08)',
+  cardGlowBorder: '#7C3AED',
+  surfaceSoft: '#EDE9FE',
+  surfacePink: '#FCE7F3',
 
   // Shadows
   shadowLight: '#FFFFFF',
-  shadowDark: '#CBD5E1',
+  shadowDark: '#D1D5DB',
+  shadowClay: '#7C3AED',
 
-  // Modern Cosmic Brand Accents
-  primary: '#6366F1',       // Electric Indigo
-  primaryDark: '#4F46E5',   // Royal Iris
-  coral: '#FF3366',         // Neon Coral Punch
-  cyan: '#06B6D4',          // Cyber Cyan
-  violet: '#8B5CF6',        // Vivid Amethyst
-  indigo: '#4F46E5',
+  // Claymorphism 3D Brand Accents (Strictly Non-Gold)
+  primary: '#7C3AED',       // Vivid Violet
+  primaryDark: '#6D28D9',   // Deep Violet
+  coral: '#DB2777',         // Punch Rose
+  cyan: '#06B6D4',          // Sky Cyan
+  violet: '#A78BFA',        // Soft Lilac Clay
+  indigo: '#6366F1',
 
   // Background Gradient Nodes
-  gradientTop: '#FFFFFF',
-  gradientMid: '#F8FAFC',
-  gradientBottom: '#F1F5F9',
-  auroraA: '#6366F1',
-  auroraB: '#FF3366',
+  gradientTop: '#F8F6FC',
+  gradientMid: '#F4F1FA',
+  gradientBottom: '#ECE7F6',
+  auroraA: '#7C3AED',
+  auroraB: '#DB2777',
 
-  // High Contrast Interactive Colors (Legacy-mapped to Modern Non-Gold Palette)
-  gold: '#06B6D4',          // Replaced with Cyber Cyan (zero yellow!)
-  goldSoft: '#4F46E5',      // Replaced with Royal Iris
-  saffron: '#FF3366',       // Replaced with Neon Coral Punch
-  rose: '#F43F5E',          // Vivid Rose
-  teal: '#6366F1',          // Replaced with Electric Indigo
+  // High Contrast Interactive Colors (Legacy-mapped to Clay Palette)
+  gold: '#06B6D4',          // Replaced with Sky Cyan (zero yellow!)
+  goldSoft: '#7C3AED',      // Replaced with Vivid Violet
+  saffron: '#DB2777',       // Replaced with Punch Rose
+  rose: '#DB2777',          // Punch Rose
+  teal: '#7C3AED',          // Replaced with Vivid Violet
 
-  // Text (Obsidian Slate for Razor-Sharp AAA Contrast)
-  text: '#0F172A',
-  textMuted: '#475569',
-  textFaint: '#94A3B8',
+  // Text (Obsidian Clay for Razor-Sharp AAA Contrast)
+  text: '#2E2836',
+  textMuted: '#6B6675',
+  textFaint: '#9E9AA7',
 
   // Status Cues
   online: '#10B981',        // Vivid Mint
-  offline: '#94A3B8',
+  offline: '#9E9AA7',
   danger: '#F43F5E',
   success: '#10B981',
 
   // Overlays & Utilities
-  overlay: 'rgba(15, 23, 42, 0.45)',
+  overlay: 'rgba(46, 40, 54, 0.45)',
   white: '#FFFFFF',
   black: '#000000',
 } as const;
@@ -78,12 +81,12 @@ export const colors = {
 export const gradients = {
   screen: [colors.gradientTop, colors.gradientMid, colors.gradientBottom] as const,
   aurora: [colors.auroraA, colors.auroraB] as const,
-  gold: [colors.primary, colors.violet] as const, // Modern Indigo to Violet
-  coral: ['#FF3366', '#F43F5E'] as const,
+  gold: [colors.primary, colors.violet] as const,
+  coral: ['#F472B6', '#DB2777'] as const,
   cyan: ['#06B6D4', '#0EA5E9'] as const,
-  soft: ['#FFFFFF', '#F8FAFC'] as const,
-  card: ['#FFFFFF', '#F8FAFC'] as const,
-  cta: ['#6366F1', '#4F46E5'] as const,
+  soft: ['#FFFFFF', '#F8F6FC'] as const,
+  card: ['#FFFFFF', '#FAF8FD'] as const,
+  cta: ['#A78BFA', '#7C3AED'] as const,
 };
 
 export const spacing = {
@@ -97,8 +100,8 @@ export const spacing = {
 } as const;
 
 export const radius = {
-  sm: 10,
-  md: 16,
+  sm: 12,
+  md: 18,
   lg: 24,
   xl: 32,
   pill: 999,
@@ -117,57 +120,64 @@ export const typography = {
 
 export const shadow = {
   card: {
-    shadowColor: '#64748B',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.08,
+    shadowRadius: 14,
     elevation: 4,
   },
   glow: {
-    shadowColor: '#6366F1',
+    shadowColor: '#7C3AED',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
+    shadowOpacity: 0.3,
+    shadowRadius: 14,
     elevation: 6,
   },
   button3D: {
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.22,
-    shadowRadius: 6,
-    elevation: 5,
+    shadowColor: '#5B21B6',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.28,
+    shadowRadius: 8,
+    elevation: 6,
   },
   card3D: {
-    shadowColor: '#64748B',
+    shadowColor: '#7C3AED',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.12,
-    shadowRadius: 16,
+    shadowOpacity: 0.1,
+    shadowRadius: 18,
     elevation: 6,
   },
   floatingDock: {
-    shadowColor: '#0F172A',
+    shadowColor: '#7C3AED',
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.12,
-    shadowRadius: 16,
+    shadowRadius: 20,
     elevation: 10,
+  },
+  clayCard: {
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 4, height: 8 },
+    shadowOpacity: 0.1,
+    shadowRadius: 16,
+    elevation: 5,
   },
 };
 
 export const tactile3D = {
   depth: {
-    sm: 2.5,
-    md: 4,
-    lg: 5.5,
+    sm: 3,
+    md: 4.5,
+    lg: 6,
   },
   bevel: {
-    primary: '#4338CA', // Deep Indigo bevel
-    gold: '#BE123C',    // Deep Coral/Ruby bevel (legacy gold alias)
-    outline: '#CBD5E1', // Clean Slate Silver bevel
-    danger: '#BE123C',  // Deep Ruby bevel
+    primary: '#5B21B6', // Deep Violet clay bevel
+    gold: '#BE185D',    // Deep Rose clay bevel (legacy alias)
+    outline: '#DDD6FE', // Soft Lilac Clay outline bevel
+    danger: '#BE185D',  // Deep Rose clay bevel
     cyan: '#0E7490',    // Deep Ocean Cyan bevel
-    violet: '#6D28D9',  // Deep Violet bevel
+    violet: '#5B21B6',  // Deep Violet bevel
   },
-  specular: 'rgba(255, 255, 255, 0.55)',
+  specular: 'rgba(255, 255, 255, 0.65)',
 };
 
 export const theme = { colors, gradients, spacing, radius, typography, shadow, tactile3D };

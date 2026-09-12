@@ -183,7 +183,7 @@ export default function Wallet() {
           {/* Modern Electric Indigo Balance Header Card */}
           <View style={styles.balanceCard}>
             <LinearGradient
-              colors={['#4F46E5', '#6366F1', '#8B5CF6']}
+              colors={['#7C3AED', '#8B5CF6', '#A78BFA']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={StyleSheet.absoluteFill}
@@ -228,7 +228,7 @@ export default function Wallet() {
                   >
                     {active ? (
                       <LinearGradient
-                        colors={['#FF3366', '#F43F5E']}
+                        colors={['#F472B6', '#DB2777']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 0 }}
                         style={StyleSheet.absoluteFill}
@@ -391,7 +391,7 @@ export default function Wallet() {
                           pressed && { transform: [{ translateY: 1.5 }], opacity: 0.85 },
                         ]}
                       >
-                        <LinearGradient colors={[colors.saffron, colors.gold]} style={styles.couponApplyGrad}>
+                        <LinearGradient colors={['#F472B6', '#DB2777']} style={styles.couponApplyGrad}>
                           <Text style={styles.couponApplyText}>Apply</Text>
                         </LinearGradient>
                       </Pressable>
@@ -409,7 +409,7 @@ export default function Wallet() {
                     ? `Open ${UPI_APPS.find((a) => a.id === upiApp)?.label} (${formatCurrency(pack!.amount)})`
                     : `Pay ${formatCurrency(pack!.amount)}`
                 }
-                variant="gold"
+                variant="coral"
                 size="md"
                 loading={processing}
                 onPress={handlePay}
@@ -439,7 +439,7 @@ export default function Wallet() {
                   ]}
                 >
                   {filterTxn === f && (
-                    <LinearGradient colors={[colors.saffron, colors.gold]} style={StyleSheet.absoluteFill} />
+                    <LinearGradient colors={['#A78BFA', '#7C3AED']} style={StyleSheet.absoluteFill} />
                   )}
                   <Text style={[styles.filterTabText, filterTxn === f && styles.filterTabTextActive]}>
                     {f === 'all' ? 'All' : f === 'topup' ? '↓ Recharges' : '↑ Debits'}
@@ -592,34 +592,34 @@ const styles = StyleSheet.create({
     flexBasis: '30%',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    borderRadius: radius.lg,
+    paddingVertical: 14,
+    borderRadius: radius.xl,
     backgroundColor: '#FFFFFF',
-    borderTopWidth: 1.5,
-    borderLeftWidth: 1.2,
+    borderTopWidth: 2,
+    borderLeftWidth: 1.5,
     borderTopColor: 'rgba(255, 255, 255, 0.95)',
-    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.9)',
     borderRightWidth: 1.2,
-    borderRightColor: '#E2E8F0',
+    borderRightColor: '#EDE9FE',
     borderBottomWidth: 3.5,
-    borderBottomColor: '#CBD5E1',
+    borderBottomColor: '#DDD6FE',
     overflow: 'hidden',
     gap: 3,
-    shadowColor: '#64748B',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
     elevation: 3,
   },
   packActive: {
     borderTopColor: 'rgba(255, 255, 255, 0.5)',
     borderLeftColor: 'rgba(255, 255, 255, 0.4)',
     borderBottomWidth: 4,
-    borderBottomColor: '#BE123C',
-    shadowColor: '#FF3366',
+    borderBottomColor: '#9D174D',
+    shadowColor: colors.coral,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.35,
-    shadowRadius: 8,
+    shadowRadius: 10,
     elevation: 5,
   },
   packPressed: {
@@ -649,11 +649,11 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#EFF6FF',
+    backgroundColor: '#EDE9FE',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(191,219,254,0.80)',
+    borderColor: 'rgba(124,58,237,0.2)',
   },
   methodIcon: { fontSize: 18 },
   methodLabel: { ...typography.body, color: colors.text, fontWeight: '800', fontSize: 14 },
@@ -667,8 +667,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  radioOn: { borderColor: colors.saffron },
-  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.saffron },
+  radioOn: { borderColor: colors.coral },
+  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.coral },
 
   upiAppGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
   upiAppCell: {
@@ -678,29 +678,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
     padding: spacing.md,
-    borderRadius: radius.lg,
-    borderTopWidth: 1.5,
-    borderLeftWidth: 1.2,
+    borderRadius: radius.xl,
+    borderTopWidth: 2,
+    borderLeftWidth: 1.5,
     borderTopColor: 'rgba(255, 255, 255, 0.95)',
-    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.9)',
     borderRightWidth: 1.2,
-    borderRightColor: '#E2E8F0',
-    borderBottomWidth: 3,
-    borderBottomColor: '#CBD5E1',
+    borderRightColor: '#EDE9FE',
+    borderBottomWidth: 3.5,
+    borderBottomColor: '#DDD6FE',
     backgroundColor: '#FFFFFF',
     overflow: 'hidden',
-    shadowColor: '#64748B',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    elevation: 2,
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
   upiAppCellActive: {
     borderTopColor: 'rgba(255, 255, 255, 0.5)',
     borderLeftColor: 'rgba(255, 255, 255, 0.4)',
     borderBottomWidth: 3.5,
-    borderBottomColor: '#BE123C',
-    backgroundColor: 'rgba(255,51,102,0.08)',
+    borderBottomColor: '#9D174D',
+    backgroundColor: 'rgba(219,39,119,0.08)',
   },
   upiAppCellPressed: {
     transform: [{ translateY: 2 }],

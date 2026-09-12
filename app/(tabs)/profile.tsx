@@ -239,7 +239,7 @@ export default function Profile() {
                   <Row icon="💬" label="Client Reviews & Testimonials" onPress={() => router.push('/acharya/reviews')} />
                   <Row icon="📣" label="Broadcast Announcement to Clients" onPress={() => router.push('/acharya/broadcast')} />
                   <Row icon="📅" label="Set Availability Schedule" onPress={() => router.push('/acharya/availability')} />
-                  <Row icon="🎓" label="Acharya Training & Resources" onPress={() => router.push('/acharya/training')} accent={colors.gold} />
+                  <Row icon="🎓" label="Acharya Training & Resources" onPress={() => router.push('/acharya/training')} accent={colors.primary} />
                 </Card>
               </View>
 
@@ -332,7 +332,7 @@ export default function Profile() {
               <View>
                 <SectionHeader title="🌟 Super App Cosmic Features" />
                 <Card padded={false}>
-                  <Row icon="🌌" label="Live Satsang & Virtual Prashad" onPress={() => router.push('/satsang')} accent={colors.gold} />
+                  <Row icon="🌌" label="Live Satsang & Virtual Prashad" onPress={() => router.push('/satsang')} accent={colors.primary} />
                   <Row icon="💎" label="AI Gemstone Finder & Lab Scanner" onPress={() => router.push('/gemstone-finder')} />
                   <Row icon="📜" label="432Hz Ambient Vedic Mantra Player" onPress={() => router.push('/mantra-player')} />
                   <Row icon="🛰️" label="Astro-Cartography Relocation Map" onPress={() => router.push('/astro-map')} />
@@ -352,7 +352,7 @@ export default function Profile() {
                 <SectionHeader title="⚙️ Account & Settings" />
                 <Card padded={false}>
                   <Row icon="🚀" label={`Upgrade / Update App (v${currentVersion})`} onPress={() => triggerUpdateModal()} accent={colors.teal} />
-                  <Row icon="👑" label={isVip ? `AstroVIP — ${vipPlanId} (Active)` : 'Get AstroVIP Pass'} onPress={() => router.push('/vip')} accent={colors.gold} />
+                  <Row icon="👑" label={isVip ? `AstroVIP — ${vipPlanId} (Active)` : 'Get AstroVIP Pass'} onPress={() => router.push('/vip')} accent={colors.coral} />
                   <Row icon="📄" label="10-Page Kundli PDF Export" onPress={() => router.push('/kundli-pdf')} />
                   <Row icon="🔄" label={`Check for In-App Updates · v${latestVersion}`} onPress={triggerUpdateModal} accent={colors.teal} />
                   <Row icon="⚙️" label="Settings & Security Vault" onPress={() => router.push('/settings')} />
@@ -389,60 +389,60 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: radius.xl,
     backgroundColor: '#FFFFFF',
-    borderTopWidth: 1.5,
-    borderLeftWidth: 1.2,
+    borderTopWidth: 2,
+    borderLeftWidth: 1.5,
     borderTopColor: 'rgba(255, 255, 255, 0.95)',
-    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.9)',
     borderRightWidth: 1.2,
-    borderRightColor: '#E2E8F0',
+    borderRightColor: '#EDE9FE',
     borderBottomWidth: 3.5,
-    borderBottomColor: '#CBD5E1',
+    borderBottomColor: '#DDD6FE',
     padding: spacing.xl,
     gap: spacing.xs,
     overflow: 'hidden',
-    shadowColor: '#64748B',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 14,
     elevation: 4,
   },
   name: { ...typography.h1, color: colors.text, marginTop: spacing.sm, textAlign: 'center', fontWeight: '800' },
-  emailText: { ...typography.small, color: colors.gold, marginTop: 1, fontWeight: '700' },
+  emailText: { ...typography.small, color: colors.primary, marginTop: 1, fontWeight: '700' },
   adminRoleTag: {
-    backgroundColor: 'rgba(5,150,105,0.12)',
+    backgroundColor: '#EDE9FE',
     borderWidth: 1,
-    borderColor: colors.teal,
+    borderColor: colors.primary,
     borderRadius: radius.pill,
     paddingHorizontal: 10,
     paddingVertical: 3,
     marginTop: 4,
   },
-  adminRoleText: { ...typography.tiny, color: colors.teal, fontWeight: '800', fontSize: 10 },
+  adminRoleText: { ...typography.tiny, color: colors.primary, fontWeight: '800', fontSize: 10 },
   birth: { ...typography.small, color: colors.textMuted, textAlign: 'center', lineHeight: 18, marginTop: 4, fontWeight: '600' },
   badgeRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.lg, alignSelf: 'stretch' },
   badge: {
     flex: 1,
     alignItems: 'center',
     paddingVertical: spacing.md,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     backgroundColor: '#FFFFFF',
-    borderTopWidth: 1.5,
-    borderLeftWidth: 1.2,
+    borderTopWidth: 2,
+    borderLeftWidth: 1.5,
     borderTopColor: 'rgba(255, 255, 255, 0.95)',
-    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.9)',
     borderRightWidth: 1.2,
-    borderRightColor: '#E2E8F0',
-    borderBottomWidth: 2.5,
-    borderBottomColor: '#CBD5E1',
+    borderRightColor: '#EDE9FE',
+    borderBottomWidth: 3,
+    borderBottomColor: '#DDD6FE',
     gap: 3,
-    shadowColor: '#64748B',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
     elevation: 2,
   },
   badgeLabel: { ...typography.tiny, color: colors.textMuted, fontWeight: '600' },
-  badgeValue: { ...typography.small, color: colors.gold, fontWeight: '800', fontSize: 12 },
+  badgeValue: { ...typography.small, color: colors.primary, fontWeight: '800', fontSize: 12 },
 
   adminBanner: {
     flexDirection: 'row',
@@ -451,11 +451,11 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     borderRadius: radius.xl,
     overflow: 'hidden',
-    borderTopWidth: 1.5,
+    borderTopWidth: 2,
     borderTopColor: 'rgba(255, 255, 255, 0.45)',
     borderBottomWidth: 3.5,
     borderBottomColor: 'rgba(0, 0, 0, 0.25)',
-    shadowColor: '#0F172A',
+    shadowColor: '#7C3AED',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
@@ -472,24 +472,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
     borderRadius: radius.xl,
-    borderTopWidth: 1.5,
-    borderLeftWidth: 1.2,
+    borderTopWidth: 2,
+    borderLeftWidth: 1.5,
     borderTopColor: 'rgba(255, 255, 255, 0.95)',
-    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.9)',
     borderRightWidth: 1.2,
-    borderRightColor: '#E2E8F0',
-    borderBottomWidth: 3.5,
-    borderBottomColor: '#4338CA',
+    borderRightColor: '#EDE9FE',
+    borderBottomWidth: 4,
+    borderBottomColor: '#5B21B6',
     padding: spacing.xl,
     overflow: 'hidden',
-    shadowColor: '#6366F1',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 4,
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.16,
+    shadowRadius: 14,
+    elevation: 5,
   },
   walletLabel: { ...typography.small, color: colors.textMuted, fontWeight: '700' },
-  walletValue: { ...typography.display, fontSize: 30, color: '#6366F1', marginTop: 2, fontWeight: '800' },
+  walletValue: { ...typography.display, fontSize: 30, color: colors.primary, marginTop: 2, fontWeight: '800' },
   walletSub: { ...typography.tiny, color: colors.textFaint, marginTop: 3, fontWeight: '600' },
   walletIcon: { fontSize: 44, opacity: 0.85 },
 
@@ -503,14 +503,14 @@ const styles = StyleSheet.create({
     borderTopColor: 'rgba(203, 213, 225, 0.6)',
   },
   rowIconWrap: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
-    backgroundColor: '#EFF6FF',
+    width: 34,
+    height: 34,
+    borderRadius: 12,
+    backgroundColor: '#EDE9FE',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(191, 219, 254, 0.8)',
+    borderColor: 'rgba(124, 58, 237, 0.2)',
   },
   rowIcon: { fontSize: 16 },
   rowLabel: { ...typography.body, color: colors.text, flex: 1, fontWeight: '700' },

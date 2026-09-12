@@ -76,7 +76,7 @@ export default function MatchingScreen() {
 
               {/* Girl Column */}
               <View style={styles.inputCol}>
-                <Text style={[styles.colHeader, { color: colors.auroraA }]}>👧 GIRL'S CHART</Text>
+                <Text style={[styles.colHeader, { color: colors.coral }]}>👧 GIRL'S CHART</Text>
                 <Text style={styles.inputLabel}>Moon Rashi:</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }}>
                   <View style={styles.rashiPicker}>
@@ -98,7 +98,7 @@ export default function MatchingScreen() {
 
             <Button
               label="🔮 Calculate 36 Gun Milan Score"
-              variant="gold"
+              variant="coral"
               size="lg"
               onPress={handleMatch}
               style={{ marginTop: spacing.md }}
@@ -112,8 +112,8 @@ export default function MatchingScreen() {
               <LinearGradient
                 colors={
                   result.recommendation === 'Excellent' || result.recommendation === 'Good'
-                    ? ['#FFFFFF', '#F8FAFC']
-                    : ['#FFFFFF', '#FFF5F5']
+                    ? ['#EDE9FE', '#F5F3FF']
+                    : ['#FDF2F8', '#FCE7F3']
                 }
                 style={styles.scoreBanner}
               >
@@ -130,11 +130,11 @@ export default function MatchingScreen() {
                   <View style={styles.manglikRow}>
                     <Chip
                       label={result.manglikBoy ? 'Boy: Manglik ⚠️' : 'Boy: Non-Manglik ✅'}
-                      tone={result.manglikBoy ? 'rose' : 'teal'}
+                      tone={result.manglikBoy ? 'rose' : 'default'}
                     />
                     <Chip
                       label={result.manglikGirl ? 'Girl: Manglik ⚠️' : 'Girl: Non-Manglik ✅'}
-                      tone={result.manglikGirl ? 'rose' : 'teal'}
+                      tone={result.manglikGirl ? 'rose' : 'default'}
                     />
                   </View>
                 </View>
@@ -155,7 +155,7 @@ export default function MatchingScreen() {
                 <Card key={k.name} style={styles.kootaCard}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Text style={styles.kootaName}>{k.name}</Text>
-                    <Chip label={`${k.data.score} / ${k.data.max}`} tone="gold" />
+                    <Chip label={`${k.data.score} / ${k.data.max}`} tone="default" />
                   </View>
                   <Text style={styles.kootaDesc}>{k.data.desc}</Text>
                 </Card>
@@ -173,20 +173,39 @@ const styles = StyleSheet.create({
 
   inputsRow: { gap: spacing.md },
   inputCol: { gap: spacing.xs },
-  colHeader: { ...typography.tiny, color: colors.saffron, fontWeight: '800', letterSpacing: 1 },
+  colHeader: { ...typography.tiny, color: colors.primary, fontWeight: '900', letterSpacing: 1 },
   inputLabel: { ...typography.tiny, color: colors.textMuted, marginTop: 2 },
 
   rashiPicker: { flexDirection: 'row', gap: spacing.xs, paddingVertical: 4 },
   rashiChip: {
     paddingHorizontal: spacing.md,
-    paddingVertical: 6,
+    paddingVertical: 7,
     borderRadius: radius.pill,
-    backgroundColor: '#F8FAFC',
-    borderWidth: 1,
-    borderColor: '#E3E8F3',
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1.2,
+    borderLeftWidth: 1,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 2.5,
+    borderRightWidth: 1,
+    borderBottomColor: '#DDD6FE',
+    borderRightColor: '#E2E8F0',
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    elevation: 2,
   },
-  chipActive: { backgroundColor: colors.saffron, borderColor: colors.saffron },
-  chipActiveGirl: { backgroundColor: colors.auroraA, borderColor: colors.auroraA },
+  chipActive: {
+    backgroundColor: '#7C3AED',
+    borderColor: '#7C3AED',
+    borderBottomColor: '#5B21B6',
+  },
+  chipActiveGirl: {
+    backgroundColor: '#DB2777',
+    borderColor: '#DB2777',
+    borderBottomColor: '#BE123C',
+  },
   rashiChipText: { ...typography.tiny, color: colors.text, fontWeight: '700' },
   chipTextActive: { color: colors.white },
 
@@ -195,33 +214,49 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.lg,
     padding: spacing.xl,
-    borderRadius: radius.xl,
-    borderWidth: 1,
-    borderColor: '#E3E8F3',
-    shadowColor: 'rgba(160,175,205,0.30)',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.8,
-    shadowRadius: 10,
+    borderRadius: 24,
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.95)',
+    borderBottomWidth: 4,
+    borderRightWidth: 1.5,
+    borderBottomColor: '#DDD6FE',
+    borderRightColor: '#E2E8F0',
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
     elevation: 4,
   },
   scoreCircle: {
     width: 76,
     height: 76,
     borderRadius: 38,
-    backgroundColor: 'rgba(230,126,34,0.12)',
-    borderWidth: 2,
-    borderColor: colors.saffron,
+    backgroundColor: '#EDE9FE',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.2,
+    borderTopColor: '#FFFFFF',
+    borderBottomWidth: 3,
+    borderRightWidth: 1.5,
+    borderBottomColor: '#C4B5FD',
+    borderRightColor: '#DDD6FE',
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
+    elevation: 3,
   },
-  scoreNum: { ...typography.h1, color: colors.saffron, fontSize: 26, lineHeight: 28 },
+  scoreNum: { ...typography.h1, color: '#7C3AED', fontSize: 26, lineHeight: 28, fontWeight: '900' },
   scoreMax: { ...typography.tiny, color: colors.textMuted, marginTop: -2 },
 
-  recomBadge: { ...typography.tiny, color: colors.auroraA, fontWeight: '800', letterSpacing: 1 },
+  recomBadge: { ...typography.tiny, color: '#DB2777', fontWeight: '900', letterSpacing: 1 },
   recomTitle: { ...typography.body, color: colors.text, fontWeight: '700', marginTop: 2 },
   manglikRow: { flexDirection: 'row', gap: spacing.xs, marginTop: spacing.sm },
 
-  kootaCard: { gap: 4 },
+  kootaCard: { gap: 4, paddingVertical: 12 },
   kootaName: { ...typography.h3, color: colors.text, fontSize: 15, fontWeight: '800' },
   kootaDesc: { ...typography.small, color: colors.textMuted, fontSize: 12 },
 });

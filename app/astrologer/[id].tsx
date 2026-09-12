@@ -39,7 +39,7 @@ export default function AstrologerProfile() {
     return (
       <GradientBackground>
         <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color={colors.gold} />
+          <ActivityIndicator size="large" color={colors.primary} />
         </SafeAreaView>
       </GradientBackground>
     );
@@ -79,10 +79,10 @@ export default function AstrologerProfile() {
         <ScreenHeader title="Astrologer Profile" showBack showWallet />
 
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-          {/* Compact Hero Identity Card — Nordic Frost Light & Emerald Teal */}
+          {/* Compact Hero Identity Card — Claymorphism 3D */}
           <View style={styles.head}>
             <LinearGradient
-              colors={['#FFFFFF', '#F0FDF4']}
+              colors={['#FFFFFF', '#F5F3FF']}
               start={{ x: 0, y: 0 }}
               end={{ x: 0, y: 1 }}
               style={StyleSheet.absoluteFill}
@@ -91,7 +91,7 @@ export default function AstrologerProfile() {
             <View
               style={[
                 styles.avatarRing,
-                { borderColor: astrologer.online ? colors.teal : colors.textFaint },
+                { borderColor: astrologer.online ? colors.primary : colors.textFaint },
               ]}
             >
               <Avatar
@@ -157,13 +157,13 @@ export default function AstrologerProfile() {
             <Text style={styles.sectionTitle}>Expertise</Text>
             <View style={styles.chips}>
               {astrologer.specialties.map((s) => (
-                <Chip key={s} label={s} tone="gold" />
+                <Chip key={s} label={s} tone="rose" />
               ))}
             </View>
             <Text style={styles.subLabel}>Languages</Text>
             <View style={styles.chips}>
               {astrologer.languages.map((l) => (
-                <Chip key={l} label={l} tone="teal" />
+                <Chip key={l} label={l} tone="default" />
               ))}
             </View>
           </Card>
@@ -173,7 +173,7 @@ export default function AstrologerProfile() {
             <Text style={styles.sectionTitle}>Consultation Rate</Text>
             <View style={styles.priceRow}>
               <LinearGradient
-                colors={['rgba(245,158,11,0.10)', 'rgba(217,119,6,0.03)']}
+                colors={['rgba(124,58,237,0.08)', 'rgba(124,58,237,0.02)']}
                 style={styles.priceBox}
               >
                 <Text style={styles.price}>
@@ -207,7 +207,7 @@ export default function AstrologerProfile() {
           />
           <Pressable
             onPress={() => router.push(`/consultation/${astrologer.id}?type=audio`)}
-            style={({ pressed }) => [styles.mediaCallBtn, pressed && { opacity: 0.8 }]}
+            style={({ pressed }) => [styles.mediaCallBtn, pressed && { transform: [{ translateY: 1.5 }], opacity: 0.85 }]}
           >
             <Text style={{ fontSize: 15 }}>📞</Text>
             <Text style={styles.mediaCallText}>Audio</Text>
@@ -217,17 +217,17 @@ export default function AstrologerProfile() {
             onPress={() => router.push(`/consultation/${astrologer.id}?type=video`)}
             style={({ pressed }) => [
               styles.mediaCallBtn,
-              { borderColor: colors.teal, backgroundColor: 'rgba(5,150,105,0.12)' },
-              pressed && { opacity: 0.8 },
+              { borderColor: '#DDD6FE', backgroundColor: '#EDE9FE' },
+              pressed && { transform: [{ translateY: 1.5 }], opacity: 0.85 },
             ]}
           >
             <Text style={{ fontSize: 15 }}>📹</Text>
-            <Text style={[styles.mediaCallText, { color: colors.teal }]}>Video</Text>
+            <Text style={[styles.mediaCallText, { color: colors.primary }]}>Video</Text>
           </Pressable>
 
           <Button
             label={canAfford ? '💬 Chat' : 'Add Money'}
-            variant={canAfford ? 'gold' : 'primary'}
+            variant={canAfford ? 'coral' : 'primary'}
             size="md"
             fullWidth={false}
             style={{ flex: 1 }}
@@ -240,37 +240,44 @@ export default function AstrologerProfile() {
 }
 
 const styles = StyleSheet.create({
-  scroll: { paddingHorizontal: spacing.md, paddingBottom: spacing.xl, gap: 8 },
+  scroll: { paddingHorizontal: spacing.md, paddingBottom: spacing.xl, gap: 10 },
 
   head: {
     alignItems: 'center',
-    borderRadius: radius.lg,
-    borderWidth: 1.5,
-    borderColor: 'rgba(191,219,254,0.80)',
+    borderRadius: 24,
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.95)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
+    borderBottomWidth: 3.5,
+    borderRightWidth: 1.5,
+    borderBottomColor: '#DDD6FE',
+    borderRightColor: '#E2E8F0',
     backgroundColor: '#FFFFFF',
     paddingHorizontal: spacing.md,
-    paddingVertical: 10,
+    paddingVertical: 14,
     gap: 1,
     overflow: 'hidden',
-    shadowColor: 'rgba(15,23,42,0.08)',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 2,
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.10,
+    shadowRadius: 12,
+    elevation: 3,
   },
   avatarRing: {
     width: 68,
     height: 68,
     borderRadius: 34,
-    borderWidth: 2,
+    borderWidth: 2.5,
+    borderColor: '#DDD6FE',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 2,
     backgroundColor: '#FFFFFF',
-    shadowColor: colors.teal,
+    shadowColor: '#7C3AED',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
     elevation: 2,
   },
   name: {
@@ -278,97 +285,129 @@ const styles = StyleSheet.create({
     color: '#0F172A',
     textAlign: 'center',
     fontWeight: '900',
-    fontSize: 17,
-    marginTop: 1,
+    fontSize: 18,
+    marginTop: 2,
   },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 1 },
   statusDot: { width: 7, height: 7, borderRadius: 3.5 },
   statusText: { ...typography.tiny, fontWeight: '800', fontSize: 11.5 },
 
-  statRow: { flexDirection: 'row', gap: 6, marginTop: 8, alignSelf: 'stretch' },
+  statRow: { flexDirection: 'row', gap: 8, marginTop: 10, alignSelf: 'stretch' },
   stat: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 5,
+    paddingVertical: 8,
     paddingHorizontal: 2,
-    borderRadius: radius.md,
-    backgroundColor: '#F8FAFC',
-    borderWidth: 1,
-    borderColor: 'rgba(191,219,254,0.80)',
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1.2,
+    borderLeftWidth: 1,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 2.5,
+    borderRightWidth: 1,
+    borderBottomColor: '#DDD6FE',
+    borderRightColor: '#E2E8F0',
     gap: 1,
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    elevation: 2,
   },
   statIcon: { fontSize: 13 },
-  statValue: { ...typography.h3, fontSize: 13, color: colors.goldSoft, fontWeight: '900' },
-  statLabel: { ...typography.tiny, fontSize: 9, color: colors.textMuted, fontWeight: '700' },
+  statValue: { ...typography.h3, fontSize: 13.5, color: '#7C3AED', fontWeight: '900' },
+  statLabel: { ...typography.tiny, fontSize: 9.5, color: colors.textMuted, fontWeight: '700' },
 
-  compactCard: { paddingHorizontal: 12, paddingVertical: 10 },
-  sectionTitle: { ...typography.h3, fontSize: 14.5, color: '#0F172A', fontWeight: '900', marginBottom: 5 },
+  compactCard: { paddingHorizontal: 16, paddingVertical: 14 },
+  sectionTitle: { ...typography.h3, fontSize: 15, color: '#0F172A', fontWeight: '900', marginBottom: 6 },
 
   about: { ...typography.body, color: colors.textMuted, lineHeight: 18, fontWeight: '600', fontSize: 13 },
-  subLabel: { ...typography.tiny, color: colors.textMuted, marginTop: 8, marginBottom: 4, fontWeight: '800', fontSize: 11 },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 5 },
+  subLabel: { ...typography.tiny, color: colors.textMuted, marginTop: 10, marginBottom: 4, fontWeight: '800', fontSize: 11 },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
 
   priceRow: { marginBottom: 6 },
   priceBox: {
-    borderRadius: radius.md,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderWidth: 1.5,
-    borderColor: 'rgba(245,158,11,0.30)',
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderTopWidth: 1.2,
+    borderLeftWidth: 1,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 3,
+    borderRightWidth: 1,
+    borderBottomColor: '#DDD6FE',
+    borderRightColor: '#E2E8F0',
+    backgroundColor: '#EDE9FE',
     overflow: 'hidden',
   },
-  price: { ...typography.display, fontSize: 22, color: colors.saffron, fontWeight: '900' },
+  price: { ...typography.display, fontSize: 24, color: '#7C3AED', fontWeight: '900' },
   perMin: { ...typography.body, color: colors.textMuted, fontWeight: '700', fontSize: 13.5 },
-  priceSub: { ...typography.tiny, color: colors.textMuted, marginTop: 2, fontWeight: '600', fontSize: 10.5 },
+  priceSub: { ...typography.tiny, color: colors.textMuted, marginTop: 2, fontWeight: '600', fontSize: 11 },
 
   affordBox: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    borderRadius: radius.md,
-    borderWidth: 1.5,
-    borderColor: 'rgba(5,150,105,0.30)',
-    backgroundColor: 'rgba(5,150,105,0.08)',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    borderRadius: 14,
+    borderWidth: 1.2,
+    borderColor: '#DDD6FE',
+    borderBottomWidth: 2.5,
+    borderBottomColor: '#C4B5FD',
+    backgroundColor: '#F5F3FF',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
   affordBoxDanger: {
-    borderColor: 'rgba(225,29,72,0.30)',
-    backgroundColor: 'rgba(225,29,72,0.08)',
+    borderColor: '#FECDD3',
+    borderBottomColor: '#FDA4AF',
+    backgroundColor: '#FFF1F2',
   },
   affordIcon: { fontSize: 13, fontWeight: '900' },
-  affordText: { ...typography.small, color: colors.teal, lineHeight: 15, flex: 1, fontWeight: '700', fontSize: 11.5 },
+  affordText: { ...typography.small, color: '#7C3AED', lineHeight: 15, flex: 1, fontWeight: '700', fontSize: 11.5 },
 
   actions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
     paddingHorizontal: spacing.md,
-    paddingTop: 6,
-    paddingBottom: spacing.xs,
+    paddingTop: 10,
+    paddingBottom: spacing.sm,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(203,213,225,0.80)',
+    borderTopColor: '#DDD6FE',
     backgroundColor: '#FFFFFF',
     position: 'relative',
-    shadowColor: 'rgba(15,23,42,0.10)',
+    shadowColor: '#7C3AED',
     shadowOffset: { width: 0, height: -3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 5,
+    shadowOpacity: 0.10,
+    shadowRadius: 6,
+    elevation: 4,
   },
   mediaCallBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
     paddingHorizontal: 12,
-    paddingVertical: 9,
+    paddingVertical: 10,
     borderRadius: radius.pill,
-    backgroundColor: 'rgba(245,158,11,0.12)',
-    borderWidth: 1.5,
-    borderColor: colors.gold,
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1.2,
+    borderLeftWidth: 1,
+    borderTopColor: '#FFFFFF',
+    borderLeftColor: '#FFFFFF',
+    borderBottomWidth: 3,
+    borderRightWidth: 1,
+    borderBottomColor: '#DDD6FE',
+    borderRightColor: '#E2E8F0',
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    elevation: 2,
   },
   mediaCallText: {
-    color: colors.goldSoft,
+    color: '#7C3AED',
     fontSize: 12.5,
     fontWeight: '900',
   },

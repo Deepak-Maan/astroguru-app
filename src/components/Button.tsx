@@ -12,7 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { colors, radius, spacing, typography, tactile3D, shadow } from '../theme';
 
-type Variant = 'primary' | 'gold' | 'outline' | 'ghost' | 'danger';
+type Variant = 'primary' | 'gold' | 'coral' | 'outline' | 'ghost' | 'danger';
 type Size = 'sm' | 'md' | 'lg';
 
 interface Props {
@@ -56,7 +56,7 @@ export function Button({
   };
 
   const bevelColor =
-    variant === 'gold'
+    variant === 'gold' || variant === 'coral'
       ? tactile3D.bevel.gold
       : variant === 'danger'
       ? tactile3D.bevel.danger
@@ -107,9 +107,9 @@ export function Button({
         variant === 'outline' && styles.outline,
         variant === 'danger' && styles.danger,
         pressed && !inactive && {
-          transform: [{ translateY: depth - 1 }],
+          transform: [{ translateY: depth - 1 }, { scale: 0.95 }],
           shadowOpacity: 0.1,
-          elevation: 1,
+          elevation: 2,
         },
         inactive && styles.disabled,
         style,
@@ -120,9 +120,9 @@ export function Button({
       ) : (
         <LinearGradient
           colors={
-            variant === 'gold'
-              ? ['#FF3366', '#F43F5E']
-              : ['#6366F1', '#4F46E5']
+            variant === 'gold' || variant === 'coral'
+              ? ['#F472B6', '#DB2777']
+              : ['#A78BFA', '#7C3AED']
           }
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
@@ -140,15 +140,15 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     overflow: 'hidden',
     justifyContent: 'center',
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.18,
-    shadowRadius: 6,
-    elevation: 4,
+    shadowColor: '#5B21B6',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.22,
+    shadowRadius: 8,
+    elevation: 5,
     borderLeftWidth: 1,
     borderRightWidth: 1,
-    borderLeftColor: 'rgba(255, 255, 255, 0.25)',
-    borderRightColor: 'rgba(0, 0, 0, 0.08)',
+    borderLeftColor: 'rgba(255, 255, 255, 0.35)',
+    borderRightColor: 'rgba(0, 0, 0, 0.06)',
   },
   gradient: { flex: 1, justifyContent: 'center' },
   inner: {
@@ -168,6 +168,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderTopColor: '#FFFFFF',
     borderLeftColor: '#FFFFFF',
+    shadowColor: '#7C3AED',
+    shadowOpacity: 0.08,
   },
   ghost: {
     backgroundColor: 'transparent',
