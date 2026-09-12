@@ -1,5 +1,5 @@
 import React, { useEffect, Component, ErrorInfo, ReactNode } from 'react';
-import { StyleSheet, Text, View, Pressable } from 'react-native';
+import { StyleSheet, Text, View, Pressable, Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Stack } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -15,6 +15,53 @@ import { useUpdateStore } from '../src/store/updateStore';
 import { seedAllUsersAndAstrologersToFirebase } from '../src/services/firebaseRealtimeService';
 import { initNotificationService } from '../src/services/notificationService';
 import { ASTROLOGERS } from '../src/data/astrologers';
+
+// Suppress external browser extension and DevTools injected script noise (e.g. Chrome Web Vitals, Live Metrics VM scripts)
+if (Platform.OS === 'web' && typeof window !== 'undefined') {
+  const isExternalScriptNoise = (msg: any, source?: any) => {
+    const str = String(msg || '');
+    const src = String(source || '');
+    return (
+      str.includes("reading 'startTime'") ||
+      str.includes('reportAllChanges') ||
+      str.includes('PerformanceObserver') ||
+      src.includes('VM') ||
+      src.includes('chrome-extension://')
+    );
+  };
+
+  const prevOnError = window.onerror;
+  window.onerror = function (message, source, lineno, colno, error) {
+    if (isExternalScriptNoise(message, source)) {
+      return true; // Prevents default browser error display in console
+    }
+    if (prevOnError) {
+      return prevOnError.apply(this, [message, source, lineno, colno, error]);
+    }
+    return false;
+  };
+
+  window.addEventListener(
+    'error',
+    (event) => {
+      if (isExternalScriptNoise(event?.message, event?.filename)) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+    },
+    true
+  );
+
+  window.addEventListener(
+    'unhandledrejection',
+    (event) => {
+      if (isExternalScriptNoise(event?.reason?.message || event?.reason)) {
+        event.preventDefault();
+      }
+    },
+    true
+  );
+}
 
 interface Props {
   children: ReactNode;
