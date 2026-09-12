@@ -7,10 +7,10 @@ import * as Updates from 'expo-updates';
 import { inAppUpdateEngine, UpdateDownloadProgress } from '../services/updates/inAppUpdateEngine';
 import { getAppVersionFromFirebase, syncLatestAppVersionToFirebase } from '../services/firebaseRealtimeService';
 
-export const LATEST_RELEASE_VERSION = '2.9.1';
-export const DIRECT_APK_URL = 'https://expo.dev/artifacts/eas/b3xhWTvdVpPcByASoUTly9BVrb1Bi9ZP5pnsQ6wn60Q.apk';
+export const LATEST_RELEASE_VERSION = '2.9.2';
+export const DIRECT_APK_URL = 'https://expo.dev/artifacts/eas/uHiJXVN01PSBi81bGeS9-bW5w8FhnxlAYd3e9Sbn2MU.apk';
 
-const NATIVE_VERSION = Constants.expoConfig?.version || '2.9.0';
+const NATIVE_VERSION = Constants.expoConfig?.version || '2.9.1';
 
 export interface UpdateInfo {
   currentVersion: string;
@@ -50,7 +50,8 @@ export const useUpdateStore = create<UpdateState>()(
       updateAvailable: false,
       isMandatory: false,
       releaseNotes: [
-        '🚀 Release v2.9.1: Official AstroGuru Platform Upgrade',
+        `🚀 Official AstroGuru Platform Upgrade v${LATEST_RELEASE_VERSION}`,
+        '✨ All-New Claymorphism 3D Soft Tactile UI Experience',
         '💳 AstroGold Luxury Metal Card & 1-Tap UPI Wallet Recharge',
         '🔥 Cosmic Retention Streak & 7-Day Astro-Coin Check-in Track',
         '🎡 6-Segment Navagraha Spin & Win Chakra (Instant Cash & Vouchers)',
@@ -61,7 +62,7 @@ export const useUpdateStore = create<UpdateState>()(
       ],
       downloadProgress: 0,
       downloadedBytes: 0,
-      totalBytes: 38 * 1024 * 1024,
+      totalBytes: 105 * 1024 * 1024,
       speedKbps: 0,
       isDownloading: false,
       isReadyToInstall: false,
@@ -85,19 +86,12 @@ export const useUpdateStore = create<UpdateState>()(
           return;
         }
 
-        // Safe background OTA check without interrupting the user
+        // Silent background OTA fetch without hijacking the APK install modal
         if (Platform.OS !== 'web' && Updates.isEnabled) {
           try {
             const check = await Updates.checkForUpdateAsync();
             if (check.isAvailable) {
               await Updates.fetchUpdateAsync();
-              set({
-                updateAvailable: true,
-                latestVersion: LATEST_RELEASE_VERSION,
-                isReadyToInstall: true,
-                updateType: 'ota',
-              });
-              return;
             }
           } catch (otaErr) {
             console.log('[OTA Startup Note]', otaErr);
@@ -124,10 +118,27 @@ export const useUpdateStore = create<UpdateState>()(
               releaseNotes: remoteMeta.releaseNotes || get().releaseNotes,
               apkDownloadUrl: remoteMeta.apkUrl || DIRECT_APK_URL,
               updateAvailable: hasNewer,
+              updateType: 'apk',
+              isReadyToInstall: false,
+            });
+          } else if (currentVer !== LATEST_RELEASE_VERSION) {
+            set({
+              latestVersion: LATEST_RELEASE_VERSION,
+              updateAvailable: true,
+              updateType: 'apk',
+              isReadyToInstall: false,
             });
           }
         } catch (e) {
           console.warn('[UpdateStore Startup Check]', e);
+          if (currentVer !== LATEST_RELEASE_VERSION) {
+            set({
+              latestVersion: LATEST_RELEASE_VERSION,
+              updateAvailable: true,
+              updateType: 'apk',
+              isReadyToInstall: false,
+            });
+          }
         }
       },
 
@@ -137,21 +148,12 @@ export const useUpdateStore = create<UpdateState>()(
         const currentVer = Constants.expoConfig?.version || get().currentVersion || NATIVE_VERSION;
         set({ currentVersion: currentVer });
 
-        // Check EAS OTA first
+        // Silent background OTA check
         if (Platform.OS !== 'web' && Updates.isEnabled) {
           try {
             const check = await Updates.checkForUpdateAsync();
             if (check.isAvailable) {
               await Updates.fetchUpdateAsync();
-              set({
-                isChecking: false,
-                updateAvailable: true,
-                latestVersion: LATEST_RELEASE_VERSION,
-                isReadyToInstall: true,
-                updateType: 'ota',
-                lastCheckedTime: new Date().toISOString(),
-              });
-              return { isNewAvailable: true, currentVersion: currentVer, latestVersion: LATEST_RELEASE_VERSION };
             }
           } catch (e) {}
         }
@@ -166,7 +168,8 @@ export const useUpdateStore = create<UpdateState>()(
             latestVersion: result.latestVersion,
             releaseNotes: result.releaseNotes,
             isMandatory: result.isMandatory && isReallyNew,
-            updateType: result.type,
+            updateType: 'apk',
+            isReadyToInstall: false,
             lastCheckedTime: new Date().toISOString(),
           });
 
@@ -176,9 +179,10 @@ export const useUpdateStore = create<UpdateState>()(
             latestVersion: result.latestVersion,
           };
         } catch (e) {
-          set({ isChecking: false, updateAvailable: false });
+          const isNewer = currentVer !== LATEST_RELEASE_VERSION;
+          set({ isChecking: false, updateAvailable: isNewer, updateType: 'apk', isReadyToInstall: false });
           return {
-            isNewAvailable: false,
+            isNewAvailable: isNewer,
             currentVersion: currentVer,
             latestVersion: LATEST_RELEASE_VERSION,
           };
@@ -192,16 +196,23 @@ export const useUpdateStore = create<UpdateState>()(
           isMandatory: mandatory,
           updateAvailable: true,
           isReadyToInstall: false,
+          updateType: 'apk',
         });
       },
 
       triggerUpdateModal: () => {
-        set({ updateAvailable: true, latestVersion: LATEST_RELEASE_VERSION });
+        set({
+          updateAvailable: true,
+          latestVersion: LATEST_RELEASE_VERSION,
+          updateType: 'apk',
+          isReadyToInstall: false,
+          downloadProgress: 0,
+        });
       },
 
       startDownload: async () => {
         if (get().isDownloading) return;
-        set({ isDownloading: true, downloadProgress: 0, isReadyToInstall: false });
+        set({ isDownloading: true, downloadProgress: 0, isReadyToInstall: false, updateType: 'apk' });
 
         try {
           const result = await inAppUpdateEngine.downloadUpdatePackage(
@@ -217,28 +228,40 @@ export const useUpdateStore = create<UpdateState>()(
             get().apkDownloadUrl
           );
 
-          set({
-            isDownloading: false,
-            downloadProgress: 100,
-            isReadyToInstall: true,
-            downloadedPackageUri: result.localUri || null,
-            updateType: result.type,
-          });
+          if (result.success && result.localUri) {
+            set({
+              isDownloading: false,
+              downloadProgress: 100,
+              isReadyToInstall: true,
+              downloadedPackageUri: result.localUri,
+              updateType: 'apk',
+            });
 
-          setTimeout(() => {
-            get().installUpdate();
-          }, 400);
+            // Automatically launch Android Package Installer prompt!
+            setTimeout(async () => {
+              await get().installUpdate();
+            }, 350);
+          } else {
+            // Direct browser fallback so user is never stuck
+            set({ isDownloading: false });
+            await get().downloadDirectApk();
+          }
         } catch (err: any) {
           set({ isDownloading: false });
+          await get().downloadDirectApk();
         }
       },
 
       installUpdate: async () => {
         const { downloadedPackageUri, apkDownloadUrl } = get();
         try {
-          await inAppUpdateEngine.installDownloadedPackage(downloadedPackageUri || undefined, apkDownloadUrl);
+          const result = await inAppUpdateEngine.installDownloadedPackage(downloadedPackageUri || undefined, apkDownloadUrl);
+          if (!result.success && !result.requiresPermission) {
+            await inAppUpdateEngine.openDirectBrowserDownload(apkDownloadUrl);
+          }
         } catch (err) {
           console.warn('[Install Update Error]', err);
+          await inAppUpdateEngine.openDirectBrowserDownload(apkDownloadUrl);
         }
       },
 

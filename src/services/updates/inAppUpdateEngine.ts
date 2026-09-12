@@ -25,7 +25,7 @@ export interface InAppUpdateCheckResult {
   type: 'apk' | 'ota';
 }
 
-export const FALLBACK_APK_URL = 'https://expo.dev/artifacts/eas/b3xhWTvdVpPcByASoUTly9BVrb1Bi9ZP5pnsQ6wn60Q.apk';
+export const FALLBACK_APK_URL = 'https://expo.dev/artifacts/eas/uHiJXVN01PSBi81bGeS9-bW5w8FhnxlAYd3e9Sbn2MU.apk';
 
 class InAppUpdateEngine {
   private activeDownload: any = null;
@@ -33,58 +33,24 @@ class InAppUpdateEngine {
   private lastTimestamp: number = 0;
 
   /**
-   * Checks for both OTA updates and standalone binary version mismatches.
+   * Checks for standalone binary APK version mismatches.
    */
   async checkForUpdate(currentVersion: string, latestVersion: string): Promise<InAppUpdateCheckResult> {
-    // 1. Check EAS OTA Channel First
-    try {
-      if (Platform.OS !== 'web' && Updates.isEnabled) {
-        const otaCheck = await Updates.checkForUpdateAsync();
-        if (otaCheck.isAvailable) {
-          try {
-            await Updates.fetchUpdateAsync();
-          } catch (e) {
-            console.log('[InAppUpdateEngine] Background OTA fetch note:', e);
-          }
-
-          return {
-            isAvailable: true,
-            currentVersion,
-            latestVersion,
-            releaseNotes: [
-              '🚀 Release v2.8.2: Ultra-Premium AstroGuru Experience',
-              '💳 AstroGold Luxury Metal Card & Instant 1-Tap UPI Wallet Recharge',
-              '🔥 7-Day Cosmic Retention Streak with Progressive Astro-Coins',
-              '🎡 6-Segment Navagraha Spin & Win Chakra (Direct Cash & Vouchers)',
-              '🃏 Mystical 3D Tarot Guidance Card of the Day with Sacred Affirmations',
-              '🪔 Sacred Sadhana & Remedy Diary with Real-Time Streak Tracker',
-              '⚡ Zero-Drop Live Consultation Auto-Recharge Drawer',
-              '🛡️ Enhanced Bank UTR Verification & Real-Time Ledger Passbook',
-            ],
-            isMandatory: false,
-            type: 'ota',
-          };
-        }
-      }
-    } catch (err) {
-      console.log('[InAppUpdateEngine] OTA check:', err);
-    }
-
-    // 2. Binary Version Comparison
     const isVersionNewer = currentVersion !== latestVersion;
     return {
       isAvailable: isVersionNewer,
       currentVersion,
       latestVersion,
       releaseNotes: [
-        '🚀 Release v2.8.2: Ultra-Premium AstroGuru Experience',
+        `🚀 Official AstroGuru Platform Upgrade v${latestVersion}`,
+        '✨ All-New Claymorphism 3D Soft Tactile UI Experience',
         '💳 AstroGold Luxury Metal Card & Instant 1-Tap UPI Wallet Recharge',
         '🔥 7-Day Cosmic Retention Streak with Progressive Astro-Coins',
         '🎡 6-Segment Navagraha Spin & Win Chakra (Direct Cash & Vouchers)',
         '🃏 Mystical 3D Tarot Guidance Card of the Day with Sacred Affirmations',
         '🪔 Sacred Sadhana & Remedy Diary with Real-Time Streak Tracker',
         '⚡ Zero-Drop Live Consultation Auto-Recharge Drawer',
-        '🛡️ Enhanced Bank UTR Verification & Real-Time Ledger Passbook',
+        '📦 Direct Native In-App APK Downloader & Package Installer',
       ],
       isMandatory: false,
       type: 'apk',
@@ -92,17 +58,16 @@ class InAppUpdateEngine {
   }
 
   /**
-   * Downloads the update package with real-time percentage, byte counting, and transfer speed.
+   * Downloads the native Android APK package with real progress tracking.
    */
   async downloadUpdatePackage(
     targetVersion: string,
     onProgress: (progress: UpdateDownloadProgress) => void,
     customApkUrl?: string
-  ): Promise<{ success: boolean; localUri?: string; type: 'apk' | 'ota' }> {
+  ): Promise<{ success: boolean; localUri?: string; type: 'apk' }> {
     const apkUrl = customApkUrl || FALLBACK_APK_URL;
 
-    // Try direct native Android APK download
-    if (Platform.OS === 'android' && apkUrl.endsWith('.apk')) {
+    if (Platform.OS === 'android') {
       try {
         const fsAny = FileSystem as any;
         const targetDir = fsAny.cacheDirectory || fsAny.documentDirectory;
@@ -124,11 +89,18 @@ class InAppUpdateEngine {
           this.activeDownload = fsAny.createDownloadResumable(
             apkUrl,
             localPath,
-            {},
+            {
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
+                'Accept': 'application/vnd.android.package-archive,*/*',
+              },
+            },
             (downloadProgress: any) => {
-              const total = downloadProgress.totalBytesExpectedToWrite || 38 * 1024 * 1024;
+              const total = downloadProgress.totalBytesExpectedToWrite > 0
+                ? downloadProgress.totalBytesExpectedToWrite
+                : 105 * 1024 * 1024;
               const downloaded = downloadProgress.totalBytesWritten;
-              const percentage = Math.min(100, Math.floor((downloaded / total) * 100));
+              const percentage = Math.min(99, Math.max(1, Math.floor((downloaded / total) * 100)));
 
               const now = Date.now();
               const timeDiff = (now - this.lastTimestamp) / 1000;
@@ -153,8 +125,8 @@ class InAppUpdateEngine {
           const result = await this.activeDownload.downloadAsync();
           if (result && result.uri) {
             onProgress({
-              totalBytes: 38 * 1024 * 1024,
-              downloadedBytes: 38 * 1024 * 1024,
+              totalBytes: 105 * 1024 * 1024,
+              downloadedBytes: 105 * 1024 * 1024,
               percentage: 100,
               speedKbps: 3500,
             });
@@ -162,119 +134,64 @@ class InAppUpdateEngine {
           }
         }
       } catch (err) {
-        console.warn('[InAppUpdateEngine] Direct APK download error, continuing with stream:', err);
+        console.warn('[InAppUpdateEngine] Direct APK download error:', err);
       }
     }
 
-    // High-speed progressive bundle download stream
-    const totalBytes = 36 * 1024 * 1024;
-    let currentBytes = 0;
-
-    return new Promise(async (resolve) => {
-      const interval = setInterval(() => {
-        const step = Math.floor(Math.random() * (1800 * 1024)) + 1200 * 1024;
-        currentBytes = Math.min(totalBytes, currentBytes + step);
-        const percentage = Math.min(98, Math.floor((currentBytes / totalBytes) * 100));
-
-        onProgress({
-          totalBytes,
-          downloadedBytes: currentBytes,
-          percentage,
-          speedKbps: Math.floor(Math.random() * 1200) + 2600,
-        });
-
-        if (percentage >= 98) {
-          clearInterval(interval);
-        }
-      }, 120);
-
-      try {
-        if (Platform.OS !== 'web' && Updates.isEnabled) {
-          await Updates.fetchUpdateAsync();
-        } else {
-          await new Promise((r) => setTimeout(r, 1500));
-        }
-
-        clearInterval(interval);
-        onProgress({
-          totalBytes,
-          downloadedBytes: totalBytes,
-          percentage: 100,
-          speedKbps: 3800,
-        });
-        resolve({ success: true, type: 'ota' });
-      } catch (e) {
-        clearInterval(interval);
-        onProgress({
-          totalBytes,
-          downloadedBytes: totalBytes,
-          percentage: 100,
-        });
-        resolve({ success: true, type: 'ota' });
-      }
-    });
+    return { success: false, type: 'apk' };
   }
 
   /**
-   * Installs the downloaded package via Native Android installer or OTA reload.
+   * Installs the downloaded package via Native Android Package Installer prompt.
    */
-  async installDownloadedPackage(localUri?: string, customApkUrl?: string): Promise<boolean> {
-    if (Platform.OS === 'android' && localUri) {
-      // 1. Try expo-sharing first
-      try {
-        const isAvailable = await Sharing.isAvailableAsync();
-        if (isAvailable) {
-          await Sharing.shareAsync(localUri, {
-            mimeType: 'application/vnd.android.package-archive',
-            dialogTitle: 'Install AstroGuru v2.8.2 Update',
-            UTI: 'com.android.package-archive',
-          });
-          return true;
-        }
-      } catch (shareErr) {
-        console.warn('[InAppUpdateEngine] expo-sharing fallback to intent:', shareErr);
-      }
+  async installDownloadedPackage(localUri?: string, customApkUrl?: string): Promise<{ success: boolean; requiresPermission?: boolean; error?: string }> {
+    const targetUrl = customApkUrl || FALLBACK_APK_URL;
 
-      // 2. IntentLauncher fallback
+    if (Platform.OS === 'android' && localUri) {
       try {
         const fsAny = FileSystem as any;
         const getContentUri = fsAny.getContentUriAsync || FileSystem.getContentUriAsync;
 
-        let packageUri = localUri;
+        let contentUri = localUri;
         if (typeof getContentUri === 'function') {
-          packageUri = await getContentUri(localUri);
+          contentUri = await getContentUri(localUri);
         }
 
+        console.log('[InAppUpdateEngine] Launching Android Package Installer with contentUri:', contentUri);
+
+        // Launch android.intent.action.VIEW with application/vnd.android.package-archive
+        // Flags: FLAG_GRANT_READ_URI_PERMISSION (1) | FLAG_ACTIVITY_NEW_TASK (268435456)
         await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
-          data: packageUri,
-          flags: 268435457,
+          data: contentUri,
+          flags: 1 | 268435456,
           type: 'application/vnd.android.package-archive',
         });
-        return true;
-      } catch (e: any) {
-        console.warn('[InAppUpdateEngine] Intent install warning:', e);
+        return { success: true };
+      } catch (intentErr: any) {
+        console.warn('[InAppUpdateEngine] Native Intent install blocked or failed:', intentErr);
+
+        // Fallback: Open direct APK download in Android browser/Download Manager
+        try {
+          await Linking.openURL(targetUrl);
+          return { success: true, requiresPermission: true };
+        } catch (openErr) {
+          return { success: false, requiresPermission: true, error: intentErr?.message };
+        }
       }
     }
 
-    // 3. If OTA update, reload JS bundle safely
-    if (Platform.OS !== 'web' && Updates.isEnabled) {
+    // Direct browser APK link fallback
+    if (Platform.OS === 'android') {
       try {
-        await Updates.reloadAsync();
-        return true;
-      } catch (e) {
-        console.warn('[InAppUpdateEngine] OTA Reload error:', e);
+        await Linking.openURL(targetUrl);
+        return { success: true };
+      } catch (err: any) {
+        console.warn('[InAppUpdateEngine] Fallback openURL failed:', err);
+        return { success: false, error: err?.message };
       }
     }
 
-    // 4. Direct browser APK link fallback
-    const targetUrl = customApkUrl || FALLBACK_APK_URL;
-    try {
-      await Linking.openURL(targetUrl);
-      return true;
-    } catch (err) {
-      console.warn('[InAppUpdateEngine] Fallback openURL failed:', err);
-      return false;
-    }
+    return { success: false };
   }
 
   async openDirectBrowserDownload(customApkUrl?: string): Promise<boolean> {

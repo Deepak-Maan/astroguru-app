@@ -40,22 +40,7 @@ export async function openUnknownAppSourcesSettings(): Promise<boolean> {
 export async function launchNativeInstaller(targetFileUri: string, apkUrl?: string): Promise<{ success: boolean; requiresPermission?: boolean }> {
   if (Platform.OS !== 'android') return { success: false };
 
-  // Strategy 1: System-level sharing with package-archive MIME type
-  try {
-    const isSharingAvailable = await Sharing.isAvailableAsync();
-    if (isSharingAvailable) {
-      await Sharing.shareAsync(targetFileUri, {
-        mimeType: 'application/vnd.android.package-archive',
-        dialogTitle: 'Install AstroGuru Update',
-        UTI: 'com.android.package-archive',
-      });
-      return { success: true };
-    }
-  } catch (shareErr) {
-    console.warn('[Installer Strategy 1 - Sharing]', shareErr);
-  }
-
-  // Strategy 2: IntentLauncher VIEW with content URI
+  // Launch Android PackageInstaller via IntentLauncher
   try {
     const fsAny = FileSystem as any;
     const getContentUri = fsAny.getContentUriAsync || FileSystem.getContentUriAsync;
@@ -72,8 +57,13 @@ export async function launchNativeInstaller(targetFileUri: string, apkUrl?: stri
     });
     return { success: true };
   } catch (intentErr: any) {
-    console.warn('[Installer Strategy 2 - Intent VIEW]', intentErr);
-    // If blocked by Unknown Sources permission, prompt user to enable
+    console.warn('[Installer Intent VIEW]', intentErr);
+    if (apkUrl) {
+      try {
+        await Linking.openURL(apkUrl);
+        return { success: true, requiresPermission: true };
+      } catch (_) {}
+    }
     return { success: false, requiresPermission: true };
   }
 }
