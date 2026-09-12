@@ -159,9 +159,9 @@ export function buildKundliHTML(report: KundliPDFReport): string {
   <title>AstroGuru Vedic Kundli Report — ${report.seekerName}</title>
   <style>
     body { font-family: 'Segoe UI', Roboto, sans-serif; background: #0F172A; color: #F8FAFC; padding: 24px; line-height: 1.6; }
-    .header { text-align: center; border-bottom: 2px solid #059669; padding-bottom: 20px; margin-bottom: 30px; }
-    .title { color: #D97706; font-size: 28px; font-weight: 800; margin: 0; }
-    .subtitle { color: #059669; font-size: 14px; font-weight: 700; margin-top: 4px; }
+    .header { text-align: center; border-bottom: 2px solid #6366F1; padding-bottom: 20px; margin-bottom: 30px; }
+    .title { color: #6366F1; font-size: 28px; font-weight: 800; margin: 0; }
+    .subtitle { color: #06B6D4; font-size: 14px; font-weight: 700; margin-top: 4px; }
     .card { background: #1E293B; border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); }
     .card-title { font-size: 18px; font-weight: 800; color: #38BDF8; margin-top: 0; display: flex; align-items: center; gap: 8px; }
     .card-desc { font-size: 13px; color: #94A3B8; margin-bottom: 14px; }

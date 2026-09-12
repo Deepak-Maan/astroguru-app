@@ -1,6 +1,7 @@
 /**
- * AstroGuru Theme — Option C: Nordic Frost & Emerald Teal
- * Luminous White 3D Extruded Surfaces, Ice-Blue Shadows & Sacred Emerald Teal Accents.
+ * AstroGuru Theme — Modern Interactive Cyber-Cosmic System
+ * Luminous Pure White 3D Extruded Surfaces, Electric Indigo, Neon Coral & Cyber Cyan Accents.
+ * Zero yellow/gold tones for an ultra-modern, crisp, and interactive aesthetic.
  */
 
 import { Dimensions } from 'react-native';
@@ -23,42 +24,50 @@ export const isSmallDevice = SCREEN_WIDTH < 375;
 export const isTablet = SCREEN_WIDTH >= 768;
 
 export const colors = {
-  // Backgrounds (Nordic Frost Ice Blue Slate)
-  bg: '#F3F7FC',
-  bgElevated: '#F8FAFC',
+  // Backgrounds (Clean, luminous crystal air)
+  bg: '#F8FAFC',
+  bgElevated: '#FFFFFF',
   card: '#FFFFFF',
   cardSolid: '#FFFFFF',
-  cardBorder: '#FFFFFF',
-  cardGlowBorder: '#059669',
+  cardBorder: '#E2E8F0',
+  cardGlowBorder: '#6366F1',
 
-  // Dual Shadows for Nordic Frost Neumorphism
+  // Shadows
   shadowLight: '#FFFFFF',
-  shadowDark: '#BFDBFE',
+  shadowDark: '#CBD5E1',
 
-  // Brand Accents (Sacred Emerald Teal & Solar Gold)
+  // Modern Cosmic Brand Accents
+  primary: '#6366F1',       // Electric Indigo
+  primaryDark: '#4F46E5',   // Royal Iris
+  coral: '#FF3366',         // Neon Coral Punch
+  cyan: '#06B6D4',          // Cyber Cyan
+  violet: '#8B5CF6',        // Vivid Amethyst
+  indigo: '#4F46E5',
+
+  // Background Gradient Nodes
   gradientTop: '#FFFFFF',
-  gradientMid: '#F3F7FC',
-  gradientBottom: '#E8F1FC',
-  auroraA: '#059669',
-  auroraB: '#D97706',
+  gradientMid: '#F8FAFC',
+  gradientBottom: '#F1F5F9',
+  auroraA: '#6366F1',
+  auroraB: '#FF3366',
 
-  // High Contrast Accent Colors
-  gold: '#D97706',
-  goldSoft: '#B45309',
-  saffron: '#E67E22',
-  rose: '#E11D48',
-  teal: '#059669',
+  // High Contrast Interactive Colors (Legacy-mapped to Modern Non-Gold Palette)
+  gold: '#06B6D4',          // Replaced with Cyber Cyan (zero yellow!)
+  goldSoft: '#4F46E5',      // Replaced with Royal Iris
+  saffron: '#FF3366',       // Replaced with Neon Coral Punch
+  rose: '#F43F5E',          // Vivid Rose
+  teal: '#6366F1',          // Replaced with Electric Indigo
 
-  // Text (Deep Royal Purple/Navy for Crisp Contrast)
-  text: '#1E1B4B',
+  // Text (Obsidian Slate for Razor-Sharp AAA Contrast)
+  text: '#0F172A',
   textMuted: '#475569',
   textFaint: '#94A3B8',
 
   // Status Cues
-  online: '#059669',
+  online: '#10B981',        // Vivid Mint
   offline: '#94A3B8',
-  danger: '#E11D48',
-  success: '#059669',
+  danger: '#F43F5E',
+  success: '#10B981',
 
   // Overlays & Utilities
   overlay: 'rgba(15, 23, 42, 0.45)',
@@ -69,10 +78,12 @@ export const colors = {
 export const gradients = {
   screen: [colors.gradientTop, colors.gradientMid, colors.gradientBottom] as const,
   aurora: [colors.auroraA, colors.auroraB] as const,
-  gold: [colors.teal, colors.gold] as const,
+  gold: [colors.primary, colors.violet] as const, // Modern Indigo to Violet
+  coral: ['#FF3366', '#F43F5E'] as const,
+  cyan: ['#06B6D4', '#0EA5E9'] as const,
   soft: ['#FFFFFF', '#F8FAFC'] as const,
   card: ['#FFFFFF', '#F8FAFC'] as const,
-  cta: ['#059669', '#047857'] as const,
+  cta: ['#6366F1', '#4F46E5'] as const,
 };
 
 export const spacing = {
@@ -106,14 +117,14 @@ export const typography = {
 
 export const shadow = {
   card: {
-    shadowColor: '#BFDBFE',
-    shadowOffset: { width: 6, height: 6 },
-    shadowOpacity: 0.65,
-    shadowRadius: 12,
-    elevation: 6,
+    shadowColor: '#64748B',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 4,
   },
   glow: {
-    shadowColor: colors.teal,
+    shadowColor: '#6366F1',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.35,
     shadowRadius: 12,
@@ -129,9 +140,9 @@ export const shadow = {
   card3D: {
     shadowColor: '#64748B',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.16,
+    shadowOpacity: 0.12,
     shadowRadius: 16,
-    elevation: 7,
+    elevation: 6,
   },
   floatingDock: {
     shadowColor: '#0F172A',
@@ -149,12 +160,14 @@ export const tactile3D = {
     lg: 5.5,
   },
   bevel: {
-    primary: '#046A4E',
-    gold: '#B45309',
-    outline: '#CBD5E1',
-    danger: '#BE123C',
+    primary: '#4338CA', // Deep Indigo bevel
+    gold: '#BE123C',    // Deep Coral/Ruby bevel (legacy gold alias)
+    outline: '#CBD5E1', // Clean Slate Silver bevel
+    danger: '#BE123C',  // Deep Ruby bevel
+    cyan: '#0E7490',    // Deep Ocean Cyan bevel
+    violet: '#6D28D9',  // Deep Violet bevel
   },
-  specular: 'rgba(255, 255, 255, 0.4)',
+  specular: 'rgba(255, 255, 255, 0.55)',
 };
 
 export const theme = { colors, gradients, spacing, radius, typography, shadow, tactile3D };

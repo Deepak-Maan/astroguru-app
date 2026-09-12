@@ -180,10 +180,10 @@ export default function Wallet() {
         <ScreenHeader title="Wallet & Recharge" showBack />
 
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-          {/* Solar Warm Gold Balance Header Card */}
+          {/* Modern Electric Indigo Balance Header Card */}
           <View style={styles.balanceCard}>
             <LinearGradient
-              colors={['#D97706', '#E67E22', '#F59E0B']}
+              colors={['#4F46E5', '#6366F1', '#8B5CF6']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={StyleSheet.absoluteFill}
@@ -228,7 +228,7 @@ export default function Wallet() {
                   >
                     {active ? (
                       <LinearGradient
-                        colors={[colors.saffron, colors.gold]}
+                        colors={['#FF3366', '#F43F5E']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 0 }}
                         style={StyleSheet.absoluteFill}
@@ -564,8 +564,8 @@ const styles = StyleSheet.create({
     borderTopColor: 'rgba(255, 255, 255, 0.45)',
     borderLeftColor: 'rgba(255, 255, 255, 0.35)',
     borderBottomWidth: 4,
-    borderBottomColor: '#B45309',
-    shadowColor: colors.saffron,
+    borderBottomColor: '#3730A3',
+    shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.35,
     shadowRadius: 12,
@@ -615,8 +615,8 @@ const styles = StyleSheet.create({
     borderTopColor: 'rgba(255, 255, 255, 0.5)',
     borderLeftColor: 'rgba(255, 255, 255, 0.4)',
     borderBottomWidth: 4,
-    borderBottomColor: '#B45309',
-    shadowColor: colors.saffron,
+    borderBottomColor: '#BE123C',
+    shadowColor: '#FF3366',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.35,
     shadowRadius: 8,
@@ -699,8 +699,8 @@ const styles = StyleSheet.create({
     borderTopColor: 'rgba(255, 255, 255, 0.5)',
     borderLeftColor: 'rgba(255, 255, 255, 0.4)',
     borderBottomWidth: 3.5,
-    borderBottomColor: '#B45309',
-    backgroundColor: 'rgba(245,158,11,0.08)',
+    borderBottomColor: '#BE123C',
+    backgroundColor: 'rgba(255,51,102,0.08)',
   },
   upiAppCellPressed: {
     transform: [{ translateY: 2 }],
@@ -741,7 +741,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1.2,
     borderTopColor: 'rgba(255, 255, 255, 0.4)',
     borderBottomWidth: 3,
-    borderBottomColor: '#B45309',
+    borderBottomColor: '#BE123C',
     shadowColor: colors.saffron,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
@@ -757,10 +757,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
     marginTop: 4,
-    backgroundColor: 'rgba(245,158,11,0.10)',
+    backgroundColor: 'rgba(99,102,241,0.08)',
     borderRadius: radius.md,
     borderWidth: 1.5,
-    borderColor: colors.saffron,
+    borderColor: colors.primary,
     padding: spacing.sm,
   },
   couponAppliedIcon: { fontSize: 20 },
@@ -788,7 +788,7 @@ const styles = StyleSheet.create({
     borderBottomColor: 'transparent',
   },
   filterTabActive: {
-    borderBottomColor: '#B45309',
+    borderBottomColor: '#BE123C',
   },
   filterTabText: { ...typography.tiny, color: colors.textMuted, fontWeight: '800', fontSize: 12 },
   filterTabTextActive: { color: '#FFFFFF', fontWeight: '900' },

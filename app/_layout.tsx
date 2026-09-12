@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
   errorTitle: {
     fontSize: 20,
     fontWeight: '900',
-    color: '#FDE68A',
+    color: '#FF3366',
     marginBottom: 8,
   },
   errorDesc: {
@@ -185,10 +185,14 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   retryBtn: {
-    backgroundColor: '#F59E0B',
+    backgroundColor: '#6366F1',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 25,
+    borderTopWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.4)',
+    borderBottomWidth: 3,
+    borderBottomColor: '#4338CA',
   },
   retryBtnText: {
     color: '#FFFFFF',

@@ -30,7 +30,7 @@ const WEBINARS = [
 function ProgressBar({ pct }: { pct: number }) {
   return (
     <View style={styles.progressTrack}>
-      <View style={[styles.progressFill, { width: `${pct}%`, backgroundColor: pct === 100 ? colors.teal : '#F59E0B' }]} />
+      <View style={[styles.progressFill, { width: `${pct}%`, backgroundColor: pct === 100 ? colors.teal : '#6366F1' }]} />
     </View>
   );
 }
@@ -43,7 +43,7 @@ export default function Training() {
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
           {/* Hero */}
-          <LinearGradient colors={['#D97706', '#F59E0B', '#FCD34D']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.heroCard}>
+          <LinearGradient colors={['#4F46E5', '#6366F1', '#8B5CF6']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.heroCard}>
             <Text style={styles.heroTitle}>🎓 Acharya Academy</Text>
             <Text style={styles.heroSub}>Deepen your expertise · Elevate your earnings</Text>
             <View style={styles.heroStats}>
@@ -165,13 +165,13 @@ const styles = StyleSheet.create({
   downloadIcon: { fontSize: 18 },
   webinarCard: {
     backgroundColor: '#FFFFFF', borderRadius: radius.lg, padding: spacing.md,
-    borderWidth: 1, borderColor: 'rgba(191,219,254,0.4)', borderLeftWidth: 4, borderLeftColor: '#D97706',
+    borderWidth: 1, borderColor: 'rgba(191,219,254,0.4)', borderLeftWidth: 4, borderLeftColor: '#6366F1',
     gap: 3,
   },
   webinarTitle: { fontSize: 14, fontWeight: '800', color: colors.text },
   webinarMeta: { fontSize: 12, color: colors.textMuted, fontWeight: '600' },
   webinarHost: { fontSize: 12, color: colors.textMuted, fontWeight: '600' },
-  webinarSeats: { fontSize: 12, color: '#D97706', fontWeight: '700' },
-  registerBtn: { backgroundColor: 'rgba(217,119,6,0.12)', borderRadius: radius.pill, paddingHorizontal: 14, paddingVertical: 6, borderWidth: 1, borderColor: 'rgba(217,119,6,0.3)' },
-  registerBtnText: { color: '#D97706', fontWeight: '800', fontSize: 13 },
+  webinarSeats: { fontSize: 12, color: '#6366F1', fontWeight: '700' },
+  registerBtn: { backgroundColor: 'rgba(99,102,241,0.12)', borderRadius: radius.pill, paddingHorizontal: 14, paddingVertical: 6, borderWidth: 1, borderColor: 'rgba(99,102,241,0.3)' },
+  registerBtnText: { color: '#6366F1', fontWeight: '800', fontSize: 13 },
 });

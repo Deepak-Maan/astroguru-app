@@ -371,7 +371,7 @@ const styles = StyleSheet.create({
   },
   gpsText: {
     ...typography.small,
-    color: '#D97706',
+    color: colors.primary,
     fontWeight: '700',
   },
   popularCityChip: {

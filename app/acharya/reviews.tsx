@@ -30,7 +30,7 @@ function StarRow({ count }: { count: number }) {
   return (
     <View style={{ flexDirection: 'row', gap: 2 }}>
       {Array.from({ length: 5 }).map((_, i) => (
-        <Text key={i} style={{ fontSize: 12, color: i < count ? '#F59E0B' : '#CBD5E1' }}>★</Text>
+        <Text key={i} style={{ fontSize: 12, color: i < count ? '#06B6D4' : '#CBD5E1' }}>★</Text>
       ))}
     </View>
   );
@@ -121,13 +121,13 @@ const styles = StyleSheet.create({
   },
   ratingBig: { flexDirection: 'row', alignItems: 'flex-end', gap: 4 },
   ratingNum: { fontSize: 48, fontWeight: '900', color: colors.text, lineHeight: 54 },
-  ratingStar: { fontSize: 36, color: '#F59E0B', lineHeight: 50 },
+  ratingStar: { fontSize: 36, color: '#06B6D4', lineHeight: 50 },
   ratingTotal: { fontSize: 13, color: colors.textMuted, fontWeight: '600' },
   breakdown: { width: '100%', gap: 6, marginTop: 8 },
   breakdownRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   breakdownStarLabel: { fontSize: 12, color: colors.textMuted, fontWeight: '700', width: 22 },
   barTrack: { flex: 1, height: 8, backgroundColor: '#F1F5F9', borderRadius: 4, overflow: 'hidden' },
-  barFill: { height: '100%', backgroundColor: '#F59E0B', borderRadius: 4 },
+  barFill: { height: '100%', backgroundColor: '#06B6D4', borderRadius: 4 },
   breakdownPct: { fontSize: 12, color: colors.textMuted, fontWeight: '700', width: 30, textAlign: 'right' },
   filterRow: { flexDirection: 'row', gap: spacing.sm },
   filterTab: {

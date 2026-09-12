@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1.2,
     borderTopColor: 'rgba(255, 255, 255, 0.45)',
     borderBottomWidth: 2.5,
-    borderBottomColor: '#B45309',
+    borderBottomColor: '#BE123C',
     shadowColor: colors.saffron,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.35,
@@ -166,6 +166,6 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: colors.gold,
+    backgroundColor: colors.primary,
   },
 });

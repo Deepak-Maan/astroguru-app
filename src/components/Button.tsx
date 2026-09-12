@@ -121,8 +121,8 @@ export function Button({
         <LinearGradient
           colors={
             variant === 'gold'
-              ? [colors.gold, colors.saffron]
-              : [colors.teal, '#047857']
+              ? ['#FF3366', '#F43F5E']
+              : ['#6366F1', '#4F46E5']
           }
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}

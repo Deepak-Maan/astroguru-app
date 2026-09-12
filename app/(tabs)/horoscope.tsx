@@ -66,9 +66,9 @@ function AcharyaTransits() {
           </View>
 
           {/* Today's Key Alert */}
-          <View style={{ backgroundColor: '#FEF3C7', borderRadius: radius.lg, padding: spacing.md, borderLeftWidth: 4, borderLeftColor: '#D97706' }}>
-            <Text style={{ color: '#92400E', fontWeight: '800', fontSize: 14 }}>\u26a1 Acharya Intelligence Alert</Text>
-            <Text style={{ color: '#78350F', fontSize: 13, marginTop: 4, fontWeight: '600', lineHeight: 18 }}>Mars transiting Karka from 1 Sep — prepare clients in houses 1, 4, 7, 10 for major life changes. Update consultation notes now.</Text>
+          <View style={{ backgroundColor: 'rgba(99,102,241,0.08)', borderRadius: radius.lg, padding: spacing.md, borderLeftWidth: 4, borderLeftColor: '#6366F1' }}>
+            <Text style={{ color: '#4338CA', fontWeight: '800', fontSize: 14 }}>⚡ Acharya Intelligence Alert</Text>
+            <Text style={{ color: '#1E1B4B', fontSize: 13, marginTop: 4, fontWeight: '600', lineHeight: 18 }}>Mars transiting Karka from 1 Sep — prepare clients in houses 1, 4, 7, 10 for major life changes. Update consultation notes now.</Text>
           </View>
 
           {/* Transit Table */}
@@ -113,8 +113,8 @@ function AcharyaTransits() {
                   <Text style={{ ...typography.tiny, color: colors.textMuted }}>{r.period}</Text>
                   <Text style={{ ...typography.tiny, color: colors.textMuted, marginTop: 2 }}>{r.impact}</Text>
                 </View>
-                <View style={{ backgroundColor: 'rgba(217,119,6,0.1)', borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: 'rgba(217,119,6,0.3)' }}>
-                  <Text style={{ color: '#D97706', fontSize: 11, fontWeight: '800' }}>\u21a9 {r.status}</Text>
+                <View style={{ backgroundColor: 'rgba(6,182,212,0.1)', borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: 'rgba(6,182,212,0.3)' }}>
+                  <Text style={{ color: '#0891B2', fontSize: 11, fontWeight: '800' }}>↩ {r.status}</Text>
                 </View>
               </View>
             ))}
@@ -219,7 +219,7 @@ export default function Horoscope() {
                 >
                   {active && (
                     <LinearGradient
-                      colors={[colors.saffron, colors.gold]}
+                      colors={['#6366F1', '#8B5CF6']}
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 1 }}
                       style={StyleSheet.absoluteFill}
@@ -260,7 +260,7 @@ export default function Horoscope() {
               >
                 {period === p.id && (
                   <LinearGradient
-                    colors={[colors.teal, colors.gold]}
+                    colors={['#FF3366', '#F43F5E']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={StyleSheet.absoluteFill}
@@ -277,7 +277,7 @@ export default function Horoscope() {
           {/* 🎙️ AI VOICE HOROSCOPE AUDIO READER BANNER */}
           <Pressable onPress={handleToggleVoiceAudio} style={({ pressed }) => [pressed && { opacity: 0.9 }]}>
             <LinearGradient
-              colors={isSpeaking ? ['#D97706', '#B45309'] : ['#0F172A', '#1E293B']}
+              colors={isSpeaking ? ['#FF3366', '#BE123C'] : ['#0F172A', '#1E293B']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={{
@@ -288,8 +288,8 @@ export default function Horoscope() {
                 alignItems: 'center',
                 gap: spacing.md,
                 borderWidth: 1.5,
-                borderColor: isSpeaking ? '#F59E0B' : 'rgba(217,119,6,0.4)',
-                shadowColor: '#D97706',
+                borderColor: isSpeaking ? '#FF3366' : 'rgba(99,102,241,0.4)',
+                shadowColor: isSpeaking ? '#FF3366' : colors.primary,
                 shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: 0.4,
                 shadowRadius: 8,
@@ -361,7 +361,7 @@ export default function Horoscope() {
             {/* Mood bar */}
             <View style={styles.moodBarTrack}>
               <LinearGradient
-                colors={[colors.teal, colors.gold]}
+                colors={['#6366F1', '#FF3366']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={[styles.moodBarFill, { width: `${reading.mood}%` }]}
@@ -394,9 +394,9 @@ export default function Horoscope() {
             <Text style={styles.luckyTitle}>Lucky Factors</Text>
             <View style={styles.luckyRow}>
               {[
-                { label: 'Number', value: String(reading.luckyNumber), color: colors.gold },
-                { label: 'Colour', value: reading.luckyColor, color: colors.teal },
-                { label: 'Gem', value: rashi.luckyColor, color: colors.gold },
+                { label: 'Number', value: String(reading.luckyNumber), color: '#06B6D4' },
+                { label: 'Colour', value: reading.luckyColor, color: '#6366F1' },
+                { label: 'Gem', value: rashi.luckyColor, color: '#8B5CF6' },
               ].map(({ label, value, color }) => (
                 <View key={label} style={styles.luckyCell}>
                   <Text style={styles.luckyLabel}>{label}</Text>
@@ -405,7 +405,7 @@ export default function Horoscope() {
               ))}
             </View>
             <View style={styles.traitRow}>
-              <Chip label={rashi.traits} tone="gold" />
+              <Chip label={rashi.traits} tone="teal" />
             </View>
           </Card>
         </ScrollView>
@@ -443,15 +443,16 @@ const styles = StyleSheet.create({
   },
   signCellActive: {
     borderTopColor: 'rgba(255, 255, 255, 0.5)',
-    borderBottomColor: '#B45309',
-    shadowColor: colors.saffron,
+    borderBottomWidth: 3,
+    borderBottomColor: '#4338CA',
+    shadowColor: colors.primary,
     shadowOpacity: 0.3,
   },
   signCellPressed: {
     transform: [{ translateY: 2 }],
     borderBottomWidth: 1.5,
   },
-  signGlyph: { fontSize: 24, color: colors.gold },
+  signGlyph: { fontSize: 24, color: '#6366F1' },
   signName: { ...typography.tiny, fontSize: 10, color: colors.text, fontWeight: '700' },
   yourDot: {
     position: 'absolute',
@@ -460,7 +461,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: colors.teal,
+    backgroundColor: '#6366F1',
     borderWidth: 1.5,
     borderColor: '#FFFFFF',
   },
@@ -511,27 +512,27 @@ const styles = StyleSheet.create({
     width: 54,
     height: 54,
     borderRadius: 27,
-    backgroundColor: 'rgba(217,119,6,0.12)',
+    backgroundColor: 'rgba(99,102,241,0.12)',
     borderWidth: 1,
-    borderColor: 'rgba(217,119,6,0.30)',
+    borderColor: 'rgba(99,102,241,0.30)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  readingGlyph: { fontSize: 28, color: colors.gold },
+  readingGlyph: { fontSize: 28, color: '#6366F1' },
   readingSign: { ...typography.h2, color: colors.text, fontWeight: '800' },
   readingMeta: { ...typography.tiny, color: colors.textFaint, marginTop: 2, textTransform: 'capitalize', fontWeight: '600' },
   moodCircle: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: 'rgba(5,150,105,0.12)',
+    backgroundColor: 'rgba(255,51,102,0.12)',
     borderWidth: 1,
-    borderColor: 'rgba(5,150,105,0.30)',
+    borderColor: 'rgba(255,51,102,0.30)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  moodValue: { ...typography.h3, fontSize: 15, color: colors.teal, lineHeight: 18, fontWeight: '800' },
-  moodPct: { ...typography.tiny, fontSize: 9.5, color: colors.teal, fontWeight: '800' },
+  moodValue: { ...typography.h3, fontSize: 15, color: '#FF3366', lineHeight: 18, fontWeight: '800' },
+  moodPct: { ...typography.tiny, fontSize: 9.5, color: '#FF3366', fontWeight: '800' },
 
   summary: { ...typography.body, color: colors.text, lineHeight: 22, fontWeight: '600' },
   moodBarTrack: {

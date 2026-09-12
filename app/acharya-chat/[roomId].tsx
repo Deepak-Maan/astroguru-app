@@ -227,7 +227,7 @@ export default function AcharyaChatScreen() {
           <View style={{ flex: 1, marginLeft: 10 }}>
             <Text style={styles.hName} numberOfLines={1}>{room.seekerName}</Text>
             <View style={styles.statusRow}>
-              <View style={[styles.statusDot, { backgroundColor: isActive ? '#10B981' : isWaiting ? '#F59E0B' : '#94A3B8' }]} />
+              <View style={[styles.statusDot, { backgroundColor: isActive ? '#10B981' : isWaiting ? '#FF3366' : '#94A3B8' }]} />
               <Text style={styles.hMeta}>
                 {isActive ? `Live · ${mm}:${ss}` : isWaiting ? 'Pending Acceptance' : 'Session Ended'}
               </Text>
@@ -423,7 +423,7 @@ export default function AcharyaChatScreen() {
               {/* Quick reply toggle */}
               <Pressable
                 onPress={() => setShowQuick(!showQuick)}
-                style={[styles.composerIconBtn, showQuick && { backgroundColor: '#FEF3C7' }]}
+                style={[styles.composerIconBtn, showQuick && { backgroundColor: 'rgba(99,102,241,0.15)' }]}
               >
                 <Text style={styles.composerIcon}>⚡</Text>
               </Pressable>
@@ -498,7 +498,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerActionBtnActive: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor: 'rgba(99,102,241,0.15)',
     borderWidth: 1,
     borderColor: colors.gold,
   },

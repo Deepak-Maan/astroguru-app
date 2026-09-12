@@ -166,7 +166,7 @@ export default function KundliScreen() {
                 >
                   {active ? (
                     <LinearGradient
-                      colors={[colors.saffron, colors.gold]}
+                      colors={['#6366F1', '#8B5CF6']}
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 1 }}
                       style={StyleSheet.absoluteFill}
@@ -198,13 +198,13 @@ export default function KundliScreen() {
                       onPress={() => setChartFormat('north')}
                       style={[{ paddingVertical: 4, paddingHorizontal: 8, borderRadius: radius.pill }, chartFormat === 'north' && { backgroundColor: '#FFFFFF', shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 2, elevation: 1 }]}
                     >
-                      <Text style={{ fontSize: 10.5, fontWeight: '800', color: chartFormat === 'north' ? colors.goldSoft : colors.textMuted }}>💎 North</Text>
+                      <Text style={{ fontSize: 10.5, fontWeight: '800', color: chartFormat === 'north' ? colors.primary : colors.textMuted }}>💎 North</Text>
                     </Pressable>
                     <Pressable
                       onPress={() => setChartFormat('south')}
                       style={[{ paddingVertical: 4, paddingHorizontal: 8, borderRadius: radius.pill }, chartFormat === 'south' && { backgroundColor: '#FFFFFF', shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 2, elevation: 1 }]}
                     >
-                      <Text style={{ fontSize: 10.5, fontWeight: '800', color: chartFormat === 'south' ? colors.goldSoft : colors.textMuted }}>🔲 South</Text>
+                      <Text style={{ fontSize: 10.5, fontWeight: '800', color: chartFormat === 'south' ? colors.primary : colors.textMuted }}>🔲 South</Text>
                     </Pressable>
                   </View>
                 </View>
@@ -400,7 +400,7 @@ export default function KundliScreen() {
                   ]}
                 >
                   <LinearGradient
-                    colors={[colors.saffron, colors.gold]}
+                    colors={['#FF3366', '#F43F5E']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={styles.matchButtonGradient}
@@ -433,8 +433,8 @@ export default function KundliScreen() {
                         </Text>
                         <Text style={[styles.detailSub, { textAlign: 'left' }]}>{k.description}</Text>
                       </View>
-                      <View style={[styles.kootaScore, { backgroundColor: k.obtained > 0 ? 'rgba(217,119,6,0.12)' : 'rgba(148,163,184,0.15)' }]}>
-                        <Text style={[styles.kootaScoreText, { color: k.obtained > 0 ? colors.gold : colors.textFaint }]}>
+                      <View style={[styles.kootaScore, { backgroundColor: k.obtained > 0 ? 'rgba(6,182,212,0.12)' : 'rgba(148,163,184,0.15)' }]}>
+                        <Text style={[styles.kootaScoreText, { color: k.obtained > 0 ? '#0891B2' : colors.textFaint }]}>
                           {k.obtained}/{k.total}
                         </Text>
                       </View>
@@ -491,8 +491,8 @@ const styles = StyleSheet.create({
   tabActive: {
     borderTopColor: 'rgba(255, 255, 255, 0.4)',
     borderBottomWidth: 3,
-    borderBottomColor: '#B45309',
-    shadowColor: colors.saffron,
+    borderBottomColor: '#4338CA',
+    shadowColor: colors.primary,
     shadowOpacity: 0.3,
   },
   tabPressed: {
@@ -616,8 +616,8 @@ const styles = StyleSheet.create({
     borderTopWidth: 1.5,
     borderTopColor: 'rgba(255, 255, 255, 0.45)',
     borderBottomWidth: 3.5,
-    borderBottomColor: '#B45309',
-    shadowColor: colors.saffron,
+    borderBottomColor: '#BE123C',
+    shadowColor: '#FF3366',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.35,
     shadowRadius: 8,
@@ -639,10 +639,10 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
     overflow: 'hidden',
     borderRadius: radius.md,
-    backgroundColor: 'rgba(217,119,6,0.08)',
+    backgroundColor: 'rgba(99,102,241,0.08)',
   },
-  matchScoreNum: { fontSize: 52, fontWeight: '900', color: colors.gold },
-  matchScoreLabel: { ...typography.h3, color: colors.gold, marginTop: 4, fontWeight: '800' },
+  matchScoreNum: { fontSize: 52, fontWeight: '900', color: '#6366F1' },
+  matchScoreLabel: { ...typography.h3, color: '#FF3366', marginTop: 4, fontWeight: '800' },
   matchVerdict: { ...typography.small, color: colors.textMuted, textAlign: 'center', marginTop: spacing.sm, lineHeight: 18, paddingHorizontal: spacing.lg, fontWeight: '600' },
 
   kootaScore: {

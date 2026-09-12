@@ -42,7 +42,7 @@ export default function AstroMapScreen() {
             <Text style={{ fontSize: 64, alignSelf: 'center', marginVertical: spacing.lg }}>🌍</Text>
 
             <View style={styles.mapPinRow}>
-              <View style={[styles.mapPin, { backgroundColor: '#F59E0B' }]}>
+              <View style={[styles.mapPin, { backgroundColor: '#06B6D4' }]}>
                 <Text style={styles.pinText}>☀️ Sun Line</Text>
               </View>
               <View style={[styles.mapPin, { backgroundColor: '#EF4444' }]}>

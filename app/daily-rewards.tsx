@@ -26,12 +26,12 @@ import { formatCurrency } from '../src/utils';
 const { width } = Dimensions.get('window');
 
 const WHEEL_PRIZES = [
-  { label: '₹25 Cash', color: '#F59E0B' },
+  { label: '₹25 Cash', color: '#FF3366' },
   { label: '50 Coins', color: '#10B981' },
   { label: '₹50 Off', color: '#8B5CF6' },
   { label: '100 Coins', color: '#EC4899' },
   { label: '₹10 Cash', color: '#3B82F6' },
-  { label: 'Free Milan', color: '#F97316' },
+  { label: 'Free Milan', color: '#06B6D4' },
 ];
 
 export default function DailyRewardsScreen() {
@@ -217,7 +217,7 @@ export default function DailyRewardsScreen() {
                 const isCurrent = day === streakCount;
                 return (
                   <View key={day} style={[styles.trailNode, isPassed && styles.trailNodePassed]}>
-                    <Text style={[styles.trailDay, isPassed && { color: '#FDE68A' }]}>D{day}</Text>
+                    <Text style={[styles.trailDay, isPassed && { color: '#C7D2FE' }]}>D{day}</Text>
                     <Text style={{ fontSize: 13, marginTop: 2 }}>{day === 7 ? '👑' : isPassed ? '⭐' : '🪙'}</Text>
                     <Text style={styles.trailCoins}>+{20 + day * 5}</Text>
                   </View>
@@ -239,7 +239,7 @@ export default function DailyRewardsScreen() {
             <View style={styles.wheelWrapper}>
               <Animated.View style={[styles.wheelCircle, { transform: [{ rotate: spinInterpolate }] }]}>
                 <LinearGradient
-                  colors={['#7C3AED', '#4F46E5', '#2563EB', '#059669', '#D97706', '#DC2626']}
+                  colors={['#7C3AED', '#4F46E5', '#2563EB', '#059669', '#FF3366', '#DC2626']}
                   style={StyleSheet.absoluteFill}
                 />
                 {WHEEL_PRIZES.map((item, idx) => {
@@ -483,16 +483,16 @@ const styles = StyleSheet.create({
   coinsBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FEF3C7',
+    backgroundColor: 'rgba(6,182,212,0.12)',
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: '#FDE68A',
+    borderColor: 'rgba(6,182,212,0.25)',
     gap: 4,
   },
   coinsIcon: { fontSize: 14 },
-  coinsText: { ...typography.tiny, fontWeight: '900', color: '#B45309' },
+  coinsText: { ...typography.tiny, fontWeight: '900', color: '#0891B2' },
 
   scroll: {
     padding: spacing.md,
@@ -526,7 +526,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1.2,
     borderTopColor: 'rgba(255, 255, 255, 0.45)',
     borderBottomWidth: 3,
-    borderBottomColor: '#B45309',
+    borderBottomColor: '#BE123C',
     shadowColor: colors.saffron,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.35,
@@ -553,9 +553,9 @@ const styles = StyleSheet.create({
     minWidth: 38,
   },
   trailNodePassed: {
-    backgroundColor: 'rgba(245,158,11,0.2)',
+    backgroundColor: 'rgba(99,102,241,0.2)',
     borderWidth: 1,
-    borderColor: '#F59E0B',
+    borderColor: '#6366F1',
   },
   trailDay: { fontSize: 10, fontWeight: '800', color: '#94A3B8' },
   trailCoins: { fontSize: 9, color: '#CBD5E1', fontWeight: '700', marginTop: 2 },
@@ -604,7 +604,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     overflow: 'hidden',
     borderWidth: 3,
-    borderColor: '#FDE68A',
+    borderColor: '#818CF8',
   },
   wheelSliceText: {
     position: 'absolute',
@@ -670,7 +670,7 @@ const styles = StyleSheet.create({
     backfaceVisibility: 'hidden',
     overflow: 'hidden',
     borderWidth: 2,
-    borderColor: '#F59E0B',
+    borderColor: '#6366F1',
   },
   tarotCardBack: {
     gap: 8,
@@ -678,7 +678,7 @@ const styles = StyleSheet.create({
   tarotBackText: {
     fontSize: 16,
     fontWeight: '900',
-    color: '#FDE68A',
+    color: '#C7D2FE',
     letterSpacing: 1.5,
   },
   tarotBackSub: {
@@ -693,7 +693,7 @@ const styles = StyleSheet.create({
   tarotFrontName: {
     fontSize: 16,
     fontWeight: '900',
-    color: '#FDE68A',
+    color: '#E0E7FF',
   },
   tarotFrontArcana: {
     fontSize: 10.5,
@@ -702,13 +702,13 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   tarotPill: {
-    backgroundColor: 'rgba(245,158,11,0.15)',
+    backgroundColor: 'rgba(99,102,241,0.15)',
     paddingHorizontal: 10,
     paddingVertical: 3,
     borderRadius: radius.pill,
     marginVertical: 6,
   },
-  tarotPillText: { fontSize: 11, fontWeight: '800', color: '#F59E0B' },
+  tarotPillText: { fontSize: 11, fontWeight: '800', color: '#818CF8' },
   tarotMeaning: {
     fontSize: 11,
     color: '#E2E8F0',
@@ -723,7 +723,7 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
   },
-  tarotAffirmTitle: { fontSize: 9.5, fontWeight: '800', color: '#FDE68A' },
+  tarotAffirmTitle: { fontSize: 9.5, fontWeight: '800', color: '#C7D2FE' },
   tarotAffirmText: { fontSize: 10.5, color: '#FFFFFF', fontStyle: 'italic', textAlign: 'center', marginTop: 2 },
   tarotMetaRow: {
     flexDirection: 'row',
@@ -792,15 +792,15 @@ const styles = StyleSheet.create({
   prizeTitle: { ...typography.h2, fontSize: 20, fontWeight: '900', color: '#0F172A', marginTop: 8 },
   prizeSub: { fontSize: 12, color: colors.textMuted, marginTop: 4 },
   prizeBadge: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor: 'rgba(6,182,212,0.12)',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: radius.pill,
     marginVertical: 14,
     borderWidth: 1,
-    borderColor: '#FDE68A',
+    borderColor: 'rgba(6,182,212,0.25)',
   },
-  prizeBadgeText: { fontSize: 16, fontWeight: '900', color: '#B45309' },
+  prizeBadgeText: { fontSize: 16, fontWeight: '900', color: '#0891B2' },
   prizeNote: { fontSize: 11, color: colors.textMuted, marginBottom: 16 },
   prizeCloseBtn: {
     width: '100%',
@@ -808,6 +808,10 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     alignItems: 'center',
     overflow: 'hidden',
+    borderTopWidth: 1.2,
+    borderTopColor: 'rgba(255, 255, 255, 0.45)',
+    borderBottomWidth: 3,
+    borderBottomColor: '#BE123C',
   },
   prizeCloseText: { color: '#FFFFFF', fontWeight: '900', fontSize: 14 },
 

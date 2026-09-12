@@ -193,9 +193,9 @@ export function JyotishiWorkstation() {
               subtitle={`${waitingRooms.length} waiting · ${activeRooms.length} active`}
             />
             {[...waitingRooms, ...activeRooms].map((room) => (
-              <View key={room.roomId} style={[styles.clientCard, { borderLeftWidth: 4, borderLeftColor: room.status === 'active' ? '#10B981' : '#F59E0B' }]}>
+              <View key={room.roomId} style={[styles.clientCard, { borderLeftWidth: 4, borderLeftColor: room.status === 'active' ? '#10B981' : '#FF3366' }]}>
                 <View style={styles.clientHeaderRow}>
-                  <View style={[styles.clientAvatarCircle, { backgroundColor: room.status === 'active' ? 'rgba(16,185,129,0.15)' : 'rgba(245,158,11,0.15)' }]}>
+                  <View style={[styles.clientAvatarCircle, { backgroundColor: room.status === 'active' ? 'rgba(16,185,129,0.15)' : 'rgba(255,51,102,0.15)' }]}>
                     <Text style={{ fontSize: 20 }}>{room.status === 'active' ? '💬' : '🔔'}</Text>
                   </View>
                   <View style={{ flex: 1 }}>

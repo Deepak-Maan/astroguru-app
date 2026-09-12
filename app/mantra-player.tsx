@@ -43,7 +43,7 @@ export default function MantraPlayerScreen() {
           {/* Main Audio Player Card */}
           <Card style={{ gap: spacing.md, alignItems: 'center' }}>
             <LinearGradient
-              colors={['#6D28D9', '#D97706']}
+              colors={['#6366F1', '#8B5CF6']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.discCircle}

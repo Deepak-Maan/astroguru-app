@@ -221,17 +221,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 7,
     borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: '#FDE68A',
-    backgroundColor: '#FFFBEB',
-    shadowColor: '#FDE68A',
+    borderWidth: 1.5,
+    borderColor: 'rgba(6,182,212,0.35)',
+    backgroundColor: 'rgba(6,182,212,0.08)',
+    shadowColor: '#06B6D4',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.15,
     shadowRadius: 4,
     elevation: 2,
   },
   walletIcon: { fontSize: 13 },
-  walletText: { ...typography.small, color: '#92400E', fontWeight: '800', fontSize: 13 },
+  walletText: { ...typography.small, color: '#0284C7', fontWeight: '800', fontSize: 13 },
 
   /* Ticker */
   tickerPill: {

@@ -107,16 +107,16 @@ export function GradientBackground({ children, style, stars = true }: Props) {
 
   return (
     <View style={[styles.root, style]}>
-      {/* Base Nordic Frost Ice Blue Slate Gradient */}
+      {/* Base Modern Luminous Crystal Air Gradient */}
       <LinearGradient
-        colors={['#F4F9FF', '#EFF6FF', '#E2E8F0']}
+        colors={['#FFFFFF', '#F8FAFC', '#F1F5F9']}
         locations={[0, 0.5, 1]}
         start={{ x: 0.1, y: 0 }}
         end={{ x: 0.9, y: 1 }}
         style={StyleSheet.absoluteFill}
       />
 
-      {/* Glow Orb Top-Right (Sacred Emerald Teal) */}
+      {/* Glow Orb Top-Right (Electric Indigo) */}
       <Animated.View
         ref={glowTopRef}
         pointerEvents="none"
@@ -126,7 +126,7 @@ export function GradientBackground({ children, style, stars = true }: Props) {
         ]}
       />
 
-      {/* Glow Orb Bottom-Left (Solar Amber Gold) */}
+      {/* Glow Orb Bottom-Left (Neon Coral Punch) */}
       <Animated.View
         ref={glowBottomRef}
         pointerEvents="none"
@@ -146,7 +146,7 @@ export function GradientBackground({ children, style, stars = true }: Props) {
         ]}
       />
 
-      {/* Constellation Stars for Light Mode */}
+      {/* Constellation Stars for Modern Light Mode */}
       {stars && (
         <View style={StyleSheet.absoluteFill} pointerEvents="none">
           {starList.map((s, i) => (
@@ -159,7 +159,7 @@ export function GradientBackground({ children, style, stars = true }: Props) {
                 width: s.size,
                 height: s.size,
                 borderRadius: s.size,
-                backgroundColor: i % 2 === 0 ? colors.teal : colors.gold,
+                backgroundColor: i % 2 === 0 ? '#6366F1' : '#FF3366',
                 opacity: Animated.multiply(s.opacity, starOpacityMult),
               }}
             />
@@ -173,7 +173,7 @@ export function GradientBackground({ children, style, stars = true }: Props) {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#EFF6FF', overflow: 'hidden' },
+  root: { flex: 1, backgroundColor: '#F8FAFC', overflow: 'hidden' },
   content: { flex: 1 },
 
   glowTop: {
@@ -183,8 +183,8 @@ const styles = StyleSheet.create({
     width: 380,
     height: 380,
     borderRadius: 190,
-    backgroundColor: '#059669',
-    opacity: 0.08,
+    backgroundColor: '#6366F1',
+    opacity: 0.09,
   },
   glowBottom: {
     position: 'absolute',
@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
     width: 390,
     height: 390,
     borderRadius: 195,
-    backgroundColor: '#F59E0B',
+    backgroundColor: '#FF3366',
     opacity: 0.07,
   },
 
@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
     height: 520,
     borderRadius: 260,
     borderWidth: 1.5,
-    borderColor: 'rgba(5,150,105,0.14)',
+    borderColor: 'rgba(99,102,241,0.16)',
     borderStyle: 'dashed',
     opacity: 0.6,
   },

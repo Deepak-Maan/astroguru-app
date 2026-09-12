@@ -72,7 +72,7 @@ export default function EarningsReport() {
             </View>
             <View style={styles.metricCard}>
               <Text style={styles.metricLabel}>TDS Deducted (10%)</Text>
-              <Text style={[styles.metricVal, { color: '#D97706' }]}>₹4,850</Text>
+              <Text style={[styles.metricVal, { color: '#6366F1' }]}>₹4,850</Text>
             </View>
           </View>
 

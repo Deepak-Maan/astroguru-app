@@ -69,7 +69,7 @@ export function AppUpdateModal() {
             {/* Header Banner */}
             <View style={styles.header}>
               <LinearGradient
-                colors={['#D97706', '#E67E22', '#F59E0B']}
+                colors={['#4F46E5', '#6366F1', '#8B5CF6']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={StyleSheet.absoluteFill}
@@ -81,7 +81,7 @@ export function AppUpdateModal() {
               <Text style={styles.headerTitle}>AstroGuru v{latestVersion}</Text>
               <View style={styles.versionBadge}>
                 <Text style={styles.versionText}>
-                  Installed: v{currentVersion} ➔ <Text style={{ color: '#FDE68A', fontWeight: '900' }}>New: v{latestVersion}</Text>
+                  Installed: v{currentVersion} ➔ <Text style={{ color: '#C7D2FE', fontWeight: '900' }}>New: v{latestVersion}</Text>
                 </Text>
               </View>
             </View>
@@ -173,7 +173,7 @@ export function AppUpdateModal() {
                   colors={
                     isReadyToInstall
                       ? ['#059669', '#10B981']
-                      : ['#D97706', '#F59E0B']
+                      : ['#FF3366', '#F43F5E']
                   }
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     ...typography.tiny,
-    color: '#FDE68A',
+    color: '#C7D2FE',
     fontWeight: '900',
     letterSpacing: 0.8,
     fontSize: 10,
@@ -423,6 +423,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
+    borderTopWidth: 1.5,
+    borderTopColor: 'rgba(255, 255, 255, 0.45)',
+    borderBottomWidth: 3.5,
+    borderBottomColor: '#BE123C',
     shadowColor: colors.saffron,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,

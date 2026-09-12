@@ -114,11 +114,11 @@ export default function BankSettings() {
 const styles = StyleSheet.create({
   scroll: { padding: spacing.lg, gap: spacing.md, paddingBottom: 40 },
   tdsCard: {
-    backgroundColor: 'rgba(217,119,6,0.08)', borderRadius: radius.lg, padding: spacing.md, gap: 4,
-    borderWidth: 1, borderColor: 'rgba(217,119,6,0.2)',
+    backgroundColor: 'rgba(99,102,241,0.08)', borderRadius: radius.lg, padding: spacing.md, gap: 4,
+    borderWidth: 1, borderColor: 'rgba(99,102,241,0.2)',
   },
-  tdsTitle: { fontSize: 14, fontWeight: '800', color: '#D97706' },
-  tdsSub: { fontSize: 12, color: '#78350F', lineHeight: 18, fontWeight: '500' },
+  tdsTitle: { fontSize: 14, fontWeight: '800', color: '#4338CA' },
+  tdsSub: { fontSize: 12, color: '#1E1B4B', lineHeight: 18, fontWeight: '500' },
   sectionLabel: { fontSize: 14, fontWeight: '800', color: colors.text },
   accountCard: {
     backgroundColor: '#FFFFFF', borderRadius: radius.lg, padding: spacing.md, gap: spacing.sm,
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8FAFC', borderRadius: radius.md, borderWidth: 1.5,
     borderColor: 'rgba(191,219,254,0.7)', padding: 12, fontSize: 14, color: colors.text,
   },
-  noteText: { fontSize: 11, color: '#D97706', fontWeight: '600', lineHeight: 17 },
+  noteText: { fontSize: 11, color: '#4338CA', fontWeight: '600', lineHeight: 17 },
   upiAddRow: { flexDirection: 'row', gap: spacing.sm, alignItems: 'center' },
   addUpiBtn: { backgroundColor: colors.teal, borderRadius: radius.md, paddingHorizontal: 18, paddingVertical: 13 },
   addUpiBtnText: { color: '#FFFFFF', fontWeight: '800', fontSize: 14 },

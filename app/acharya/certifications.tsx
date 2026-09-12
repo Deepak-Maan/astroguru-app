@@ -48,15 +48,15 @@ export default function Certifications() {
           </View>
 
           {certs.map((cert) => (
-            <View key={cert.id} style={[styles.certCard, { borderLeftColor: cert.verified ? colors.teal : '#F59E0B' }]}>
+            <View key={cert.id} style={[styles.certCard, { borderLeftColor: cert.verified ? colors.teal : '#FF3366' }]}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <View style={{ flex: 1, gap: 3 }}>
                   <Text style={styles.certName}>{cert.name}</Text>
                   <Text style={styles.certBody}>{cert.body}</Text>
                   <Text style={styles.certYear}>📅 Issued: {cert.year}</Text>
                 </View>
-                <View style={[styles.badge, { backgroundColor: cert.verified ? 'rgba(5,150,105,0.12)' : 'rgba(245,158,11,0.12)', borderColor: cert.verified ? colors.teal : '#F59E0B' }]}>
-                  <Text style={[styles.badgeText, { color: cert.verified ? colors.teal : '#D97706' }]}>
+                <View style={[styles.badge, { backgroundColor: cert.verified ? 'rgba(5,150,105,0.12)' : 'rgba(255,51,102,0.12)', borderColor: cert.verified ? colors.teal : '#FF3366' }]}>
+                  <Text style={[styles.badgeText, { color: cert.verified ? colors.teal : '#FF3366' }]}>
                     {cert.verified ? '✅ Verified' : '⏳ Pending'}
                   </Text>
                 </View>
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
   certYear: { fontSize: 12, color: colors.textFaint, fontWeight: '600' },
   badge: { borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1 },
   badgeText: { fontSize: 11, fontWeight: '800' },
-  pendingNote: { fontSize: 11, color: '#D97706', fontStyle: 'italic', fontWeight: '600' },
+  pendingNote: { fontSize: 11, color: '#FF3366', fontStyle: 'italic', fontWeight: '600' },
   addBtn: {
     backgroundColor: '#FFFFFF', borderRadius: radius.lg, padding: 16, alignItems: 'center',
     borderWidth: 2, borderColor: colors.teal, borderStyle: 'dashed',

@@ -45,10 +45,10 @@ function AcharyaLiveQueue({ astrologerId }: { astrologerId: string }) {
     <View style={{ gap: spacing.sm }}>
       <SectionHeader title="🔴 Live Consultation Requests" />
       {activeRooms.map((room) => (
-        <Card key={room.roomId} padded style={{ backgroundColor: '#FFFBEB', borderColor: colors.gold, borderWidth: 1.5 }}>
+        <Card key={room.roomId} padded style={{ backgroundColor: 'rgba(99,102,241,0.06)', borderColor: colors.primary, borderWidth: 1.5 }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <View style={{ flex: 1, gap: 2 }}>
-              <Text style={{ ...typography.tiny, color: colors.goldSoft, fontWeight: '900' }}>
+              <Text style={{ ...typography.tiny, color: colors.primary, fontWeight: '900' }}>
                 {room.status === 'waiting' ? '⏳ PENDING REQUEST' : '💬 ACTIVE SESSION'}
               </Text>
               <Text style={{ ...typography.h3, color: colors.text, fontWeight: '900' }}>
@@ -277,8 +277,8 @@ export default function Profile() {
                 )}
 
                 {isVip && (
-                  <View style={[styles.adminRoleTag, { borderColor: colors.gold, backgroundColor: 'rgba(217,119,6,0.12)' }]}>
-                    <Text style={[styles.adminRoleText, { color: colors.gold }]}>
+                  <View style={[styles.adminRoleTag, { borderColor: '#8B5CF6', backgroundColor: 'rgba(139,92,246,0.12)' }]}>
+                    <Text style={[styles.adminRoleText, { color: '#8B5CF6' }]}>
                       👑 VIP PASS · {vipPlanId?.toUpperCase()} · Expires {vipExpires}
                     </Text>
                   </View>
@@ -462,15 +462,16 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   adminBannerIcon: { fontSize: 24 },
-  adminBannerTitle: { ...typography.h3, color: colors.white, fontWeight: '800' },
-  adminBannerSub: { ...typography.tiny, color: 'rgba(255,255,255,0.9)', marginTop: 1 },
-  adminBannerArrow: { fontSize: 24, color: colors.white, fontWeight: '800' },
+  adminBannerTitle: { ...typography.h3, color: '#FFFFFF', fontWeight: '900', fontSize: 15 },
+  adminBannerSub: { ...typography.tiny, color: 'rgba(255, 255, 255, 0.85)', marginTop: 2 },
+  adminBannerArrow: { fontSize: 24, color: '#FFFFFF', fontWeight: '900' },
 
   walletCard: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    borderRadius: radius.xl,
     backgroundColor: '#FFFFFF',
+    borderRadius: radius.xl,
     borderTopWidth: 1.5,
     borderLeftWidth: 1.2,
     borderTopColor: 'rgba(255, 255, 255, 0.95)',
@@ -478,17 +479,17 @@ const styles = StyleSheet.create({
     borderRightWidth: 1.2,
     borderRightColor: '#E2E8F0',
     borderBottomWidth: 3.5,
-    borderBottomColor: '#B45309',
+    borderBottomColor: '#4338CA',
     padding: spacing.xl,
     overflow: 'hidden',
-    shadowColor: colors.saffron,
+    shadowColor: '#6366F1',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.22,
+    shadowOpacity: 0.15,
     shadowRadius: 10,
     elevation: 4,
   },
   walletLabel: { ...typography.small, color: colors.textMuted, fontWeight: '700' },
-  walletValue: { ...typography.display, fontSize: 30, color: colors.gold, marginTop: 2, fontWeight: '800' },
+  walletValue: { ...typography.display, fontSize: 30, color: '#6366F1', marginTop: 2, fontWeight: '800' },
   walletSub: { ...typography.tiny, color: colors.textFaint, marginTop: 3, fontWeight: '600' },
   walletIcon: { fontSize: 44, opacity: 0.85 },
 

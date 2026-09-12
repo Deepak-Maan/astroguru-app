@@ -364,7 +364,7 @@ export default function ChatScreen() {
               style={styles.modeToggle}
             >
               <LinearGradient
-                colors={mode === 'call' ? [colors.saffron, colors.gold] : ['#F1F5F9', '#E2E8F0']}
+                colors={mode === 'call' ? ['#6366F1', '#8B5CF6'] : ['#F1F5F9', '#E2E8F0']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.modeToggleGrad}
@@ -393,7 +393,7 @@ export default function ChatScreen() {
             <Animated.View style={[styles.callAvatarRing, { transform: [{ scale: pulseAnim }] }]}>
               {active && (
                 <LinearGradient
-                  colors={['rgba(230,126,34,0.30)', 'rgba(125,60,152,0.10)']}
+                  colors={['rgba(99,102,241,0.30)', 'rgba(139,92,246,0.10)']}
                   style={StyleSheet.absoluteFill}
                 />
               )}
@@ -407,7 +407,7 @@ export default function ChatScreen() {
             </Animated.View>
 
             <Text style={styles.callName}>{astrologer.name}</Text>
-            <Text style={[styles.callStatus, { color: active ? colors.saffron : colors.textMuted }]}>
+            <Text style={[styles.callStatus, { color: active ? colors.primary : colors.textMuted }]}>
               {active ? `Live Audio Call · ${mm}:${ss}` : 'Ready to Connect'}
             </Text>
 
@@ -421,7 +421,7 @@ export default function ChatScreen() {
                     {
                       height: anim,
                       backgroundColor: active
-                        ? idx % 3 === 0 ? colors.saffron : idx % 3 === 1 ? colors.gold : colors.teal
+                        ? idx % 3 === 0 ? '#FF3366' : idx % 3 === 1 ? '#06B6D4' : '#6366F1'
                         : '#CBD5E1',
                     },
                   ]}
@@ -564,7 +564,7 @@ export default function ChatScreen() {
                 >
                   <Animated.View style={{ transform: [{ scale: sendScaleAnim }], flex: 1, width: '100%', alignItems: 'center', justifyContent: 'center' }}>
                     <LinearGradient
-                      colors={draft.trim() ? [colors.saffron, colors.gold] : ['#CBD5E1', '#94A3B8']}
+                      colors={draft.trim() ? ['#FF3366', '#F43F5E'] : ['#CBD5E1', '#94A3B8']}
                       style={StyleSheet.absoluteFill}
                     />
                     <Text style={styles.sendIcon}>➤</Text>
@@ -684,15 +684,15 @@ const styles = StyleSheet.create({
   walletPill: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFFBEB',
+    backgroundColor: 'rgba(6,182,212,0.08)',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: radius.pill,
     borderWidth: 1.5,
-    borderColor: 'rgba(245,158,11,0.40)',
+    borderColor: 'rgba(6,182,212,0.35)',
     overflow: 'hidden',
   },
-  walletVal: { ...typography.h3, fontSize: 13, color: colors.saffron, textAlign: 'center', fontWeight: '900' },
+  walletVal: { ...typography.h3, fontSize: 13, color: '#0284C7', textAlign: 'center', fontWeight: '900' },
   walletRate: { ...typography.tiny, fontSize: 9.5, color: colors.textMuted, textAlign: 'center', fontWeight: '700' },
 
   strip: {
@@ -797,9 +797,9 @@ const styles = StyleSheet.create({
     borderBottomColor: '#BE123C',
   },
   callBtnGold: {
-    backgroundColor: 'rgba(245,158,11,0.12)',
-    borderColor: colors.saffron,
-    borderBottomColor: '#B45309',
+    backgroundColor: 'rgba(6,182,212,0.12)',
+    borderColor: '#06B6D4',
+    borderBottomColor: '#0E7490',
   },
   callBtnEnd: {
     width: 66,
@@ -902,8 +902,8 @@ const styles = StyleSheet.create({
     borderTopWidth: 1.2,
     borderTopColor: 'rgba(255, 255, 255, 0.45)',
     borderBottomWidth: 2.5,
-    borderBottomColor: '#B45309',
-    shadowColor: colors.saffron,
+    borderBottomColor: '#BE123C',
+    shadowColor: '#FF3366',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
@@ -981,14 +981,14 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   rechargeOptionPopular: {
-    borderColor: colors.saffron,
-    borderBottomColor: '#B45309',
-    backgroundColor: 'rgba(245,158,11,0.05)',
+    borderColor: '#FF3366',
+    borderBottomColor: '#BE123C',
+    backgroundColor: 'rgba(255,51,102,0.06)',
   },
   rechargeOptionBest: {
-    borderColor: colors.gold,
-    borderBottomColor: '#B45309',
-    backgroundColor: 'rgba(212,172,13,0.08)',
+    borderColor: '#6366F1',
+    borderBottomColor: '#4338CA',
+    backgroundColor: 'rgba(99,102,241,0.06)',
   },
   popularTag: {
     position: 'absolute',

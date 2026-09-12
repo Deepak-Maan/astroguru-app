@@ -331,7 +331,7 @@ export default function Consult() {
               >
                 {active && (
                   <LinearGradient
-                    colors={[colors.saffron, colors.gold]}
+                    colors={['#FF3366', '#F43F5E']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={StyleSheet.absoluteFill}
@@ -371,7 +371,7 @@ export default function Consult() {
               >
                 {active && (
                   <LinearGradient
-                    colors={[colors.teal, colors.gold]}
+                    colors={['#6366F1', '#4F46E5']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={StyleSheet.absoluteFill}
@@ -534,8 +534,8 @@ const styles = StyleSheet.create({
   filterChipActive: {
     borderTopColor: 'rgba(255, 255, 255, 0.4)',
     borderBottomWidth: 3,
-    borderBottomColor: '#B45309',
-    shadowColor: colors.saffron,
+    borderBottomColor: '#BE123C',
+    shadowColor: '#FF3366',
     shadowOpacity: 0.3,
   },
   filterChipPressed: {

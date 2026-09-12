@@ -215,8 +215,8 @@ const styles = StyleSheet.create({
   tabCellActive: {
     borderTopColor: 'rgba(255, 255, 255, 0.4)',
     borderBottomWidth: 3,
-    borderBottomColor: '#B45309',
-    shadowColor: colors.saffron,
+    borderBottomColor: '#4338CA',
+    shadowColor: colors.primary,
     shadowOpacity: 0.3,
   },
   tabText: { ...typography.tiny, color: colors.textMuted, fontWeight: '700' },

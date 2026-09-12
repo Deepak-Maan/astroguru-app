@@ -201,7 +201,7 @@ export function AcharyaChatCenter() {
 
       {/* Metrics Banner */}
       <View style={styles.metricsRow}>
-        <View style={[styles.metricCard, { borderColor: 'rgba(245,158,11,0.4)', backgroundColor: '#FFFBEB' }]}>
+        <View style={[styles.metricCard, { borderColor: 'rgba(255,51,102,0.35)', backgroundColor: 'rgba(255,51,102,0.06)' }]}>
           <Text style={[styles.metricVal, { color: colors.saffron }]}>{waitingCount}</Text>
           <Text style={styles.metricLabel}>⏳ Waiting Queue</Text>
         </View>

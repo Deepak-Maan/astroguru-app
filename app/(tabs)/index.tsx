@@ -69,12 +69,12 @@ export default function Home() {
   }
 
   const quickActions = [
-    { icon: '🪐', label: 'Kundli', href: '/(tabs)/kundli', bg: '#FFEDD5' },
+    { icon: '🪐', label: 'Kundli', href: '/(tabs)/kundli', bg: '#EDE9FE' },
     { icon: '🔢', label: 'Numerology', href: '/numerology', bg: '#E0F2FE' },
     { icon: '🪄', label: 'Vedic Spells', href: '/spells', bg: '#F3E8FF' },
     { icon: '🔮', label: 'Crystal Ball', href: '/soulmate-ai', bg: '#EEF2FF' },
     { icon: '💬', label: 'Chat', href: '/instant-consult', bg: '#F5F3FF' },
-    { icon: '💰', label: 'Wallet', href: '/wallet', bg: '#FEF3C7' },
+    { icon: '💰', label: 'Wallet', href: '/wallet', bg: '#ECFEFF' },
   ];
 
   const today = new Date().toLocaleDateString('en-GB', {
@@ -98,14 +98,14 @@ export default function Home() {
           {/* Live Planetary Transit Ticker Ribbon */}
           <View style={styles.transitRibbon}>
             <LinearGradient
-              colors={['#FFFBEB', '#F0FDF4']}
+              colors={['#EFF6FF', '#F5F3FF']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={StyleSheet.absoluteFill}
             />
             <Text style={styles.transitIcon}>🪐</Text>
             <Text style={styles.transitText} numberOfLines={1}>
-              <Text style={{ fontWeight: '800', color: colors.goldSoft }}>LIVE TRANSIT:</Text> Guru in Taurus · Surya in Simha · Chandra in {rashi.sanskrit} · Shubh Muhurta active
+              <Text style={{ fontWeight: '800', color: colors.primary }}>LIVE TRANSIT:</Text> Guru in Taurus · Surya in Simha · Chandra in {rashi.sanskrit} · Shubh Muhurta active
             </Text>
           </View>
 
@@ -216,22 +216,22 @@ export default function Home() {
             </View>
           </Pressable>
 
-          {/* Feature Highlights Row 1: Spells & Remedies */}
+          {/* Horoscope Highlights Mini-Row */}
           <View style={styles.featureHighlightsRow}>
             <Pressable
-              onPress={() => router.push('/spells')}
+              onPress={() => router.push('/(tabs)/horoscope')}
               style={({ pressed }) => [styles.highlightCard, pressed && { opacity: 0.85 }]}
             >
-              <Text style={{ fontSize: 20 }}>🪄</Text>
+              <Text style={{ fontSize: 20 }}>🔮</Text>
               <View style={{ flex: 1 }}>
-                <Text style={styles.highlightTitle}>Vedic Spells</Text>
-                <Text style={styles.highlightSub}>Manifestation Rituals</Text>
+                <Text style={styles.highlightTitle}>Daily Rashi</Text>
+                <Text style={styles.highlightSub}>Today's Forecast</Text>
               </View>
               <Text style={styles.highlightArrow}>›</Text>
             </Pressable>
 
             <Pressable
-              onPress={() => router.push('/remedies')}
+              onPress={() => router.push('/shop')}
               style={({ pressed }) => [styles.highlightCard, pressed && { opacity: 0.85 }]}
             >
               <Text style={{ fontSize: 20 }}>💎</Text>
@@ -246,7 +246,7 @@ export default function Home() {
           {/* VIP / AI Banner */}
           <Pressable onPress={() => router.push('/vip')} style={({ pressed }) => [pressed && { opacity: 0.85 }]}>
             <LinearGradient
-              colors={isVip ? [colors.gold, colors.saffron] : [colors.teal, '#047857']}
+              colors={isVip ? ['#FF3366', '#8B5CF6'] : ['#4F46E5', '#6366F1']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.vipBanner}
@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
   skyEyebrow: {
     fontSize: 12,
     fontWeight: '800',
-    color: '#D97706',
+    color: colors.primary,
     letterSpacing: 0.8,
   },
   skyTitle: {
@@ -477,14 +477,14 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   luckyPill: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor: '#ECFEFF',
     borderRadius: radius.pill,
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderBottomWidth: 2,
-    borderBottomColor: '#F59E0B',
+    borderBottomColor: '#06B6D4',
   },
-  luckyPillText: { fontSize: 11.5, color: '#D97706', fontWeight: '800' },
+  luckyPillText: { fontSize: 11.5, color: '#0891B2', fontWeight: '800' },
   silverPill: {
     backgroundColor: '#ECFDF5',
     borderRadius: radius.pill,
@@ -494,7 +494,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#10B981',
   },
   silverPillText: { fontSize: 11.5, color: '#059669', fontWeight: '800' },
-  readMore: { fontSize: 13, color: '#059669', fontWeight: '800', marginLeft: 'auto' },
+  readMore: { fontSize: 13, color: '#6366F1', fontWeight: '800', marginLeft: 'auto' },
 
   /* 6 Quick Action Grid Cards (3D Tactile Push-Buttons) */
   quickGrid: {
@@ -622,8 +622,8 @@ const styles = StyleSheet.create({
     borderTopWidth: 1.5,
     borderTopColor: 'rgba(255, 255, 255, 0.45)',
     borderBottomWidth: 3.5,
-    borderBottomColor: '#046A4E',
-    shadowColor: '#059669',
+    borderBottomColor: '#BE123C',
+    shadowColor: colors.saffron,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.22,
     shadowRadius: 10,

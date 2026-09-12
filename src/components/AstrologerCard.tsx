@@ -158,8 +158,8 @@ const styles = StyleSheet.create({
     opacity: 0.92,
   },
   cardVerifiedBorder: {
-    borderBottomColor: '#B45309',
-    shadowColor: colors.gold,
+    borderBottomColor: '#4338CA',
+    shadowColor: colors.primary,
     shadowOpacity: 0.2,
   },
   avatarCol: {},
@@ -185,24 +185,24 @@ const styles = StyleSheet.create({
   ratingPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(217,119,6,0.12)',
+    backgroundColor: 'rgba(6,182,212,0.12)',
     borderRadius: radius.pill,
     paddingHorizontal: 7,
     paddingVertical: 2,
     borderWidth: 1,
-    borderColor: 'rgba(217,119,6,0.30)',
+    borderColor: 'rgba(6,182,212,0.30)',
   },
-  ratingText: { ...typography.tiny, color: colors.gold, fontWeight: '800', fontSize: 10.5 },
+  ratingText: { ...typography.tiny, color: colors.cyan, fontWeight: '800', fontSize: 10.5 },
 
   verifiedTag: {
-    backgroundColor: 'rgba(217,119,6,0.12)',
+    backgroundColor: 'rgba(99,102,241,0.12)',
     borderRadius: radius.pill,
     paddingHorizontal: 6,
     paddingVertical: 1,
     borderWidth: 1,
-    borderColor: 'rgba(217,119,6,0.30)',
+    borderColor: 'rgba(99,102,241,0.30)',
   },
-  verifiedTagText: { ...typography.tiny, color: colors.gold, fontWeight: '800', fontSize: 8.5 },
+  verifiedTagText: { ...typography.tiny, color: colors.primary, fontWeight: '800', fontSize: 8.5 },
 
   queueTag: {
     backgroundColor: '#ECFDF5',
@@ -210,9 +210,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 1,
     borderWidth: 1,
-    borderColor: 'rgba(5, 150, 105, 0.3)',
+    borderColor: 'rgba(16, 185, 129, 0.3)',
   },
-  queueTagText: { ...typography.tiny, color: '#059669', fontWeight: '800', fontSize: 8.5 },
+  queueTagText: { ...typography.tiny, color: '#10B981', fontWeight: '800', fontSize: 8.5 },
 
   metaRow: {
     flexDirection: 'row',
@@ -221,14 +221,14 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   audioIntroPill: {
-    backgroundColor: '#FFFBEB',
+    backgroundColor: '#F8FAFC',
     paddingVertical: 2,
     paddingHorizontal: 6,
     borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: '#F59E0B',
+    borderColor: '#E2E8F0',
   },
-  audioIntroText: { fontSize: 9.5, fontWeight: '800', color: '#D97706' },
+  audioIntroText: { fontSize: 9.5, fontWeight: '800', color: colors.primary },
 
   specialties: {
     ...typography.small,
@@ -314,11 +314,11 @@ const styles = StyleSheet.create({
     fontSize: 11.5,
   },
   compactRating: {
-    backgroundColor: 'rgba(217,119,6,0.12)',
+    backgroundColor: 'rgba(6,182,212,0.12)',
     borderRadius: radius.pill,
     paddingHorizontal: 6,
     paddingVertical: 1,
   },
-  compactRatingText: { ...typography.tiny, color: colors.gold, fontWeight: '800', fontSize: 9.5 },
+  compactRatingText: { ...typography.tiny, color: colors.cyan, fontWeight: '800', fontSize: 9.5 },
   compactPrice: { ...typography.tiny, color: colors.textMuted, fontSize: 9.5, fontWeight: '600' },
 });
