@@ -151,11 +151,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
                 {route.name === 'index' && <HomeIcon focused={isFocused} />}
                 {route.name === 'kundli' && <BirthChartIcon focused={isFocused} />}
                 {route.name === 'consult' && (
-                  isAstrologer ? (
-                    <ChatTabIcon focused={isFocused} badgeCount={pendingChatsCount} />
-                  ) : (
-                    <CompatibilityIcon focused={isFocused} />
-                  )
+                  <ChatTabIcon focused={isFocused} badgeCount={isAstrologer ? pendingChatsCount : undefined} />
                 )}
                 {route.name === 'horoscope' && <HoroscopeIcon focused={isFocused} />}
                 {route.name === 'profile' && <ProfileIcon focused={isFocused} />}
@@ -190,31 +186,31 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: 'Explore',
         }}
       />
       <Tabs.Screen
         name="kundli"
         options={{
-          title: 'Birth Chart',
+          title: 'Charts',
         }}
       />
       <Tabs.Screen
         name="consult"
         options={{
-          title: 'Compatibility',
+          title: 'Talk',
         }}
       />
       <Tabs.Screen
         name="horoscope"
         options={{
-          title: 'Daily Horoscopes',
+          title: 'Daily',
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: 'You',
         }}
       />
     </Tabs>
