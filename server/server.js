@@ -528,6 +528,83 @@ app.post('/api/chat/accept-room', (req, res) => {
   res.json({ success: true, room });
 });
 
+// ── CONTEXT-AWARE AI ASTROLOGER CHAT ENDPOINT ──
+app.post('/api/ai/chat', async (req, res) => {
+  try {
+    const { message, history, astrologer, kundli, profile } = req.body;
+    if (!message) {
+      return res.status(400).json({ success: false, error: 'Message text is required' });
+    }
+
+    const userName = profile?.name || 'Seeker';
+    const astroName = astrologer?.name || 'Acharya';
+    const lower = String(message).toLowerCase();
+
+    // Check if Gemini API key is configured
+    const GEMINI_KEY = process.env.GEMINI_API_KEY || '';
+    if (GEMINI_KEY) {
+      try {
+        const prompt = `You are ${astroName}, an authentic, wise Vedic Astrologer in the AstroGuru app with ${astrologer?.experienceYears || 15}+ years experience.
+Seeker: ${userName}.
+Question: "${message}".
+${kundli ? `Seeker's Lagna index: ${kundli.lagnaIndex}, Moon Rashi index: ${kundli.moonRashiIndex}.` : ''}
+Provide a compassionate, grounded, authentic Vedic astrological response in 2-3 short paragraphs in the same language/tone as the seeker (Hindi/Hinglish or English). Offer practical remedies if appropriate.`;
+
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`;
+        const response = await fetch(geminiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { maxOutputTokens: 500, temperature: 0.7 },
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const candidateText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (candidateText && candidateText.trim().length > 10) {
+            return res.json({ success: true, reply: candidateText.trim(), source: 'gemini' });
+          }
+        }
+      } catch (geminiErr) {
+        console.warn('[Gemini AI Fallback]', geminiErr.message);
+      }
+    }
+
+    // Default High-Quality Contextual Vedic Engine
+    let reply = '';
+    const isHinglish = /[\u0900-\u097F]/.test(message) || ['meri', 'mera', 'hoga', 'kab', 'kaise', 'kya', 'batao', 'theek', 'nahin', 'nahi', 'shadi', 'naukri', 'paisa', 'upay'].some((w) => lower.includes(w));
+
+    if (lower.includes('job') || lower.includes('naukri') || lower.includes('career') || lower.includes('promotion') || lower.includes('salary')) {
+      reply = isHinglish
+        ? `Namaste ${userName} ji 🙏 Aapki kundli ke 10th bhava (Karmasthana) par dasha graha ka sakriy prabhav dekh raha hoon. Aane wale 3 se 4 mahinon mein career mein sakaratmak badlav ke yog hain. Kisi achhi nayi position ka prastav milega. Roz Surya Dev ko arghya arpit karein aur Gayatri Mantra ka 11 baar jaap karein.`
+        : `Namaste ${userName} 🙏 Looking at your 10th house of profession (Karmasthana), progressive transits indicate favorable shifts over the next 3 to 4 months. Recognition for your persistent efforts will manifest. Offer water to the rising Sun daily to strengthen planetary support.`;
+    } else if (lower.includes('shadi') || lower.includes('marriage') || lower.includes('vivah') || lower.includes('rishta') || lower.includes('partner') || lower.includes('shaadi')) {
+      reply = isHinglish
+        ? `Namaste ${userName} ji 🙏 Vivah sambandhi 7th house aur Brihaspati (Jupiter) ke transit ko dekhkar, aane wala samay rishte tay hone ke liye anukool ban raha hai. Pariwar ke madhyam se accha prastav aayega. Guruwar ke din Vishnu ji ke samaksh ghee ka deepak jalayein aur chana daal daan karein.`
+        : `Namaste ${userName} 🙏 Examining your 7th house of marriage and supportive Jupiter aspects, auspicious marriage yogas are coming into alignment. An alliance supported by family is indicated. Lighting a ghee lamp for Lord Vishnu on Thursdays supports marital harmony.`;
+    } else if (lower.includes('love') || lower.includes('pyar') || lower.includes('relationship') || lower.includes('breakup') || lower.includes('patchup')) {
+      reply = isHinglish
+        ? `Namaste ${userName} ji 🙏 Prem sambandhon mein 5th house aur Shukra (Venus) ka yog ban raha hai. Aapsi vishwas aur samvaad se raste khulenge. Kisi teesre vyakti ki baaton par dhyaan na dein. Shukrawar ko Kheer ka bhog lagayein aur shanti banaye rakhein.`
+        : `Namaste ${userName} 🙏 Your 5th house and Venus placements show deep emotional bonds. Clear, patient communication will resolve lingering doubts smoothly. Avoid entertaining third-party opinions right now.`;
+    } else if (lower.includes('paisa') || lower.includes('money') || lower.includes('karz') || lower.includes('finance') || lower.includes('dhan')) {
+      reply = isHinglish
+        ? `Namaste ${userName} ji 🙏 Dhan labh ke liye 2nd aur 11th bhava kafi urjavan hain. Aarthik sthiti mein aane wale samay mein sthirta aayegi, fashe hue paise ki wapsi ke raste banenge. Faltoo kharch par niyamit dhyan dein. Shukrawar ko Lakshmi Mata ko Kamal ka phool ya safed mithai arpit karein.`
+        : `Namaste ${userName} 🙏 Your 2nd and 11th houses of wealth indicate positive monetary flows in the near future. Avoid hasty loans or unnecessary expenditures. Consistency in savings will bring financial peace.`;
+    } else {
+      reply = isHinglish
+        ? `Namaste ${userName} ji 🙏 Maine aapka prashna dhyan se padha hai. Graha sthiti ke anusar aapka samay sakaratmak disha mein badh raha hai. Jo pareshani abhi mehsus ho rahi hai, woh temporary transit ka prabhav hai. Niyamit Hanuman Chalisa ka path karein aur mann shant rakhein 🙏`
+        : `Namaste ${userName} 🙏 I have carefully analyzed your query. The planetary transits indicate a favorable turning point ahead. Any temporary friction you are experiencing will subside with patience. Maintain steady faith 🙏`;
+    }
+
+    res.json({ success: true, reply, source: 'vedic-engine' });
+  } catch (err) {
+    console.error('[AI Chat Route Error]', err);
+    res.status(500).json({ success: false, error: 'Internal AI processing error' });
+  }
+});
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`⚡ AstroGuru Live REST API Server running on http://localhost:${PORT}`);
   console.log(`📱 Mobile access via LAN: http://192.168.31.252:${PORT}`);

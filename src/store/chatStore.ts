@@ -11,6 +11,8 @@ export interface Session {
   minutesBilled: number;
   costSoFar: number;
   ended: boolean;
+  isFreeTrial?: boolean;
+  freeSecondsRemaining?: number;
 }
 
 interface ChatState {
@@ -20,16 +22,22 @@ interface ChatState {
   // User-isolated AI messages dictionary: userAiMessages[userId]
   userAiMessages: Record<string, ChatMessage[]>;
 
+  // Tracks if the user has used their 1st consultation 3-minute free trial: freeTrialUsed[userId]
+  freeTrialUsed: Record<string, boolean>;
+
   getActiveUserId: () => string;
+  isFreeEligible: () => boolean;
+  markFreeTrialUsed: () => void;
 
   // Compatibility getters & actions
   sessions: Record<string, Session>;
   aiMessages: ChatMessage[];
 
-  startSession: (astrologerId: string) => void;
+  startSession: (astrologerId: string, isFree?: boolean) => void;
   endSession: (astrologerId: string) => void;
   addMessage: (astrologerId: string, msg: ChatMessage) => void;
   billMinute: (astrologerId: string, pricePerMin: number) => void;
+  updateFreeSecondsRemaining: (astrologerId: string, seconds: number) => void;
   getSession: (astrologerId: string) => Session;
 
   addAiMessage: (msg: ChatMessage) => void;
@@ -43,6 +51,8 @@ const emptySession = (): Session => ({
   minutesBilled: 0,
   costSoFar: 0,
   ended: false,
+  isFreeTrial: false,
+  freeSecondsRemaining: 180,
 });
 
 export const useChatStore = create<ChatState>()(
@@ -50,6 +60,7 @@ export const useChatStore = create<ChatState>()(
     (set, get) => ({
       userSessions: {},
       userAiMessages: {},
+      freeTrialUsed: {},
 
       getActiveUserId: () => {
         try {
@@ -58,6 +69,21 @@ export const useChatStore = create<ChatState>()(
           if (authUser?.email) return authUser.email.toLowerCase().trim();
         } catch (e) {}
         return 'guest_seeker';
+      },
+
+      isFreeEligible: () => {
+        const userId = get().getActiveUserId();
+        return !get().freeTrialUsed?.[userId];
+      },
+
+      markFreeTrialUsed: () => {
+        const userId = get().getActiveUserId();
+        set((s) => ({
+          freeTrialUsed: {
+            ...(s.freeTrialUsed || {}),
+            [userId]: true,
+          },
+        }));
       },
 
       // Fallback getter for backward compatibility
@@ -71,7 +97,7 @@ export const useChatStore = create<ChatState>()(
         return get().userAiMessages?.[userId] || [];
       },
 
-      startSession: (astrologerId) =>
+      startSession: (astrologerId, isFree = false) =>
         set((s) => {
           const userId = s.getActiveUserId();
           const userDict = s.userSessions[userId] || {};
@@ -86,6 +112,28 @@ export const useChatStore = create<ChatState>()(
                   ...currentSession,
                   startedAt: Date.now(),
                   ended: false,
+                  isFreeTrial: isFree,
+                  freeSecondsRemaining: isFree ? (currentSession.freeSecondsRemaining ?? 180) : 0,
+                },
+              },
+            },
+          };
+        }),
+
+      updateFreeSecondsRemaining: (astrologerId, seconds) =>
+        set((s) => {
+          const userId = s.getActiveUserId();
+          const userDict = s.userSessions[userId] || {};
+          const currentSession = userDict[astrologerId] || emptySession();
+
+          return {
+            userSessions: {
+              ...s.userSessions,
+              [userId]: {
+                ...userDict,
+                [astrologerId]: {
+                  ...currentSession,
+                  freeSecondsRemaining: Math.max(0, seconds),
                 },
               },
             },

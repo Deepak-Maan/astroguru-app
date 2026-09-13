@@ -24,6 +24,7 @@ import { EmptyState } from '../../src/components/EmptyState';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { ASTROLOGERS } from '../../src/data/astrologers';
 import { greetingFor, replyTo, typingDelay } from '../../src/services/consult/replies';
+import { generateAstrologyAiReply, calculateTypingDelay } from '../../src/services/ai/astrologyAiEngine';
 import { useChatStore } from '../../src/store/chatStore';
 import { useLiveChatStore } from '../../src/store/liveChatStore';
 import { useUserStore } from '../../src/store/userStore';
@@ -32,7 +33,7 @@ import { useAuthStore } from '../../src/store/authStore';
 import { formatCurrency } from '../../src/utils';
 import { getAstrologerByIdFromFirebase } from '../../src/services/firebaseAuthService';
 import { subscribeToFirebaseRoomMessages } from '../../src/services/firebaseRealtimeService';
-import { Astrologer } from '../../src/types';
+import { Astrologer, ChatMessage } from '../../src/types';
 
 let idCounter = 0;
 const nextId = () => `m-${Date.now()}-${++idCounter}`;
@@ -70,6 +71,9 @@ export default function ChatScreen() {
   const billMinute = useChatStore((s) => s.billMinute);
   const endSession = useChatStore((s) => s.endSession);
   const addMessage = useChatStore((s) => s.addMessage);
+  const isFreeEligible = useChatStore((s) => s.isFreeEligible);
+  const markFreeTrialUsed = useChatStore((s) => s.markFreeTrialUsed);
+  const updateFreeSecondsRemaining = useChatStore((s) => s.updateFreeSecondsRemaining);
 
   // ── Live bidirectional chat room (Seeker ↔ Acharya) ──
   const createRoom = useLiveChatStore((s) => s.createRoom);
@@ -168,21 +172,31 @@ export default function ChatScreen() {
   const begin = useCallback(() => {
     if (!astrologer) return;
     
-    // Auto-topup welcome trial if user has insufficient funds for first minute
-    if (balance < astrologer.pricePerMin) {
-      topup(100, 'Welcome Consultation Bonus');
-    }
+    const shouldBeFree = isFreeEligible();
 
-    const ok = debit(astrologer.pricePerMin, `Consult · ${astrologer.name} (min 1)`);
-    if (!ok) {
-      setRanOut(true);
-      return;
-    }
+    if (shouldBeFree) {
+      // 1st Chat Special Offer: 3 Minutes 100% FREE!
+      startSession(astrologer.id, true);
+      setElapsed(0);
+      setRanOut(false);
+    } else {
+      // Regular paid consultation
+      if (balance < astrologer.pricePerMin) {
+        topup(100, 'Welcome Consultation Bonus');
+      }
 
-    startSession(astrologer.id);
-    billMinute(astrologer.id, astrologer.pricePerMin);
-    setElapsed(0);
-    setRanOut(false);
+      const ok = debit(astrologer.pricePerMin, `Consult · ${astrologer.name} (min 1)`);
+      if (!ok) {
+        setRanOut(true);
+        setShowRechargeDrawer(true);
+        return;
+      }
+
+      startSession(astrologer.id, false);
+      billMinute(astrologer.id, astrologer.pricePerMin);
+      setElapsed(0);
+      setRanOut(false);
+    }
 
     // ── Create or open a live bidirectional room for Acharya to see ──
     setTimeout(() => {
@@ -196,15 +210,19 @@ export default function ChatScreen() {
       });
 
       if ((useChatStore.getState().sessions[astrologer.id]?.messages.length ?? 0) === 0) {
+        const welcomeMsg = shouldBeFree
+          ? `${greetingFor(astrologer)}\n\n🎁 Aapka pehla 3-minute consultation bilkul FREE hai! Kripya apna prashna ya samasya batayein, main aapki kundli dekh kar batata hoon.`
+          : greetingFor(astrologer);
+
         addMessage(astrologer.id, {
           id: nextId(),
           role: 'assistant',
-          text: greetingFor(astrologer),
+          text: welcomeMsg,
           at: Date.now(),
         });
       }
     }, 0);
-  }, [astrologer, balance, topup, debit, startSession, billMinute, addMessage, createRoom, currentSeekerId, currentSeekerName]);
+  }, [astrologer, balance, isFreeEligible, topup, debit, startSession, billMinute, addMessage, createRoom, currentSeekerId, currentSeekerName]);
 
   useEffect(() => {
     if (astrologer && !session?.startedAt && !session?.ended) {
@@ -221,27 +239,94 @@ export default function ChatScreen() {
     const t = setInterval(() => {
       setElapsed((prev) => {
         const next = prev + 1;
-        if (next > 0 && next % 60 === 0) {
-          const minute = next / 60 + 1;
-          const ok = debit(
-            astrologer.pricePerMin,
-            `Consult · ${astrologer.name} (min ${minute})`,
-          );
-          if (ok) {
-            billMinute(astrologer.id, astrologer.pricePerMin);
+        const currentSession = useChatStore.getState().getSession(astrologer.id);
+        const isFree = currentSession?.isFreeTrial;
+
+        if (isFree) {
+          // Free 3 Minutes (180 seconds)
+          if (next <= 180) {
+            updateFreeSecondsRemaining(astrologer.id, Math.max(0, 180 - next));
+
+            // Alert 30 seconds before free time ends
+            if (next === 150) {
+              addMessage(astrologer.id, {
+                id: nextId(),
+                role: 'assistant',
+                text: `⏳ Dhyan dein: Aapke 3 Minute FREE consultation ke 30 second bache hain! 03:00 ke baad standard rate (₹${astrologer.pricePerMin}/min) shuru hoga.`,
+                at: Date.now(),
+              });
+            }
+
+            // Free time completes at exactly 180s (3:00)
+            if (next === 180) {
+              markFreeTrialUsed();
+              // Try debiting for Minute 4 (first paid minute)
+              const ok = debit(
+                astrologer.pricePerMin,
+                `Consult · ${astrologer.name} (min 4)`
+              );
+              if (ok) {
+                billMinute(astrologer.id, astrologer.pricePerMin);
+                addMessage(astrologer.id, {
+                  id: nextId(),
+                  role: 'assistant',
+                  text: `✨ Aapka 3-minute FREE trial safaltapoorvak poora hua! Regular consultation ₹${astrologer.pricePerMin}/min shuru ho gaya hai. Aap bejhijhak prashna pooch sakte hain 🙏`,
+                  at: Date.now(),
+                });
+              } else {
+                setRanOut(true);
+                setShowRechargeDrawer(true);
+                addMessage(astrologer.id, {
+                  id: nextId(),
+                  role: 'assistant',
+                  text: `⚠️ 3-Minute FREE trial poora ho chuka hai. Consultation jaari rakhne ke liye kripya apna wallet recharge karein.`,
+                  at: Date.now(),
+                });
+              }
+            }
           } else {
-            setRanOut(true);
-            endSession(astrologer.id);
+            // Subsequent paid minutes (at 240s, 300s, 360s...)
+            if (next % 60 === 0) {
+              const minute = Math.floor(next / 60) + 1;
+              const ok = debit(
+                astrologer.pricePerMin,
+                `Consult · ${astrologer.name} (min ${minute})`
+              );
+              if (ok) {
+                billMinute(astrologer.id, astrologer.pricePerMin);
+              } else {
+                setRanOut(true);
+                setShowRechargeDrawer(true);
+                endSession(astrologer.id);
+              }
+            }
+          }
+        } else {
+          // Regular non-free session: debits every 60s
+          if (next > 0 && next % 60 === 0) {
+            const minute = next / 60 + 1;
+            const ok = debit(
+              astrologer.pricePerMin,
+              `Consult · ${astrologer.name} (min ${minute})`
+            );
+            if (ok) {
+              billMinute(astrologer.id, astrologer.pricePerMin);
+            } else {
+              setRanOut(true);
+              setShowRechargeDrawer(true);
+              endSession(astrologer.id);
+            }
           }
         }
+
         return next;
       });
     }, 1000);
 
     return () => clearInterval(t);
-  }, [active, astrologer, debit, billMinute, endSession]);
+  }, [active, astrologer, debit, billMinute, endSession, markFreeTrialUsed, updateFreeSecondsRemaining, addMessage]);
 
-  function send(textToSend?: string) {
+  async function send(textToSend?: string) {
     const text = (textToSend || draft).trim();
     if (!text || !astrologer) return;
 
@@ -251,7 +336,8 @@ export default function ChatScreen() {
     }
 
     setDraft('');
-    addMessage(astrologer.id, { id: nextId(), role: 'user', text, at: Date.now() });
+    const userMsg: ChatMessage = { id: nextId(), role: 'user', text, at: Date.now() };
+    addMessage(astrologer.id, userMsg);
 
     // ── Mirror to live room so Acharya (Vivek Kumar) sees it in real time ──
     if (liveRoomId) {
@@ -266,20 +352,41 @@ export default function ChatScreen() {
       Animated.timing(sendScaleAnim, { toValue: 1, duration: 100, useNativeDriver: true }),
     ]).start();
 
-    const turn = messages.filter((m) => m.role === 'user').length;
-    const reply = replyTo(text, astrologer, kundli, turn);
-
     setTyping(true);
-    setTimeout(() => {
+
+    try {
+      const currentHistory = (useChatStore.getState().getSession(astrologer.id)?.messages || []);
+      const reply = await generateAstrologyAiReply({
+        currentMessage: text,
+        history: currentHistory,
+        astrologer,
+        kundli,
+        profile: useUserStore.getState().profile,
+      });
+
+      const delay = calculateTypingDelay(reply);
+      setTimeout(() => {
+        setTyping(false);
+        addMessage(astrologer.id, {
+          id: nextId(),
+          role: 'assistant',
+          text: reply,
+          at: Date.now(),
+        });
+        scrollToEnd();
+      }, delay);
+    } catch (e) {
       setTyping(false);
+      const turn = messages.filter((m) => m.role === 'user').length;
+      const fallbackReply = replyTo(text, astrologer, kundli, turn);
       addMessage(astrologer.id, {
         id: nextId(),
         role: 'assistant',
-        text: reply,
+        text: fallbackReply,
         at: Date.now(),
       });
       scrollToEnd();
-    }, typingDelay(reply));
+    }
   }
 
   function stop() {
@@ -309,6 +416,11 @@ export default function ChatScreen() {
     );
   }
 
+  const isFree = Boolean(session?.isFreeTrial && elapsed < 180);
+  const freeSecondsLeft = Math.max(0, 180 - elapsed);
+  const freeMm = String(Math.floor(freeSecondsLeft / 60)).padStart(2, '0');
+  const freeSs = String(freeSecondsLeft % 60).padStart(2, '0');
+
   const mm = String(Math.floor(elapsed / 60)).padStart(2, '0');
   const ss = String(elapsed % 60).padStart(2, '0');
   const minLeft = Math.max(1, Math.floor(balance / Math.max(1, price)));
@@ -335,9 +447,11 @@ export default function ChatScreen() {
               {astrologer.name}
             </Text>
             <View style={styles.statusRow}>
-              <View style={[styles.statusDot, { backgroundColor: active ? colors.online : colors.saffron }]} />
-              <Text style={styles.hMeta}>
-                {active ? `Live Consultation · ${mm}:${ss}` : 'Online Jyotishi'}
+              <View style={[styles.statusDot, { backgroundColor: isFree ? '#DB2777' : active ? colors.online : colors.saffron }]} />
+              <Text style={[styles.hMeta, isFree && { color: '#7C3AED', fontWeight: '800' }]}>
+                {active
+                  ? (isFree ? `🎁 3 Min FREE · ${freeMm}:${freeSs}` : `Live Consultation · ${mm}:${ss}`)
+                  : 'Online Jyotishi'}
               </Text>
             </View>
           </View>
@@ -345,18 +459,43 @@ export default function ChatScreen() {
           {/* Dynamic Real Wallet Balance Pill */}
           <Pressable onPress={() => setShowRechargeDrawer(true)} style={styles.walletPill}>
             <LinearGradient
-              colors={['rgba(230,126,34,0.12)', 'rgba(212,172,13,0.06)']}
+              colors={isFree ? ['rgba(124,58,237,0.12)', 'rgba(219,39,119,0.06)'] : ['rgba(230,126,34,0.12)', 'rgba(212,172,13,0.06)']}
               style={StyleSheet.absoluteFill}
             />
             <Text style={styles.walletVal}>{formatCurrency(balance)}</Text>
-            <Text style={styles.walletRate}>{formatCurrency(price)}/min ⚡</Text>
+            <Text style={styles.walletRate}>{isFree ? '1st Free 🎁' : `${formatCurrency(price)}/min ⚡`}</Text>
           </Pressable>
         </View>
+
+        {/* 1st Chat 3-Min FREE Banner */}
+        {isFree && (
+          <View style={styles.freeTrialBanner}>
+            <LinearGradient
+              colors={['rgba(124,58,237,0.14)', 'rgba(219,39,119,0.08)']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.freeTrialGrad}
+            >
+              <Text style={styles.freeTrialIcon}>🎁</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.freeTrialTitle}>1st Consultation: First 3 Minutes FREE</Text>
+                <Text style={styles.freeTrialSub}>
+                  ₹0 debited • {freeMm}:{freeSs} remaining • Normal rate starts at 03:00
+                </Text>
+              </View>
+              <View style={styles.freeTrialBadge}>
+                <Text style={styles.freeTrialBadgeText}>3 MIN FREE</Text>
+              </View>
+            </LinearGradient>
+          </View>
+        )}
 
         {/* Sub-Header Session Info Strip */}
         <View style={styles.strip}>
           <Text style={styles.stripText}>
-            Spent: {formatCurrency(cost)} · ~{minLeft} min remaining
+            {isFree
+              ? `Spent: ₹0 (FREE 3-Min Trial) · ${freeMm}:${freeSs} left`
+              : `Spent: ${formatCurrency(cost)} · ~${minLeft} min remaining`}
           </Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
             <Pressable
@@ -1021,5 +1160,59 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.textMuted,
     marginTop: 2,
+  },
+
+  /* 1st Chat 3-Min FREE Banner */
+  freeTrialBanner: {
+    marginHorizontal: spacing.md,
+    marginTop: 6,
+    marginBottom: 2,
+    borderRadius: radius.lg,
+    overflow: 'hidden',
+    borderWidth: 1.5,
+    borderColor: 'rgba(124,58,237,0.25)',
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  freeTrialGrad: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    gap: 10,
+  },
+  freeTrialIcon: {
+    fontSize: 22,
+  },
+  freeTrialTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#1E1B4B',
+  },
+  freeTrialSub: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#6D28D9',
+    marginTop: 2,
+  },
+  freeTrialBadge: {
+    backgroundColor: '#7C3AED',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: radius.pill,
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  freeTrialBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 0.5,
   },
 });

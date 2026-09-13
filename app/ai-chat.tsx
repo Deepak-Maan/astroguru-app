@@ -20,6 +20,23 @@ import { useChatStore } from '../src/store/chatStore';
 import { useSettingsStore } from '../src/store/settingsStore';
 import { useUserStore } from '../src/store/userStore';
 import { SUGGESTED_QUESTIONS, askAstrologer } from '../src/services/ai/anthropic';
+import { generateAstrologyAiReply } from '../src/services/ai/astrologyAiEngine';
+import { Astrologer } from '../src/types';
+
+const AI_ASTROLOGER: Astrologer = {
+  id: 'ai-jyotishi',
+  name: 'AI Jyotishi (Divya Drishti)',
+  avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200',
+  rating: 5.0,
+  reviews: 9999,
+  pricePerMin: 0,
+  experienceYears: 25,
+  specialties: ['Vedic Kundli', 'Planetary Transits', 'Dasha Remedies', 'Prashna Kundli'],
+  languages: ['Hindi', 'English', 'Sanskrit'],
+  consultations: 50000,
+  online: true,
+  about: 'Advanced Vedic AI Astrologer reading authentic planetary configurations and Prashna charts.',
+};
 
 let seq = 0;
 const nextId = () => `ai-${Date.now()}-${seq++}`;
@@ -64,16 +81,37 @@ export default function AiChat() {
 
     const history = useChatStore.getState().aiMessages.filter((m) => m.id !== placeholderId);
 
-    const result = await askAstrologer({
-      apiKey,
-      profile,
-      kundli,
-      history: history.slice(0, -1),
-      question,
-    });
+    let replyText = '';
+
+    if (apiKey) {
+      try {
+        const result = await askAstrologer({
+          apiKey,
+          profile,
+          kundli,
+          history: history.slice(0, -1),
+          question,
+        });
+        if (result.ok && result.text) {
+          replyText = result.text;
+        }
+      } catch (err) {
+        console.warn('[Claude AI fallback to Vedic engine]', err);
+      }
+    }
+
+    if (!replyText) {
+      replyText = await generateAstrologyAiReply({
+        currentMessage: question,
+        history,
+        astrologer: AI_ASTROLOGER,
+        kundli,
+        profile,
+      });
+    }
 
     replaceAiMessage(placeholderId, {
-      text: result.text,
+      text: replyText,
       pending: false,
       at: Date.now(),
     });
@@ -88,7 +126,7 @@ export default function AiChat() {
       <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
         <ScreenHeader
           title="AI Jyotishi"
-          subtitle={apiKey ? 'Powered by Claude · reads your chart' : 'Add an API key in Settings'}
+          subtitle={apiKey ? 'Powered by Claude · Reads your Kundli' : 'Vedic AI Intelligence · Reads your Kundli'}
           showBack
         />
 
@@ -108,7 +146,7 @@ export default function AiChat() {
                 {/* Hero icon with glow */}
                 <View style={styles.introIconWrap}>
                   <LinearGradient
-                    colors={['rgba(245,197,66,0.25)', 'rgba(255,138,61,0.10)']}
+                    colors={['rgba(124,58,237,0.25)', 'rgba(219,39,119,0.12)']}
                     style={StyleSheet.absoluteFill}
                   />
                   <Text style={styles.introIcon}>✨</Text>
@@ -121,21 +159,18 @@ export default function AiChat() {
                     : 'Add your birth details first so readings can be based on your actual chart.'}
                 </Text>
 
-                {!apiKey && (
-                  <Pressable onPress={() => router.push('/settings')} style={styles.keyBanner}>
-                    <LinearGradient
-                      colors={['rgba(245,197,66,0.15)', 'rgba(245,197,66,0.05)']}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 0 }}
-                      style={StyleSheet.absoluteFill}
-                    />
-                    <Text style={styles.keyBannerIcon}>🔑</Text>
-                    <Text style={styles.keyBannerText}>
-                      No API key yet — tap to add one in Settings
-                    </Text>
-                    <Text style={styles.keyBannerArrow}>›</Text>
-                  </Pressable>
-                )}
+                <View style={styles.keyBanner}>
+                  <LinearGradient
+                    colors={['rgba(124,58,237,0.15)', 'rgba(219,39,119,0.06)']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={StyleSheet.absoluteFill}
+                  />
+                  <Text style={styles.keyBannerIcon}>🔮</Text>
+                  <Text style={styles.keyBannerText}>
+                    Free Vedic AI Consultation Active · Ask anything!
+                  </Text>
+                </View>
                 {!kundli && (
                   <Pressable
                     onPress={() => router.push('/(onboarding)/birth-details')}
