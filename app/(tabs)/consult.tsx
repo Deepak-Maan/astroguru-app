@@ -137,21 +137,21 @@ function AcharyaPayouts() {
 
         {/* Withdraw Modal */}
         <Modal visible={showWithdraw} transparent animationType="slide" onRequestClose={() => setShowWithdraw(false)}>
-          <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(15,23,42,0.5)' }}>
-            <View style={{ backgroundColor: '#FFFFFF', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: spacing.xl, gap: spacing.md }}>
-              <Text style={{ ...typography.h2, color: colors.text, fontWeight: '800' }}>💳 Withdraw Payout</Text>
-              <Text style={{ ...typography.body, color: colors.textMuted }}>Available: ₹{payoutBalance.toLocaleString('en-IN')}</Text>
+          <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(5, 7, 15, 0.75)' }}>
+            <View style={{ backgroundColor: '#11162B', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: spacing.xl, gap: spacing.md, borderWidth: 1, borderColor: 'rgba(129, 140, 248, 0.35)' }}>
+              <Text style={{ ...typography.h2, color: '#EEF2FF', fontWeight: '800' }}>💳 Withdraw Payout</Text>
+              <Text style={{ ...typography.body, color: '#A5B4FC' }}>Available: ₹{payoutBalance.toLocaleString('en-IN')}</Text>
               <TextInput
                 value={withdrawAmount}
                 onChangeText={setWithdrawAmount}
                 keyboardType="numeric"
                 placeholder="Enter amount"
-                placeholderTextColor={colors.textFaint}
-                style={{ borderWidth: 1.5, borderColor: 'rgba(191,219,254,0.8)', borderRadius: radius.md, padding: 14, fontSize: 18, fontWeight: '700', color: colors.text, backgroundColor: '#F8FAFC' }}
+                placeholderTextColor="#64748B"
+                style={{ borderWidth: 1.5, borderColor: 'rgba(129, 140, 248, 0.4)', borderRadius: radius.md, padding: 14, fontSize: 18, fontWeight: '700', color: '#EEF2FF', backgroundColor: 'rgba(26, 33, 64, 0.85)' }}
               />
               <View style={{ flexDirection: 'row', gap: spacing.sm }}>
-                <Pressable onPress={() => setShowWithdraw(false)} style={{ flex: 1, padding: 14, borderRadius: radius.md, borderWidth: 1.5, borderColor: colors.teal, alignItems: 'center' }}>
-                  <Text style={{ color: colors.teal, fontWeight: '700' }}>Cancel</Text>
+                <Pressable onPress={() => setShowWithdraw(false)} style={{ flex: 1, padding: 14, borderRadius: radius.md, borderWidth: 1.5, borderColor: 'rgba(129, 140, 248, 0.4)', alignItems: 'center', backgroundColor: 'rgba(26, 33, 64, 0.5)' }}>
+                  <Text style={{ color: '#A5B4FC', fontWeight: '700' }}>Cancel</Text>
                 </Pressable>
                 <Pressable onPress={handleWithdraw} style={{ flex: 1, padding: 14, borderRadius: radius.md, backgroundColor: colors.teal, alignItems: 'center' }}>
                   <Text style={{ color: '#FFFFFF', fontWeight: '800' }}>Withdraw Now</Text>
@@ -167,20 +167,20 @@ function AcharyaPayouts() {
 
 const payStyles = StyleSheet.create({
   statCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(26, 33, 64, 0.78)',
     borderRadius: radius.lg,
     padding: spacing.md,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(191,219,254,0.6)',
-    shadowColor: '#BFDBFE',
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 0.5,
+    borderColor: 'rgba(129, 140, 248, 0.25)',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
     shadowRadius: 8,
     elevation: 3,
   },
-  statValue: { fontSize: 20, fontWeight: '800', color: colors.text },
-  statLabel: { ...typography.tiny, color: colors.textMuted, marginTop: 2, fontWeight: '600', textAlign: 'center' },
+  statValue: { fontSize: 20, fontWeight: '800', color: '#EEF2FF' },
+  statLabel: { ...typography.tiny, color: '#A5B4FC', marginTop: 2, fontWeight: '600', textAlign: 'center' },
   todayCard: {
     backgroundColor: colors.teal,
     borderRadius: radius.lg,
@@ -189,20 +189,20 @@ const payStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  todayLabel: { color: 'rgba(255,255,255,0.8)', fontSize: 12, fontWeight: '700' },
+  todayLabel: { color: 'rgba(255,255,255,0.85)', fontSize: 12, fontWeight: '700' },
   todayAmount: { color: '#FFFFFF', fontSize: 28, fontWeight: '900', letterSpacing: -1 },
-  todaySub: { color: 'rgba(255,255,255,0.75)', fontSize: 11, fontWeight: '600', marginTop: 2 },
+  todaySub: { color: 'rgba(255,255,255,0.8)', fontSize: 11, fontWeight: '600', marginTop: 2 },
   withdrawBtn: { backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: radius.md, paddingHorizontal: 14, paddingVertical: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.5)' },
   withdrawBtnText: { color: '#FFFFFF', fontWeight: '800', fontSize: 13 },
   historyRow: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(26, 33, 64, 0.78)',
     borderRadius: radius.md,
     padding: spacing.md,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(191,219,254,0.5)',
+    borderColor: 'rgba(129, 140, 248, 0.22)',
   },
 });
 
@@ -445,26 +445,20 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     marginBottom: spacing.sm,
     paddingHorizontal: spacing.md,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(26, 33, 64, 0.78)',
     borderRadius: radius.pill,
-    borderTopWidth: 1.5,
-    borderLeftWidth: 1.2,
-    borderTopColor: 'rgba(255, 255, 255, 0.95)',
-    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
-    borderRightWidth: 1.2,
-    borderRightColor: '#E2E8F0',
-    borderBottomWidth: 2.5,
-    borderBottomColor: '#CBD5E1',
+    borderWidth: 1.2,
+    borderColor: 'rgba(129, 140, 248, 0.35)',
     height: 46,
-    shadowColor: '#64748B',
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.12,
+    shadowOpacity: 0.25,
     shadowRadius: 6,
     elevation: 2,
   },
   searchIcon: { fontSize: 16 },
-  searchInput: { flex: 1, color: colors.text, fontSize: 14.5, paddingVertical: 0, fontWeight: '600' },
-  clearBtn: { fontSize: 14, color: colors.textFaint, paddingHorizontal: 4, fontWeight: '700' },
+  searchInput: { flex: 1, color: '#EEF2FF', fontSize: 14.5, paddingVertical: 0, fontWeight: '600' },
+  clearBtn: { fontSize: 14, color: '#A5B4FC', paddingHorizontal: 4, fontWeight: '700' },
 
   /* Online banner */
   onlineBanner: {
@@ -475,19 +469,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: 10,
     borderRadius: radius.lg,
-    borderTopWidth: 1.5,
-    borderLeftWidth: 1.2,
-    borderTopColor: 'rgba(255, 255, 255, 0.95)',
-    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
-    borderRightWidth: 1.2,
-    borderRightColor: '#E2E8F0',
-    borderBottomWidth: 2.5,
-    borderBottomColor: 'rgba(5, 150, 105, 0.3)',
-    backgroundColor: '#FFFFFF',
+    borderWidth: 1.2,
+    borderColor: 'rgba(16, 185, 129, 0.35)',
+    backgroundColor: 'rgba(16, 185, 129, 0.12)',
     overflow: 'hidden',
-    shadowColor: '#059669',
+    shadowColor: '#10B981',
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.15,
     shadowRadius: 6,
     elevation: 2,
   },
@@ -495,10 +483,10 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: colors.online,
+    backgroundColor: '#10B981',
   },
-  onlineText: { ...typography.small, color: colors.textMuted, fontSize: 13, flex: 1, fontWeight: '600' },
-  onlineCount: { color: colors.online, fontWeight: '800' },
+  onlineText: { ...typography.small, color: '#A5B4FC', fontSize: 13, flex: 1, fontWeight: '600' },
+  onlineCount: { color: '#34D399', fontWeight: '800' },
 
   /* Filter chips */
   filterWrapper: {
@@ -515,40 +503,34 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md + 2,
     paddingVertical: 8,
     borderRadius: radius.pill,
-    backgroundColor: '#FFFFFF',
-    borderTopWidth: 2,
-    borderLeftWidth: 1.5,
-    borderTopColor: 'rgba(255, 255, 255, 0.95)',
-    borderLeftColor: 'rgba(255, 255, 255, 0.9)',
-    borderRightWidth: 1.2,
-    borderRightColor: '#EDE9FE',
-    borderBottomWidth: 3,
-    borderBottomColor: '#DDD6FE',
+    backgroundColor: 'rgba(26, 33, 64, 0.78)',
+    borderWidth: 1.2,
+    borderColor: 'rgba(129, 140, 248, 0.3)',
     overflow: 'hidden',
-    shadowColor: '#7C3AED',
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.25,
     shadowRadius: 6,
     elevation: 3,
   },
   filterChipActive: {
-    borderTopColor: 'rgba(255, 255, 255, 0.4)',
-    borderBottomWidth: 3,
-    borderBottomColor: '#9D174D',
-    shadowColor: colors.coral,
+    borderWidth: 1.2,
+    borderColor: 'rgba(245, 158, 11, 0.8)',
+    backgroundColor: 'rgba(245, 158, 11, 0.22)',
+    shadowColor: '#F59E0B',
     shadowOpacity: 0.35,
   },
   filterChipPressed: {
     transform: [{ translateY: 1.5 }],
-    borderBottomWidth: 1.5,
+    opacity: 0.85,
   },
   filterChipText: {
     ...typography.small,
-    color: colors.text,
+    color: '#EEF2FF',
     fontWeight: '700',
     fontSize: 13,
   },
-  filterChipTextActive: { color: colors.white, fontWeight: '800' },
+  filterChipTextActive: { color: '#FCD34D', fontWeight: '800' },
 
   /* Sort */
   sortWrap: {
@@ -557,24 +539,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: spacing.md,
   },
-  sortLabel: { ...typography.tiny, color: colors.textFaint, fontWeight: '800' },
+  sortLabel: { ...typography.tiny, color: '#A5B4FC', fontWeight: '800' },
   sortPills: {
     flexDirection: 'row',
     gap: 4,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(26, 33, 64, 0.78)',
     borderRadius: radius.pill,
     padding: 4,
-    borderTopWidth: 2,
-    borderLeftWidth: 1.5,
-    borderTopColor: 'rgba(255, 255, 255, 0.95)',
-    borderLeftColor: 'rgba(255, 255, 255, 0.9)',
-    borderRightWidth: 1.2,
-    borderRightColor: '#EDE9FE',
-    borderBottomWidth: 3,
-    borderBottomColor: '#DDD6FE',
-    shadowColor: '#7C3AED',
+    borderWidth: 1.2,
+    borderColor: 'rgba(129, 140, 248, 0.3)',
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.25,
     shadowRadius: 6,
     elevation: 3,
   },

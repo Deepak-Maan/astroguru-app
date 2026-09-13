@@ -290,33 +290,33 @@ const styles = StyleSheet.create({
 
   yearTabRow: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(26, 33, 64, 0.65)',
     borderRadius: radius.pill,
     padding: 3,
     borderWidth: 1,
-    borderColor: '#E3E8F3',
+    borderColor: 'rgba(129, 140, 248, 0.25)',
   },
   yearTab: { flex: 1, alignItems: 'center', paddingVertical: 8, borderRadius: radius.pill, overflow: 'hidden' },
   yearTabActive: {},
-  yearTabText: { ...typography.tiny, color: colors.textMuted, fontWeight: '700' },
+  yearTabText: { ...typography.tiny, color: '#A5B4FC', fontWeight: '700' },
   yearTabTextActive: { color: colors.white, fontWeight: '900' },
 
   forecastCard: { gap: spacing.md, padding: spacing.xl },
   forecastHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  forecastTitle: { ...typography.h2, color: colors.text, fontWeight: '800' },
+  forecastTitle: { ...typography.h2, color: '#EEF2FF', fontWeight: '800' },
   forecastSubtitle: { ...typography.h3, color: colors.saffron, fontSize: 15, fontWeight: '800' },
 
   predictBox: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: 'rgba(26, 33, 64, 0.78)',
     padding: spacing.md,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: '#E3E8F3',
+    borderColor: 'rgba(129, 140, 248, 0.3)',
     gap: 3,
   },
-  predictHeader: { ...typography.tiny, color: colors.saffron, fontWeight: '800' },
-  predictText: { ...typography.small, color: colors.text, lineHeight: 19, fontWeight: '600' },
+  predictHeader: { ...typography.tiny, color: colors.gold, fontWeight: '800' },
+  predictText: { ...typography.small, color: '#EEF2FF', lineHeight: 19, fontWeight: '600' },
 
   resRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: 4 },
-  resText: { ...typography.tiny, color: colors.textMuted, fontWeight: '700', flex: 1 },
+  resText: { ...typography.tiny, color: '#A5B4FC', fontWeight: '700', flex: 1 },
 });

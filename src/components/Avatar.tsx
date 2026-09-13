@@ -67,20 +67,15 @@ export function Avatar({ uri, name, size = 56, online, showStatus = false }: Pro
 const styles = StyleSheet.create({
   img: {
     borderWidth: 1.5,
-    borderColor: '#E3E8F3',
-    backgroundColor: '#FFFFFF',
+    borderColor: 'rgba(129, 140, 248, 0.4)',
+    backgroundColor: 'rgba(26, 33, 64, 0.78)',
   },
   fallback: {
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
-    borderColor: '#FFFFFF',
+    borderColor: 'rgba(129, 140, 248, 0.4)',
     overflow: 'hidden',
-    shadowColor: 'rgba(125,60,152,0.3)',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.8,
-    shadowRadius: 6,
-    elevation: 3,
   },
   initials: { color: '#FFFFFF', fontWeight: '800' },
   dot: {

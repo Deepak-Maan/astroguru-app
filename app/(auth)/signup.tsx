@@ -470,7 +470,7 @@ const styles = StyleSheet.create({
   },
 
   sectionHeader: { ...typography.h3, color: colors.saffron, fontSize: 16, fontWeight: '800', marginTop: 4 },
-  divider: { height: 1, backgroundColor: '#E2E8F0', marginVertical: spacing.xs },
+  divider: { height: 1, backgroundColor: 'rgba(129, 140, 248, 0.2)', marginVertical: spacing.xs },
 
   field: { gap: spacing.xs },
   label: { ...typography.tiny, color: '#A5B4FC', fontWeight: '700' },

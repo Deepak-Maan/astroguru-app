@@ -66,37 +66,37 @@ function AcharyaTransits() {
           </View>
 
           {/* Today's Key Alert */}
-          <View style={{ backgroundColor: 'rgba(99,102,241,0.08)', borderRadius: radius.lg, padding: spacing.md, borderLeftWidth: 4, borderLeftColor: '#6366F1' }}>
-            <Text style={{ color: '#4338CA', fontWeight: '800', fontSize: 14 }}>⚡ Acharya Intelligence Alert</Text>
-            <Text style={{ color: '#1E1B4B', fontSize: 13, marginTop: 4, fontWeight: '600', lineHeight: 18 }}>Mars transiting Karka from 1 Sep — prepare clients in houses 1, 4, 7, 10 for major life changes. Update consultation notes now.</Text>
+          <View style={{ backgroundColor: 'rgba(99, 102, 241, 0.15)', borderRadius: radius.lg, padding: spacing.md, borderLeftWidth: 4, borderLeftColor: '#818CF8', borderWidth: 1, borderColor: 'rgba(129, 140, 248, 0.3)' }}>
+            <Text style={{ color: '#818CF8', fontWeight: '800', fontSize: 14 }}>⚡ Acharya Intelligence Alert</Text>
+            <Text style={{ color: '#EEF2FF', fontSize: 13, marginTop: 4, fontWeight: '600', lineHeight: 18 }}>Mars transiting Karka from 1 Sep — prepare clients in houses 1, 4, 7, 10 for major life changes. Update consultation notes now.</Text>
           </View>
 
           {/* Transit Table */}
-          <SectionHeader title="\ud83c\udf20 Upcoming Major Transits" subtitle="Affects your consultation guidance" />
+          <SectionHeader title="🪐 Upcoming Major Transits" subtitle="Affects your consultation guidance" />
           {filtered.map((t, i) => (
             <View
               key={i}
               style={{
-                backgroundColor: '#FFFFFF',
+                backgroundColor: 'rgba(26, 33, 64, 0.78)',
                 borderRadius: radius.md,
                 padding: spacing.md,
                 borderWidth: 1,
-                borderColor: t.urgent ? 'rgba(220,38,38,0.3)' : 'rgba(191,219,254,0.5)',
+                borderColor: t.urgent ? 'rgba(239, 68, 68, 0.4)' : 'rgba(129, 140, 248, 0.25)',
                 borderLeftWidth: 4,
                 borderLeftColor: t.urgent ? '#EF4444' : colors.teal,
                 gap: 4,
               }}
             >
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Text style={{ fontSize: 15, fontWeight: '800', color: colors.text }}>{t.planet}</Text>
+                <Text style={{ fontSize: 15, fontWeight: '800', color: '#EEF2FF' }}>{t.planet}</Text>
                 {t.urgent && (
-                  <View style={{ backgroundColor: 'rgba(239,68,68,0.1)', borderRadius: radius.pill, paddingHorizontal: 8, paddingVertical: 3 }}>
-                    <Text style={{ color: '#EF4444', fontSize: 11, fontWeight: '800' }}>\u26a1 URGENT</Text>
+                  <View style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)', borderRadius: radius.pill, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: 'rgba(239, 68, 68, 0.35)' }}>
+                    <Text style={{ color: '#F87171', fontSize: 11, fontWeight: '800' }}>⚡ URGENT</Text>
                   </View>
                 )}
               </View>
-              <Text style={{ ...typography.tiny, color: colors.teal, fontWeight: '700' }}>{t.from} \u2192 {t.to} · {t.date}</Text>
-              <Text style={{ ...typography.small, color: colors.textMuted, lineHeight: 18 }}>{t.effect}</Text>
+              <Text style={{ ...typography.tiny, color: colors.teal, fontWeight: '700' }}>{t.from} → {t.to} · {t.date}</Text>
+              <Text style={{ ...typography.small, color: '#A5B4FC', lineHeight: 18 }}>{t.effect}</Text>
             </View>
           ))}
 
@@ -423,37 +423,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.md,
     borderRadius: radius.lg,
-    backgroundColor: '#FFFFFF',
-    borderTopWidth: 1.5,
-    borderLeftWidth: 1.2,
-    borderTopColor: 'rgba(255, 255, 255, 0.95)',
-    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
-    borderRightWidth: 1.2,
-    borderRightColor: '#E2E8F0',
-    borderBottomWidth: 3,
-    borderBottomColor: '#CBD5E1',
+    backgroundColor: 'rgba(26, 33, 64, 0.78)',
+    borderWidth: 1.2,
+    borderColor: 'rgba(129, 140, 248, 0.3)',
     marginRight: spacing.sm,
     overflow: 'hidden',
     gap: 3,
-    shadowColor: '#64748B',
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.12,
+    shadowOpacity: 0.25,
     shadowRadius: 6,
     elevation: 3,
   },
   signCellActive: {
-    borderTopColor: 'rgba(255, 255, 255, 0.5)',
-    borderBottomWidth: 3,
-    borderBottomColor: '#5B21B6',
-    shadowColor: colors.primary,
+    backgroundColor: 'rgba(99, 102, 241, 0.32)',
+    borderWidth: 1.2,
+    borderColor: 'rgba(129, 140, 248, 0.7)',
+    shadowColor: '#6366F1',
     shadowOpacity: 0.35,
   },
   signCellPressed: {
     transform: [{ translateY: 2 }],
-    borderBottomWidth: 1.5,
+    opacity: 0.85,
   },
-  signGlyph: { fontSize: 24, color: colors.primary },
-  signName: { ...typography.tiny, fontSize: 10, color: colors.text, fontWeight: '700' },
+  signGlyph: { fontSize: 24, color: '#818CF8' },
+  signName: { ...typography.tiny, fontSize: 10, color: '#EEF2FF', fontWeight: '700' },
   yourDot: {
     position: 'absolute',
     top: 5,
@@ -461,29 +455,23 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: colors.primary,
+    backgroundColor: '#F59E0B',
     borderWidth: 1.5,
-    borderColor: '#FFFFFF',
+    borderColor: '#0A0C16',
   },
 
   periodRow: {
     flexDirection: 'row',
     marginHorizontal: spacing.lg,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(26, 33, 64, 0.78)',
     borderRadius: radius.pill,
     padding: 4,
-    borderTopWidth: 2,
-    borderLeftWidth: 1.5,
-    borderTopColor: 'rgba(255, 255, 255, 0.95)',
-    borderLeftColor: 'rgba(255, 255, 255, 0.9)',
-    borderRightWidth: 1.2,
-    borderRightColor: '#EDE9FE',
-    borderBottomWidth: 3,
-    borderBottomColor: '#DDD6FE',
+    borderWidth: 1.2,
+    borderColor: 'rgba(129, 140, 248, 0.3)',
     gap: 2,
-    shadowColor: '#7C3AED',
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.25,
     shadowRadius: 6,
     elevation: 3,
   },
@@ -499,7 +487,7 @@ const styles = StyleSheet.create({
   },
   periodActive: {},
   periodIcon: { fontSize: 14 },
-  periodText: { ...typography.small, color: colors.textMuted, fontWeight: '700', fontSize: 13 },
+  periodText: { ...typography.small, color: '#A5B4FC', fontWeight: '700', fontSize: 13 },
   periodTextActive: { color: colors.white, fontWeight: '800' },
 
   readingHead: {
@@ -512,58 +500,52 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#EDE9FE',
+    backgroundColor: 'rgba(99, 102, 241, 0.25)',
     borderWidth: 1.5,
-    borderColor: 'rgba(124,58,237,0.25)',
+    borderColor: 'rgba(129, 140, 248, 0.4)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  readingGlyph: { fontSize: 28, color: colors.primary },
-  readingSign: { ...typography.h2, color: colors.text, fontWeight: '800' },
-  readingMeta: { ...typography.tiny, color: colors.textFaint, marginTop: 2, textTransform: 'capitalize', fontWeight: '600' },
+  readingGlyph: { fontSize: 28, color: '#EEF2FF' },
+  readingSign: { ...typography.h2, color: '#EEF2FF', fontWeight: '800' },
+  readingMeta: { ...typography.tiny, color: '#A5B4FC', marginTop: 2, textTransform: 'capitalize', fontWeight: '600' },
   moodCircle: {
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#FCE7F3',
+    backgroundColor: 'rgba(236, 72, 153, 0.2)',
     borderWidth: 1.5,
-    borderColor: 'rgba(219,39,119,0.25)',
+    borderColor: 'rgba(236, 72, 153, 0.4)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  moodValue: { ...typography.h3, fontSize: 15, color: colors.coral, lineHeight: 18, fontWeight: '800' },
-  moodPct: { ...typography.tiny, fontSize: 9.5, color: colors.coral, fontWeight: '800' },
+  moodValue: { ...typography.h3, fontSize: 15, color: '#F472B6', lineHeight: 18, fontWeight: '800' },
+  moodPct: { ...typography.tiny, fontSize: 9.5, color: '#F472B6', fontWeight: '800' },
 
-  summary: { ...typography.body, color: colors.text, lineHeight: 22, fontWeight: '600' },
+  summary: { ...typography.body, color: '#EEF2FF', lineHeight: 22, fontWeight: '600' },
   moodBarTrack: {
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#EDE9FE',
+    backgroundColor: 'rgba(26, 33, 64, 0.85)',
     marginTop: spacing.lg,
     overflow: 'hidden',
   },
   moodBarFill: { height: '100%', borderRadius: 4 },
-  moodCaption: { ...typography.tiny, color: colors.textMuted, marginTop: 6, fontWeight: '700' },
+  moodCaption: { ...typography.tiny, color: '#A5B4FC', marginTop: 6, fontWeight: '700' },
 
   areaCard: {
     flexDirection: 'row',
     gap: spacing.md,
     marginHorizontal: spacing.lg,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(26, 33, 64, 0.78)',
     borderRadius: radius.xl,
-    borderTopWidth: 2,
-    borderLeftWidth: 1.5,
-    borderTopColor: 'rgba(255, 255, 255, 0.95)',
-    borderLeftColor: 'rgba(255, 255, 255, 0.9)',
-    borderRightWidth: 1.2,
-    borderRightColor: '#EDE9FE',
-    borderBottomWidth: 3.5,
-    borderBottomColor: '#DDD6FE',
+    borderWidth: 1.2,
+    borderColor: 'rgba(129, 140, 248, 0.3)',
     padding: spacing.lg,
     alignItems: 'flex-start',
-    shadowColor: '#7C3AED',
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.09,
+    shadowOpacity: 0.25,
     shadowRadius: 14,
     elevation: 4,
   },
@@ -571,40 +553,34 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: '#EFF6FF',
+    backgroundColor: 'rgba(99, 102, 241, 0.25)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(191,219,254,0.8)',
+    borderColor: 'rgba(129, 140, 248, 0.4)',
   },
   areaIcon: { fontSize: 18 },
-  areaTitle: { ...typography.h3, fontSize: 15, color: colors.text, fontWeight: '800' },
-  areaText: { ...typography.small, color: colors.textMuted, marginTop: 4, lineHeight: 19, fontWeight: '600' },
+  areaTitle: { ...typography.h3, fontSize: 15, color: '#EEF2FF', fontWeight: '800' },
+  areaText: { ...typography.small, color: '#A5B4FC', marginTop: 4, lineHeight: 19, fontWeight: '600' },
 
-  luckyTitle: { ...typography.h3, color: colors.text, marginBottom: spacing.md, fontWeight: '800' },
+  luckyTitle: { ...typography.h3, color: '#EEF2FF', marginBottom: spacing.md, fontWeight: '800' },
   luckyRow: { flexDirection: 'row', gap: spacing.sm },
   luckyCell: {
     flex: 1,
     alignItems: 'center',
     paddingVertical: spacing.md,
     borderRadius: radius.md,
-    backgroundColor: '#FFFFFF',
-    borderTopWidth: 1.5,
-    borderLeftWidth: 1.2,
-    borderTopColor: 'rgba(255, 255, 255, 0.95)',
-    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
-    borderRightWidth: 1.2,
-    borderRightColor: '#E2E8F0',
-    borderBottomWidth: 2.5,
-    borderBottomColor: '#CBD5E1',
+    backgroundColor: 'rgba(26, 33, 64, 0.78)',
+    borderWidth: 1.2,
+    borderColor: 'rgba(129, 140, 248, 0.3)',
     gap: 4,
-    shadowColor: '#64748B',
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 2,
   },
-  luckyLabel: { ...typography.tiny, color: colors.textFaint, fontWeight: '700' },
+  luckyLabel: { ...typography.tiny, color: '#A5B4FC', fontWeight: '700' },
   luckyValue: { ...typography.h3, fontSize: 13, fontWeight: '800' },
   traitRow: { flexDirection: 'row', marginTop: spacing.md },
 });

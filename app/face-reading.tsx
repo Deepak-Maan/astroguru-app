@@ -255,15 +255,15 @@ const styles = StyleSheet.create({
   scannerSub: { ...typography.small, color: colors.textMuted, textAlign: 'center', lineHeight: 18 },
 
   featureBox: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: 'rgba(26, 33, 64, 0.78)',
     borderRadius: radius.md,
     padding: spacing.md,
-    borderWidth: 1,
-    borderColor: '#E3E8F3',
+    borderWidth: 1.2,
+    borderColor: 'rgba(129, 140, 248, 0.3)',
     gap: 2,
   },
   featureLabel: { ...typography.tiny, color: colors.saffron, fontWeight: '800' },
-  featureVal: { ...typography.small, color: colors.text, lineHeight: 18 },
+  featureVal: { ...typography.small, color: '#EEF2FF', lineHeight: 18 },
 
   destinyBox: {
     backgroundColor: 'rgba(109,40,217,0.10)',

@@ -132,30 +132,30 @@ export default function DreamsScreen() {
 const styles = StyleSheet.create({
   scroll: { paddingHorizontal: spacing.lg, paddingVertical: spacing.md, paddingBottom: spacing.xxl, gap: spacing.lg },
 
-  searchLabel: { ...typography.tiny, color: colors.textMuted, fontWeight: '700' },
+  searchLabel: { ...typography.tiny, color: '#A5B4FC', fontWeight: '700' },
   searchInput: {
-    backgroundColor: '#F8FAFC',
-    borderWidth: 1,
-    borderColor: '#E3E8F3',
+    backgroundColor: 'rgba(26, 33, 64, 0.85)',
+    borderWidth: 1.2,
+    borderColor: 'rgba(129, 140, 248, 0.35)',
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
     paddingVertical: 10,
     ...typography.body,
-    color: colors.text,
+    color: '#EEF2FF',
     fontWeight: '700',
   },
 
   dreamCard: { gap: spacing.xs },
-  dreamName: { ...typography.h3, color: colors.text, fontSize: 16, fontWeight: '800' },
-  dreamMeaning: { ...typography.small, color: colors.textMuted, lineHeight: 20, marginTop: 4 },
+  dreamName: { ...typography.h3, color: '#EEF2FF', fontSize: 16, fontWeight: '800' },
+  dreamMeaning: { ...typography.small, color: '#A5B4FC', lineHeight: 20, marginTop: 4 },
 
   remedyBox: {
-    backgroundColor: '#FFF5F5',
+    backgroundColor: 'rgba(239, 68, 68, 0.15)',
     borderWidth: 1,
-    borderColor: 'rgba(231,76,60,0.3)',
+    borderColor: 'rgba(239, 68, 68, 0.35)',
     borderRadius: radius.md,
     padding: spacing.sm,
     marginTop: 4,
   },
-  remedyText: { ...typography.tiny, color: colors.danger, fontWeight: '800' },
+  remedyText: { ...typography.tiny, color: '#F87171', fontWeight: '800' },
 });

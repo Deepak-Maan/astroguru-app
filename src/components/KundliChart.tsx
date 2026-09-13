@@ -71,7 +71,7 @@ export function KundliChart({ kundli, size = 300 }: Props) {
           <Polygon
             key={`fill-${num}`}
             points={toStr(pts)}
-            fill={Number(num) % 2 === 0 ? 'rgba(255,255,255,0.45)' : 'rgba(217,119,6,0.06)'}
+            fill={Number(num) % 2 === 0 ? 'rgba(26, 33, 64, 0.65)' : 'rgba(99, 102, 241, 0.12)'}
           />
         ))}
 

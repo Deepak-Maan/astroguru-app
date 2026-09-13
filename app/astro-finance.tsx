@@ -84,15 +84,15 @@ const styles = StyleSheet.create({
   radarSub: { ...typography.tiny, color: colors.textMuted, fontWeight: '600', marginTop: 2 },
 
   muhuratRow: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: 'rgba(26, 33, 64, 0.78)',
     borderRadius: radius.md,
     padding: spacing.md,
-    borderWidth: 1,
-    borderColor: '#E3E8F3',
+    borderWidth: 1.2,
+    borderColor: 'rgba(129, 140, 248, 0.3)',
     marginTop: 4,
   },
   muhuratTitle: { ...typography.tiny, color: colors.saffron, fontWeight: '800' },
-  muhuratVal: { ...typography.small, color: colors.text, fontWeight: '700', marginTop: 2 },
+  muhuratVal: { ...typography.small, color: '#EEF2FF', fontWeight: '700', marginTop: 2 },
 
   sectorTitle: { ...typography.h3, color: colors.text, fontSize: 15, fontWeight: '800' },
   sectorNote: { ...typography.small, color: colors.textMuted, lineHeight: 18 },

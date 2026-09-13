@@ -32,9 +32,9 @@ function AcharyaLiveQueue({ astrologerId }: { astrologerId: string }) {
 
   if (activeRooms.length === 0) {
     return (
-      <Card padded style={{ backgroundColor: '#F0FDF4', borderColor: 'rgba(5,150,105,0.3)', borderWidth: 1 }}>
+      <Card padded style={{ backgroundColor: 'rgba(5, 150, 105, 0.15)', borderColor: 'rgba(16, 185, 129, 0.35)', borderWidth: 1 }}>
         <Text style={{ ...typography.tiny, color: colors.teal, fontWeight: '800' }}>🟢 DUTY STATUS: ONLINE & READY</Text>
-        <Text style={{ ...typography.body, color: colors.text, fontWeight: '700', marginTop: 4 }}>
+        <Text style={{ ...typography.body, color: '#EEF2FF', fontWeight: '700', marginTop: 4 }}>
           No pending chat requests right now. When a seeker initiates a consultation, it will pop up here in real time!
         </Text>
       </Card>
@@ -45,16 +45,16 @@ function AcharyaLiveQueue({ astrologerId }: { astrologerId: string }) {
     <View style={{ gap: spacing.sm }}>
       <SectionHeader title="🔴 Live Consultation Requests" />
       {activeRooms.map((room) => (
-        <Card key={room.roomId} padded style={{ backgroundColor: 'rgba(99,102,241,0.06)', borderColor: colors.primary, borderWidth: 1.5 }}>
+        <Card key={room.roomId} padded style={{ backgroundColor: 'rgba(26, 33, 64, 0.78)', borderColor: 'rgba(129, 140, 248, 0.3)', borderWidth: 1 }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <View style={{ flex: 1, gap: 2 }}>
-              <Text style={{ ...typography.tiny, color: colors.primary, fontWeight: '900' }}>
+              <Text style={{ ...typography.tiny, color: colors.gold, fontWeight: '900' }}>
                 {room.status === 'waiting' ? '⏳ PENDING REQUEST' : '💬 ACTIVE SESSION'}
               </Text>
-              <Text style={{ ...typography.h3, color: colors.text, fontWeight: '900' }}>
+              <Text style={{ ...typography.h3, color: '#EEF2FF', fontWeight: '900' }}>
                 {room.seekerName}
               </Text>
-              <Text style={{ ...typography.small, color: colors.textMuted, fontWeight: '600' }} numberOfLines={1}>
+              <Text style={{ ...typography.small, color: '#A5B4FC', fontWeight: '600' }} numberOfLines={1}>
                 {room.messages[room.messages.length - 1]?.text || room.topic}
               </Text>
             </View>
@@ -388,61 +388,49 @@ const styles = StyleSheet.create({
   identityCard: {
     alignItems: 'center',
     borderRadius: radius.xl,
-    backgroundColor: '#FFFFFF',
-    borderTopWidth: 2,
-    borderLeftWidth: 1.5,
-    borderTopColor: 'rgba(255, 255, 255, 0.95)',
-    borderLeftColor: 'rgba(255, 255, 255, 0.9)',
-    borderRightWidth: 1.2,
-    borderRightColor: '#EDE9FE',
-    borderBottomWidth: 3.5,
-    borderBottomColor: '#DDD6FE',
+    backgroundColor: 'rgba(26, 33, 64, 0.78)',
+    borderWidth: 1.2,
+    borderColor: 'rgba(129, 140, 248, 0.35)',
     padding: spacing.xl,
     gap: spacing.xs,
     overflow: 'hidden',
-    shadowColor: '#7C3AED',
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.25,
     shadowRadius: 14,
     elevation: 4,
   },
-  name: { ...typography.h1, color: colors.text, marginTop: spacing.sm, textAlign: 'center', fontWeight: '800' },
-  emailText: { ...typography.small, color: colors.primary, marginTop: 1, fontWeight: '700' },
+  name: { ...typography.h1, color: '#EEF2FF', marginTop: spacing.sm, textAlign: 'center', fontWeight: '800' },
+  emailText: { ...typography.small, color: '#A5B4FC', marginTop: 1, fontWeight: '700' },
   adminRoleTag: {
-    backgroundColor: '#EDE9FE',
+    backgroundColor: 'rgba(99, 102, 241, 0.25)',
     borderWidth: 1,
-    borderColor: colors.primary,
+    borderColor: 'rgba(129, 140, 248, 0.45)',
     borderRadius: radius.pill,
     paddingHorizontal: 10,
     paddingVertical: 3,
     marginTop: 4,
   },
-  adminRoleText: { ...typography.tiny, color: colors.primary, fontWeight: '800', fontSize: 10 },
-  birth: { ...typography.small, color: colors.textMuted, textAlign: 'center', lineHeight: 18, marginTop: 4, fontWeight: '600' },
+  adminRoleText: { ...typography.tiny, color: '#EEF2FF', fontWeight: '800', fontSize: 10 },
+  birth: { ...typography.small, color: '#A5B4FC', textAlign: 'center', lineHeight: 18, marginTop: 4, fontWeight: '600' },
   badgeRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.lg, alignSelf: 'stretch' },
   badge: {
     flex: 1,
     alignItems: 'center',
     paddingVertical: spacing.md,
     borderRadius: radius.lg,
-    backgroundColor: '#FFFFFF',
-    borderTopWidth: 2,
-    borderLeftWidth: 1.5,
-    borderTopColor: 'rgba(255, 255, 255, 0.95)',
-    borderLeftColor: 'rgba(255, 255, 255, 0.9)',
-    borderRightWidth: 1.2,
-    borderRightColor: '#EDE9FE',
-    borderBottomWidth: 3,
-    borderBottomColor: '#DDD6FE',
+    backgroundColor: 'rgba(26, 33, 64, 0.78)',
+    borderWidth: 1.2,
+    borderColor: 'rgba(129, 140, 248, 0.3)',
     gap: 3,
-    shadowColor: '#7C3AED',
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 2,
   },
-  badgeLabel: { ...typography.tiny, color: colors.textMuted, fontWeight: '600' },
-  badgeValue: { ...typography.small, color: colors.primary, fontWeight: '800', fontSize: 12 },
+  badgeLabel: { ...typography.tiny, color: '#A5B4FC', fontWeight: '600' },
+  badgeValue: { ...typography.small, color: '#EEF2FF', fontWeight: '800', fontSize: 12 },
 
   adminBanner: {
     flexDirection: 'row',
@@ -470,27 +458,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(26, 33, 64, 0.78)',
     borderRadius: radius.xl,
-    borderTopWidth: 2,
-    borderLeftWidth: 1.5,
-    borderTopColor: 'rgba(255, 255, 255, 0.95)',
-    borderLeftColor: 'rgba(255, 255, 255, 0.9)',
-    borderRightWidth: 1.2,
-    borderRightColor: '#EDE9FE',
-    borderBottomWidth: 4,
-    borderBottomColor: '#5B21B6',
+    borderWidth: 1.2,
+    borderColor: 'rgba(129, 140, 248, 0.35)',
     padding: spacing.xl,
     overflow: 'hidden',
-    shadowColor: '#7C3AED',
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.16,
+    shadowOpacity: 0.25,
     shadowRadius: 14,
     elevation: 5,
   },
-  walletLabel: { ...typography.small, color: colors.textMuted, fontWeight: '700' },
-  walletValue: { ...typography.display, fontSize: 30, color: colors.primary, marginTop: 2, fontWeight: '800' },
-  walletSub: { ...typography.tiny, color: colors.textFaint, marginTop: 3, fontWeight: '600' },
+  walletLabel: { ...typography.small, color: '#A5B4FC', fontWeight: '700' },
+  walletValue: { ...typography.display, fontSize: 30, color: '#FCD34D', marginTop: 2, fontWeight: '800' },
+  walletSub: { ...typography.tiny, color: '#A5B4FC', marginTop: 3, fontWeight: '600' },
   walletIcon: { fontSize: 44, opacity: 0.85 },
 
   row: {
@@ -500,22 +482,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md + 2,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(203, 213, 225, 0.6)',
+    borderTopColor: 'rgba(129, 140, 248, 0.2)',
   },
   rowIconWrap: {
     width: 34,
     height: 34,
     borderRadius: 12,
-    backgroundColor: '#EDE9FE',
+    backgroundColor: 'rgba(99, 102, 241, 0.25)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(124, 58, 237, 0.2)',
+    borderColor: 'rgba(129, 140, 248, 0.35)',
   },
   rowIcon: { fontSize: 16 },
-  rowLabel: { ...typography.body, color: colors.text, flex: 1, fontWeight: '700' },
-  rowValue: { ...typography.small, color: colors.textMuted, maxWidth: 150, fontWeight: '600' },
-  chevron: { fontSize: 22, color: colors.textFaint, fontWeight: '600' },
+  rowLabel: { ...typography.body, color: '#EEF2FF', flex: 1, fontWeight: '700' },
+  rowValue: { ...typography.small, color: '#A5B4FC', maxWidth: 150, fontWeight: '600' },
+  chevron: { fontSize: 22, color: '#818CF8', fontWeight: '600' },
 
   version: {
     ...typography.tiny,

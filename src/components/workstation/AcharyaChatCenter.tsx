@@ -201,18 +201,18 @@ export function AcharyaChatCenter() {
 
       {/* Metrics Banner */}
       <View style={styles.metricsRow}>
-        <View style={[styles.metricCard, { borderColor: 'rgba(255,51,102,0.35)', backgroundColor: 'rgba(255,51,102,0.06)' }]}>
+        <View style={[styles.metricCard, { borderColor: 'rgba(255,51,102,0.35)', backgroundColor: 'rgba(255,51,102,0.12)' }]}>
           <Text style={[styles.metricVal, { color: colors.saffron }]}>{waitingCount}</Text>
           <Text style={styles.metricLabel}>⏳ Waiting Queue</Text>
         </View>
 
-        <View style={[styles.metricCard, { borderColor: 'rgba(16,185,129,0.4)', backgroundColor: '#F0FDF4' }]}>
-          <Text style={[styles.metricVal, { color: '#059669' }]}>{activeCount}</Text>
+        <View style={[styles.metricCard, { borderColor: 'rgba(16,185,129,0.4)', backgroundColor: 'rgba(16,185,129,0.12)' }]}>
+          <Text style={[styles.metricVal, { color: '#10B981' }]}>{activeCount}</Text>
           <Text style={styles.metricLabel}>💬 Active Chats</Text>
         </View>
 
-        <View style={[styles.metricCard, { borderColor: 'rgba(59,130,246,0.4)', backgroundColor: '#EFF6FF' }]}>
-          <Text style={[styles.metricVal, { color: colors.teal }]}>₹{todayEarnings}</Text>
+        <View style={[styles.metricCard, { borderColor: 'rgba(99,102,241,0.4)', backgroundColor: 'rgba(99,102,241,0.15)' }]}>
+          <Text style={[styles.metricVal, { color: '#EEF2FF' }]}>₹{todayEarnings}</Text>
           <Text style={styles.metricLabel}>💰 Today Earned</Text>
         </View>
       </View>
@@ -431,7 +431,7 @@ export function AcharyaChatCenter() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#0A0C16',
   },
   header: {
     flexDirection: 'row',
@@ -445,26 +445,26 @@ const styles = StyleSheet.create({
     ...typography.h2,
     fontSize: 20,
     fontWeight: '900',
-    color: '#0F172A',
+    color: '#EEF2FF',
   },
   headerSubtitle: {
     ...typography.tiny,
-    color: colors.textMuted,
+    color: '#A5B4FC',
     marginTop: 2,
     fontWeight: '600',
   },
   dutyPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(26, 33, 64, 0.85)',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderWidth: 1.2,
+    borderColor: 'rgba(129, 140, 248, 0.3)',
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.2,
     shadowRadius: 2,
     elevation: 2,
   },
@@ -477,7 +477,7 @@ const styles = StyleSheet.create({
   dutyText: {
     ...typography.tiny,
     fontWeight: '900',
-    color: '#0F172A',
+    color: '#EEF2FF',
     marginRight: 2,
   },
   metricsRow: {
@@ -508,19 +508,19 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(26, 33, 64, 0.78)',
     marginHorizontal: spacing.lg,
     marginVertical: spacing.xs,
     paddingHorizontal: spacing.md,
     paddingVertical: Platform.OS === 'ios' ? 10 : 6,
     borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderWidth: 1.2,
+    borderColor: 'rgba(129, 140, 248, 0.3)',
   },
   searchInput: {
     flex: 1,
     fontSize: 13,
-    color: '#0F172A',
+    color: '#EEF2FF',
     fontWeight: '600',
   },
   tabFilterRow: {
@@ -533,16 +533,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: radius.pill,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: 'rgba(26, 33, 64, 0.78)',
+    borderWidth: 1,
+    borderColor: 'rgba(129, 140, 248, 0.25)',
   },
   tabFilterChipActive: {
     backgroundColor: colors.teal,
+    borderColor: 'transparent',
   },
   tabFilterText: {
     ...typography.tiny,
     fontSize: 11,
     fontWeight: '700',
-    color: '#475569',
+    color: '#A5B4FC',
   },
   tabFilterTextActive: {
     color: '#FFFFFF',
@@ -554,24 +557,24 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   roomCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(26, 33, 64, 0.78)',
     borderRadius: radius.lg,
     padding: spacing.md,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    shadowColor: '#64748B',
+    borderWidth: 1.2,
+    borderColor: 'rgba(129, 140, 248, 0.3)',
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.2,
     shadowRadius: 6,
     elevation: 3,
   },
   roomCardPending: {
-    borderColor: 'rgba(245,158,11,0.6)',
-    backgroundColor: '#FFFDF5',
+    borderColor: 'rgba(245, 158, 11, 0.6)',
+    backgroundColor: 'rgba(26, 33, 64, 0.9)',
   },
   roomCardActive: {
-    borderColor: 'rgba(16,185,129,0.6)',
-    backgroundColor: '#F7FEFA',
+    borderColor: 'rgba(16, 185, 129, 0.6)',
+    backgroundColor: 'rgba(26, 33, 64, 0.9)',
   },
   cardHeader: {
     flexDirection: 'row',
@@ -591,36 +594,38 @@ const styles = StyleSheet.create({
     height: 13,
     borderRadius: 7,
     borderWidth: 2,
-    borderColor: '#FFFFFF',
+    borderColor: '#0A0C16',
   },
   seekerName: {
     ...typography.body,
     fontWeight: '900',
-    color: '#0F172A',
+    color: '#EEF2FF',
     fontSize: 15,
   },
   timeText: {
     ...typography.tiny,
-    color: colors.textMuted,
+    color: '#A5B4FC',
     fontSize: 10.5,
     fontWeight: '700',
   },
   topicText: {
     ...typography.tiny,
-    color: colors.saffron,
+    color: '#F59E0B',
     fontWeight: '800',
     marginTop: 2,
   },
   msgPreviewBox: {
-    backgroundColor: 'rgba(241,245,249,0.7)',
+    backgroundColor: 'rgba(17, 22, 43, 0.7)',
     padding: 9,
     borderRadius: radius.md,
     marginVertical: spacing.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(129, 140, 248, 0.2)',
   },
   lastMsgText: {
     ...typography.small,
     fontSize: 12.5,
-    color: '#334155',
+    color: '#EEF2FF',
     lineHeight: 17,
   },
   cardFooter: {
@@ -630,14 +635,14 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   rateBadge: {
-    backgroundColor: 'rgba(245,158,11,0.12)',
+    backgroundColor: 'rgba(245,158,11,0.15)',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: radius.pill,
   },
   rateBadgeText: {
     ...typography.tiny,
-    color: colors.saffron,
+    color: '#FCD34D',
     fontWeight: '900',
     fontSize: 11,
   },
@@ -645,9 +650,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 7,
     borderRadius: radius.md,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: 'rgba(99, 102, 241, 0.25)',
     borderWidth: 1,
-    borderColor: '#CBD5E1',
+    borderColor: 'rgba(129, 140, 248, 0.35)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -655,7 +660,7 @@ const styles = StyleSheet.create({
     ...typography.tiny,
     fontSize: 11,
     fontWeight: '800',
-    color: '#334155',
+    color: '#EEF2FF',
   },
   acceptActionBtn: {
     paddingHorizontal: 14,
@@ -699,18 +704,18 @@ const styles = StyleSheet.create({
   emptyTitle: {
     ...typography.h3,
     fontWeight: '900',
-    color: '#0F172A',
+    color: '#EEF2FF',
     marginBottom: 6,
   },
   emptySubtitle: {
     ...typography.small,
-    color: colors.textMuted,
+    color: '#A5B4FC',
     textAlign: 'center',
     lineHeight: 18,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(15,23,42,0.6)',
+    backgroundColor: 'rgba(5, 7, 15, 0.8)',
     alignItems: 'center',
     justifyContent: 'center',
     padding: spacing.lg,
@@ -718,12 +723,14 @@ const styles = StyleSheet.create({
   modalContent: {
     width: '100%',
     maxWidth: 380,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#11162B',
     borderRadius: radius.xl,
     padding: spacing.xl,
+    borderWidth: 1.2,
+    borderColor: 'rgba(129, 140, 248, 0.35)',
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.4,
     shadowRadius: 20,
     elevation: 10,
   },
@@ -731,29 +738,29 @@ const styles = StyleSheet.create({
     ...typography.h2,
     fontSize: 18,
     fontWeight: '900',
-    color: '#0F172A',
+    color: '#EEF2FF',
   },
   kundliGrid: {
     gap: 8,
     marginVertical: 8,
   },
   kundliGridItem: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: 'rgba(26, 33, 64, 0.8)',
     padding: 10,
     borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderWidth: 1.2,
+    borderColor: 'rgba(129, 140, 248, 0.25)',
   },
   kundliGridLabel: {
     ...typography.tiny,
-    color: colors.textMuted,
+    color: '#A5B4FC',
     fontWeight: '700',
     fontSize: 10.5,
   },
   kundliGridVal: {
     ...typography.body,
     fontWeight: '800',
-    color: '#0F172A',
+    color: '#EEF2FF',
     marginTop: 2,
   },
 });

@@ -248,9 +248,9 @@ export function RashiChakra({ kundli, onPress }: Props) {
     <GestureDetector gesture={gesture}>
       <View style={styles.card} onLayout={onLayout}>
         <GLView style={StyleSheet.absoluteFill} onContextCreate={onContextCreate} />
-        {/* Crisp clean light gradient overlay */}
+        {/* Dark cosmic liquid glass gradient overlay */}
         <LinearGradient
-          colors={['rgba(255,255,255,0.05)', 'rgba(248,250,252,0.65)', '#FFFFFF']}
+          colors={['rgba(10,12,22,0.05)', 'rgba(17,22,43,0.70)', 'rgba(10,12,22,0.95)']}
           locations={[0.20, 0.60, 1]}
           style={StyleSheet.absoluteFill}
           pointerEvents="none"
@@ -266,22 +266,11 @@ const styles = StyleSheet.create({
     height: HERO_HEIGHT,
     borderRadius: radius.lg,
     overflow: 'hidden',
-    backgroundColor: '#FFFFFF',
-    borderTopWidth: 1.5,
-    borderLeftWidth: 1.2,
-    borderTopColor: 'rgba(255, 255, 255, 0.95)',
-    borderLeftColor: 'rgba(255, 255, 255, 0.85)',
-    borderRightWidth: 1.2,
-    borderRightColor: '#E2E8F0',
-    borderBottomWidth: 3.5,
-    borderBottomColor: '#CBD5E1',
-    shadowColor: '#64748B',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    elevation: 4,
+    backgroundColor: 'rgba(26, 33, 64, 0.78)',
+    borderWidth: 1,
+    borderColor: 'rgba(129, 140, 248, 0.3)',
   },
-  fallback: { justifyContent: 'flex-end', backgroundColor: '#FFFFFF' },
+  fallback: { justifyContent: 'flex-end', backgroundColor: 'rgba(26, 33, 64, 0.78)' },
 
   overlay: {
     position: 'absolute',
@@ -301,18 +290,18 @@ const styles = StyleSheet.create({
   headline: {
     ...typography.display,
     fontSize: 22,
-    color: colors.text,
+    color: '#EEF2FF',
     marginTop: 1,
     fontWeight: '800',
   },
   headlineLight: {
     fontWeight: '500',
-    color: colors.textMuted,
+    color: '#A5B4FC',
   },
   readout: {
     ...typography.small,
     fontSize: 11.5,
-    color: colors.textMuted,
+    color: '#A5B4FC',
     lineHeight: 16,
     fontWeight: '600',
   },
@@ -328,5 +317,5 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
   },
   link: { ...typography.small, fontWeight: '800', color: colors.teal, fontSize: 12.5 },
-  hint: { ...typography.tiny, fontSize: 9.5, color: colors.textFaint },
+  hint: { ...typography.tiny, fontSize: 9.5, color: '#818CF8' },
 });

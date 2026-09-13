@@ -72,18 +72,18 @@ export default function KundliScreen() {
                   key={i}
                   onPress={() => router.push('/(tabs)')}
                   style={({ pressed }) => [{
-                    backgroundColor: '#FFFFFF',
+                    backgroundColor: 'rgba(26, 33, 64, 0.78)',
                     borderRadius: radius.md,
                     padding: spacing.md,
                     borderWidth: 1,
-                    borderColor: 'rgba(191, 219, 254, 0.6)',
+                    borderColor: 'rgba(129, 140, 248, 0.25)',
                     flexDirection: 'row',
                     alignItems: 'center',
                     justifyContent: 'space-between',
                   }, pressed && { opacity: 0.8 }]}
                 >
                   <View>
-                    <Text style={{ ...typography.h3, color: colors.text, fontWeight: '800' }}>👤 {client}</Text>
+                    <Text style={{ ...typography.h3, color: '#EEF2FF', fontWeight: '800' }}>👤 {client}</Text>
                     <Text style={{ ...typography.tiny, color: colors.teal, marginTop: 2, fontWeight: '700' }}>Vedic Kundli Generated · Active Session</Text>
                   </View>
                   <Text style={{ fontSize: 18, color: colors.teal, fontWeight: '800' }}>Inspect →</Text>
@@ -193,18 +193,18 @@ export default function KundliScreen() {
                       {chartFormat === 'north' ? 'Diamond geometry · 1st house top' : 'Fixed Zodiac clockwise boxes'}
                     </Text>
                   </View>
-                  <View style={{ flexDirection: 'row', backgroundColor: '#F1F5F9', borderRadius: radius.pill, padding: 3 }}>
+                  <View style={{ flexDirection: 'row', backgroundColor: 'rgba(26, 33, 64, 0.85)', borderRadius: radius.pill, padding: 3, borderWidth: 1, borderColor: 'rgba(129, 140, 248, 0.3)' }}>
                     <Pressable
                       onPress={() => setChartFormat('north')}
-                      style={[{ paddingVertical: 4, paddingHorizontal: 8, borderRadius: radius.pill }, chartFormat === 'north' && { backgroundColor: '#FFFFFF', shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 2, elevation: 1 }]}
+                      style={[{ paddingVertical: 4, paddingHorizontal: 10, borderRadius: radius.pill }, chartFormat === 'north' && { backgroundColor: 'rgba(99, 102, 241, 0.45)', borderWidth: 1, borderColor: 'rgba(129, 140, 248, 0.6)' }]}
                     >
-                      <Text style={{ fontSize: 10.5, fontWeight: '800', color: chartFormat === 'north' ? colors.primary : colors.textMuted }}>💎 North</Text>
+                      <Text style={{ fontSize: 10.5, fontWeight: '800', color: chartFormat === 'north' ? '#EEF2FF' : '#A5B4FC' }}>💎 North</Text>
                     </Pressable>
                     <Pressable
                       onPress={() => setChartFormat('south')}
-                      style={[{ paddingVertical: 4, paddingHorizontal: 8, borderRadius: radius.pill }, chartFormat === 'south' && { backgroundColor: '#FFFFFF', shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 2, elevation: 1 }]}
+                      style={[{ paddingVertical: 4, paddingHorizontal: 10, borderRadius: radius.pill }, chartFormat === 'south' && { backgroundColor: 'rgba(99, 102, 241, 0.45)', borderWidth: 1, borderColor: 'rgba(129, 140, 248, 0.6)' }]}
                     >
-                      <Text style={{ fontSize: 10.5, fontWeight: '800', color: chartFormat === 'south' ? colors.primary : colors.textMuted }}>🔲 South</Text>
+                      <Text style={{ fontSize: 10.5, fontWeight: '800', color: chartFormat === 'south' ? '#EEF2FF' : '#A5B4FC' }}>🔲 South</Text>
                     </Pressable>
                   </View>
                 </View>
@@ -470,38 +470,32 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: spacing.md + 2,
     borderRadius: radius.pill,
-    backgroundColor: '#FFFFFF',
-    borderTopWidth: 2,
-    borderLeftWidth: 1.5,
-    borderTopColor: 'rgba(255, 255, 255, 0.95)',
-    borderLeftColor: 'rgba(255, 255, 255, 0.9)',
-    borderRightWidth: 1.2,
-    borderRightColor: '#EDE9FE',
-    borderBottomWidth: 3,
-    borderBottomColor: '#DDD6FE',
+    backgroundColor: 'rgba(26, 33, 64, 0.78)',
+    borderWidth: 1.2,
+    borderColor: 'rgba(129, 140, 248, 0.3)',
     overflow: 'hidden',
     alignSelf: 'flex-start',
     flexShrink: 0,
-    shadowColor: '#7C3AED',
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.25,
     shadowRadius: 6,
     elevation: 3,
   },
   tabActive: {
-    borderTopColor: 'rgba(255, 255, 255, 0.4)',
-    borderBottomWidth: 3,
-    borderBottomColor: '#5B21B6',
-    shadowColor: colors.primary,
+    backgroundColor: 'rgba(99, 102, 241, 0.3)',
+    borderWidth: 1.2,
+    borderColor: 'rgba(129, 140, 248, 0.7)',
+    shadowColor: '#6366F1',
     shadowOpacity: 0.35,
   },
   tabPressed: {
     transform: [{ translateY: 1.5 }],
-    borderBottomWidth: 1.5,
+    opacity: 0.85,
   },
   tabIcon: { fontSize: 13 },
-  tabText: { ...typography.small, color: colors.textMuted, fontWeight: '700', fontSize: 13, lineHeight: 18 },
-  tabTextActive: { color: colors.white, fontWeight: '800' },
+  tabText: { ...typography.small, color: '#A5B4FC', fontWeight: '700', fontSize: 13, lineHeight: 18 },
+  tabTextActive: { color: '#FFFFFF', fontWeight: '800' },
 
   scroll: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xxl, gap: spacing.lg, paddingTop: spacing.xs },
 
@@ -515,10 +509,10 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     paddingVertical: spacing.md,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(203, 213, 225, 0.6)',
+    borderTopColor: 'rgba(129, 140, 248, 0.25)',
   },
   detailLabel: { ...typography.small, color: colors.textMuted, flex: 1, fontWeight: '600' },
-  detailValue: { ...typography.h3, fontSize: 15, color: colors.primary, textAlign: 'right', fontWeight: '800' },
+  detailValue: { ...typography.h3, fontSize: 15, color: '#EEF2FF', textAlign: 'right', fontWeight: '800' },
   detailSub: { ...typography.tiny, color: colors.textFaint, marginTop: 2, textAlign: 'right', fontWeight: '600' },
 
   doshaRow: { flexDirection: 'row', gap: spacing.md, alignItems: 'flex-start' },
@@ -546,11 +540,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     gap: spacing.sm,
-    backgroundColor: '#F4F1FA',
+    backgroundColor: 'rgba(26, 33, 64, 0.85)',
     borderBottomWidth: 1,
-    borderBottomColor: '#EDE9FE',
+    borderBottomColor: 'rgba(129, 140, 248, 0.25)',
   },
-  th: { ...typography.tiny, color: colors.primary, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: '800' },
+  th: { ...typography.tiny, color: '#818CF8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: '800' },
   tableRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -558,7 +552,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     gap: spacing.sm,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(163, 177, 198, 0.3)',
+    borderTopColor: 'rgba(129, 140, 248, 0.2)',
   },
   td: { ...typography.small, color: colors.text, fontWeight: '600' },
   tdStrong: { ...typography.small, color: colors.text, fontWeight: '800' },
@@ -569,13 +563,13 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: radius.pill,
-    backgroundColor: '#EDE9FE',
+    backgroundColor: 'rgba(99, 102, 241, 0.25)',
     borderWidth: 1.5,
-    borderColor: 'rgba(124,58,237,0.25)',
+    borderColor: 'rgba(129, 140, 248, 0.4)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  houseNumText: { ...typography.h3, fontSize: 14, color: colors.primary, fontWeight: '900' },
+  houseNumText: { ...typography.h3, fontSize: 14, color: '#EEF2FF', fontWeight: '900' },
   houseRashi: { ...typography.h3, fontSize: 15, color: colors.text, fontWeight: '800' },
   houseLord: { ...typography.tiny, color: colors.textFaint, marginTop: 3, fontWeight: '600' },
   occupants: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginTop: spacing.sm },
@@ -588,17 +582,17 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.sm,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(163, 177, 198, 0.3)',
+    borderTopColor: 'rgba(129, 140, 248, 0.2)',
     borderRadius: radius.sm,
     overflow: 'hidden',
   },
   dashaRowActive: {
-    borderColor: 'rgba(124,58,237,0.35)',
+    borderColor: 'rgba(129, 140, 248, 0.5)',
     borderWidth: 1.5,
     borderRadius: radius.md,
     marginHorizontal: -2,
     paddingHorizontal: spacing.md,
-    backgroundColor: 'rgba(124,58,237,0.08)',
+    backgroundColor: 'rgba(99, 102, 241, 0.2)',
   },
   dashaDot: {
     width: 8,
@@ -607,7 +601,7 @@ const styles = StyleSheet.create({
   },
   dashaName: { ...typography.h3, fontSize: 14, color: colors.text, fontWeight: '800' },
   dashaYears: { ...typography.tiny, color: colors.textFaint, marginTop: 2, fontWeight: '600' },
-  dashaDate: { ...typography.small, color: colors.primary, fontWeight: '800', fontSize: 12 },
+  dashaDate: { ...typography.small, color: '#818CF8', fontWeight: '800', fontSize: 12 },
 
   matchButton: {
     borderRadius: radius.pill,
