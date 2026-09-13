@@ -25,16 +25,32 @@ export function LanguageSelector({ compact = true }: Props) {
     <>
       <Pressable
         onPress={() => setModalVisible(true)}
-        style={({ pressed }) => [styles.btn, pressed && { opacity: 0.75 }]}
+        style={({ pressed }) => [styles.btn, pressed && { opacity: 0.8, transform: [{ scale: 0.96 }] }]}
+        accessibilityRole="button"
+        accessibilityLabel="Select language"
       >
         <Text style={styles.flag}>{activeLangItem.flag}</Text>
         <Text style={styles.btnText}>{activeLangItem.native}</Text>
+        <Text style={styles.chevron}>▾</Text>
       </Pressable>
 
-      <Modal visible={modalVisible} animationType="fade" transparent>
+      <Modal visible={modalVisible} animationType="fade" transparent onRequestClose={() => setModalVisible(false)}>
         <Pressable style={styles.overlay} onPress={() => setModalVisible(false)}>
           <Pressable style={styles.modalContent} onPress={(e) => e.stopPropagation()}>
-            <Text style={styles.modalTitle}>Choose Language / भाषा चुनें</Text>
+            <View style={styles.modalHeader}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.modalTitle}>Choose Language / भाषा चुनें</Text>
+                <Text style={styles.modalSub}>Select your preferred astrology reading language</Text>
+              </View>
+              <Pressable
+                onPress={() => setModalVisible(false)}
+                hitSlop={12}
+                style={({ pressed }) => [styles.closeBtn, pressed && { opacity: 0.7 }]}
+              >
+                <Text style={styles.closeText}>✕</Text>
+              </Pressable>
+            </View>
+
             <View style={styles.grid}>
               {LANGUAGES.map((lang) => {
                 const active = currentLang === lang.code;
@@ -42,11 +58,15 @@ export function LanguageSelector({ compact = true }: Props) {
                   <Pressable
                     key={lang.code}
                     onPress={() => handleSelect(lang.code)}
-                    style={[styles.cell, active && styles.cellActive]}
+                    style={({ pressed }) => [
+                      styles.cell,
+                      active ? styles.cellActive : styles.cellInactive,
+                      pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] },
+                    ]}
                   >
                     {active && (
                       <LinearGradient
-                        colors={[colors.teal, '#047857']}
+                        colors={['#6366F1', '#4F46E5']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 0 }}
                         style={StyleSheet.absoluteFill}
@@ -57,11 +77,17 @@ export function LanguageSelector({ compact = true }: Props) {
                       <Text style={[styles.cellNative, active && { color: colors.white }]}>
                         {lang.native}
                       </Text>
-                      <Text style={[styles.cellLabel, active && { color: 'rgba(255,255,255,0.85)' }]}>
+                      <Text style={[styles.cellLabel, active && { color: 'rgba(255,255,255,0.92)' }]}>
                         {lang.label}
                       </Text>
                     </View>
-                    {active && <Text style={styles.checkIcon}>✓</Text>}
+                    {active ? (
+                      <View style={styles.checkBadge}>
+                        <Text style={styles.checkIcon}>✓</Text>
+                      </View>
+                    ) : (
+                      <View style={styles.radioOutline} />
+                    )}
                   </Pressable>
                 );
               })}
@@ -78,54 +104,94 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
     borderRadius: radius.pill,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(26, 33, 64, 0.78)',
     borderTopWidth: 1.5,
-    borderLeftWidth: 1.5,
-    borderTopColor: '#FFFFFF',
-    borderLeftColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: 'rgba(191, 219, 254, 0.6)',
-    borderRightColor: 'rgba(191, 219, 254, 0.6)',
+    borderLeftWidth: 1.2,
+    borderTopColor: 'rgba(129, 140, 248, 0.4)',
+    borderLeftColor: 'rgba(129, 140, 248, 0.25)',
+    borderBottomWidth: 3,
+    borderRightWidth: 1.2,
+    borderBottomColor: 'rgba(10, 12, 28, 0.95)',
+    borderRightColor: 'rgba(129, 140, 248, 0.15)',
     overflow: 'hidden',
-    shadowColor: '#BFDBFE',
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 0.55,
-    shadowRadius: 6,
-    elevation: 3,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+    elevation: 2,
   },
   flag: { fontSize: 13 },
-  btnText: { ...typography.tiny, color: colors.text, fontWeight: '800', fontSize: 12 },
+  btnText: { ...typography.tiny, color: '#EEF2FF', fontWeight: '800', fontSize: 12.5 },
+  chevron: { fontSize: 11, color: '#A5B4FC', fontWeight: '800', marginLeft: 1 },
 
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(15,23,42,0.45)',
+    backgroundColor: 'rgba(4, 6, 15, 0.85)',
     justifyContent: 'center',
-    padding: spacing.lg,
+    alignItems: 'center',
+    padding: spacing.md,
   },
   modalContent: {
-    backgroundColor: '#FFFFFF',
+    width: '100%',
+    maxWidth: 380,
+    backgroundColor: '#11162B',
     borderRadius: radius.xl,
-    padding: spacing.xl,
+    padding: spacing.lg,
     borderTopWidth: 1.5,
-    borderLeftWidth: 1.5,
-    borderTopColor: '#FFFFFF',
-    borderLeftColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: 'rgba(191, 219, 254, 0.6)',
-    borderRightColor: 'rgba(191, 219, 254, 0.6)',
+    borderLeftWidth: 1.2,
+    borderTopColor: 'rgba(129, 140, 248, 0.45)',
+    borderLeftColor: 'rgba(129, 140, 248, 0.25)',
+    borderBottomWidth: 4,
+    borderRightWidth: 1.2,
+    borderBottomColor: 'rgba(10, 12, 28, 0.98)',
+    borderRightColor: 'rgba(129, 140, 248, 0.15)',
     gap: spacing.md,
-    shadowColor: '#BFDBFE',
-    shadowOffset: { width: 6, height: 6 },
-    shadowOpacity: 0.7,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowColor: '#6366F1',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.35,
+    shadowRadius: 20,
+    elevation: 10,
   },
-  modalTitle: { ...typography.h2, color: colors.teal, textAlign: 'center', fontSize: 18, fontWeight: '800' },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(129, 140, 248, 0.18)',
+  },
+  modalTitle: {
+    ...typography.h2,
+    color: '#EEF2FF',
+    fontSize: 17,
+    fontWeight: '800',
+    letterSpacing: -0.2,
+  },
+  modalSub: {
+    ...typography.tiny,
+    color: '#A5B4FC',
+    marginTop: 2,
+    fontSize: 11.5,
+    fontWeight: '600',
+  },
+  closeBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(26, 33, 64, 0.85)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(129, 140, 248, 0.3)',
+  },
+  closeText: {
+    color: '#A5B4FC',
+    fontSize: 14,
+    fontWeight: '800',
+  },
 
   grid: { gap: spacing.sm },
   cell: {
@@ -133,15 +199,66 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.md,
     padding: spacing.md,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: 'rgba(191, 219, 254, 0.6)',
-    backgroundColor: '#F8FAFC',
+    borderRadius: radius.lg,
     overflow: 'hidden',
   },
-  cellActive: { borderColor: colors.teal },
+  cellInactive: {
+    backgroundColor: 'rgba(26, 33, 64, 0.82)',
+    borderTopWidth: 1.2,
+    borderLeftWidth: 1,
+    borderTopColor: 'rgba(129, 140, 248, 0.3)',
+    borderLeftColor: 'rgba(129, 140, 248, 0.2)',
+    borderBottomWidth: 3,
+    borderRightWidth: 1,
+    borderBottomColor: 'rgba(10, 12, 28, 0.95)',
+    borderRightColor: 'rgba(129, 140, 248, 0.12)',
+  },
+  cellActive: {
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.2,
+    borderTopColor: '#A5B4FC',
+    borderLeftColor: 'rgba(165, 180, 252, 0.6)',
+    borderBottomWidth: 3.5,
+    borderRightWidth: 1.2,
+    borderBottomColor: '#312E81',
+    borderRightColor: 'rgba(79, 70, 229, 0.5)',
+    shadowColor: '#6366F1',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 4,
+  },
   cellFlag: { fontSize: 24 },
-  cellNative: { ...typography.h3, color: colors.text, fontSize: 16, fontWeight: '800' },
-  cellLabel: { ...typography.tiny, color: colors.textMuted, fontWeight: '600' },
-  checkIcon: { color: colors.white, fontWeight: '900', fontSize: 16 },
+  cellNative: {
+    ...typography.h3,
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '800',
+    letterSpacing: -0.2,
+  },
+  cellLabel: {
+    ...typography.tiny,
+    color: '#A5B4FC',
+    fontWeight: '600',
+    fontSize: 12,
+    marginTop: 1,
+  },
+  checkBadge: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#FFFFFF',
+  },
+  checkIcon: { color: '#FFFFFF', fontWeight: '900', fontSize: 13 },
+  radioOutline: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: 'rgba(129, 140, 248, 0.35)',
+  },
 });
