@@ -7,10 +7,10 @@ import * as Updates from 'expo-updates';
 import { inAppUpdateEngine, UpdateDownloadProgress } from '../services/updates/inAppUpdateEngine';
 import { getAppVersionFromFirebase, syncLatestAppVersionToFirebase } from '../services/firebaseRealtimeService';
 
-export const LATEST_RELEASE_VERSION = '2.9.3';
+export const LATEST_RELEASE_VERSION = '2.9.4';
 export const DIRECT_APK_URL = 'https://expo.dev/artifacts/eas/0Aox-7RtI4R7EM9cdjtLmwb3Nj442r4oBWqbtxq_AA0.apk';
 
-const NATIVE_VERSION = Constants.expoConfig?.version || '2.9.3';
+const NATIVE_VERSION = Constants.expoConfig?.version || '2.9.4';
 
 function parseSemVer(v: string): number[] {
   return (v || '0.0.0').split('.').map((p) => parseInt(p, 10) || 0);
@@ -67,16 +67,14 @@ export const useUpdateStore = create<UpdateState>()(
       isMandatory: false,
       releaseNotes: [
         `🚀 Official AstroGuru Platform Upgrade v${LATEST_RELEASE_VERSION}`,
-        '💎 Option 10: Luminescent Liquid Glass (Neumorphic Soft-Light) UI System',
-        '🌌 Interactive 3D Warp Zoom Slider with Z-Depth & Swipe Gestures',
-        '🎁 First Chat 3-Min FREE Consultation with Zero-Drop Wallet Protection',
-        '🪐 Multi-Turn Context-Aware Vedic Astrology AI Consultation Engine',
-        '💳 AstroGold Luxury Metal Card & 1-Tap UPI Wallet Recharge',
-        '🔥 Cosmic Retention Streak & 7-Day Astro-Coin Check-in Track',
-        '🎡 6-Segment Navagraha Spin & Win Chakra (Instant Cash & Vouchers)',
-        '🃏 Daily Mystical Tarot Guidance with 3D Flip Card & Affirmations',
-        '🪔 Sacred Sadhana & Remedy Diary with Real-Time Streak Tracker',
-        '⚡ Zero-Drop Live Consultation Auto-Recharge Drawer',
+        '💎 100% Complete Option 10: Luminescent Liquid Glass Overhaul (All 44 Screens & Hubs)',
+        '👁️ Zero White-on-White Text & High-Contrast Specular Glass Everywhere',
+        '🌌 3D Warp Zoom Slider & Cosmic Sacred Chakra Visuals',
+        '🪐 Complete Dark Jyotish Kundli SVG Charts & Navagraha Transits',
+        '🧙‍♂️ Fully Re-skinned Acharya Workstation & Live Chat Center',
+        '🎁 First Chat 3-Min FREE Consultation with Zero-Drop Protection',
+        '💳 AstroGold Luxury Metal Card & 1-Tap UPI Recharge',
+        '⚡ Ultra-Fast OTA Update Engine & Instant Background Installation',
         '📦 Direct Native In-App APK Downloader & Package Installer',
       ],
       downloadProgress: 0,
@@ -328,7 +326,7 @@ export const useUpdateStore = create<UpdateState>()(
       storage: createJSONStorage(() => AsyncStorage),
       onRehydrateStorage: () => (state) => {
         if (state) {
-          const nativeVer = Constants.expoConfig?.version || '2.9.3';
+          const nativeVer = Constants.expoConfig?.version || '2.9.4';
           state.currentVersion = nativeVer;
           state.latestVersion = LATEST_RELEASE_VERSION;
         }

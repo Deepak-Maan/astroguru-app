@@ -2,7 +2,7 @@
   "expo": {
     "name": "AstroGuru",
     "slug": "astrologer-app",
-    "version": "2.9.3",
+    "version": "2.9.4",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "astroguru",
@@ -14,7 +14,7 @@
     },
     "android": {
       "package": "com.astroguru.app",
-      "versionCode": 293,
+      "versionCode": 294,
       "adaptiveIcon": {
         "backgroundColor": "#060A12",
         "foregroundImage": "./assets/icon.png",
