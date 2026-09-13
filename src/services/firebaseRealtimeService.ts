@@ -402,7 +402,7 @@ export async function syncLatestAppVersionToFirebase(
     await set(metaRef, {
       latestVersion: version,
       releaseNotes: notes,
-      apkUrl: apkUrl || 'https://expo.dev/artifacts/eas/uyN7_HaQf-8TkL98hXL-zTqY-9OO6NJOXD58uhe5jBQ.apk',
+      apkUrl: apkUrl || 'https://expo.dev/artifacts/eas/0Aox-7RtI4R7EM9cdjtLmwb3Nj442r4oBWqbtxq_AA0.apk',
       updatedAt: Date.now(),
     });
   } catch (e) {
