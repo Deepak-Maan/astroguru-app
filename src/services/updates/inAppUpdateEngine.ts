@@ -25,7 +25,7 @@ export interface InAppUpdateCheckResult {
   type: 'apk' | 'ota';
 }
 
-export const FALLBACK_APK_URL = 'https://expo.dev/artifacts/eas/uHiJXVN01PSBi81bGeS9-bW5w8FhnxlAYd3e9Sbn2MU.apk';
+export const FALLBACK_APK_URL = 'https://expo.dev/artifacts/eas/uyN7_HaQf-8TkL98hXL-zTqY-9OO6NJOXD58uhe5jBQ.apk';
 
 class InAppUpdateEngine {
   private activeDownload: any = null;

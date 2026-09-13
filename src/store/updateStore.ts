@@ -8,9 +8,25 @@ import { inAppUpdateEngine, UpdateDownloadProgress } from '../services/updates/i
 import { getAppVersionFromFirebase, syncLatestAppVersionToFirebase } from '../services/firebaseRealtimeService';
 
 export const LATEST_RELEASE_VERSION = '2.9.2';
-export const DIRECT_APK_URL = 'https://expo.dev/artifacts/eas/uHiJXVN01PSBi81bGeS9-bW5w8FhnxlAYd3e9Sbn2MU.apk';
+export const DIRECT_APK_URL = 'https://expo.dev/artifacts/eas/uyN7_HaQf-8TkL98hXL-zTqY-9OO6NJOXD58uhe5jBQ.apk';
 
-const NATIVE_VERSION = Constants.expoConfig?.version || '2.9.1';
+const NATIVE_VERSION = Constants.expoConfig?.version || '2.9.2';
+
+function parseSemVer(v: string): number[] {
+  return (v || '0.0.0').split('.').map((p) => parseInt(p, 10) || 0);
+}
+
+function isVersionHigher(candidate: string, current: string): boolean {
+  const p1 = parseSemVer(candidate);
+  const p2 = parseSemVer(current);
+  for (let i = 0; i < Math.max(p1.length, p2.length); i++) {
+    const n1 = p1[i] || 0;
+    const n2 = p2[i] || 0;
+    if (n1 > n2) return true;
+    if (n1 < n2) return false;
+  }
+  return false;
+}
 
 export interface UpdateInfo {
   currentVersion: string;
@@ -110,35 +126,43 @@ export const useUpdateStore = create<UpdateState>()(
 
         try {
           const remoteMeta = await getAppVersionFromFirebase();
-          if (remoteMeta && remoteMeta.latestVersion) {
-            const remoteVersion = remoteMeta.latestVersion;
-            const hasNewer = remoteVersion !== currentVer;
-            set({
-              latestVersion: remoteVersion,
-              releaseNotes: remoteMeta.releaseNotes || get().releaseNotes,
-              apkDownloadUrl: remoteMeta.apkUrl || DIRECT_APK_URL,
-              updateAvailable: hasNewer,
-              updateType: 'apk',
-              isReadyToInstall: false,
-            });
-          } else if (currentVer !== LATEST_RELEASE_VERSION) {
-            set({
-              latestVersion: LATEST_RELEASE_VERSION,
-              updateAvailable: true,
-              updateType: 'apk',
-              isReadyToInstall: false,
-            });
+          const candidateVersion = (remoteMeta && remoteMeta.latestVersion) ? remoteMeta.latestVersion : LATEST_RELEASE_VERSION;
+          const effectiveLatestVersion = isVersionHigher(candidateVersion, LATEST_RELEASE_VERSION)
+            ? candidateVersion
+            : LATEST_RELEASE_VERSION;
+
+          const remoteApkUrl = remoteMeta?.apkUrl;
+          const validApkUrl = (remoteApkUrl && typeof remoteApkUrl === 'string' && remoteApkUrl.endsWith('.apk'))
+            ? remoteApkUrl
+            : DIRECT_APK_URL;
+
+          const hasNewer = isVersionHigher(effectiveLatestVersion, currentVer);
+
+          set({
+            latestVersion: effectiveLatestVersion,
+            releaseNotes: (remoteMeta && remoteMeta.releaseNotes && remoteMeta.releaseNotes.length > 0)
+              ? remoteMeta.releaseNotes
+              : get().releaseNotes,
+            apkDownloadUrl: validApkUrl,
+            updateAvailable: hasNewer,
+            updateType: 'apk',
+            isReadyToInstall: false,
+          });
+
+          // Self-heal Firebase app_meta if outdated
+          if (!remoteMeta || isVersionHigher(LATEST_RELEASE_VERSION, remoteMeta.latestVersion || '0.0.0')) {
+            syncLatestAppVersionToFirebase(LATEST_RELEASE_VERSION, get().releaseNotes, DIRECT_APK_URL).catch(() => {});
           }
         } catch (e) {
           console.warn('[UpdateStore Startup Check]', e);
-          if (currentVer !== LATEST_RELEASE_VERSION) {
-            set({
-              latestVersion: LATEST_RELEASE_VERSION,
-              updateAvailable: true,
-              updateType: 'apk',
-              isReadyToInstall: false,
-            });
-          }
+          const hasNewer = isVersionHigher(LATEST_RELEASE_VERSION, currentVer);
+          set({
+            latestVersion: LATEST_RELEASE_VERSION,
+            apkDownloadUrl: DIRECT_APK_URL,
+            updateAvailable: hasNewer,
+            updateType: 'apk',
+            isReadyToInstall: false,
+          });
         }
       },
 
@@ -159,15 +183,28 @@ export const useUpdateStore = create<UpdateState>()(
         }
 
         try {
-          const result = await inAppUpdateEngine.checkForUpdate(currentVer, LATEST_RELEASE_VERSION);
-          const isReallyNew = result.isAvailable && currentVer !== LATEST_RELEASE_VERSION;
+          const remoteMeta = await getAppVersionFromFirebase();
+          const candidateVersion = (remoteMeta && remoteMeta.latestVersion) ? remoteMeta.latestVersion : LATEST_RELEASE_VERSION;
+          const effectiveLatestVersion = isVersionHigher(candidateVersion, LATEST_RELEASE_VERSION)
+            ? candidateVersion
+            : LATEST_RELEASE_VERSION;
+
+          const remoteApkUrl = remoteMeta?.apkUrl;
+          const validApkUrl = (remoteApkUrl && typeof remoteApkUrl === 'string' && remoteApkUrl.endsWith('.apk'))
+            ? remoteApkUrl
+            : DIRECT_APK_URL;
+
+          const isReallyNew = isVersionHigher(effectiveLatestVersion, currentVer);
 
           set({
             isChecking: false,
             updateAvailable: isReallyNew,
-            latestVersion: result.latestVersion,
-            releaseNotes: result.releaseNotes,
-            isMandatory: result.isMandatory && isReallyNew,
+            latestVersion: effectiveLatestVersion,
+            apkDownloadUrl: validApkUrl,
+            releaseNotes: (remoteMeta && remoteMeta.releaseNotes && remoteMeta.releaseNotes.length > 0)
+              ? remoteMeta.releaseNotes
+              : get().releaseNotes,
+            isMandatory: !!(remoteMeta?.isMandatory && isReallyNew),
             updateType: 'apk',
             isReadyToInstall: false,
             lastCheckedTime: new Date().toISOString(),
@@ -176,11 +213,18 @@ export const useUpdateStore = create<UpdateState>()(
           return {
             isNewAvailable: isReallyNew,
             currentVersion: currentVer,
-            latestVersion: result.latestVersion,
+            latestVersion: effectiveLatestVersion,
           };
         } catch (e) {
-          const isNewer = currentVer !== LATEST_RELEASE_VERSION;
-          set({ isChecking: false, updateAvailable: isNewer, updateType: 'apk', isReadyToInstall: false });
+          const isNewer = isVersionHigher(LATEST_RELEASE_VERSION, currentVer);
+          set({
+            isChecking: false,
+            updateAvailable: isNewer,
+            latestVersion: LATEST_RELEASE_VERSION,
+            apkDownloadUrl: DIRECT_APK_URL,
+            updateType: 'apk',
+            isReadyToInstall: false,
+          });
           return {
             isNewAvailable: isNewer,
             currentVersion: currentVer,
