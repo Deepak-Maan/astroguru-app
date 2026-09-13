@@ -181,19 +181,20 @@ export default function Wallet() {
 
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
           {/* Modern Electric Indigo Balance Header Card */}
+          {/* AstroGold Luxury Liquid Glass VIP Card */}
           <View style={styles.balanceCard}>
             <LinearGradient
-              colors={['#7C3AED', '#8B5CF6', '#A78BFA']}
+              colors={['#1E1038', '#3B166E', '#150B28']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={StyleSheet.absoluteFill}
             />
             <View style={styles.balanceInner}>
-              <Text style={styles.balanceLabel}>AVAILABLE BALANCE</Text>
+              <Text style={styles.balanceLabel}>ASTROGURU LUXURY VIP • BALANCE</Text>
               <Text style={styles.balanceValue}>{formatCurrency(balance)}</Text>
             </View>
             <View style={styles.balanceRight}>
-              <Text style={styles.balanceCoin}>💰</Text>
+              <Text style={styles.balanceCoin}>🪙</Text>
             </View>
           </View>
 
@@ -228,7 +229,7 @@ export default function Wallet() {
                   >
                     {active ? (
                       <LinearGradient
-                        colors={['#F472B6', '#DB2777']}
+                        colors={['#818CF8', '#4F46E5']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 0 }}
                         style={StyleSheet.absoluteFill}
@@ -561,11 +562,11 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.lg,
     borderTopWidth: 1.5,
     borderLeftWidth: 1.5,
-    borderTopColor: 'rgba(255, 255, 255, 0.45)',
-    borderLeftColor: 'rgba(255, 255, 255, 0.35)',
-    borderBottomWidth: 4,
-    borderBottomColor: '#3730A3',
-    shadowColor: colors.primary,
+    borderTopColor: 'rgba(216, 180, 254, 0.45)',
+    borderLeftColor: 'rgba(216, 180, 254, 0.35)',
+    borderBottomWidth: 3,
+    borderBottomColor: 'rgba(10, 5, 25, 0.95)',
+    shadowColor: '#6366F1',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.35,
     shadowRadius: 12,
@@ -578,13 +579,13 @@ const styles = StyleSheet.create({
   balanceValue: { ...typography.display, fontSize: 32, color: '#FFFFFF', fontWeight: '900' },
 
   successBanner: {
-    backgroundColor: 'rgba(5,150,105,0.12)',
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
     borderWidth: 1.5,
-    borderColor: colors.teal,
+    borderColor: '#10B981',
     borderRadius: radius.md,
     padding: spacing.sm,
   },
-  successText: { ...typography.small, color: colors.teal, fontWeight: '800', textAlign: 'center' },
+  successText: { ...typography.small, color: '#10B981', fontWeight: '800', textAlign: 'center' },
 
   packGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
   pack: {
@@ -594,31 +595,31 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 14,
     borderRadius: radius.xl,
-    backgroundColor: '#FFFFFF',
-    borderTopWidth: 2,
-    borderLeftWidth: 1.5,
-    borderTopColor: 'rgba(255, 255, 255, 0.95)',
-    borderLeftColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: 'rgba(26, 33, 64, 0.75)',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1.2,
+    borderTopColor: 'rgba(129, 140, 248, 0.35)',
+    borderLeftColor: 'rgba(129, 140, 248, 0.25)',
     borderRightWidth: 1.2,
-    borderRightColor: '#EDE9FE',
-    borderBottomWidth: 3.5,
-    borderBottomColor: '#DDD6FE',
+    borderRightColor: 'rgba(129, 140, 248, 0.15)',
+    borderBottomWidth: 3,
+    borderBottomColor: 'rgba(10, 12, 28, 0.95)',
     overflow: 'hidden',
     gap: 3,
-    shadowColor: '#7C3AED',
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 3,
   },
   packActive: {
-    borderTopColor: 'rgba(255, 255, 255, 0.5)',
-    borderLeftColor: 'rgba(255, 255, 255, 0.4)',
-    borderBottomWidth: 4,
-    borderBottomColor: '#9D174D',
-    shadowColor: colors.coral,
+    borderTopColor: '#818CF8',
+    borderLeftColor: 'rgba(129, 140, 248, 0.5)',
+    borderBottomWidth: 3.5,
+    borderBottomColor: '#312E81',
+    shadowColor: '#6366F1',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
+    shadowOpacity: 0.45,
     shadowRadius: 10,
     elevation: 5,
   },
@@ -626,7 +627,7 @@ const styles = StyleSheet.create({
     transform: [{ translateY: 2.5 }],
     borderBottomWidth: 1.5,
   },
-  packAmount: { ...typography.h3, color: colors.text, fontSize: 16, fontWeight: '900' },
+  packAmount: { ...typography.h3, color: '#EEF2FF', fontSize: 16, fontWeight: '900' },
   packBonusBadge: {
     backgroundColor: 'rgba(5,150,105,0.12)',
     borderRadius: radius.pill,

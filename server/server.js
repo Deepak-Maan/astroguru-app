@@ -528,6 +528,16 @@ app.post('/api/chat/accept-room', (req, res) => {
   res.json({ success: true, room });
 });
 
+app.get('/showcase', (req, res) => {
+  const showcasePath = 'C:\\Users\\pmor1\\.gemini\\antigravity\\brain\\64b9e97e-e283-417b-ac63-8db113561f91\\ui_design_showcase.html';
+  if (fs.existsSync(showcasePath)) {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(fs.readFileSync(showcasePath, 'utf-8'));
+  } else {
+    res.status(404).send('Showcase file not found');
+  }
+});
+
 // ── CONTEXT-AWARE AI ASTROLOGER CHAT ENDPOINT ──
 app.post('/api/ai/chat', async (req, res) => {
   try {

@@ -7,19 +7,22 @@ import { useAuthStore } from '../../src/store/authStore';
 
 import { useLiveChatStore } from '../../src/store/liveChatStore';
 
-/* ── SVG Icons matching user's exact design screenshot ── */
+/* ── SVG Icons matching Option 10: Luminescent Liquid Glass ── */
+const ACTIVE_TAB_COLOR = '#818CF8';
+const INACTIVE_TAB_COLOR = '#64748B';
+
 function HomeIcon({ focused }: { focused: boolean }) {
-  const color = focused ? colors.teal : '#64748B';
+  const color = focused ? ACTIVE_TAB_COLOR : INACTIVE_TAB_COLOR;
   return (
     <Svg width={24} height={24} viewBox="0 0 24 24" fill={focused ? color : 'none'} stroke={color} strokeWidth={focused ? 0 : 2} strokeLinecap="round" strokeLinejoin="round">
       <Path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-      {focused && <Path d="M9 22V12h6v10" fill="#FFFFFF" />}
+      {focused && <Path d="M9 22V12h6v10" fill="#0A0C16" />}
     </Svg>
   );
 }
 
 function BirthChartIcon({ focused }: { focused: boolean }) {
-  const color = focused ? colors.teal : '#64748B';
+  const color = focused ? ACTIVE_TAB_COLOR : INACTIVE_TAB_COLOR;
   return (
     <Svg width={24} height={24} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
       <Circle cx={12} cy={12} r={10} />
@@ -29,7 +32,7 @@ function BirthChartIcon({ focused }: { focused: boolean }) {
 }
 
 function CompatibilityIcon({ focused }: { focused: boolean }) {
-  const color = focused ? colors.teal : '#64748B';
+  const color = focused ? ACTIVE_TAB_COLOR : INACTIVE_TAB_COLOR;
   return (
     <Svg width={26} height={24} viewBox="0 0 26 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
       <Path d="M7.5 4.5A4.5 4.5 0 0 0 3 9c0 4.5 6 9.5 9 11 1.25-.63 3.5-2.07 5.5-4.5" />
@@ -39,7 +42,7 @@ function CompatibilityIcon({ focused }: { focused: boolean }) {
 }
 
 function ChatTabIcon({ focused, badgeCount }: { focused: boolean; badgeCount?: number }) {
-  const color = focused ? colors.teal : '#64748B';
+  const color = focused ? ACTIVE_TAB_COLOR : INACTIVE_TAB_COLOR;
   return (
     <View style={{ position: 'relative' }}>
       <Svg width={24} height={24} viewBox="0 0 24 24" fill={focused ? color : 'none'} stroke={color} strokeWidth={focused ? 0 : 2} strokeLinecap="round" strokeLinejoin="round">
@@ -55,7 +58,7 @@ function ChatTabIcon({ focused, badgeCount }: { focused: boolean; badgeCount?: n
 }
 
 function HoroscopeIcon({ focused }: { focused: boolean }) {
-  const color = focused ? colors.teal : '#64748B';
+  const color = focused ? ACTIVE_TAB_COLOR : INACTIVE_TAB_COLOR;
   return (
     <Svg width={24} height={24} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
       <Path d="M3 3v18h18" />
@@ -66,7 +69,7 @@ function HoroscopeIcon({ focused }: { focused: boolean }) {
 }
 
 function ProfileIcon({ focused }: { focused: boolean }) {
-  const color = focused ? colors.teal : '#64748B';
+  const color = focused ? ACTIVE_TAB_COLOR : INACTIVE_TAB_COLOR;
   return (
     <Svg width={24} height={24} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
       <Path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
@@ -160,7 +163,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
               <Text
                 style={[
                   styles.label,
-                  { color: isFocused ? colors.teal : '#64748B', fontWeight: isFocused ? '900' : '600' },
+                  { color: isFocused ? '#818CF8' : '#64748B', fontWeight: isFocused ? '900' : '600' },
                 ]}
                 numberOfLines={1}
               >
@@ -227,23 +230,21 @@ const styles = StyleSheet.create({
   bar: {
     flexDirection: 'row',
     height: 68,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(14, 18, 38, 0.94)',
     borderRadius: 34,
-    // 3D Clay Cushioned Borders: Specular top edge + Soft Lilac bottom depth
-    borderTopWidth: 2,
-    borderTopColor: 'rgba(255, 255, 255, 0.95)',
-    borderLeftWidth: 1.5,
-    borderLeftColor: 'rgba(255, 255, 255, 0.9)',
+    borderTopWidth: 1.5,
+    borderTopColor: 'rgba(129, 140, 248, 0.45)',
+    borderLeftWidth: 1.2,
+    borderLeftColor: 'rgba(129, 140, 248, 0.25)',
     borderRightWidth: 1.2,
-    borderRightColor: '#EDE9FE',
-    borderBottomWidth: 4,
-    borderBottomColor: '#DDD6FE',
-    // Ambient 3D floating clay dock shadow
-    shadowColor: '#7C3AED',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.12,
-    shadowRadius: 18,
-    elevation: 9,
+    borderRightColor: 'rgba(129, 140, 248, 0.15)',
+    borderBottomWidth: 3,
+    borderBottomColor: 'rgba(6, 8, 18, 0.98)',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.5,
+    shadowRadius: 24,
+    elevation: 12,
     alignItems: 'center',
     overflow: 'hidden',
   },
@@ -261,11 +262,11 @@ const styles = StyleSheet.create({
     width: 36,
     height: 4,
     borderRadius: 2,
-    backgroundColor: colors.primary,
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 4,
+    backgroundColor: '#818CF8',
+    shadowColor: '#6366F1',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.8,
+    shadowRadius: 6,
     elevation: 3,
   },
   iconBox: {

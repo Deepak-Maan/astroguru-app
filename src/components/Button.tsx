@@ -121,8 +121,8 @@ export function Button({
         <LinearGradient
           colors={
             variant === 'gold' || variant === 'coral'
-              ? ['#F472B6', '#DB2777']
-              : ['#A78BFA', '#7C3AED']
+              ? ['#F472B6', '#EC4899']
+              : ['#818CF8', '#4F46E5']
           }
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
@@ -140,15 +140,15 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     overflow: 'hidden',
     justifyContent: 'center',
-    shadowColor: '#5B21B6',
+    shadowColor: '#4F46E5',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.22,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    elevation: 6,
     borderLeftWidth: 1,
     borderRightWidth: 1,
     borderLeftColor: 'rgba(255, 255, 255, 0.35)',
-    borderRightColor: 'rgba(0, 0, 0, 0.06)',
+    borderRightColor: 'rgba(0, 0, 0, 0.2)',
   },
   gradient: { flex: 1, justifyContent: 'center' },
   inner: {
@@ -165,11 +165,11 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
   },
   outline: {
-    backgroundColor: '#FFFFFF',
-    borderTopColor: '#FFFFFF',
-    borderLeftColor: '#FFFFFF',
-    shadowColor: '#7C3AED',
-    shadowOpacity: 0.08,
+    backgroundColor: 'rgba(26, 33, 64, 0.8)',
+    borderTopColor: 'rgba(129, 140, 248, 0.5)',
+    borderLeftColor: 'rgba(129, 140, 248, 0.35)',
+    shadowColor: '#6366F1',
+    shadowOpacity: 0.2,
   },
   ghost: {
     backgroundColor: 'transparent',

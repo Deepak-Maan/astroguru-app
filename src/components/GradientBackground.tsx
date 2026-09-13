@@ -107,16 +107,16 @@ export function GradientBackground({ children, style, stars = true }: Props) {
 
   return (
     <View style={[styles.root, style]}>
-      {/* Base Claymorphism 3D Soft Lavender Canvas */}
+      {/* Base Option 10: Luminescent Liquid Glass Cosmic Indigo Canvas */}
       <LinearGradient
-        colors={['#F8F6FC', '#F4F1FA', '#ECE7F6']}
-        locations={[0, 0.5, 1]}
-        start={{ x: 0.1, y: 0 }}
-        end={{ x: 0.9, y: 1 }}
+        colors={['#13172E', '#0A0C16', '#060810']}
+        locations={[0, 0.45, 1]}
+        start={{ x: 0.2, y: 0 }}
+        end={{ x: 0.8, y: 1 }}
         style={StyleSheet.absoluteFill}
       />
 
-      {/* Glow Orb Top-Right (Soft Violet Clay Blob) */}
+      {/* Glow Orb Top-Right (Luminous Electric Indigo Fluid Orb) */}
       <Animated.View
         ref={glowTopRef}
         pointerEvents="none"
@@ -126,7 +126,7 @@ export function GradientBackground({ children, style, stars = true }: Props) {
         ]}
       />
 
-      {/* Glow Orb Bottom-Left (Soft Punch Rose Clay Blob) */}
+      {/* Glow Orb Bottom-Left (Soft Glow Rose Fluid Orb) */}
       <Animated.View
         ref={glowBottomRef}
         pointerEvents="none"
@@ -146,7 +146,7 @@ export function GradientBackground({ children, style, stars = true }: Props) {
         ]}
       />
 
-      {/* Constellation Stars for Claymorphism Light Mode */}
+      {/* Constellation Stars for Liquid Cosmic Mode */}
       {stars && (
         <View style={StyleSheet.absoluteFill} pointerEvents="none">
           {starList.map((s, i) => (
@@ -159,7 +159,7 @@ export function GradientBackground({ children, style, stars = true }: Props) {
                 width: s.size,
                 height: s.size,
                 borderRadius: s.size,
-                backgroundColor: i % 2 === 0 ? '#7C3AED' : '#DB2777',
+                backgroundColor: i % 2 === 0 ? '#818CF8' : '#EC4899',
                 opacity: Animated.multiply(s.opacity, starOpacityMult),
               }}
             />
@@ -173,18 +173,18 @@ export function GradientBackground({ children, style, stars = true }: Props) {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#F4F1FA', overflow: 'hidden' },
+  root: { flex: 1, backgroundColor: '#0A0C16', overflow: 'hidden' },
   content: { flex: 1 },
 
   glowTop: {
     position: 'absolute',
     top: -140,
     right: -80,
-    width: 400,
-    height: 400,
-    borderRadius: 200,
-    backgroundColor: '#7C3AED',
-    opacity: 0.08,
+    width: 420,
+    height: 420,
+    borderRadius: 210,
+    backgroundColor: '#6366F1',
+    opacity: 0.18,
   },
   glowBottom: {
     position: 'absolute',
@@ -193,8 +193,8 @@ const styles = StyleSheet.create({
     width: 400,
     height: 400,
     borderRadius: 200,
-    backgroundColor: '#DB2777',
-    opacity: 0.06,
+    backgroundColor: '#EC4899',
+    opacity: 0.12,
   },
 
   mandalaRing: {
@@ -205,8 +205,8 @@ const styles = StyleSheet.create({
     height: 520,
     borderRadius: 260,
     borderWidth: 1.5,
-    borderColor: 'rgba(124, 58, 237, 0.12)',
+    borderColor: 'rgba(129, 140, 248, 0.18)',
     borderStyle: 'dashed',
-    opacity: 0.5,
+    opacity: 0.6,
   },
 });
