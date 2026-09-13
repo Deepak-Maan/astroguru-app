@@ -7,10 +7,10 @@ import * as Updates from 'expo-updates';
 import { inAppUpdateEngine, UpdateDownloadProgress } from '../services/updates/inAppUpdateEngine';
 import { getAppVersionFromFirebase, syncLatestAppVersionToFirebase } from '../services/firebaseRealtimeService';
 
-export const LATEST_RELEASE_VERSION = '2.9.2';
+export const LATEST_RELEASE_VERSION = '2.9.3';
 export const DIRECT_APK_URL = 'https://expo.dev/artifacts/eas/uyN7_HaQf-8TkL98hXL-zTqY-9OO6NJOXD58uhe5jBQ.apk';
 
-const NATIVE_VERSION = Constants.expoConfig?.version || '2.9.2';
+const NATIVE_VERSION = Constants.expoConfig?.version || '2.9.3';
 
 function parseSemVer(v: string): number[] {
   return (v || '0.0.0').split('.').map((p) => parseInt(p, 10) || 0);
@@ -67,7 +67,10 @@ export const useUpdateStore = create<UpdateState>()(
       isMandatory: false,
       releaseNotes: [
         `🚀 Official AstroGuru Platform Upgrade v${LATEST_RELEASE_VERSION}`,
-        '✨ All-New Claymorphism 3D Soft Tactile UI Experience',
+        '💎 Option 10: Luminescent Liquid Glass (Neumorphic Soft-Light) UI System',
+        '🌌 Interactive 3D Warp Zoom Slider with Z-Depth & Swipe Gestures',
+        '🎁 First Chat 3-Min FREE Consultation with Zero-Drop Wallet Protection',
+        '🪐 Multi-Turn Context-Aware Vedic Astrology AI Consultation Engine',
         '💳 AstroGold Luxury Metal Card & 1-Tap UPI Wallet Recharge',
         '🔥 Cosmic Retention Streak & 7-Day Astro-Coin Check-in Track',
         '🎡 6-Segment Navagraha Spin & Win Chakra (Instant Cash & Vouchers)',
@@ -323,6 +326,13 @@ export const useUpdateStore = create<UpdateState>()(
     {
       name: 'astroguru_update_store',
       storage: createJSONStorage(() => AsyncStorage),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          const nativeVer = Constants.expoConfig?.version || '2.9.3';
+          state.currentVersion = nativeVer;
+          state.latestVersion = LATEST_RELEASE_VERSION;
+        }
+      },
     }
   )
 );

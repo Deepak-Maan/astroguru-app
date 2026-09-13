@@ -23,7 +23,7 @@ export default function PrivacyPolicyScreen() {
             <Text style={{ fontSize: 36 }}>🛡️</Text>
             <View style={{ flex: 1 }}>
               <Text style={styles.bannerTitle}>AstroGuru Privacy Policy</Text>
-              <Text style={styles.bannerSub}>Effective Date: August 09, 2026 · Version 2.2.0</Text>
+              <Text style={styles.bannerSub}>Effective Date: September 13, 2026 · Version 2.9.3</Text>
             </View>
           </Card>
 
