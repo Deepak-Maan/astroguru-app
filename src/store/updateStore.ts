@@ -8,7 +8,7 @@ import { inAppUpdateEngine, UpdateDownloadProgress } from '../services/updates/i
 import { getAppVersionFromFirebase, syncLatestAppVersionToFirebase } from '../services/firebaseRealtimeService';
 
 export const LATEST_RELEASE_VERSION = '2.9.4';
-export const DIRECT_APK_URL = 'https://expo.dev/artifacts/eas/0Aox-7RtI4R7EM9cdjtLmwb3Nj442r4oBWqbtxq_AA0.apk';
+export const DIRECT_APK_URL = 'https://expo.dev/artifacts/eas/KqNVd3oafIKVeEIuHEhYUUB0ll5xTobex7TfgS_0ZvE.apk';
 
 const NATIVE_VERSION = Constants.expoConfig?.version || '2.9.4';
 
