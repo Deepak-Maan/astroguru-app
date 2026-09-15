@@ -236,7 +236,7 @@ export default function LoginScreen() {
         <AnimatedAuthOverlay
           visible={showOverlay}
           type="login"
-          message={`Opening ${pendingUser?.name || 'AstroGuru'} workspace... ✨`}
+          message={`Welcome back, ${pendingUser?.name || 'Seeker'}!`}
           onFinished={handleOverlayFinish}
         />
         <KeyboardAvoidingView

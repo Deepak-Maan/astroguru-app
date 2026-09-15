@@ -182,7 +182,7 @@ export default function Profile() {
         <AnimatedAuthOverlay
           visible={showLogoutOverlay}
           type="logout"
-          message={`Signing out ${authUser?.name || 'user'} safely... ✨`}
+          message="Session securely ended."
           onFinished={handleOverlayFinish}
         />
         {!isAuthenticated || !authUser ? (

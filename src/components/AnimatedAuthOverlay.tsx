@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, Easing, Modal, StyleSheet, Text, View } from 'react-native';
+import { Animated, Modal, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors, radius, spacing, typography } from '../theme';
+import { colors, spacing } from '../theme';
 
 interface OverlayProps {
   visible: boolean;
@@ -10,130 +10,75 @@ interface OverlayProps {
   onFinished?: () => void;
 }
 
+/**
+ * AstroGuru Minimalist, Elegant Auth Animation Overlay
+ * Simple, fast (~520ms), and 60fps native-accelerated.
+ * Replaces noisy multi-ring spins and implosion twists with a serene frosted glass micro-transition.
+ */
 export function AnimatedAuthOverlay({ visible, type, message, onFinished }: OverlayProps) {
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(0.4)).current;
-  const rotateCw = useRef(new Animated.Value(0)).current;
-  const rotateCcw = useRef(new Animated.Value(1)).current;
-  const pulseIcon = useRef(new Animated.Value(0.7)).current;
-  const progressWidth = useRef(new Animated.Value(0)).current;
-  const twistLogout = useRef(new Animated.Value(0)).current;
+  const backdropAnim = useRef(new Animated.Value(0)).current;
+  const cardScale = useRef(new Animated.Value(0.92)).current;
+  const cardTranslateY = useRef(new Animated.Value(10)).current;
+  const badgeScale = useRef(new Animated.Value(0.8)).current;
+  const progressAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (visible) {
-      fadeAnim.setValue(0);
-      scaleAnim.setValue(type === 'logout' ? 1.1 : 0.4);
-      rotateCw.setValue(0);
-      rotateCcw.setValue(1);
-      pulseIcon.setValue(0.7);
-      progressWidth.setValue(0);
-      twistLogout.setValue(0);
+      backdropAnim.setValue(0);
+      cardScale.setValue(0.92);
+      cardTranslateY.setValue(10);
+      badgeScale.setValue(0.8);
+      progressAnim.setValue(0);
 
-      // 1. Clockwise outer ring spin
-      const spinCw = Animated.loop(
-        Animated.timing(rotateCw, {
+      // 1. Smooth entrance (fade + subtle float-up spring)
+      Animated.parallel([
+        Animated.timing(backdropAnim, {
           toValue: 1,
-          duration: type === 'logout' ? 1200 : 1600,
-          easing: Easing.linear,
+          duration: 180,
           useNativeDriver: true,
-        })
-      );
-
-      // 2. Counter-clockwise inner ring spin
-      const spinCcw = Animated.loop(
-        Animated.timing(rotateCcw, {
+        }),
+        Animated.spring(cardScale, {
+          toValue: 1,
+          friction: 8,
+          tension: 80,
+          useNativeDriver: true,
+        }),
+        Animated.spring(cardTranslateY, {
           toValue: 0,
-          duration: type === 'logout' ? 1000 : 1400,
-          easing: Easing.linear,
+          friction: 8,
+          tension: 80,
           useNativeDriver: true,
-        })
-      );
+        }),
+        Animated.spring(badgeScale, {
+          toValue: 1,
+          friction: 6,
+          tension: 90,
+          useNativeDriver: true,
+        }),
+        Animated.timing(progressAnim, {
+          toValue: 1,
+          duration: 480,
+          useNativeDriver: false,
+        }),
+      ]).start();
 
-      spinCw.start();
-      spinCcw.start();
-
-      // 3. Icon Breathing Pulse
-      const pulseLoop = Animated.loop(
-        Animated.sequence([
-          Animated.timing(pulseIcon, {
-            toValue: 1.25,
-            duration: 500,
-            useNativeDriver: true,
-          }),
-          Animated.timing(pulseIcon, {
-            toValue: 1,
-            duration: 500,
-            useNativeDriver: true,
-          }),
-        ])
-      );
-      pulseLoop.start();
-
-      // 4. Progress bar fill
-      Animated.timing(progressWidth, {
-        toValue: 1,
-        duration: type === 'logout' ? 900 : 1100,
-        useNativeDriver: false,
-      }).start();
-
-      // 5. Entrance / Exit Animations
-      if (type === 'logout') {
-        // Logout: Implosion twist dissolve animation
-        Animated.parallel([
-          Animated.timing(fadeAnim, {
-            toValue: 1,
-            duration: 200,
-            useNativeDriver: true,
-          }),
-          Animated.sequence([
-            Animated.timing(scaleAnim, {
-              toValue: 1.05,
-              duration: 200,
-              useNativeDriver: true,
-            }),
-            Animated.timing(scaleAnim, {
-              toValue: 0.85,
-              duration: 750,
-              useNativeDriver: true,
-            }),
-          ]),
-          Animated.timing(twistLogout, {
-            toValue: 1,
-            duration: 950,
-            useNativeDriver: true,
-          }),
-        ]).start();
-      } else {
-        // Login / Signup: Cosmic Spring Entrance
-        Animated.parallel([
-          Animated.timing(fadeAnim, {
-            toValue: 1,
-            duration: 250,
-            useNativeDriver: true,
-          }),
-          Animated.spring(scaleAnim, {
-            toValue: 1,
-            friction: 5,
-            tension: 90,
-            useNativeDriver: true,
-          }),
-        ]).start();
-      }
-
-      // Auto finish after delay
-      const displayDuration = type === 'logout' ? 1050 : 1250;
+      // 2. Snappy, non-blocking auto-finish (total hold ~520ms)
       const timer = setTimeout(() => {
-        Animated.timing(fadeAnim, {
-          toValue: 0,
-          duration: 220,
-          useNativeDriver: true,
-        }).start(() => {
-          spinCw.stop();
-          spinCcw.stop();
-          pulseLoop.stop();
+        Animated.parallel([
+          Animated.timing(backdropAnim, {
+            toValue: 0,
+            duration: 160,
+            useNativeDriver: true,
+          }),
+          Animated.timing(cardScale, {
+            toValue: 0.96,
+            duration: 160,
+            useNativeDriver: true,
+          }),
+        ]).start(() => {
           onFinished?.();
         });
-      }, displayDuration);
+      }, 520);
 
       return () => clearTimeout(timer);
     }
@@ -141,124 +86,99 @@ export function AnimatedAuthOverlay({ visible, type, message, onFinished }: Over
 
   if (!visible) return null;
 
-  const spinCwDeg = rotateCw.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
-
-  const spinCcwDeg = rotateCcw.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
-
-  const logoutRotate = twistLogout.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '-18deg'],
-  });
-
   const getEmoji = () => {
     if (type === 'login') return '✨';
     if (type === 'signup') return '🌟';
-    return '🛡️';
+    return '👋';
   };
 
   const getTitle = () => {
-    if (type === 'login') return 'Cosmic Welcome!';
-    if (type === 'signup') return 'Lagna Chart Ready!';
-    return 'Session Secured';
+    if (type === 'login') return 'Welcome Back';
+    if (type === 'signup') return 'Welcome to AstroGuru';
+    return 'Signed Out';
   };
 
   const getDefaultSubtitle = () => {
-    if (type === 'login') return 'Aligning your birth chart & Grahas...';
-    if (type === 'signup') return 'Generating your 12-house natal chart...';
-    return 'Clearing credentials & locking vault...';
+    if (type === 'login') return 'Opening your cosmic workspace...';
+    if (type === 'signup') return 'Preparing your natal chart...';
+    return 'Session securely ended.';
   };
 
-  const getGradientColors = (): [string, string, string, string] => {
-    if (type === 'login') return [colors.teal, colors.gold, '#3B0764', colors.teal];
-    if (type === 'signup') return [colors.saffron, '#8B5CF6', colors.gold, colors.saffron];
-    return ['#EF4444', '#8B5CF6', '#3B0764', '#EF4444'];
+  const getBadgeColors = (): [string, string] => {
+    if (type === 'login') return ['rgba(99, 102, 241, 0.22)', 'rgba(129, 140, 248, 0.08)'];
+    if (type === 'signup') return ['rgba(245, 158, 11, 0.22)', 'rgba(252, 211, 77, 0.08)'];
+    return ['rgba(148, 163, 184, 0.2)', 'rgba(100, 116, 139, 0.08)'];
   };
 
-  const getReversedGradientColors = (): [string, string, string, string] => {
-    if (type === 'login') return [colors.teal, '#3B0764', colors.gold, colors.teal];
-    if (type === 'signup') return [colors.saffron, colors.gold, '#8B5CF6', colors.saffron];
-    return ['#EF4444', '#3B0764', '#8B5CF6', '#EF4444'];
+  const getBadgeBorder = () => {
+    if (type === 'login') return 'rgba(129, 140, 248, 0.35)';
+    if (type === 'signup') return 'rgba(252, 211, 77, 0.4)';
+    return 'rgba(148, 163, 184, 0.3)';
   };
 
-  const progressPercent = progressWidth.interpolate({
+  const getProgressBarGradient = (): [string, string] => {
+    if (type === 'login') return ['#6366F1', '#818CF8'];
+    if (type === 'signup') return ['#F59E0B', '#FCD34D'];
+    return ['#94A3B8', '#64748B'];
+  };
+
+  const progressWidth = progressAnim.interpolate({
     inputRange: [0, 1],
     outputRange: ['0%', '100%'],
   });
 
   return (
     <Modal visible={visible} transparent animationType="none" statusBarTranslucent>
-      <Animated.View
-        style={[
-          styles.backdrop,
-          {
-            opacity: fadeAnim,
-            backgroundColor: type === 'logout' ? 'rgba(15, 23, 42, 0.82)' : 'rgba(15, 23, 42, 0.65)',
-          },
-        ]}
-      >
+      <Animated.View style={[styles.backdrop, { opacity: backdropAnim }]}>
         <Animated.View
           style={[
             styles.card,
             {
               transform: [
-                { scale: scaleAnim },
-                { rotate: type === 'logout' ? logoutRotate : '0deg' },
+                { scale: cardScale },
+                { translateY: cardTranslateY },
               ],
             },
           ]}
         >
-          {/* Dual Counter-Rotating Ring 1: Clockwise Outer */}
-          <Animated.View style={[styles.ringOuter, { transform: [{ rotate: spinCwDeg }] }]}>
+          {/* Subtle Frosted Specular Border Highlight */}
+          <View style={styles.specularBorder} />
+
+          {/* Central Badge */}
+          <Animated.View
+            style={[
+              styles.badgeWrap,
+              {
+                borderColor: getBadgeBorder(),
+                transform: [{ scale: badgeScale }],
+              },
+            ]}
+          >
             <LinearGradient
-              colors={getGradientColors()}
+              colors={getBadgeColors()}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={StyleSheet.absoluteFill}
             />
+            <Text style={styles.badgeEmoji}>{getEmoji()}</Text>
           </Animated.View>
 
-          {/* Dual Counter-Rotating Ring 2: Counter-Clockwise Inner */}
-          <Animated.View style={[styles.ringInner, { transform: [{ rotate: spinCcwDeg }] }]}>
-            <LinearGradient
-              colors={getReversedGradientColors()}
-              start={{ x: 1, y: 0 }}
-              end={{ x: 0, y: 1 }}
-              style={StyleSheet.absoluteFill}
-            />
-          </Animated.View>
+          {/* Title & Subtitle */}
+          <Text style={styles.title}>{getTitle()}</Text>
+          <Text style={styles.subtitle} numberOfLines={2}>
+            {message || getDefaultSubtitle()}
+          </Text>
 
-          <View style={styles.cardInner}>
-            {/* Animated Pulsing Central Icon */}
-            <Animated.View style={[styles.emojiWrap, { transform: [{ scale: pulseIcon }] }]}>
-              <Text style={styles.emoji}>{getEmoji()}</Text>
+          {/* Minimal 2px Smooth Status Bar */}
+          <View style={styles.progressTrack}>
+            <Animated.View style={[styles.progressBar, { width: progressWidth }]}>
+              <LinearGradient
+                colors={getProgressBarGradient()}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={StyleSheet.absoluteFill}
+              />
             </Animated.View>
-
-            <Text style={styles.title}>{getTitle()}</Text>
-            <Text style={styles.subtitle}>{message || getDefaultSubtitle()}</Text>
-
-            {/* Glowing Shimmer Progress Bar */}
-            <View style={styles.pulseBarWrap}>
-              <Animated.View style={[styles.pulseBar, { width: progressPercent }]}>
-                <LinearGradient
-                  colors={
-                    type === 'logout'
-                      ? ['#EF4444', '#8B5CF6']
-                      : type === 'signup'
-                      ? [colors.saffron, colors.gold]
-                      : [colors.teal, colors.gold]
-                  }
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={StyleSheet.absoluteFill}
-                />
-              </Animated.View>
-            </View>
           </View>
         </Animated.View>
       </Animated.View>
@@ -271,88 +191,73 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'rgba(6, 10, 22, 0.72)',
     padding: spacing.xl,
   },
   card: {
     width: '100%',
-    maxWidth: 320,
-    borderRadius: 32,
-    padding: 4,
-    position: 'relative',
-    shadowColor: colors.teal,
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.6,
-    shadowRadius: 24,
-    elevation: 12,
+    maxWidth: 290,
+    backgroundColor: 'rgba(20, 26, 52, 0.94)',
+    borderRadius: 24,
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    gap: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(129, 140, 248, 0.22)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.45,
+    shadowRadius: 20,
+    elevation: 10,
+    overflow: 'hidden',
   },
-  ringOuter: {
+  specularBorder: {
     position: 'absolute',
     top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderRadius: 32,
-    overflow: 'hidden',
+    left: 20,
+    right: 20,
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
   },
-  ringInner: {
-    position: 'absolute',
-    top: 2,
-    left: 2,
-    right: 2,
-    bottom: 2,
-    borderRadius: 30,
-    overflow: 'hidden',
-    opacity: 0.85,
-  },
-  cardInner: {
-    backgroundColor: '#11162B',
+  badgeWrap: {
+    width: 56,
+    height: 56,
     borderRadius: 28,
-    paddingVertical: spacing.xl + 4,
-    paddingHorizontal: spacing.lg,
-    alignItems: 'center',
-    gap: spacing.xs,
-    borderWidth: 1,
-    borderColor: 'rgba(129, 140, 248, 0.3)',
-  },
-  emojiWrap: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: 'rgba(99, 102, 241, 0.18)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 4,
     borderWidth: 1.5,
-    borderColor: 'rgba(129, 140, 248, 0.35)',
+    overflow: 'hidden',
   },
-  emoji: {
-    fontSize: 34,
+  badgeEmoji: {
+    fontSize: 28,
   },
   title: {
-    fontSize: 22,
-    fontWeight: '900',
+    fontSize: 19,
+    fontWeight: '800',
     color: '#EEF2FF',
     textAlign: 'center',
-    letterSpacing: 0.3,
+    letterSpacing: 0.2,
   },
   subtitle: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '500',
     color: '#A5B4FC',
     textAlign: 'center',
     lineHeight: 18,
     paddingHorizontal: spacing.xs,
   },
-  pulseBarWrap: {
-    width: 140,
-    height: 5,
-    borderRadius: 3,
-    backgroundColor: 'rgba(15, 23, 42, 0.6)',
-    marginTop: spacing.md,
+  progressTrack: {
+    width: 100,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    marginTop: 10,
     overflow: 'hidden',
   },
-  pulseBar: {
+  progressBar: {
     height: '100%',
-    borderRadius: 3,
+    borderRadius: 2,
   },
 });

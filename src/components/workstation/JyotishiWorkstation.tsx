@@ -362,7 +362,7 @@ export function JyotishiWorkstation() {
       <AnimatedAuthOverlay
         visible={showLogoutOverlay}
         type="logout"
-        message="Securing workstation & signing out... ✨"
+        message="Workstation session securely ended."
         onFinished={() => {
           router.replace('/(auth)/login');
           setTimeout(() => {

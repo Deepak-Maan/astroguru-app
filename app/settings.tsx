@@ -19,6 +19,7 @@ import { Button } from '../src/components/Button';
 import { Card } from '../src/components/Card';
 import { ScreenHeader } from '../src/components/ScreenHeader';
 import { SectionHeader } from '../src/components/SectionHeader';
+import { AnimatedAuthOverlay } from '../src/components/AnimatedAuthOverlay';
 import { colors, radius, spacing, typography } from '../src/theme';
 import { useSettingsStore } from '../src/store/settingsStore';
 import { useChatStore } from '../src/store/chatStore';
@@ -123,10 +124,11 @@ export default function Settings() {
     }
   };
 
+  const [showLogoutOverlay, setShowLogoutOverlay] = useState(false);
+
   const handleSignOut = () => {
     const doLogout = () => {
-      logout();
-      router.replace('/(auth)/login');
+      setShowLogoutOverlay(true);
     };
 
     if (Platform.OS === 'web') {
@@ -148,9 +150,22 @@ export default function Settings() {
     );
   };
 
+  const handleLogoutFinished = () => {
+    router.replace('/(auth)/login');
+    setTimeout(() => {
+      logout();
+    }, 50);
+  };
+
   return (
     <GradientBackground>
       <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
+        <AnimatedAuthOverlay
+          visible={showLogoutOverlay}
+          type="logout"
+          message="Session securely ended."
+          onFinished={handleLogoutFinished}
+        />
         <ScreenHeader title="Settings" showBack />
 
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>

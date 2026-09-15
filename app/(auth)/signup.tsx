@@ -206,7 +206,7 @@ export default function SignupScreen() {
         <AnimatedAuthOverlay
           visible={showOverlay}
           type="signup"
-          message={`Welcome ${name || 'Seeker'}! Generating birth chart & Lagna... ✨`}
+          message={`Welcome to AstroGuru, ${name || 'Seeker'}!`}
           onFinished={handleOverlayFinish}
         />
         <KeyboardAvoidingView
