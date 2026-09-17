@@ -39,7 +39,7 @@ export default function LoginScreen() {
   // Overlay state
   const [showOverlay, setShowOverlay] = useState(false);
   const [pendingUser, setPendingUser] = useState<any | null>(null);
-  const [targetRoute, setTargetRoute] = useState<'/(tabs)' | '/admin'>('/(tabs)');
+  const [targetRoute, setTargetRoute] = useState<'/(tabs)'>('/(tabs)');
 
   useEffect(() => {
     // Entrance fade & slide
@@ -76,7 +76,7 @@ export default function LoginScreen() {
     return () => pulse.stop();
   }, []);
 
-  const triggerSuccessAnimation = (user: any, route: '/(tabs)' | '/admin' = '/(tabs)') => {
+  const triggerSuccessAnimation = (user: any, route: '/(tabs)' = '/(tabs)') => {
     setPendingUser(user);
     setTargetRoute(route);
     setShowOverlay(true);
@@ -186,14 +186,18 @@ export default function LoginScreen() {
     setLoading(false);
 
     if (res.success && res.user) {
-      triggerSuccessAnimation(res.user, res.user.role === 'admin' ? '/admin' : '/(tabs)');
+      if (res.user.role === 'admin') {
+        setError('🛡️ Admin accounts cannot sign in to the mobile app. Please open the Web Admin Portal (https://admin.astroguru.app) on your desktop browser.');
+        return;
+      }
+      triggerSuccessAnimation(res.user, '/(tabs)');
     } else {
       setError(res.error || 'Login failed. Please check your credentials.');
     }
   };
 
   // Quick Demo Auto-Fill Helpers
-  const handleQuickLogin = async (type: 'user' | 'astro' | 'admin') => {
+  const handleQuickLogin = async (type: 'user' | 'astro') => {
     setLoading(true);
     setError(null);
     let demoEmail = 'user@astroguru.app';
@@ -202,9 +206,6 @@ export default function LoginScreen() {
     if (type === 'astro') {
       demoEmail = 'acharya@astroguru.app';
       demoPass = 'astro123';
-    } else if (type === 'admin') {
-      demoEmail = 'admin@astroguru.app';
-      demoPass = 'admin123';
     }
 
     setEmail(demoEmail);
@@ -213,10 +214,10 @@ export default function LoginScreen() {
     setLoading(false);
 
     if (res.success && res.user) {
-      triggerSuccessAnimation(res.user, res.user.role === 'admin' ? '/admin' : '/(tabs)');
+      triggerSuccessAnimation(res.user, '/(tabs)');
     } else {
-      const role = type === 'admin' ? 'admin' : type === 'astro' ? 'astrologer' : 'user';
-      const name = type === 'admin' ? 'Master Admin' : type === 'astro' ? 'Acharya Dev' : 'Astro Seeker';
+      const role = type === 'astro' ? 'astrologer' : 'user';
+      const name = type === 'astro' ? 'Acharya Dev' : 'Astro Seeker';
       triggerSuccessAnimation(
         {
           id: `usr_demo_${type}`,
@@ -225,7 +226,7 @@ export default function LoginScreen() {
           role,
           createdAt: '2026-01-01',
         },
-        role === 'admin' ? '/admin' : '/(tabs)'
+        '/(tabs)'
       );
     }
   };
@@ -494,13 +495,6 @@ export default function LoginScreen() {
                       >
                         <Text style={styles.demoChipIcon}>🔮</Text>
                         <Text style={styles.demoChipText}>Jyotishi</Text>
-                      </Pressable>
-                      <Pressable
-                        onPress={() => handleQuickLogin('admin')}
-                        style={({ pressed }) => [styles.demoChip, styles.demoChipAdmin, pressed && { opacity: 0.8 }]}
-                      >
-                        <Text style={styles.demoChipIcon}>🛡️</Text>
-                        <Text style={styles.demoChipText}>Admin</Text>
                       </Pressable>
                     </View>
                   </View>

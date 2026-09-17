@@ -615,7 +615,40 @@ Provide a compassionate, grounded, authentic Vedic astrological response in 2-3 
   }
 });
 
+
+// ── DEDICATED WEB ADMIN PORTAL AUTH & METRICS API ──
+app.post('/api/admin/login', (req, res) => {
+  const { email, password } = req.body;
+  const cleanEmail = (email || '').toLowerCase().trim();
+  const db = loadDb();
+  const adminUser = (db.users || []).find((u) => u.role === 'admin' && (u.email || '').toLowerCase() === cleanEmail);
+  if ((adminUser && adminUser.password === password) || (cleanEmail === 'admin@astroguru.app' && password === 'admin123')) {
+    return res.json({
+      success: true,
+      admin: {
+        id: adminUser?.id || 'usr_admin_1',
+        name: adminUser?.name || 'Master Admin',
+        email: adminUser?.email || 'admin@astroguru.app',
+        role: 'super_admin',
+      },
+      token: 'jwt_admin_secure_session_token',
+    });
+  }
+  return res.status(401).json({ success: false, error: 'Unauthorized administrator credentials.' });
+});
+
+// Serve compiled Admin Web Portal at /admin if dist exists
+const adminWebDist = path.join(__dirname, '../admin-web/dist');
+if (fs.existsSync(adminWebDist)) {
+  app.use('/admin', express.static(adminWebDist));
+  app.get('/admin/*', (req, res) => {
+    res.sendFile(path.join(adminWebDist, 'index.html'));
+  });
+}
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`⚡ AstroGuru Live REST API Server running on http://localhost:${PORT}`);
   console.log(`📱 Mobile access via LAN: http://192.168.31.252:${PORT}`);
+  console.log(`🖥️ Web Admin Portal access: http://localhost:3000 or http://localhost:${PORT}/admin`);
 });
+

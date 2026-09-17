@@ -270,12 +270,6 @@ export default function Profile() {
                 <Text style={styles.name}>{authUser?.name ?? profile?.name ?? 'Seeker'}</Text>
                 <Text style={styles.emailText}>{authUser?.email ?? 'seeker@astroguru.app'}</Text>
 
-                {authUser?.role === 'admin' && (
-                  <View style={styles.adminRoleTag}>
-                    <Text style={styles.adminRoleText}>⚡ PLATFORM ADMIN</Text>
-                  </View>
-                )}
-
                 {isVip && (
                   <View style={[styles.adminRoleTag, { borderColor: '#8B5CF6', backgroundColor: 'rgba(139,92,246,0.12)' }]}>
                     <Text style={[styles.adminRoleText, { color: '#8B5CF6' }]}>
