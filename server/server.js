@@ -641,7 +641,7 @@ app.post('/api/admin/login', (req, res) => {
 const adminWebDist = path.join(__dirname, '../admin-web/dist');
 if (fs.existsSync(adminWebDist)) {
   app.use('/admin', express.static(adminWebDist));
-  app.get('/admin/*', (req, res) => {
+  app.use('/admin', (req, res) => {
     res.sendFile(path.join(adminWebDist, 'index.html'));
   });
 }
