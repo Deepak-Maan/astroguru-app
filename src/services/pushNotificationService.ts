@@ -1,51 +1,132 @@
 import { Platform } from 'react-native';
-import Constants from 'expo-constants';
+import * as Notifications from 'expo-notifications';
 import { useNotificationStore } from '../store/notificationStore';
 
-export interface BroadcastNotificationPayload {
-  title: string;
-  body: string;
-  type: 'chat_message' | 'astrologer_live' | 'order_update' | 'spell_update' | 'wallet';
-  actionUrl?: string;
-  avatarUrl?: string;
+// Configure notification behavior for active app
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
+
+const MORNING_MUHURAT_NOTIFICATION_ID = 'morning-shubh-muhurat-daily';
+
+/**
+ * Schedules a daily morning push notification at 7:00 AM local time
+ * containing today's Abhijit Muhurat and Rahu Kaal.
+ */
+export async function scheduleDailyMorningMuhuratPush(enabled: boolean = true) {
+  try {
+    if (Platform.OS === 'web') {
+      // In web browser, ensure permission is requested
+      if (typeof window !== 'undefined' && 'Notification' in window && enabled) {
+        if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+          await Notification.requestPermission();
+        }
+      }
+      return;
+    }
+
+    // Cancel existing morning schedule first to avoid duplicates
+    await Notifications.cancelScheduledNotificationAsync(MORNING_MUHURAT_NOTIFICATION_ID).catch(() => {});
+
+    if (!enabled) {
+      return;
+    }
+
+    // Request permissions
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+
+    if (finalStatus !== 'granted') {
+      console.log('Notification permission not granted for Morning Muhurat push.');
+      return;
+    }
+
+    // Schedule daily recurring trigger at 7:00 AM (Hour: 7, Minute: 0)
+    await Notifications.scheduleNotificationAsync({
+      identifier: MORNING_MUHURAT_NOTIFICATION_ID,
+      content: {
+        title: '🌅 Subah Ka Shubh Muhurat & Rahu Kaal',
+        body: '✨ Aaj Ka Abhijit Muhurat: 11:45 AM - 12:35 PM (Sarva Karya Siddhi) | ⚠️ Rahu Kaal: 04:30 PM - 06:00 PM. Tap to check Panchang.',
+        sound: true,
+        data: {
+          screen: '/panchang',
+          type: 'morning_muhurat',
+        },
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DAILY,
+        hour: 7,
+        minute: 0,
+      } as any,
+    });
+    console.log('Daily 7:00 AM Morning Muhurat notification scheduled successfully.');
+  } catch (err) {
+    console.warn('Could not schedule morning muhurat notification:', err);
+  }
 }
 
 /**
- * Register device for Push Notifications and fetch Push Token
+ * Triggers an instant sample push notification for the user to test and verify
+ * how the 7:00 AM lock screen notification looks and feels.
  */
-export async function registerForPushNotificationsAsync(): Promise<string | null> {
-  console.log('[Push Notifications] Device push token registered.');
-  return 'ExponentPushToken[astroguru_demo_token_98765]';
-}
+export async function triggerInstantMorningMuhuratTestPush() {
+  const title = '🌅 Subah Ka Shubh Muhurat & Rahu Kaal';
+  const message = '✨ Aaj Ka Abhijit Muhurat: 11:45 AM - 12:35 PM (Sarva Karya Siddhi) | ⚠️ Rahu Kaal: 04:30 PM - 06:00 PM. Tap to check Panchang.';
 
-/**
- * Schedule a Local Push Notification alert on device
- */
-export async function scheduleLocalPushNotification({
-  title,
-  body,
-  type = 'astrologer_live',
-  actionUrl,
-  avatarUrl,
-}: BroadcastNotificationPayload) {
-  // Add to Zustand store so it appears in Notifications Screen & Toast
+  // 1. Add to in-app notification center store
   useNotificationStore.getState().addNotification({
-    type,
+    type: 'astrologer_live',
     title,
-    message: body,
-    avatar: avatarUrl,
-    actionUrl,
+    message,
+    actionUrl: '/(tabs)',
   });
-}
 
-/**
- * Broadcast notification from Admin Panel to all users
- */
-export async function sendAdminBroadcastPushNotification(payload: BroadcastNotificationPayload): Promise<{ success: boolean; count: number }> {
-  scheduleLocalPushNotification(payload);
-
-  return {
-    success: true,
-    count: 14200, // Total active seekers notified
-  };
+  // 2. Native Expo Notification
+  if (Platform.OS !== 'web') {
+    try {
+      const { status } = await Notifications.getPermissionsAsync();
+      if (status === 'granted') {
+        await Notifications.scheduleNotificationAsync({
+          content: {
+            title,
+            body: message,
+            sound: true,
+            data: { screen: '/(tabs)', type: 'morning_muhurat' },
+          },
+          trigger: null, // trigger immediately
+        });
+      }
+    } catch (e) {
+      console.warn('Failed to present native notification:', e);
+    }
+  } else {
+    // 3. Web Notification API
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission === 'granted') {
+        new Notification(title, {
+          body: message,
+          icon: '/assets/icon.png',
+        });
+      } else if (Notification.permission !== 'denied') {
+        Notification.requestPermission().then((p) => {
+          if (p === 'granted') {
+            new Notification(title, {
+              body: message,
+              icon: '/assets/icon.png',
+            });
+          }
+        });
+      }
+    }
+  }
 }

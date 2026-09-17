@@ -15,6 +15,7 @@ import { Button } from '../src/components/Button';
 import { ScreenHeader } from '../src/components/ScreenHeader';
 import { colors, radius, spacing, typography } from '../src/theme';
 import { useNotificationStore } from '../src/store/notificationStore';
+import { triggerInstantMorningMuhuratTestPush } from '../src/services/pushNotificationService';
 
 type FilterType = 'all' | 'chat_message' | 'astrologer_live' | 'order';
 
@@ -92,11 +93,18 @@ export default function NotificationsScreen() {
           {/* Header Action Bar */}
           <View style={styles.topActionsRow}>
             <Button
-              label="⚡ Test Push Alert"
+              label="⚡ Test Push"
               variant="gold"
               size="sm"
               fullWidth={false}
               onPress={handleTriggerTestPush}
+            />
+            <Button
+              label="🌅 7 AM Muhurat"
+              variant="coral"
+              size="sm"
+              fullWidth={false}
+              onPress={triggerInstantMorningMuhuratTestPush}
             />
             <Button
               label="Mark All Read"

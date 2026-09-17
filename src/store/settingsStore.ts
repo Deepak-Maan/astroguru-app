@@ -51,16 +51,19 @@ interface SettingsState {
   apiKey: string | null;
   loaded: boolean;
   soundEnabled: boolean;
+  morningMuhuratPushEnabled: boolean;
   load: () => Promise<void>;
   setApiKey: (key: string) => Promise<void>;
   clearApiKey: () => Promise<void>;
   toggleSound: () => void;
+  toggleMorningMuhuratPush: () => void;
 }
 
-export const useSettingsStore = create<SettingsState>((set) => ({
+export const useSettingsStore = create<SettingsState>((set, get) => ({
   apiKey: null,
   loaded: false,
   soundEnabled: true,
+  morningMuhuratPushEnabled: true,
   load: async () => {
     const apiKey = await readKey();
     set({ apiKey, loaded: true });
@@ -75,4 +78,9 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     set({ apiKey: null });
   },
   toggleSound: () => set((s) => ({ soundEnabled: !s.soundEnabled })),
+  toggleMorningMuhuratPush: () =>
+    set((s) => {
+      const next = !s.morningMuhuratPushEnabled;
+      return { morningMuhuratPushEnabled: next };
+    }),
 }));

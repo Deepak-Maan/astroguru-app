@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors, radius, spacing, typography } from '../theme';
 import { ChatMessage } from '../types';
 import { clockTime } from '../utils';
@@ -66,6 +66,37 @@ export function ChatBubble({ message, authorLabel }: Props) {
     }
   }, [message.pending]);
 
+  // Voice Note Playback Simulation
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playProgress, setPlayProgress] = useState(0);
+
+  useEffect(() => {
+    let interval: any = null;
+    if (isPlaying && message.isAudio) {
+      const dur = message.audioDuration || 6;
+      interval = setInterval(() => {
+        setPlayProgress((p) => {
+          if (p >= 1) {
+            setIsPlaying(false);
+            return 0;
+          }
+          return p + 0.1 / dur;
+        });
+      }, 100);
+    } else {
+      if (!isPlaying) setPlayProgress(0);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isPlaying, message.isAudio, message.audioDuration]);
+
+  const togglePlay = () => {
+    setIsPlaying(!isPlaying);
+  };
+
+  const WAVE_BARS = [4, 10, 16, 8, 22, 14, 6, 18, 12, 20, 15, 8, 14, 10, 18, 6];
+
   return (
     <Animated.View
       style={[
@@ -74,7 +105,7 @@ export function ChatBubble({ message, authorLabel }: Props) {
         { opacity: fadeAnim, transform: [{ translateY }] },
       ]}
     >
-      <View style={[styles.bubble, isUser ? styles.user : styles.assistant]}>
+      <View style={[styles.bubble, isUser ? styles.user : styles.assistant, message.isAudio && styles.audioBubble]}>
         {!isUser && !!authorLabel && (
           <Text style={styles.author}>{authorLabel}</Text>
         )}
@@ -86,6 +117,47 @@ export function ChatBubble({ message, authorLabel }: Props) {
               <Animated.View style={[styles.dot, { opacity: dot1 }]} />
               <Animated.View style={[styles.dot, { opacity: dot2 }]} />
               <Animated.View style={[styles.dot, { opacity: dot3 }]} />
+            </View>
+          </View>
+        ) : message.isAudio ? (
+          <View style={styles.audioRow}>
+            <Pressable
+              onPress={togglePlay}
+              hitSlop={6}
+              style={[styles.playBtn, isUser ? styles.playBtnUser : styles.playBtnAssistant]}
+            >
+              <Text style={styles.playIcon}>{isPlaying ? '⏸' : '▶'}</Text>
+            </Pressable>
+
+            <View style={styles.audioWaveContainer}>
+              <View style={styles.audioBarsRow}>
+                {WAVE_BARS.map((h, i) => {
+                  const barProgress = i / WAVE_BARS.length;
+                  const isFilled = isPlaying && playProgress >= barProgress;
+                  return (
+                    <View
+                      key={i}
+                      style={[
+                        styles.audioBar,
+                        {
+                          height: h,
+                          backgroundColor: isFilled
+                            ? (isUser ? '#FFFFFF' : '#818CF8')
+                            : (isUser ? 'rgba(255,255,255,0.45)' : 'rgba(165,180,252,0.35)'),
+                        },
+                      ]}
+                    />
+                  );
+                })}
+              </View>
+              <View style={styles.audioMetaRow}>
+                <Text style={[styles.audioDuration, isUser && { color: 'rgba(255,255,255,0.85)' }]}>
+                  {message.audioDuration ? `0:${message.audioDuration < 10 ? '0' : ''}${message.audioDuration}` : '0:06'}
+                </Text>
+                <Text style={[styles.audioMicTag, isUser && { color: 'rgba(255,255,255,0.75)' }]}>
+                  🎙️ Voice Note
+                </Text>
+              </View>
             </View>
           </View>
         ) : (
@@ -167,5 +239,64 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 3,
     backgroundColor: colors.primary,
+  },
+
+  /* Audio Bubble Styles */
+  audioBubble: {
+    minWidth: 200,
+    paddingVertical: spacing.sm + 2,
+  },
+  audioRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  playBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  playBtnUser: {
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+  },
+  playBtnAssistant: {
+    backgroundColor: 'rgba(129, 140, 248, 0.25)',
+  },
+  playIcon: {
+    fontSize: 16,
+    color: '#FFFFFF',
+  },
+  audioWaveContainer: {
+    flex: 1,
+    gap: 4,
+  },
+  audioBarsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2.5,
+    height: 24,
+  },
+  audioBar: {
+    width: 3,
+    borderRadius: 1.5,
+  },
+  audioMetaRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  audioDuration: {
+    ...typography.tiny,
+    color: '#A5B4FC',
+    fontWeight: '700',
+    fontSize: 11,
+  },
+  audioMicTag: {
+    ...typography.tiny,
+    color: '#A5B4FC',
+    fontWeight: '600',
+    fontSize: 10,
   },
 });

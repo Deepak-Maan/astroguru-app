@@ -16,6 +16,8 @@ export interface BirthProfile {
   /** 24h time HH:mm */
   time: string;
   place: City;
+  isApproxTime?: boolean;
+  approxTimeBand?: 'morning' | 'afternoon' | 'evening' | 'night' | 'prashna';
 }
 
 export interface PlanetPosition {
@@ -85,6 +87,8 @@ export interface ChatMessage {
   text: string;
   at: number;
   pending?: boolean;
+  isAudio?: boolean;
+  audioDuration?: number;
 }
 
 export interface ConsultSession {

@@ -26,6 +26,10 @@ import { useChatStore } from '../src/store/chatStore';
 import { useSecurityStore } from '../src/store/securityStore';
 import { useAuthStore } from '../src/store/authStore';
 import { useUpdateStore } from '../src/store/updateStore';
+import {
+  scheduleDailyMorningMuhuratPush,
+  triggerInstantMorningMuhuratTestPush,
+} from '../src/services/pushNotificationService';
 
 export default function Settings() {
   const router = useRouter();
@@ -34,6 +38,8 @@ export default function Settings() {
   const clearApiKey = useSettingsStore((s) => s.clearApiKey);
   const soundEnabled = useSettingsStore((s) => s.soundEnabled);
   const toggleSound = useSettingsStore((s) => s.toggleSound);
+  const morningMuhuratPushEnabled = useSettingsStore((s) => s.morningMuhuratPushEnabled);
+  const toggleMorningMuhuratPush = useSettingsStore((s) => s.toggleMorningMuhuratPush);
   const clearAiChat = useChatStore((s) => s.clearAiChat);
 
   const authUser = useAuthStore((s) => s.user);
@@ -292,6 +298,37 @@ export default function Settings() {
                   thumbColor={colors.white}
                 />
               </View>
+
+              {/* Feature 9: Subah Ka Shubh Muhurat Daily 7:00 AM Push */}
+              <View style={styles.prefRow}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.prefLabel}>🌅 Subah Ka Shubh Muhurat (7:00 AM)</Text>
+                  <Text style={styles.prefSub}>Daily lock screen push with Abhijit Muhurat & Rahu Kaal</Text>
+                </View>
+                <Switch
+                  value={morningMuhuratPushEnabled}
+                  onValueChange={(val) => {
+                    toggleMorningMuhuratPush();
+                    scheduleDailyMorningMuhuratPush(val);
+                  }}
+                  trackColor={{ false: '#E3E8F3', true: colors.saffron }}
+                  thumbColor={colors.white}
+                />
+              </View>
+
+              <Pressable
+                onPress={() => {
+                  triggerInstantMorningMuhuratTestPush();
+                  Alert.alert('🌅 Shubh Muhurat Alert Sent', 'Check your notifications to preview the 7:00 AM morning lock-screen push.');
+                }}
+                style={({ pressed }) => [styles.prefRow, pressed && { opacity: 0.65 }]}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.prefLabel, { color: colors.teal }]}>🔔 Test 7:00 AM Muhurat Alert Now</Text>
+                  <Text style={styles.prefSub}>Triggers an instant preview push notification</Text>
+                </View>
+                <Text style={styles.chevron}>›</Text>
+              </Pressable>
               <Pressable
                 onPress={clearAiChat}
                 style={({ pressed }) => [styles.prefRow, pressed && { opacity: 0.65 }]}

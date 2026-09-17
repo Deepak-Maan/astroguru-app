@@ -14,6 +14,7 @@ import { IncomingCallModal } from '../src/components/IncomingCallModal';
 import { useUpdateStore } from '../src/store/updateStore';
 import { seedAllUsersAndAstrologersToFirebase } from '../src/services/firebaseRealtimeService';
 import { initNotificationService } from '../src/services/notificationService';
+import { scheduleDailyMorningMuhuratPush } from '../src/services/pushNotificationService';
 import { ASTROLOGERS } from '../src/data/astrologers';
 
 // Suppress external browser extension and DevTools injected script noise (e.g. Chrome Web Vitals, Live Metrics VM scripts)
@@ -126,6 +127,12 @@ export default function RootLayout() {
         initNotificationService();
       } catch (e) {
         console.log('[InitNotif Error Handled]', e);
+      }
+      try {
+        const morningPushEnabled = useSettingsStore.getState().morningMuhuratPushEnabled;
+        scheduleDailyMorningMuhuratPush(morningPushEnabled);
+      } catch (e) {
+        console.log('[Morning Muhurat Init Note]', e);
       }
       try {
         seedAllUsersAndAstrologersToFirebase(ASTROLOGERS);

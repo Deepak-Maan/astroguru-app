@@ -54,6 +54,16 @@ export async function initNotificationService() {
           enableLights: true,
           enableVibrate: true,
         });
+
+        await Notifications.setNotificationChannelAsync('astroguru_muhurat', {
+          name: 'Shubh Muhurat & Panchang Alerts',
+          importance: Notifications.AndroidImportance.HIGH,
+          vibrationPattern: [0, 300, 200, 300],
+          lightColor: '#F59E0B',
+          sound: 'default',
+          enableLights: true,
+          enableVibrate: true,
+        });
       } catch (channelErr) {
         console.log('[Notification Channel Setup Note]', channelErr);
       }

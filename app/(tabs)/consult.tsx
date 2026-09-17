@@ -12,7 +12,7 @@ import {
   View,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GradientBackground } from '../../src/components/GradientBackground';
@@ -216,10 +216,19 @@ export default function Consult() {
     return <AcharyaChatCenter />;
   }
 
+  const params = useLocalSearchParams<{ filterSpecialty?: string; concernTitle?: string }>();
   const [query, setQuery] = useState('');
-  const [filter, setFilter] = useState('All');
+  const [filter, setFilter] = useState(params.filterSpecialty || 'All');
+  const [activeConcern, setActiveConcern] = useState<string | null>(params.concernTitle || null);
   const [sort, setSort] = useState<Sort>('popular');
   const [astrologersList, setAstrologersList] = useState<Astrologer[]>(ASTROLOGERS);
+
+  useEffect(() => {
+    if (params.filterSpecialty) {
+      setFilter(params.filterSpecialty);
+      setActiveConcern(params.concernTitle || params.filterSpecialty);
+    }
+  }, [params.filterSpecialty, params.concernTitle]);
 
   useEffect(() => {
     // Fetch Jyotishi directory from Firebase - works from any country, no server needed
@@ -257,7 +266,7 @@ export default function Consult() {
         a.languages.some((l: string) => l.toLowerCase().includes(q));
       const matchF =
         filter === 'All' ||
-        (filter === 'Online' ? a.online : a.specialties.some((s: string) => s === filter));
+        (filter === 'Online' ? a.online : a.specialties.some((s: string) => s.toLowerCase().includes(filter.toLowerCase())));
       return matchQ && matchF;
     });
     out = [...out].sort((x, y) => {
@@ -301,6 +310,25 @@ export default function Consult() {
           {'  '}available for instant consultation
         </Text>
       </View>
+
+      {/* ── Problem-First Concern Banner (Feature 2) ── */}
+      {!!activeConcern && (
+        <View style={styles.concernBanner}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.concernSubText}>Targeting your specific concern:</Text>
+            <Text style={styles.concernTitleText}>🎯 {activeConcern}</Text>
+          </View>
+          <Pressable
+            onPress={() => {
+              setActiveConcern(null);
+              setFilter('All');
+            }}
+            style={styles.concernClearBtn}
+          >
+            <Text style={styles.concernClearText}>Show All ✕</Text>
+          </Pressable>
+        </View>
+      )}
 
       {/* ── Filter chips (horizontal scroll) ── */}
       <View style={styles.filterWrapper}>
@@ -487,6 +515,46 @@ const styles = StyleSheet.create({
   },
   onlineText: { ...typography.small, color: '#A5B4FC', fontSize: 13, flex: 1, fontWeight: '600' },
   onlineCount: { color: '#34D399', fontWeight: '800' },
+
+  /* Concern Banner */
+  concernBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(236, 72, 153, 0.15)',
+    borderWidth: 1.2,
+    borderColor: 'rgba(244, 114, 182, 0.5)',
+    borderRadius: radius.lg,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 10,
+    marginBottom: spacing.sm,
+  },
+  concernSubText: {
+    ...typography.tiny,
+    color: '#F472B6',
+    fontWeight: '700',
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  concernTitleText: {
+    ...typography.body,
+    color: '#FFFFFF',
+    fontWeight: '800',
+    fontSize: 14,
+    marginTop: 2,
+  },
+  concernClearBtn: {
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: radius.pill,
+  },
+  concernClearText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '700',
+  },
 
   /* Filter chips */
   filterWrapper: {

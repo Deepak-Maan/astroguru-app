@@ -21,6 +21,8 @@ import { Avatar } from '../../src/components/Avatar';
 import { Button } from '../../src/components/Button';
 import { ChatBubble } from '../../src/components/ChatBubble';
 import { EmptyState } from '../../src/components/EmptyState';
+import { VoiceNoteRecorder } from '../../src/components/VoiceNoteRecorder';
+import { InCallRechargeBanner } from '../../src/components/InCallRechargeBanner';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { ASTROLOGERS } from '../../src/data/astrologers';
 import { greetingFor, replyTo, typingDelay } from '../../src/services/consult/replies';
@@ -389,6 +391,64 @@ export default function ChatScreen() {
     }
   }
 
+  async function sendVoiceNote(durationSec: number) {
+    if (!astrologer) return;
+    if (!active) {
+      begin();
+    }
+
+    const userMsg: ChatMessage = {
+      id: nextId(),
+      role: 'user',
+      text: `🎤 Voice note (${durationSec}s)`,
+      at: Date.now(),
+      isAudio: true,
+      audioDuration: durationSec,
+    };
+    addMessage(astrologer.id, userMsg);
+
+    if (liveRoomId) {
+      sendLiveMessage(liveRoomId, 'seeker', currentSeekerName, `🎤 [Voice Note: ${durationSec}s]`);
+    }
+
+    scrollToEnd();
+    setTyping(true);
+
+    try {
+      const currentHistory = (useChatStore.getState().getSession(astrologer.id)?.messages || []);
+      const prompt = `[Seeker sent a ${durationSec}-second voice note explaining their life situation and asking for Jyotish guidance]`;
+      const reply = await generateAstrologyAiReply({
+        currentMessage: prompt,
+        history: currentHistory,
+        astrologer,
+        kundli,
+        profile: useUserStore.getState().profile,
+      });
+
+      const delay = calculateTypingDelay(reply);
+      setTimeout(() => {
+        setTyping(false);
+        addMessage(astrologer.id, {
+          id: nextId(),
+          role: 'assistant',
+          text: reply,
+          at: Date.now(),
+        });
+        scrollToEnd();
+      }, delay);
+    } catch (e) {
+      setTyping(false);
+      const fallbackReply = `Acharya ji has listened to your voice message carefully 🙏 "Maine aapki dasha aur grahon ki sthiti dekh li hai. Ghabraiye mat, shubh samay aane wala hai."`;
+      addMessage(astrologer.id, {
+        id: nextId(),
+        role: 'assistant',
+        text: fallbackReply,
+        at: Date.now(),
+      });
+      scrollToEnd();
+    }
+  }
+
   function stop() {
     if (astrologer) endSession(astrologer.id);
   }
@@ -568,6 +628,19 @@ export default function ChatScreen() {
               ))}
             </View>
 
+            {/* Seamless In-Call Floating Wallet Recharge Banner (Feature 6) */}
+            {active && (
+              <InCallRechargeBanner
+                secondsRemaining={session?.isFreeTrial ? session?.freeSecondsRemaining : undefined}
+                pricePerMin={astrologer?.pricePerMin ?? 25}
+                onQuickRecharge={() => {
+                  topup(100, 'Seamless 1-Tap Call Recharge');
+                  setRanOut(false);
+                }}
+                style={{ width: '90%', marginBottom: spacing.md }}
+              />
+            )}
+
             {/* Call Action Controls */}
             <View style={styles.callControls}>
               <Pressable
@@ -673,7 +746,22 @@ export default function ChatScreen() {
               </View>
             )}
 
-            {/* Sleek WhatsApp/Telegram Style Composer Pill with Integrated Send Button */}
+            {/* Seamless In-Chat Floating Wallet Recharge Banner (Feature 6) */}
+            {((session?.isFreeTrial && (session?.freeSecondsRemaining ?? 180) <= 60) ||
+              balance < (astrologer?.pricePerMin ?? 25) * 2 ||
+              ranOut) && (
+              <InCallRechargeBanner
+                secondsRemaining={session?.isFreeTrial ? session?.freeSecondsRemaining : undefined}
+                pricePerMin={astrologer?.pricePerMin ?? 25}
+                onQuickRecharge={() => {
+                  topup(100, 'Seamless 1-Tap Consultation Top-Up');
+                  setRanOut(false);
+                  if (!active) begin();
+                }}
+              />
+            )}
+
+            {/* Sleek WhatsApp/Telegram Style Composer Pill with Integrated Send Button & Voice Note */}
             <View style={styles.composer}>
               <View style={styles.inputPillContainer}>
                 <TextInput
@@ -685,30 +773,34 @@ export default function ChatScreen() {
                   onSubmitEditing={() => send()}
                   returnKeyType="send"
                 />
-                <Pressable
-                  onPress={() => {
-                    if (Platform.OS !== 'web') {
-                      try {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      } catch (_) {}
-                    }
-                    send();
-                  }}
-                  disabled={!draft.trim()}
-                  style={({ pressed }) => [
-                    styles.sendBtn,
-                    !draft.trim() && styles.sendBtnOff,
-                    pressed && { transform: [{ translateY: 1.5 }], opacity: 0.85 },
-                  ]}
-                >
-                  <Animated.View style={{ transform: [{ scale: sendScaleAnim }], flex: 1, width: '100%', alignItems: 'center', justifyContent: 'center' }}>
-                    <LinearGradient
-                      colors={draft.trim() ? ['#FF3366', '#F43F5E'] : ['#CBD5E1', '#94A3B8']}
-                      style={StyleSheet.absoluteFill}
-                    />
-                    <Text style={styles.sendIcon}>➤</Text>
-                  </Animated.View>
-                </Pressable>
+                {draft.trim().length > 0 ? (
+                  <Pressable
+                    onPress={() => {
+                      if (Platform.OS !== 'web') {
+                        try {
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        } catch (_) {}
+                      }
+                      send();
+                    }}
+                    style={({ pressed }) => [
+                      styles.sendBtn,
+                      pressed && { transform: [{ translateY: 1.5 }], opacity: 0.85 },
+                    ]}
+                  >
+                    <Animated.View style={{ transform: [{ scale: sendScaleAnim }], flex: 1, width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+                      <LinearGradient
+                        colors={['#FF3366', '#F43F5E']}
+                        style={StyleSheet.absoluteFill}
+                      />
+                      <Text style={styles.sendIcon}>➤</Text>
+                    </Animated.View>
+                  </Pressable>
+                ) : (
+                  <VoiceNoteRecorder
+                    onSendVoiceNote={sendVoiceNote}
+                  />
+                )}
               </View>
             </View>
           </KeyboardAvoidingView>

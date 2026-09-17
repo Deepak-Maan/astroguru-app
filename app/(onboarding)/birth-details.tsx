@@ -69,7 +69,31 @@ export default function BirthDetails() {
   const [showList, setShowList] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [isApproxTime, setIsApproxTime] = useState(false);
+  const [approxBand, setApproxBand] = useState<'morning' | 'afternoon' | 'evening' | 'night' | 'prashna'>('morning');
+
   const results = useMemo(() => searchCities(query, 8), [query]);
+
+  const selectApproxBand = (band: 'morning' | 'afternoon' | 'evening' | 'night' | 'prashna') => {
+    setApproxBand(band);
+    if (band === 'morning') {
+      setHh('08');
+      setMin('30');
+    } else if (band === 'afternoon') {
+      setHh('14');
+      setMin('30');
+    } else if (band === 'evening') {
+      setHh('18');
+      setMin('30');
+    } else if (band === 'night') {
+      setHh('23');
+      setMin('00');
+    } else if (band === 'prashna') {
+      const now = new Date();
+      setHh(String(now.getHours()).padStart(2, '0'));
+      setMin(String(now.getMinutes()).padStart(2, '0'));
+    }
+  };
 
   function validate(): string | null {
     if (!name.trim()) return 'Please enter your name.';
@@ -80,7 +104,7 @@ export default function BirthDetails() {
     if (y < 1900 || y > 2100) return 'Please enter a year between 1900 and 2100.';
     const daysInMonth = new Date(y, m, 0).getDate();
     if (d < 1 || d > daysInMonth) return `Day must be between 1 and ${daysInMonth} for that month.`;
-    if (hh === '' || min === '') return 'Please enter your time of birth (use 00:00 if unknown).';
+    if (hh === '' || min === '') return 'Please enter your time of birth (or select an approximate time band).';
     if (h < 0 || h > 23) return 'Hour must be between 0 and 23.';
     if (mi < 0 || mi > 59) return 'Minute must be between 0 and 59.';
     if (!city) return 'Please select your birth place.';
@@ -101,6 +125,8 @@ export default function BirthDetails() {
       date: `${yyyy}-${pad(mm)}-${pad(dd)}`,
       time: `${pad(hh)}:${pad(min)}`,
       place: city!,
+      isApproxTime,
+      approxTimeBand: isApproxTime ? approxBand : undefined,
     });
     router.replace('/(tabs)');
   }
@@ -152,14 +178,64 @@ export default function BirthDetails() {
                 <NumField value={yyyy} onChange={setYyyy} placeholder="YYYY" max={2100} width={84} label="Year" />
               </View>
 
-              <Text style={[styles.label, styles.mt]}>Time of birth (24-hour)</Text>
-              <View style={styles.row}>
-                <NumField value={hh} onChange={setHh} placeholder="HH" max={23} label="Hour" />
-                <NumField value={min} onChange={setMin} placeholder="MM" max={59} label="Minute" />
-                <Text style={styles.hint}>
-                  Check your birth certificate{'\n'}if you are unsure.
-                </Text>
+              <View style={styles.timeHeaderRow}>
+                <Text style={[styles.label, styles.mt]}>Time of birth (24-hour)</Text>
+                <Pressable
+                  onPress={() => {
+                    const nextVal = !isApproxTime;
+                    setIsApproxTime(nextVal);
+                    if (nextVal) {
+                      selectApproxBand(approxBand);
+                    }
+                  }}
+                  style={styles.approxToggleBtn}
+                >
+                  <Text style={styles.approxToggleText}>
+                    {isApproxTime ? '✓ Enter Exact Time' : "🤔 Don't know exact time?"}
+                  </Text>
+                </Pressable>
               </View>
+
+              {isApproxTime ? (
+                <View style={styles.approxContainer}>
+                  <Text style={styles.approxGuideText}>
+                    Select an approximate birth window. Our Vedic algorithm will calibrate planetary placements and Janma Rashi.
+                  </Text>
+                  <View style={styles.approxGrid}>
+                    {[
+                      { id: 'morning', label: '🌅 Morning', range: '06:00 - 12:00' },
+                      { id: 'afternoon', label: '☀️ Afternoon', range: '12:00 - 17:00' },
+                      { id: 'evening', label: '🌇 Evening', range: '17:00 - 21:00' },
+                      { id: 'night', label: '🌙 Night', range: '21:00 - 05:00' },
+                      { id: 'prashna', label: '🔮 Prashna Kundli', range: 'Current Time (Horary)' },
+                    ].map((band) => {
+                      const selected = approxBand === band.id;
+                      return (
+                        <Pressable
+                          key={band.id}
+                          onPress={() => selectApproxBand(band.id as any)}
+                          style={[styles.approxCard, selected && styles.approxCardSelected]}
+                        >
+                          <Text style={[styles.approxCardLabel, selected && styles.approxCardLabelSelected]}>
+                            {band.label}
+                          </Text>
+                          <Text style={[styles.approxCardRange, selected && styles.approxCardRangeSelected]}>
+                            {band.range}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                </View>
+              ) : (
+                <View style={styles.row}>
+                  <NumField value={hh} onChange={setHh} placeholder="HH" max={23} label="Hour" />
+                  <NumField value={min} onChange={setMin} placeholder="MM" max={59} label="Minute" />
+                  <Text style={styles.hint}>
+                    Check your birth certificate{'\n'}if you are unsure.
+                  </Text>
+                </View>
+              )}
 
               <Text style={[styles.label, styles.mt]}>Place of birth</Text>
               {city ? (
@@ -393,5 +469,77 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,90,110,0.12)',
     borderRadius: radius.md,
     padding: spacing.md,
+  },
+  /* Approx Time Styles (Feature 5) */
+  timeHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: spacing.lg,
+  },
+  approxToggleBtn: {
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.4)',
+  },
+  approxToggleText: {
+    ...typography.tiny,
+    color: '#F59E0B',
+    fontWeight: '800',
+    fontSize: 11,
+  },
+  approxContainer: {
+    backgroundColor: 'rgba(26, 33, 64, 0.65)',
+    borderRadius: radius.md,
+    padding: spacing.md,
+    borderWidth: 1,
+    borderColor: 'rgba(129, 140, 248, 0.25)',
+    gap: spacing.sm,
+  },
+  approxGuideText: {
+    ...typography.tiny,
+    color: '#A5B4FC',
+    lineHeight: 16,
+  },
+  approxGrid: {
+    gap: spacing.xs,
+  },
+  approxCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: radius.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1.2,
+    borderColor: 'transparent',
+  },
+  approxCardSelected: {
+    backgroundColor: 'rgba(129, 140, 248, 0.2)',
+    borderColor: '#818CF8',
+  },
+  approxCardLabel: {
+    ...typography.body,
+    color: '#EEF2FF',
+    fontWeight: '700',
+    fontSize: 13.5,
+  },
+  approxCardLabelSelected: {
+    color: '#818CF8',
+    fontWeight: '800',
+  },
+  approxCardRange: {
+    ...typography.tiny,
+    color: colors.textMuted,
+    fontWeight: '600',
+    fontSize: 12,
+  },
+  approxCardRangeSelected: {
+    color: '#EEF2FF',
+    fontWeight: '700',
   },
 });

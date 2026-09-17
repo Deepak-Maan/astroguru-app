@@ -14,6 +14,7 @@ import { WarpZoomSlider } from '../../src/components/WarpZoomSlider';
 import { DailyCosmicDirectiveCard } from '../../src/components/cosmic/DailyCosmicDirectiveCard';
 import { ShareableCosmicStoryModal } from '../../src/components/cosmic/ShareableCosmicStoryModal';
 import { GuruVaniVoiceModal } from '../../src/components/voice/GuruVaniVoiceModal';
+import { ProblemCategoryCards } from '../../src/components/ProblemCategoryCards';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { useUserStore } from '../../src/store/userStore';
 import { useAuthStore } from '../../src/store/authStore';
@@ -192,6 +193,9 @@ export default function Home() {
               </View>
             </View>
           </Pressable>
+
+          {/* Problem-First Concern Categories (Love, Marriage, Career, Money, Nazar) */}
+          <ProblemCategoryCards />
 
           {/* Quick Actions 8 Grid Cards matching screenshot */}
           <View style={styles.quickGrid}>
