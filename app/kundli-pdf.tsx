@@ -71,7 +71,7 @@ export default function KundliPdfScreen() {
         <body>
           <div class="header">
             <h1>🪐 ASTROGURU CERTIFIED VEDIC KUNDLI REPORT</h1>
-            <p>10-Page Comprehensive Horoscope & Graha Dasha Analysis · Version 2.9.5</p>
+            <p>10-Page Comprehensive Horoscope & Graha Dasha Analysis · Version 2.9.6</p>
           </div>
 
           <div class="grid">

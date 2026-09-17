@@ -707,7 +707,7 @@ app.get('/api/admin/data', (req, res) => {
     incidents: db.securityIncidents || undefined,
     blacklist: db.bannedEntities || undefined,
     meta: {
-      version: db.updates?.currentVersion || '2.9.5',
+      version: db.updates?.currentVersion || '2.9.6',
       totalUsers: users.length,
       totalAstrologers: astrologers.length,
       activeAstrologers: astrologers.filter((a) => a.onDuty).length,

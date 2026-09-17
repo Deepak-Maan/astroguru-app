@@ -7,10 +7,10 @@ import * as Updates from 'expo-updates';
 import { inAppUpdateEngine, UpdateDownloadProgress } from '../services/updates/inAppUpdateEngine';
 import { getAppVersionFromFirebase, syncLatestAppVersionToFirebase } from '../services/firebaseRealtimeService';
 
-export const LATEST_RELEASE_VERSION = '2.9.5';
+export const LATEST_RELEASE_VERSION = '2.9.6';
 export const DIRECT_APK_URL = 'https://expo.dev/artifacts/eas/KqNVd3oafIKVeEIuHEhYUUB0ll5xTobex7TfgS_0ZvE.apk';
 
-const NATIVE_VERSION = Constants.expoConfig?.version || '2.9.5';
+const NATIVE_VERSION = Constants.expoConfig?.version || '2.9.6';
 
 function parseSemVer(v: string): number[] {
   return (v || '0.0.0').split('.').map((p) => parseInt(p, 10) || 0);
@@ -67,15 +67,14 @@ export const useUpdateStore = create<UpdateState>()(
       isMandatory: false,
       releaseNotes: [
         `🚀 Official AstroGuru Platform Upgrade v${LATEST_RELEASE_VERSION}`,
-        '✨ Plain Everyday Language Across All Screens, Horoscopes & AI Readings',
-        '📸 1-Tap 9:16 WhatsApp Status & Instagram Story Card Exporter',
-        '🎙️ GuruVani AI Voice Astrologer with Pulsating Cosmic Orb & Waveforms',
-        '🪔 Sacred Temple E-Puja Booking & Dosha-Linked AstroMall Hub',
-        '💎 100% Complete Option 10: Luminescent Liquid Glass Overhaul',
-        '🪐 High-Contrast Dark Jyotish Kundli & 36-Point Compatibility Match',
-        '⚡ Fast & Smooth Minimalist Login/Logout Frosted Animations',
-        '🎁 First Chat 3-Min FREE Consultation with Zero-Drop Protection',
-        '💳 AstroGold Luxury Metal Card & 1-Tap UPI Recharge',
+        '🎙️ WhatsApp-Style Voice Notes in Chat with Live Waveforms & Audio Bubbles',
+        '🎯 Problem-First Jyotish Categories (Love, Marriage, Career, Money, Nazar)',
+        '🌅 Approximate Birth Time Windows (Morning, Afternoon, Evening, Night & Prashna)',
+        '⚡ Seamless 1-Tap Floating Wallet Recharge During Live Calls (+5 Mins ₹99)',
+        '🔔 Daily 7:00 AM "Subah Ka Shubh Muhurat" & Rahu Kaal Push Notifications',
+        '🪐 High-Accuracy Vedic Kundli Match (All 12 Rashis & 36 Ashta-Koota Scoring)',
+        '📦 Direct Native In-App APK Download & Package Auto-Installer Engine',
+        '💎 Ultra-Smooth Liquid Glass UI & Zero-Glitch Polished Experience',
       ],
       downloadProgress: 0,
       downloadedBytes: 0,
@@ -97,7 +96,7 @@ export const useUpdateStore = create<UpdateState>()(
           syncLatestAppVersionToFirebase(LATEST_RELEASE_VERSION, get().releaseNotes, DIRECT_APK_URL);
         } catch (_) {}
 
-        // If app is already on latest version, never show update modal
+        // If app is already on latest version, never auto-popup update modal
         if (currentVer === LATEST_RELEASE_VERSION) {
           set({ updateAvailable: false, isReadyToInstall: false });
           return;
@@ -113,16 +112,6 @@ export const useUpdateStore = create<UpdateState>()(
           } catch (otaErr) {
             console.log('[OTA Startup Note]', otaErr);
           }
-        }
-
-        if (Platform.OS === 'web') {
-          set({
-            currentVersion: LATEST_RELEASE_VERSION,
-            latestVersion: LATEST_RELEASE_VERSION,
-            updateAvailable: false,
-            isReadyToInstall: false,
-          });
-          return;
         }
 
         try {
@@ -250,6 +239,7 @@ export const useUpdateStore = create<UpdateState>()(
           updateAvailable: true,
           latestVersion: LATEST_RELEASE_VERSION,
           updateType: 'apk',
+          isDownloading: false,
           isReadyToInstall: false,
           downloadProgress: 0,
         });
@@ -326,7 +316,7 @@ export const useUpdateStore = create<UpdateState>()(
       storage: createJSONStorage(() => AsyncStorage),
       onRehydrateStorage: () => (state) => {
         if (state) {
-          const nativeVer = Constants.expoConfig?.version || '2.9.5';
+          const nativeVer = Constants.expoConfig?.version || '2.9.6';
           state.currentVersion = nativeVer;
           state.latestVersion = LATEST_RELEASE_VERSION;
         }

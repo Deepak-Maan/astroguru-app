@@ -36,7 +36,7 @@ export function AppUpdateModal() {
 
   const [showPermissionGuide, setShowPermissionGuide] = useState(false);
 
-  if (Platform.OS === 'web' || !updateAvailable) return null;
+  if (!updateAvailable) return null;
 
   const handlePrimaryPress = () => {
     if (Platform.OS !== 'web') {

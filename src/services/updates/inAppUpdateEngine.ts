@@ -43,14 +43,14 @@ class InAppUpdateEngine {
       latestVersion,
       releaseNotes: [
         `🚀 Official AstroGuru Platform Upgrade v${latestVersion}`,
-        '✨ All-New Claymorphism 3D Soft Tactile UI Experience',
-        '💳 AstroGold Luxury Metal Card & Instant 1-Tap UPI Wallet Recharge',
-        '🔥 7-Day Cosmic Retention Streak with Progressive Astro-Coins',
-        '🎡 6-Segment Navagraha Spin & Win Chakra (Direct Cash & Vouchers)',
-        '🃏 Mystical 3D Tarot Guidance Card of the Day with Sacred Affirmations',
-        '🪔 Sacred Sadhana & Remedy Diary with Real-Time Streak Tracker',
-        '⚡ Zero-Drop Live Consultation Auto-Recharge Drawer',
-        '📦 Direct Native In-App APK Downloader & Package Installer',
+        '🎙️ WhatsApp-Style Voice Notes in Chat with Live Waveforms & Audio Bubbles',
+        '🎯 Problem-First Jyotish Categories (Love, Marriage, Career, Money, Nazar)',
+        '🌅 Approximate Birth Time Windows (Morning, Afternoon, Evening, Night & Prashna)',
+        '⚡ Seamless 1-Tap Floating Wallet Recharge During Live Calls (+5 Mins ₹99)',
+        '🔔 Daily 7:00 AM "Subah Ka Shubh Muhurat" & Rahu Kaal Push Notifications',
+        '🪐 High-Accuracy Vedic Kundli Match (All 12 Rashis & 36 Ashta-Koota Scoring)',
+        '📦 Direct Native In-App APK Download & Package Auto-Installer Engine',
+        '💎 Ultra-Smooth Liquid Glass UI & Zero-Glitch Polished Experience',
       ],
       isMandatory: false,
       type: 'apk',
@@ -66,6 +66,38 @@ class InAppUpdateEngine {
     customApkUrl?: string
   ): Promise<{ success: boolean; localUri?: string; type: 'apk' }> {
     const apkUrl = customApkUrl || FALLBACK_APK_URL;
+
+    // Web Platform: Simulate live download stream with animated progress bar and trigger APK download
+    if (Platform.OS === 'web') {
+      const totalBytes = 105 * 1024 * 1024;
+      let downloaded = 0;
+      for (let p = 12; p <= 98; p += 16) {
+        await new Promise((resolve) => setTimeout(resolve, 180));
+        downloaded = Math.min(totalBytes, Math.floor((p / 100) * totalBytes));
+        onProgress({
+          totalBytes,
+          downloadedBytes: downloaded,
+          percentage: p,
+          speedKbps: 4200 + Math.floor(Math.random() * 900),
+        });
+      }
+      onProgress({
+        totalBytes,
+        downloadedBytes: totalBytes,
+        percentage: 100,
+        speedKbps: 5120,
+      });
+
+      try {
+        if (typeof window !== 'undefined' && window.open) {
+          window.open(apkUrl, '_blank');
+        } else {
+          await Linking.openURL(apkUrl);
+        }
+      } catch (_) {}
+
+      return { success: true, localUri: apkUrl, type: 'apk' };
+    }
 
     if (Platform.OS === 'android') {
       try {
@@ -146,6 +178,19 @@ class InAppUpdateEngine {
    */
   async installDownloadedPackage(localUri?: string, customApkUrl?: string): Promise<{ success: boolean; requiresPermission?: boolean; error?: string }> {
     const targetUrl = customApkUrl || FALLBACK_APK_URL;
+
+    if (Platform.OS === 'web') {
+      try {
+        if (typeof window !== 'undefined' && window.open) {
+          window.open(targetUrl, '_blank');
+        } else {
+          await Linking.openURL(targetUrl);
+        }
+        return { success: true };
+      } catch (err: any) {
+        return { success: false, error: err?.message };
+      }
+    }
 
     if (Platform.OS === 'android' && localUri) {
       try {

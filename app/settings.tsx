@@ -25,7 +25,7 @@ import { useSettingsStore } from '../src/store/settingsStore';
 import { useChatStore } from '../src/store/chatStore';
 import { useSecurityStore } from '../src/store/securityStore';
 import { useAuthStore } from '../src/store/authStore';
-import { useUpdateStore } from '../src/store/updateStore';
+import { useUpdateStore, DIRECT_APK_URL } from '../src/store/updateStore';
 import {
   scheduleDailyMorningMuhuratPush,
   triggerInstantMorningMuhuratTestPush,
@@ -120,11 +120,16 @@ export default function Settings() {
       triggerUpdateModal();
     } else {
       if (Platform.OS === 'web') {
-        alert(`✅ AstroGuru is Up to Date (v${res.currentVersion})\nNo new updates available right now.`);
+        alert(`✅ AstroGuru is on v${res.currentVersion}.\nOpening In-App Update Downloader...`);
+        triggerUpdateModal();
       } else {
         Alert.alert(
-          'App Up to Date',
-          `✅ You are running the latest version of AstroGuru (v${res.currentVersion}).`
+          'AstroGuru Updates',
+          `✅ You are on v${res.currentVersion}.\nLaunch the In-App Update Downloader to verify package?`,
+          [
+            { text: 'Dismiss', style: 'cancel' },
+            { text: 'Open In-App Downloader', onPress: () => triggerUpdateModal() },
+          ]
         );
       }
     }
@@ -196,6 +201,41 @@ export default function Settings() {
                   </Text>
                 </View>
                 <Text style={[styles.chevron, { color: colors.saffron }]}>›</Text>
+              </Pressable>
+
+              <Pressable
+                onPress={() => triggerUpdateModal()}
+                style={({ pressed }) => [styles.prefRow, pressed && { opacity: 0.75 }]}
+              >
+                <View style={{ flex: 1 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <Text style={[styles.prefLabel, { color: '#10B981', fontWeight: '800' }]}>
+                      📥 Download v2.9.6 Update In-App
+                    </Text>
+                    <View style={{ backgroundColor: 'rgba(16, 185, 129, 0.18)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: radius.sm, borderWidth: 1, borderColor: 'rgba(16, 185, 129, 0.4)' }}>
+                      <Text style={{ fontSize: 9, fontWeight: '900', color: '#34D399' }}>NEW v2.9.6</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.prefSub}>
+                    Fast in-app streaming with live progress bar & auto-install
+                  </Text>
+                </View>
+                <Text style={[styles.chevron, { color: '#10B981' }]}>›</Text>
+              </Pressable>
+
+              <Pressable
+                onPress={() => Linking.openURL(DIRECT_APK_URL)}
+                style={({ pressed }) => [styles.prefRow, pressed && { opacity: 0.65 }]}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.prefLabel, { color: '#38BDF8' }]}>
+                    🌐 Direct APK CDN Download Mirror
+                  </Text>
+                  <Text style={styles.prefSub}>
+                    Download standalone .apk file directly in browser
+                  </Text>
+                </View>
+                <Text style={[styles.chevron, { color: '#38BDF8' }]}>›</Text>
               </Pressable>
             </Card>
           </View>
