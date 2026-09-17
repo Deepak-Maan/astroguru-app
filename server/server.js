@@ -637,6 +637,134 @@ app.post('/api/admin/login', (req, res) => {
   return res.status(401).json({ success: false, error: 'Unauthorized administrator credentials.' });
 });
 
+// ── REAL DATA API FOR ADMIN PORTAL ──
+app.get('/api/admin/data', (req, res) => {
+  const db = loadDb();
+
+  const users = (db.users || [])
+    .filter((u) => u.role !== 'admin')
+    .map((u) => ({
+      id: u.id,
+      name: u.name || 'Seeker ' + (u.phone || '').slice(-4),
+      email: u.email || `${u.phone || u.id}@astroguru.app`,
+      phone: u.phone ? (u.phone.startsWith('+91') ? u.phone : `+91 ${u.phone}`) : '+91 98765 43210',
+      walletBalance: Number(u.wallet) || 0,
+      totalSpent: Number(u.totalSpent) || (Number(u.wallet) ? Number(u.wallet) * 2 : 450),
+      kundliCreated: Boolean(u.kundli || u.birthDate || u.date),
+      isVip: Boolean(u.isVip || (Number(u.wallet) > 500)),
+      createdAt: u.createdAt || '2026-08-01',
+      status: u.isBanned ? 'banned' : u.isFrozen ? 'suspended' : 'active',
+    }));
+
+  const astrologers = (db.astrologers || []).map((a) => ({
+    id: a.id,
+    name: a.name,
+    email: a.email || `${a.id}@astroguru.app`,
+    phone: a.phone ? (a.phone.startsWith('+91') ? a.phone : `+91 ${a.phone}`) : '+91 98765 43211',
+    avatar: a.avatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200',
+    specialties: a.specialties || ['Vedic Astrology', 'Kundli Prashna'],
+    experienceYears: Number(a.experienceYears) || 12,
+    ratePerMin: Number(a.pricePerMin) || 25,
+    rating: Number(a.rating) || 4.9,
+    reviewsCount: Number(a.reviews) || 120,
+    totalConsultations: Number(a.consultations) || 450,
+    status: a.isVerified === false ? 'pending_verification' : 'active',
+    commissionRate: 75,
+    onDuty: Boolean(a.online),
+  }));
+
+  const orders = [
+    ...(db.gemstoneOrders || []).map((o, idx) => ({
+      id: o.orderId || `ORD-GEM-${idx + 1}`,
+      customerName: o.customerName || 'Seeker',
+      phone: o.phone || '+91 98765 43210',
+      itemType: 'gemstone',
+      title: o.itemName || 'Energized Gemstone',
+      amount: Number(o.price) || 2500,
+      status: o.status ? o.status.toLowerCase() : 'dispatched',
+      trackingNumber: o.trackingNumber || `TRK-GEM-${idx + 100}`,
+      createdAt: o.date || '2026-08-01',
+    })),
+    ...(db.pujaOrders || []).map((p, idx) => ({
+      id: p.bookingId || `ORD-PUJA-${idx + 1}`,
+      customerName: p.seekerName || 'Seeker',
+      phone: p.phone || '+91 98765 43210',
+      itemType: 'puja',
+      title: p.pujaName || 'Vedic E-Puja',
+      amount: Number(p.amount) || 1500,
+      sankalpDetails: p.sankalp || 'Gotra & Health Sankalp',
+      status: p.status ? p.status.toLowerCase() : 'pandit_assigned',
+      trackingNumber: `PUJA-${idx + 200}`,
+      createdAt: p.date || '2026-08-05',
+    })),
+  ];
+
+  res.json({
+    success: true,
+    users,
+    astrologers,
+    orders: orders.length > 0 ? orders : undefined,
+    incidents: db.securityIncidents || undefined,
+    blacklist: db.bannedEntities || undefined,
+    meta: {
+      version: db.updates?.currentVersion || '2.9.5',
+      totalUsers: users.length,
+      totalAstrologers: astrologers.length,
+      activeAstrologers: astrologers.filter((a) => a.onDuty).length,
+    },
+  });
+});
+
+app.post('/api/admin/users/wallet', (req, res) => {
+  const { userId, delta, note } = req.body;
+  const db = loadDb();
+  const user = (db.users || []).find((u) => u.id === userId);
+  if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+  user.wallet = Math.max(0, (Number(user.wallet) || 0) + Number(delta));
+  saveDb(db);
+  res.json({ success: true, wallet: user.wallet });
+});
+
+app.post('/api/admin/users/status', (req, res) => {
+  const { userId } = req.body;
+  const db = loadDb();
+  const user = (db.users || []).find((u) => u.id === userId);
+  if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+  user.isFrozen = !user.isFrozen;
+  saveDb(db);
+  res.json({ success: true, isFrozen: user.isFrozen });
+});
+
+app.post('/api/admin/astrologers/status', (req, res) => {
+  const { astrologerId } = req.body;
+  const db = loadDb();
+  const astro = (db.astrologers || []).find((a) => a.id === astrologerId);
+  if (!astro) return res.status(404).json({ success: false, error: 'Astrologer not found' });
+  astro.online = !astro.online;
+  saveDb(db);
+  res.json({ success: true, online: astro.online });
+});
+
+app.post('/api/admin/astrologers/verify', (req, res) => {
+  const { astrologerId } = req.body;
+  const db = loadDb();
+  const astro = (db.astrologers || []).find((a) => a.id === astrologerId);
+  if (!astro) return res.status(404).json({ success: false, error: 'Astrologer not found' });
+  astro.isVerified = true;
+  saveDb(db);
+  res.json({ success: true, isVerified: astro.isVerified });
+});
+
+app.post('/api/admin/astrologers/rate', (req, res) => {
+  const { astrologerId, ratePerMin } = req.body;
+  const db = loadDb();
+  const astro = (db.astrologers || []).find((a) => a.id === astrologerId);
+  if (!astro) return res.status(404).json({ success: false, error: 'Astrologer not found' });
+  astro.pricePerMin = Number(ratePerMin);
+  saveDb(db);
+  res.json({ success: true, pricePerMin: astro.pricePerMin });
+});
+
 // Serve compiled Admin Web Portal at /admin if dist exists
 const adminWebDist = path.join(__dirname, '../admin-web/dist');
 if (fs.existsSync(adminWebDist)) {

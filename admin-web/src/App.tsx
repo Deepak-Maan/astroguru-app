@@ -6,6 +6,12 @@ import {
   INITIAL_INCIDENTS,
   INITIAL_ORDERS,
   INITIAL_USERS,
+  fetchLiveAdminData,
+  adjustUserWalletApi,
+  toggleUserStatusApi,
+  toggleAstrologerDutyApi,
+  verifyAstrologerApi,
+  updateAstrologerRateApi,
 } from './services/api';
 import { AdminSidebar, AdminTab } from './components/AdminSidebar';
 import { AdminTopNav } from './components/AdminTopNav';
@@ -20,13 +26,29 @@ import { UpdatesDesk } from './pages/UpdatesDesk';
 import { LoginDesk } from './pages/LoginDesk';
 
 export const App: React.FC = () => {
-  // Authentication State
-  const [adminUser, setAdminUser] = useState<AdminUser | null>({
-    id: 'usr_admin_1',
-    name: 'Master Admin',
-    email: 'admin@astroguru.app',
-    role: 'super_admin',
+  // Authentication State with secure sessionStorage
+  const [adminUser, setAdminUser] = useState<AdminUser | null>(() => {
+    try {
+      const saved = sessionStorage.getItem('astroguru_admin_session');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
   });
+
+  const handleLoginSuccess = (u: AdminUser) => {
+    try {
+      sessionStorage.setItem('astroguru_admin_session', JSON.stringify(u));
+    } catch (_) {}
+    setAdminUser(u);
+  };
+
+  const handleLogout = () => {
+    try {
+      sessionStorage.removeItem('astroguru_admin_session');
+    } catch (_) {}
+    setAdminUser(null);
+  };
 
   // Navigation State
   const [currentTab, setCurrentTab] = useState<AdminTab>('overview');
@@ -38,6 +60,17 @@ export const App: React.FC = () => {
   const [astrologers, setAstrologers] = useState<AstrologerProfile[]>(INITIAL_ASTROLOGERS);
   const [users, setUsers] = useState<UserRecord[]>(INITIAL_USERS);
   const [orders, setOrders] = useState<OrderItem[]>(INITIAL_ORDERS);
+
+  // Load live data from database on mount
+  React.useEffect(() => {
+    fetchLiveAdminData().then((data) => {
+      if (data.users && data.users.length > 0) setUsers(data.users);
+      if (data.astrologers && data.astrologers.length > 0) setAstrologers(data.astrologers);
+      if (data.orders && data.orders.length > 0) setOrders(data.orders);
+      if (data.incidents && data.incidents.length > 0) setIncidents(data.incidents);
+      if (data.blacklist && data.blacklist.length > 0) setBlacklist(data.blacklist);
+    });
+  }, []);
 
   // Modals & Feedback
   const [isBanModalOpen, setIsBanModalOpen] = useState(false);
@@ -101,6 +134,7 @@ export const App: React.FC = () => {
     setAstrologers((prev) =>
       prev.map((a) => (a.id === id ? { ...a, onDuty: !a.onDuty } : a))
     );
+    toggleAstrologerDutyApi(id);
   };
 
   const handleUpdateCommission = (id: string, newRate: number) => {
@@ -114,6 +148,7 @@ export const App: React.FC = () => {
     setAstrologers((prev) =>
       prev.map((a) => (a.id === id ? { ...a, status: 'active', onDuty: true } : a))
     );
+    verifyAstrologerApi(id);
     showToast('✓ Astrologer credentials verified and approved for duty!');
   };
 
@@ -124,6 +159,7 @@ export const App: React.FC = () => {
         u.id === userId ? { ...u, walletBalance: Math.max(0, u.walletBalance + delta) } : u
       )
     );
+    adjustUserWalletApi(userId, delta, note);
     showToast(`Wallet adjusted by ₹${delta > 0 ? '+' : ''}${delta} (${note})`);
   };
 
@@ -135,6 +171,7 @@ export const App: React.FC = () => {
           : u
       )
     );
+    toggleUserStatusApi(userId);
   };
 
   // AstroMall Actions
@@ -160,7 +197,7 @@ export const App: React.FC = () => {
 
   // If not logged in, render dedicated Admin Login screen
   if (!adminUser) {
-    return <LoginDesk onLoginSuccess={(u) => setAdminUser(u)} />;
+    return <LoginDesk onLoginSuccess={handleLoginSuccess} />;
   }
 
   return (
@@ -190,7 +227,7 @@ export const App: React.FC = () => {
         currentTab={currentTab}
         onSelectTab={(tab) => setCurrentTab(tab)}
         adminUser={adminUser}
-        onLogout={() => setAdminUser(null)}
+        onLogout={handleLogout}
         incidentCount={incidents.filter((i) => i.status === 'pending').length}
         pendingAstrosCount={astrologers.filter((a) => a.status === 'pending_verification').length}
       />

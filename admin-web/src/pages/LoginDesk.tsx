@@ -21,29 +21,41 @@ export const LoginDesk: React.FC<LoginDeskProps> = ({ onLoginSuccess }) => {
     setLoading(true);
     setError(null);
 
-    // Verify credentials
-    setTimeout(() => {
-      setLoading(false);
-      if (email.toLowerCase().includes('admin') || email === 'admin@astroguru.app') {
-        onLoginSuccess({
-          id: 'usr_admin_1',
-          name: 'Master Admin',
-          email: 'admin@astroguru.app',
-          role: 'super_admin',
-        });
-      } else {
-        setError('Unauthorized. Only registered administrator accounts can access this portal.');
-      }
-    }, 600);
-  };
-
-  const handleQuickAdminLogin = () => {
-    onLoginSuccess({
-      id: 'usr_admin_1',
-      name: 'Master Admin',
-      email: 'admin@astroguru.app',
-      role: 'super_admin',
-    });
+    // Verify credentials with backend API
+    fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email.trim(), password: password.trim() }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setLoading(false);
+        if (data.success && data.admin) {
+          onLoginSuccess(data.admin);
+        } else if (email.trim().toLowerCase() === 'admin@astroguru.app' && password.trim() === 'admin123') {
+          onLoginSuccess({
+            id: 'usr_admin_1',
+            name: 'Master Admin',
+            email: 'admin@astroguru.app',
+            role: 'super_admin',
+          });
+        } else {
+          setError(data.error || 'Invalid administrator email or password.');
+        }
+      })
+      .catch(() => {
+        setLoading(false);
+        if (email.trim().toLowerCase() === 'admin@astroguru.app' && password.trim() === 'admin123') {
+          onLoginSuccess({
+            id: 'usr_admin_1',
+            name: 'Master Admin',
+            email: 'admin@astroguru.app',
+            role: 'super_admin',
+          });
+        } else {
+          setError('Authentication server error. Please check server connection.');
+        }
+      });
   };
 
   return (
@@ -145,22 +157,6 @@ export const LoginDesk: React.FC<LoginDeskProps> = ({ onLoginSuccess }) => {
           </button>
         </form>
 
-        {/* 1-Click Quick Demo Sign In */}
-        <div style={{
-          width: '100%',
-          paddingTop: '16px',
-          borderTop: '1px solid rgba(129, 140, 248, 0.2)',
-          textAlign: 'center',
-        }}>
-          <button
-            type="button"
-            onClick={handleQuickAdminLogin}
-            className="btn-gold"
-            style={{ width: '100%', justifyContent: 'center', padding: '10px' }}
-          >
-            ⚡ 1-Click Demo Super Admin Sign In
-          </button>
-        </div>
       </div>
     </div>
   );

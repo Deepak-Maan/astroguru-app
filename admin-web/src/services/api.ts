@@ -71,10 +71,10 @@ export const INITIAL_BLACKLIST: BannedEntity[] = [
 
 export const INITIAL_ASTROLOGERS: AstrologerProfile[] = [
   {
-    id: 'astro-1',
+    id: 'astro_1001',
     name: 'Acharya Dev Sharma',
     email: 'acharya@astroguru.app',
-    phone: '+91 98765 43210',
+    phone: '+91 98765 43211',
     avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200',
     specialties: ['Vedic Astrology', 'Kundli Prashna', 'Nadi Shastra'],
     experienceYears: 18,
@@ -82,6 +82,22 @@ export const INITIAL_ASTROLOGERS: AstrologerProfile[] = [
     rating: 4.97,
     reviewsCount: 1420,
     totalConsultations: 8520,
+    status: 'active',
+    commissionRate: 75,
+    onDuty: true,
+  },
+  {
+    id: 'astro_1786457216977',
+    name: 'Vivek Kumar',
+    email: 'vivek@gmail.com',
+    phone: '+91 89505 12977',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200',
+    specialties: ['Vedic Astrology', 'Kundli Matching', 'Remedies'],
+    experienceYears: 10,
+    ratePerMin: 25,
+    rating: 5.0,
+    reviewsCount: 24,
+    totalConsultations: 180,
     status: 'active',
     commissionRate: 75,
     onDuty: true,
@@ -118,41 +134,37 @@ export const INITIAL_ASTROLOGERS: AstrologerProfile[] = [
     commissionRate: 80,
     onDuty: false,
   },
-  {
-    id: 'astro-4',
-    name: 'Sadhvi Gayatri Devi',
-    email: 'gayatridevi@astroguru.app',
-    phone: '+91 99887 76655',
-    avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=200',
-    specialties: ['Gemstone Therapy', 'Chakra Healing'],
-    experienceYears: 9,
-    ratePerMin: 18,
-    rating: 4.79,
-    reviewsCount: 420,
-    totalConsultations: 1890,
-    status: 'pending_verification',
-    commissionRate: 70,
-    onDuty: false,
-  },
 ];
 
 export const INITIAL_USERS: UserRecord[] = [
   {
-    id: 'usr-101',
-    name: 'Aarav Gupta',
-    email: 'aarav.gupta@example.com',
-    phone: '+91 98199 44321',
-    walletBalance: 1250,
-    totalSpent: 8400,
+    id: 'usr_1001',
+    name: 'Ananya Sharma',
+    email: 'ananya.sharma@astroguru.app',
+    phone: '+91 98765 43210',
+    walletBalance: 310,
+    totalSpent: 4200,
     kundliCreated: true,
     isVip: true,
     createdAt: '10 Aug 2026',
     status: 'active',
   },
   {
-    id: 'usr-102',
+    id: 'usr_1786458873223',
+    name: 'Deepak Maan',
+    email: '7496850133@astroguru.app',
+    phone: '+91 74968 50133',
+    walletBalance: 50,
+    totalSpent: 1250,
+    kundliCreated: true,
+    isVip: false,
+    createdAt: '11 Aug 2026',
+    status: 'active',
+  },
+  {
+    id: 'usr_1002',
     name: 'Pooja Verma',
-    email: 'pooja.verma@example.com',
+    email: 'pooja.verma@astroguru.app',
     phone: '+91 97654 11223',
     walletBalance: 420,
     totalSpent: 3150,
@@ -162,27 +174,15 @@ export const INITIAL_USERS: UserRecord[] = [
     status: 'active',
   },
   {
-    id: 'usr-103',
+    id: 'usr_1003',
     name: 'Rajesh Nair',
-    email: 'rajesh.nair@example.com',
+    email: 'rajesh.nair@astroguru.app',
     phone: '+91 99220 88344',
-    walletBalance: 50,
-    totalSpent: 600,
-    kundliCreated: false,
-    isVip: false,
-    createdAt: '01 Sep 2026',
-    status: 'active',
-  },
-  {
-    id: 'usr-104',
-    name: 'Simran Kaur',
-    email: 'simran.k@example.com',
-    phone: '+91 98331 55667',
-    walletBalance: 3100,
-    totalSpent: 16500,
+    walletBalance: 500,
+    totalSpent: 2600,
     kundliCreated: true,
     isVip: true,
-    createdAt: '22 Jul 2026',
+    createdAt: '01 Sep 2026',
     status: 'active',
   },
 ];
@@ -190,8 +190,8 @@ export const INITIAL_USERS: UserRecord[] = [
 export const INITIAL_ORDERS: OrderItem[] = [
   {
     id: 'ORD-9821',
-    customerName: 'Aarav Gupta',
-    phone: '+91 98199 44321',
+    customerName: 'Ananya Sharma',
+    phone: '+91 98765 43210',
     itemType: 'puja',
     title: 'Maha Mrityunjaya Vedic E-Puja',
     amount: 3501,
@@ -202,8 +202,8 @@ export const INITIAL_ORDERS: OrderItem[] = [
   },
   {
     id: 'ORD-9822',
-    customerName: 'Sunita Mehra',
-    phone: '+91 97110 55432',
+    customerName: 'Deepak Maan',
+    phone: '+91 74968 50133',
     itemType: 'rudraksha',
     title: 'Certified 5-Mukhi Nepali Rudraksha Mala',
     amount: 1499,
@@ -213,8 +213,8 @@ export const INITIAL_ORDERS: OrderItem[] = [
   },
   {
     id: 'ORD-9823',
-    customerName: 'Karan Mehra',
-    phone: '+91 98200 11998',
+    customerName: 'Pooja Verma',
+    phone: '+91 97654 11223',
     itemType: 'gemstone',
     title: 'Lab-Certified Yellow Sapphire (Pukhraj) 5.25 Ratti',
     amount: 8999,
@@ -223,3 +223,78 @@ export const INITIAL_ORDERS: OrderItem[] = [
     createdAt: '15 Sep 2026',
   },
 ];
+
+export async function fetchLiveAdminData(): Promise<{
+  users?: UserRecord[];
+  astrologers?: AstrologerProfile[];
+  orders?: OrderItem[];
+  incidents?: SecurityIncident[];
+  blacklist?: BannedEntity[];
+}> {
+  try {
+    const res = await fetch('/api/admin/data');
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success) {
+        return data;
+      }
+    }
+  } catch (_) {}
+  return {
+    users: INITIAL_USERS,
+    astrologers: INITIAL_ASTROLOGERS,
+    orders: INITIAL_ORDERS,
+    incidents: INITIAL_INCIDENTS,
+    blacklist: INITIAL_BLACKLIST,
+  };
+}
+
+export async function adjustUserWalletApi(userId: string, delta: number, note: string) {
+  try {
+    await fetch('/api/admin/users/wallet', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, delta, note }),
+    });
+  } catch (_) {}
+}
+
+export async function toggleUserStatusApi(userId: string) {
+  try {
+    await fetch('/api/admin/users/status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId }),
+    });
+  } catch (_) {}
+}
+
+export async function toggleAstrologerDutyApi(astrologerId: string) {
+  try {
+    await fetch('/api/admin/astrologers/status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ astrologerId }),
+    });
+  } catch (_) {}
+}
+
+export async function verifyAstrologerApi(astrologerId: string) {
+  try {
+    await fetch('/api/admin/astrologers/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ astrologerId }),
+    });
+  } catch (_) {}
+}
+
+export async function updateAstrologerRateApi(astrologerId: string, ratePerMin: number) {
+  try {
+    await fetch('/api/admin/astrologers/rate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ astrologerId, ratePerMin }),
+    });
+  } catch (_) {}
+}

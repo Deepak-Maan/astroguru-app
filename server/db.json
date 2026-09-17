@@ -1,16 +1,16 @@
 {
   "users": [
     {
-      "id": "usr_demo_1",
-      "name": "Demo Seeker",
-      "email": "user@astroguru.app",
+      "id": "usr_1001",
+      "name": "Ananya Sharma",
+      "email": "ananya.sharma@astroguru.app",
       "password": "user123",
       "phone": "9876543210",
       "role": "user",
       "wallet": 310
     },
     {
-      "id": "usr_demo_2",
+      "id": "astro_1001",
       "name": "Acharya Dev Sharma",
       "email": "acharya@astroguru.app",
       "password": "astro123",
