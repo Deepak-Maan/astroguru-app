@@ -28,13 +28,65 @@ import { formatCurrency } from '../../src/utils';
 
 import { sendAdminBroadcastPushNotification, scheduleLocalPushNotification } from '../../src/services/pushNotificationService';
 import { useUpdateStore } from '../../src/store/updateStore';
+import { useAdminIntelStore, BannedEntity, SecurityIncident } from '../../src/store/adminIntelStore';
 
-type AdminTab = 'overview' | 'spells' | 'orders' | 'inventory' | 'astrologers' | 'revenue' | 'users' | 'push_notifications';
+type AdminTab = 'overview' | 'security' | 'analytics' | 'spells' | 'orders' | 'inventory' | 'astrologers' | 'revenue' | 'users' | 'push_notifications';
 
 export default function AdminDashboard() {
   const router = useRouter();
   const [tab, setTab] = useState<AdminTab>('overview');
   const [astrologers, setAstrologers] = useState<Astrologer[]>([...ASTROLOGERS]);
+  // Admin Intelligence & Security Store (Features 6 & 7)
+  const intelIncidents = useAdminIntelStore((s) => s.incidents);
+  const intelBlacklist = useAdminIntelStore((s) => s.blacklist);
+  const blockedFreeChatCount = useAdminIntelStore((s) => s.blockedFreeChatCount);
+  const interceptedBypassCount = useAdminIntelStore((s) => s.interceptedBypassCount);
+  const hourlyTraffic = useAdminIntelStore((s) => s.hourlyTraffic);
+  const astrologerScorecards = useAdminIntelStore((s) => s.astrologerScorecards);
+  const dutyAlertSentTime = useAdminIntelStore((s) => s.dutyAlertSentTime);
+  const banEntity = useAdminIntelStore((s) => s.banEntity);
+  const unbanEntity = useAdminIntelStore((s) => s.unbanEntity);
+  const resolveIncident = useAdminIntelStore((s) => s.resolveIncident);
+  const issueStrike = useAdminIntelStore((s) => s.issueStrike);
+  const banFromIncident = useAdminIntelStore((s) => s.banFromIncident);
+  const dismissIncident = useAdminIntelStore((s) => s.dismissIncident);
+  const triggerDutyAlert = useAdminIntelStore((s) => s.triggerDutyAlert);
+
+  // Ban Hammer & Action States
+  const [showBanModal, setShowBanModal] = useState(false);
+  const [banIdentifier, setBanIdentifier] = useState('');
+  const [banName, setBanName] = useState('');
+  const [banEntityType, setBanEntityType] = useState<'device' | 'user' | 'astrologer' | 'phone'>('device');
+  const [banReason, setBanReason] = useState('Free-Chat Multi-Account Farming');
+  const [banDuration, setBanDuration] = useState<'24 Hours' | '7 Days' | '30 Days' | 'Permanent'>('Permanent');
+  const [securityActionMsg, setSecurityActionMsg] = useState<string | null>(null);
+  const [dutyAlertSuccess, setDutyAlertSuccess] = useState<string | null>(null);
+
+  const triggerFeedback = (msg: string) => {
+    setSecurityActionMsg(msg);
+    setTimeout(() => setSecurityActionMsg(null), 4500);
+  };
+
+  const handleExecuteBan = () => {
+    if (!banIdentifier.trim()) return;
+    banEntity({
+      entityType: banEntityType,
+      identifier: banIdentifier.trim(),
+      name: banName.trim() || banIdentifier.trim(),
+      reason: banReason,
+      duration: banDuration,
+    });
+    setShowBanModal(false);
+    setBanIdentifier('');
+    setBanName('');
+    triggerFeedback(`🔨 ${banEntityType.toUpperCase()} "${banIdentifier}" successfully placed on Blacklist!`);
+  };
+
+  const handleSendDutyAlert = () => {
+    triggerDutyAlert();
+    setDutyAlertSuccess('📢 Peak Demand Alert sent! 18 off-duty astrologers notified via high-priority push.');
+    setTimeout(() => setDutyAlertSuccess(null), 5000);
+  };
 
   // Manual App Update Broadcast States
   const broadcastUpdate = useUpdateStore((s) => s.broadcastUpdate);
@@ -185,6 +237,8 @@ export default function AdminDashboard() {
           >
             {[
               { id: 'overview', label: '📊 Stats' },
+              { id: 'security', label: `🛡️ Watchtower (${intelIncidents.filter((i) => i.status === 'flagged').length})` },
+              { id: 'analytics', label: '🔥 Heatmap & BI' },
               { id: 'spells', label: `🪄 Spells (${spells.length})` },
               { id: 'orders', label: `🛒 Orders (${orders.length})` },
               { id: 'inventory', label: '📦 Inventory' },
@@ -227,6 +281,26 @@ export default function AdminDashboard() {
                 </View>
 
                 <View style={styles.statBox}>
+                  <Text style={styles.statIcon}>🚨</Text>
+                  <Text style={[styles.statNum, { color: '#F87171' }]}>
+                    {intelIncidents.filter((i) => i.status === 'flagged').length}
+                  </Text>
+                  <Text style={styles.statTitle}>Active Threat Alerts</Text>
+                </View>
+
+                <View style={styles.statBox}>
+                  <Text style={styles.statIcon}>🔥</Text>
+                  <Text style={[styles.statNum, { color: colors.gold }]}>1,620 / hr</Text>
+                  <Text style={styles.statTitle}>Peak Demand (10 PM)</Text>
+                </View>
+
+                <View style={styles.statBox}>
+                  <Text style={styles.statIcon}>🔮</Text>
+                  <Text style={styles.statNum}>{activeCount} / {astrologers.length}</Text>
+                  <Text style={styles.statTitle}>Online Experts</Text>
+                </View>
+
+                <View style={styles.statBox}>
                   <Text style={styles.statIcon}>🪄</Text>
                   <Text style={styles.statNum}>{spellOrders.length} Spells</Text>
                   <Text style={styles.statTitle}>Spells Booked</Text>
@@ -237,21 +311,33 @@ export default function AdminDashboard() {
                   <Text style={styles.statNum}>{orders.length} Orders</Text>
                   <Text style={styles.statTitle}>Shopping Completed</Text>
                 </View>
-
-                <View style={styles.statBox}>
-                  <Text style={styles.statIcon}>🔮</Text>
-                  <Text style={styles.statNum}>{activeCount} / {astrologers.length}</Text>
-                  <Text style={styles.statTitle}>Online Experts</Text>
-                </View>
               </View>
 
               {/* Quick Actions */}
               <Card style={{ gap: spacing.md }}>
                 <SectionHeader title="Platform Controls" />
+                <View style={{ flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' }}>
+                  <Button
+                    label="🛡️ Anti-Fraud Desk"
+                    variant="gold"
+                    size="sm"
+                    fullWidth={false}
+                    style={{ flex: 1, minWidth: 140 }}
+                    onPress={() => setTab('security')}
+                  />
+                  <Button
+                    label="🔥 Traffic Heatmap"
+                    variant="coral"
+                    size="sm"
+                    fullWidth={false}
+                    style={{ flex: 1, minWidth: 140 }}
+                    onPress={() => setTab('analytics')}
+                  />
+                </View>
                 <View style={{ flexDirection: 'row', gap: spacing.sm }}>
                   <Button
                     label="🛒 Manage Orders"
-                    variant="gold"
+                    variant="outline"
                     size="sm"
                     fullWidth={false}
                     style={{ flex: 1 }}
@@ -266,6 +352,364 @@ export default function AdminDashboard() {
                     onPress={() => setTab('spells')}
                   />
                 </View>
+              </Card>
+            </View>
+          )}
+
+          {/* ── 🛡️ SECURITY & ANTI-FRAUD WATCHTOWER TAB ── */}
+          {tab === 'security' && (
+            <View style={{ gap: spacing.md }}>
+              {/* Feedback toast */}
+              {securityActionMsg && (
+                <View style={styles.actionFeedbackPill}>
+                  <Text style={styles.actionFeedbackText}>{securityActionMsg}</Text>
+                </View>
+              )}
+
+              {/* Top Metrics Row */}
+              <View style={styles.statsGrid}>
+                <View style={styles.statBox}>
+                  <Text style={styles.statIcon}>🚨</Text>
+                  <Text style={[styles.statNum, { color: '#F87171' }]}>
+                    {intelIncidents.filter((i) => i.status === 'flagged').length}
+                  </Text>
+                  <Text style={styles.statTitle}>Active Threat Alerts</Text>
+                </View>
+
+                <View style={styles.statBox}>
+                  <Text style={styles.statIcon}>🛡️</Text>
+                  <Text style={[styles.statNum, { color: colors.teal }]}>
+                    {blockedFreeChatCount}
+                  </Text>
+                  <Text style={styles.statTitle}>Free-Chat Abuses Blocked</Text>
+                </View>
+
+                <View style={styles.statBox}>
+                  <Text style={styles.statIcon}>👁️</Text>
+                  <Text style={[styles.statNum, { color: colors.gold }]}>
+                    {interceptedBypassCount}
+                  </Text>
+                  <Text style={styles.statTitle}>Contact Bypasses Intercepted</Text>
+                </View>
+
+                <View style={styles.statBox}>
+                  <Text style={styles.statIcon}>🚫</Text>
+                  <Text style={styles.statNum}>{intelBlacklist.length}</Text>
+                  <Text style={styles.statTitle}>Active Blacklisted Entities</Text>
+                </View>
+              </View>
+
+              {/* Ban Hammer CTA Header */}
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <View style={{ flex: 1 }}>
+                  <SectionHeader
+                    title="🚨 Live Threat Interceptions"
+                    subtitle="AI heuristic scanner for multi-account farming & off-platform leaks"
+                  />
+                </View>
+                <Button
+                  label="🔨 Manual Ban"
+                  variant="gold"
+                  size="sm"
+                  fullWidth={false}
+                  onPress={() => setShowBanModal(true)}
+                />
+              </View>
+
+              {/* Incidents List */}
+              {intelIncidents.map((inc) => {
+                const isFlagged = inc.status === 'flagged';
+                const sevColor =
+                  inc.severity === 'critical'
+                    ? '#EF4444'
+                    : inc.severity === 'warning'
+                    ? '#F59E0B'
+                    : '#06B6D4';
+
+                return (
+                  <Card key={inc.id} style={styles.incidentCard}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: spacing.sm }}>
+                      <View style={{ flex: 1 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                          <View
+                            style={{
+                              backgroundColor: `${sevColor}22`,
+                              paddingHorizontal: 8,
+                              paddingVertical: 3,
+                              borderRadius: radius.pill,
+                              borderWidth: 1,
+                              borderColor: `${sevColor}55`,
+                            }}
+                          >
+                            <Text style={{ ...typography.tiny, color: sevColor, fontWeight: '800', fontSize: 10.5 }}>
+                              {inc.severity.toUpperCase()}
+                            </Text>
+                          </View>
+                          <Text style={styles.incidentTitle}>{inc.title}</Text>
+                        </View>
+                        <Text style={styles.incidentTimestamp}>
+                          Detected {inc.timestamp} · Target: {inc.targetName} ({inc.targetRole.toUpperCase()})
+                        </Text>
+                      </View>
+
+                      <Chip
+                        label={inc.status.toUpperCase()}
+                        tone={inc.status === 'banned' ? 'rose' : inc.status === 'resolved' ? 'teal' : 'gold'}
+                      />
+                    </View>
+
+                    {/* Evidence Box */}
+                    <View style={styles.evidenceBox}>
+                      <Text style={styles.evidenceMeta}>
+                        📱 Phone: <Text style={{ color: '#EEF2FF' }}>{inc.phone || 'N/A'}</Text>
+                        {inc.deviceUuid ? ` · Device UUID: ${inc.deviceUuid}` : ''}
+                      </Text>
+                      <Text style={styles.evidenceText}>"{inc.evidence}"</Text>
+                    </View>
+
+                    {/* Actions */}
+                    {isFlagged && (
+                      <View style={styles.incidentActionsRow}>
+                        <Pressable
+                          onPress={() => {
+                            banFromIncident(inc.id, inc.title);
+                            triggerFeedback(`🔨 Banned ${inc.targetName} & added to Blacklist`);
+                          }}
+                          style={[styles.incBtn, styles.incBtnBan]}
+                        >
+                          <Text style={styles.incBtnBanText}>🔨 Ban Device & User</Text>
+                        </Pressable>
+
+                        <Pressable
+                          onPress={() => {
+                            issueStrike(inc.id);
+                            triggerFeedback(`⚠️ Issued formal strike to ${inc.targetName}`);
+                          }}
+                          style={[styles.incBtn, styles.incBtnStrike]}
+                        >
+                          <Text style={styles.incBtnStrikeText}>⚠️ Issue Strike</Text>
+                        </Pressable>
+
+                        <Pressable
+                          onPress={() => {
+                            dismissIncident(inc.id);
+                            triggerFeedback(`✅ Incident ${inc.id} dismissed`);
+                          }}
+                          style={[styles.incBtn, styles.incBtnDismiss]}
+                        >
+                          <Text style={styles.incBtnDismissText}>Dismiss</Text>
+                        </Pressable>
+                      </View>
+                    )}
+                  </Card>
+                );
+              })}
+
+              {/* Active Blacklist Section */}
+              <SectionHeader
+                title={`🚫 Active Blacklist Ledger (${intelBlacklist.length})`}
+                subtitle="Currently enforced device hardware blocks, phone bans & frozen accounts"
+              />
+
+              {intelBlacklist.map((b) => (
+                <Card key={b.id} style={styles.blacklistCard}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, flex: 1 }}>
+                      <Text style={{ fontSize: 24 }}>
+                        {b.entityType === 'device' ? '📱' : b.entityType === 'astrologer' ? '🧙‍♂️' : b.entityType === 'phone' ? '📞' : '👤'}
+                      </Text>
+                      <View style={{ flex: 1 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                          <Text style={styles.blacklistName}>{b.name}</Text>
+                          <View style={styles.durationBadge}>
+                            <Text style={styles.durationBadgeText}>{b.duration}</Text>
+                          </View>
+                        </View>
+                        <Text style={styles.blacklistIdentifier}>{b.identifier}</Text>
+                        <Text style={styles.blacklistReason}>Reason: {b.reason}</Text>
+                        <Text style={styles.blacklistDate}>Banned on: {b.bannedAt}</Text>
+                      </View>
+                    </View>
+
+                    <Pressable
+                      onPress={() => {
+                        unbanEntity(b.id);
+                        triggerFeedback(`🔓 Restored "${b.name}" from blacklist`);
+                      }}
+                      style={styles.unbanBtn}
+                    >
+                      <Text style={styles.unbanBtnText}>🔓 Restore</Text>
+                    </Pressable>
+                  </View>
+                </Card>
+              ))}
+            </View>
+          )}
+
+          {/* ── 📊 BUSINESS INTELLIGENCE & TRAFFIC HEATMAP TAB ── */}
+          {tab === 'analytics' && (
+            <View style={{ gap: spacing.md }}>
+              {/* Duty Alert Confirmation Toast */}
+              {dutyAlertSuccess && (
+                <View style={styles.dutyToast}>
+                  <Text style={styles.dutyToastText}>{dutyAlertSuccess}</Text>
+                </View>
+              )}
+
+              {/* Top Executive KPI Matrix */}
+              <View style={styles.statsGrid}>
+                <View style={styles.statBox}>
+                  <Text style={styles.statIcon}>📈</Text>
+                  <Text style={[styles.statNum, { color: colors.gold }]}>₹18,45,200</Text>
+                  <Text style={styles.statTitle}>Monthly GMV (+24.5%)</Text>
+                </View>
+
+                <View style={styles.statBox}>
+                  <Text style={styles.statIcon}>⏳</Text>
+                  <Text style={[styles.statNum, { color: '#818CF8' }]}>14.2 Mins</Text>
+                  <Text style={styles.statTitle}>Avg Session Duration</Text>
+                </View>
+
+                <View style={styles.statBox}>
+                  <Text style={styles.statIcon}>🔄</Text>
+                  <Text style={[styles.statNum, { color: colors.teal }]}>68.4%</Text>
+                  <Text style={styles.statTitle}>D-30 Seeker Retention</Text>
+                </View>
+
+                <View style={styles.statBox}>
+                  <Text style={styles.statIcon}>🎧</Text>
+                  <Text style={[styles.statNum, { color: '#F472B6' }]}>14,820</Text>
+                  <Text style={styles.statTitle}>Total Sessions Completed</Text>
+                </View>
+              </View>
+
+              {/* 24-Hour Peak Consultation Heatmap Card */}
+              <Card style={{ gap: spacing.md }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.heatmapCardTitle}>🔥 24-Hour Consultation Traffic Heatmap</Text>
+                    <Text style={styles.heatmapCardSub}>Hourly session distribution & peak demand density</Text>
+                  </View>
+                  <View style={styles.peakTag}>
+                    <Text style={styles.peakTagText}>PEAK: 8 PM – 12 AM</Text>
+                  </View>
+                </View>
+
+                {/* Supply Deficit Warning Box */}
+                <View style={styles.deficitBox}>
+                  <Text style={{ fontSize: 22 }}>⚠️</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.deficitTitle}>Peak Demand Supply Deficit</Text>
+                    <Text style={styles.deficitDesc}>
+                      Seeker traffic surges to 1,620 consults/hr at 10 PM. Estimated 22 additional astrologers needed on duty to maintain &lt;30s wait queue.
+                    </Text>
+                  </View>
+                </View>
+
+                <Button
+                  label="📢 Broadcast Peak Duty Alert to Astrologers"
+                  variant="gold"
+                  size="sm"
+                  onPress={handleSendDutyAlert}
+                />
+
+                {dutyAlertSentTime && (
+                  <Text style={styles.alertTimestamp}>
+                    Last broadcast dispatched today at {dutyAlertSentTime}
+                  </Text>
+                )}
+
+                {/* 24-Hour Interactive Bar Matrix */}
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.barsContainer}>
+                  {hourlyTraffic.map((h) => {
+                    const barHeight = Math.max(14, Math.round((h.consultations / 1620) * 120));
+                    return (
+                      <View key={h.hour} style={styles.barCol}>
+                        <Text style={styles.barCount}>{h.consultations}</Text>
+                        <View style={styles.barTrack}>
+                          <LinearGradient
+                            colors={h.isPeak ? ['#FF3366', '#F59E0B'] : ['#818CF8', '#38BDF8']}
+                            start={{ x: 0, y: 1 }}
+                            end={{ x: 0, y: 0 }}
+                            style={[styles.barFill, { height: barHeight }]}
+                          />
+                        </View>
+                        <Text style={[styles.barHourLabel, h.isPeak && { color: colors.gold, fontWeight: '800' }]}>
+                          {h.label}
+                        </Text>
+                        <View style={[styles.astroCountPill, h.isPeak && styles.astroCountPillPeak]}>
+                          <Text style={styles.astroCountText}>🧙‍♂️ {h.astrologersOnDuty}</Text>
+                        </View>
+                      </View>
+                    );
+                  })}
+                </ScrollView>
+              </Card>
+
+              {/* Astrologer Performance Leaderboard */}
+              <SectionHeader
+                title="🏆 Astrologer Performance Scorecard"
+                subtitle="Ranked by repeat consultation retention, customer rating and pickup SLA"
+              />
+
+              {astrologerScorecards.map((sc, idx) => (
+                <Card key={sc.id} style={styles.scorecardItem}>
+                  <View style={{ flexDirection: 'row', gap: spacing.md, alignItems: 'center' }}>
+                    <View style={styles.rankCircle}>
+                      <Text style={styles.rankText}>#{idx + 1}</Text>
+                    </View>
+                    <Avatar uri={sc.avatar} name={sc.name} size={48} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.scName}>{sc.name}</Text>
+                      <Text style={styles.scSpec}>{sc.specialty}</Text>
+                    </View>
+                    <View style={{ alignItems: 'flex-end' }}>
+                      <Text style={styles.scRating}>⭐ {sc.rating}</Text>
+                      <Text style={styles.scRevenue}>{formatCurrency(sc.grossRevenue)}</Text>
+                    </View>
+                  </View>
+
+                  {/* Metrics Row */}
+                  <View style={styles.scMetricsRow}>
+                    <View style={styles.scMetricCell}>
+                      <Text style={styles.scMetricLabel}>Repeat Seeker</Text>
+                      <Text style={[styles.scMetricVal, { color: colors.teal }]}>{sc.repeatRatePct}%</Text>
+                    </View>
+                    <View style={styles.scMetricCell}>
+                      <Text style={styles.scMetricLabel}>Pickup SLA</Text>
+                      <Text style={[styles.scMetricVal, { color: colors.gold }]}>{sc.pickupRatePct}%</Text>
+                    </View>
+                    <View style={styles.scMetricCell}>
+                      <Text style={styles.scMetricLabel}>Total Sessions</Text>
+                      <Text style={styles.scMetricVal}>{sc.totalConsultations}</Text>
+                    </View>
+                    <View style={styles.scMetricCell}>
+                      <Text style={styles.scMetricLabel}>Billed Mins</Text>
+                      <Text style={styles.scMetricVal}>{(sc.minutesBilled / 60).toFixed(0)}h</Text>
+                    </View>
+                  </View>
+                </Card>
+              ))}
+
+              {/* Category Revenue Contribution */}
+              <Card style={{ gap: spacing.sm }}>
+                <SectionHeader title="📊 Revenue by Category" subtitle="Marketplace gross volume split" />
+                {[
+                  { label: '❤️ Love & Relationships', pct: 42, amount: '₹7,75,000', color: '#EC4899' },
+                  { label: '💼 Career & Business', pct: 28, amount: '₹5,16,000', color: '#38BDF8' },
+                  { label: '💍 Marriage & Kundli Milan', pct: 18, amount: '₹3,32,000', color: colors.gold },
+                  { label: '🪔 E-Puja & Gemstones Store', pct: 12, amount: '₹2,21,000', color: colors.teal },
+                ].map((c) => (
+                  <View key={c.label} style={{ gap: 4, marginTop: 4 }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                      <Text style={styles.catLabel}>{c.label}</Text>
+                      <Text style={styles.catAmount}>{c.amount} ({c.pct}%)</Text>
+                    </View>
+                    <View style={styles.catTrack}>
+                      <View style={[styles.catFill, { width: `${c.pct}%`, backgroundColor: c.color }]} />
+                    </View>
+                  </View>
+                ))}
               </Card>
             </View>
           )}
@@ -726,6 +1170,148 @@ export default function AdminDashboard() {
             </View>
           </View>
         </Modal>
+
+        {/* ── UNIVERSAL BAN HAMMER MODAL ── */}
+        <Modal visible={showBanModal} animationType="slide" transparent>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={[styles.modalTitle, { color: '#EF4444' }]}>🔨 Universal Ban Hammer</Text>
+              <Text style={{ ...typography.tiny, color: '#A5B4FC', textAlign: 'center', marginTop: -8 }}>
+                Immediately revoke platform access, drop live sessions & blacklist hardware
+              </Text>
+
+              <ScrollView style={{ maxHeight: 420 }} contentContainerStyle={{ gap: spacing.md }}>
+                {/* Entity Type Picker */}
+                <View style={styles.field}>
+                  <Text style={styles.fieldLabel}>Target Entity Type</Text>
+                  <View style={{ flexDirection: 'row', gap: 6 }}>
+                    {(['device', 'phone', 'user', 'astrologer'] as const).map((type) => (
+                      <Pressable
+                        key={type}
+                        onPress={() => setBanEntityType(type)}
+                        style={[
+                          styles.banTypePill,
+                          banEntityType === type && styles.banTypePillActive,
+                        ]}
+                      >
+                        <Text style={[styles.banTypePillText, banEntityType === type && styles.banTypePillTextActive]}>
+                          {type.toUpperCase()}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                </View>
+
+                {/* Target Name / Label */}
+                <View style={styles.field}>
+                  <Text style={styles.fieldLabel}>Entity Name / Description</Text>
+                  <TextInput
+                    value={banName}
+                    onChangeText={setBanName}
+                    placeholder="e.g. Abusive User / Multi-SIM Spammer"
+                    placeholderTextColor={colors.textFaint}
+                    style={styles.fieldInput}
+                  />
+                </View>
+
+                {/* Identifier */}
+                <View style={styles.field}>
+                  <Text style={styles.fieldLabel}>
+                    {banEntityType === 'device'
+                      ? 'Device UUID / Hardware Fingerprint'
+                      : banEntityType === 'phone'
+                      ? 'Mobile Number (+91...)'
+                      : banEntityType === 'astrologer'
+                      ? 'Astrologer ID'
+                      : 'User ID'}
+                  </Text>
+                  <TextInput
+                    value={banIdentifier}
+                    onChangeText={setBanIdentifier}
+                    placeholder={
+                      banEntityType === 'device'
+                        ? 'e.g. AND-9A7F-E102-881B'
+                        : banEntityType === 'phone'
+                        ? 'e.g. +91 98112 00192'
+                        : 'e.g. usr_8192a8'
+                    }
+                    placeholderTextColor={colors.textFaint}
+                    style={styles.fieldInput}
+                  />
+                </View>
+
+                {/* Reason Selection */}
+                <View style={styles.field}>
+                  <Text style={styles.fieldLabel}>Reason for Enforcement</Text>
+                  <View style={{ gap: 6 }}>
+                    {[
+                      'Free-Chat Multi-Account Farming',
+                      'Direct WhatsApp/Phone Contact Bypass',
+                      'Off-Platform External Payment Request',
+                      'Harassment & Abusive Behavior',
+                      'Fraudulent UTR Wallet Top-up',
+                    ].map((reason) => (
+                      <Pressable
+                        key={reason}
+                        onPress={() => setBanReason(reason)}
+                        style={[
+                          styles.reasonSelectRow,
+                          banReason === reason && styles.reasonSelectRowActive,
+                        ]}
+                      >
+                        <Text style={{ fontSize: 13 }}>{banReason === reason ? '🔘' : '⚪'}</Text>
+                        <Text style={[styles.reasonSelectText, banReason === reason && { color: '#EEF2FF', fontWeight: '800' }]}>
+                          {reason}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                </View>
+
+                {/* Duration */}
+                <View style={styles.field}>
+                  <Text style={styles.fieldLabel}>Ban Duration</Text>
+                  <View style={{ flexDirection: 'row', gap: 6 }}>
+                    {(['24 Hours', '7 Days', '30 Days', 'Permanent'] as const).map((dur) => (
+                      <Pressable
+                        key={dur}
+                        onPress={() => setBanDuration(dur)}
+                        style={[
+                          styles.banTypePill,
+                          banDuration === dur && styles.banDurationActive,
+                        ]}
+                      >
+                        <Text style={[styles.banTypePillText, banDuration === dur && { color: '#FFFFFF', fontWeight: '800' }]}>
+                          {dur}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                </View>
+              </ScrollView>
+
+              <View style={{ flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm }}>
+                <Button
+                  label="Cancel"
+                  variant="outline"
+                  size="sm"
+                  fullWidth={false}
+                  style={{ flex: 1 }}
+                  onPress={() => setShowBanModal(false)}
+                />
+                <Button
+                  label="🔨 Enforce Ban"
+                  variant="coral"
+                  size="sm"
+                  fullWidth={false}
+                  style={{ flex: 1 }}
+                  disabled={!banIdentifier.trim()}
+                  onPress={handleExecuteBan}
+                />
+              </View>
+            </View>
+          </View>
+        </Modal>
       </SafeAreaView>
     </GradientBackground>
   );
@@ -907,5 +1493,407 @@ const styles = StyleSheet.create({
     color: '#EEF2FF',
     fontSize: 14,
     fontWeight: '700',
+  },
+
+  /* Security & Anti-Fraud */
+  actionFeedbackPill: {
+    backgroundColor: 'rgba(5, 150, 105, 0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(5, 150, 105, 0.4)',
+    borderRadius: radius.md,
+    padding: spacing.md,
+    alignItems: 'center',
+  },
+  actionFeedbackText: {
+    ...typography.small,
+    color: '#34D399',
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  incidentCard: {
+    gap: spacing.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(129, 140, 248, 0.25)',
+  },
+  incidentTitle: {
+    ...typography.h3,
+    color: '#EEF2FF',
+    fontSize: 14.5,
+    fontWeight: '800',
+  },
+  incidentTimestamp: {
+    ...typography.tiny,
+    color: '#A5B4FC',
+    marginTop: 2,
+    fontWeight: '600',
+  },
+  evidenceBox: {
+    backgroundColor: 'rgba(10, 12, 22, 0.65)',
+    borderRadius: radius.md,
+    padding: spacing.sm + 2,
+    borderWidth: 1,
+    borderColor: 'rgba(129, 140, 248, 0.2)',
+    gap: 3,
+  },
+  evidenceMeta: {
+    ...typography.tiny,
+    color: '#A5B4FC',
+    fontWeight: '700',
+  },
+  evidenceText: {
+    ...typography.small,
+    color: '#EEF2FF',
+    fontStyle: 'italic',
+    lineHeight: 18,
+  },
+  incidentActionsRow: {
+    flexDirection: 'row',
+    gap: spacing.xs + 2,
+    marginTop: spacing.xs,
+  },
+  incBtn: {
+    flex: 1,
+    paddingVertical: 8,
+    borderRadius: radius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  incBtnBan: {
+    backgroundColor: 'rgba(239, 68, 68, 0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.4)',
+  },
+  incBtnBanText: {
+    color: '#F87171',
+    fontWeight: '800',
+    fontSize: 11,
+  },
+  incBtnStrike: {
+    backgroundColor: 'rgba(245, 158, 11, 0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.4)',
+  },
+  incBtnStrikeText: {
+    color: '#FCD34D',
+    fontWeight: '800',
+    fontSize: 11,
+  },
+  incBtnDismiss: {
+    backgroundColor: 'rgba(148, 163, 184, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(148, 163, 184, 0.3)',
+  },
+  incBtnDismissText: {
+    color: '#A5B4FC',
+    fontWeight: '700',
+    fontSize: 11,
+  },
+  blacklistCard: {
+    gap: spacing.xs,
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.25)',
+  },
+  blacklistName: {
+    ...typography.h3,
+    color: '#EEF2FF',
+    fontSize: 14.5,
+    fontWeight: '800',
+  },
+  durationBadge: {
+    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.3)',
+  },
+  durationBadgeText: {
+    ...typography.tiny,
+    color: '#F87171',
+    fontWeight: '800',
+    fontSize: 10,
+  },
+  blacklistIdentifier: {
+    ...typography.tiny,
+    color: colors.gold,
+    fontWeight: '700',
+  },
+  blacklistReason: {
+    ...typography.tiny,
+    color: '#A5B4FC',
+    marginTop: 2,
+  },
+  blacklistDate: {
+    ...typography.tiny,
+    color: '#64748B',
+    fontSize: 10,
+  },
+  unbanBtn: {
+    backgroundColor: 'rgba(5, 150, 105, 0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: 'rgba(5, 150, 105, 0.4)',
+  },
+  unbanBtnText: {
+    color: '#34D399',
+    fontWeight: '800',
+    fontSize: 11,
+  },
+
+  /* Ban Hammer Modal Items */
+  banTypePill: {
+    flex: 1,
+    paddingVertical: 7,
+    borderRadius: radius.pill,
+    backgroundColor: 'rgba(26, 33, 64, 0.78)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(129, 140, 248, 0.3)',
+  },
+  banTypePillActive: {
+    backgroundColor: 'rgba(99, 102, 241, 0.4)',
+    borderColor: 'rgba(129, 140, 248, 0.8)',
+  },
+  banTypePillText: {
+    ...typography.tiny,
+    color: '#A5B4FC',
+    fontWeight: '700',
+    fontSize: 10.5,
+  },
+  banTypePillTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+  },
+  banDurationActive: {
+    backgroundColor: 'rgba(239, 68, 68, 0.3)',
+    borderColor: 'rgba(239, 68, 68, 0.7)',
+  },
+  reasonSelectRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    padding: spacing.sm,
+    borderRadius: radius.md,
+    backgroundColor: 'rgba(10, 12, 22, 0.6)',
+    borderWidth: 1,
+    borderColor: 'rgba(129, 140, 248, 0.2)',
+  },
+  reasonSelectRowActive: {
+    borderColor: colors.gold,
+    backgroundColor: 'rgba(245, 158, 11, 0.12)',
+  },
+  reasonSelectText: {
+    ...typography.small,
+    color: '#A5B4FC',
+    fontSize: 12.5,
+  },
+
+  /* Heatmap & Analytics */
+  dutyToast: {
+    backgroundColor: 'rgba(5, 150, 105, 0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(5, 150, 105, 0.4)',
+    borderRadius: radius.md,
+    padding: spacing.md,
+    alignItems: 'center',
+  },
+  dutyToastText: {
+    ...typography.small,
+    color: '#34D399',
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  heatmapCardTitle: {
+    ...typography.h3,
+    color: '#EEF2FF',
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  heatmapCardSub: {
+    ...typography.tiny,
+    color: '#A5B4FC',
+  },
+  peakTag: {
+    backgroundColor: 'rgba(239, 68, 68, 0.2)',
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.4)',
+  },
+  peakTagText: {
+    ...typography.tiny,
+    color: '#F87171',
+    fontWeight: '800',
+    fontSize: 10.5,
+  },
+  deficitBox: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.35)',
+    borderRadius: radius.md,
+    padding: spacing.md,
+    alignItems: 'center',
+  },
+  deficitTitle: {
+    ...typography.h3,
+    color: '#FCD34D',
+    fontSize: 13.5,
+    fontWeight: '800',
+  },
+  deficitDesc: {
+    ...typography.tiny,
+    color: '#EEF2FF',
+    marginTop: 2,
+    lineHeight: 16,
+  },
+  alertTimestamp: {
+    ...typography.tiny,
+    color: colors.teal,
+    textAlign: 'center',
+    fontWeight: '700',
+  },
+  barsContainer: {
+    gap: spacing.sm + 2,
+    paddingVertical: spacing.md,
+  },
+  barCol: {
+    width: 44,
+    alignItems: 'center',
+    gap: 4,
+  },
+  barCount: {
+    ...typography.tiny,
+    color: '#EEF2FF',
+    fontSize: 10,
+    fontWeight: '800',
+  },
+  barTrack: {
+    width: 14,
+    height: 125,
+    backgroundColor: 'rgba(10, 12, 22, 0.65)',
+    borderRadius: 7,
+    justifyContent: 'flex-end',
+    overflow: 'hidden',
+  },
+  barFill: {
+    width: '100%',
+    borderRadius: 7,
+  },
+  barHourLabel: {
+    ...typography.tiny,
+    color: '#A5B4FC',
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  astroCountPill: {
+    backgroundColor: 'rgba(26, 33, 64, 0.85)',
+    borderRadius: radius.pill,
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+    borderWidth: 1,
+    borderColor: 'rgba(129, 140, 248, 0.25)',
+  },
+  astroCountPillPeak: {
+    borderColor: 'rgba(245, 158, 11, 0.5)',
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+  },
+  astroCountText: {
+    ...typography.tiny,
+    color: '#EEF2FF',
+    fontSize: 9,
+    fontWeight: '800',
+  },
+  scorecardItem: {
+    gap: spacing.sm,
+  },
+  rankCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(99, 102, 241, 0.25)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(129, 140, 248, 0.4)',
+  },
+  rankText: {
+    ...typography.tiny,
+    color: '#EEF2FF',
+    fontWeight: '800',
+    fontSize: 11,
+  },
+  scName: {
+    ...typography.h3,
+    color: '#EEF2FF',
+    fontSize: 14.5,
+    fontWeight: '800',
+  },
+  scSpec: {
+    ...typography.tiny,
+    color: '#A5B4FC',
+  },
+  scRating: {
+    ...typography.tiny,
+    color: colors.gold,
+    fontWeight: '800',
+    fontSize: 12,
+  },
+  scRevenue: {
+    ...typography.tiny,
+    color: '#34D399',
+    fontWeight: '800',
+    fontSize: 12,
+  },
+  scMetricsRow: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+    backgroundColor: 'rgba(10, 12, 22, 0.6)',
+    borderRadius: radius.md,
+    padding: spacing.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(129, 140, 248, 0.2)',
+  },
+  scMetricCell: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 2,
+  },
+  scMetricLabel: {
+    ...typography.tiny,
+    color: '#A5B4FC',
+    fontSize: 9.5,
+    fontWeight: '700',
+  },
+  scMetricVal: {
+    ...typography.h3,
+    color: '#EEF2FF',
+    fontSize: 12.5,
+    fontWeight: '800',
+  },
+  catLabel: {
+    ...typography.small,
+    color: '#EEF2FF',
+    fontWeight: '700',
+  },
+  catAmount: {
+    ...typography.small,
+    color: colors.gold,
+    fontWeight: '800',
+  },
+  catTrack: {
+    height: 8,
+    backgroundColor: 'rgba(10, 12, 22, 0.65)',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  catFill: {
+    height: '100%',
+    borderRadius: 4,
   },
 });
