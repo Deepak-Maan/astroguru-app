@@ -45,18 +45,18 @@ export default function MatchingScreen() {
   return (
     <GradientBackground>
       <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
-        <ScreenHeader title="Kundli Matching" subtitle="36-Point Ashtakoot Gun Milan" showBack showWallet />
+        <ScreenHeader title="Kundli Matching" subtitle="36-Point Marriage Compatibility Match" showBack showWallet />
 
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
           {/* Boy & Girl Profile Selectors */}
           <Card>
-            <SectionHeader title="Marriage Compatibility Inputs" subtitle="Select Boy & Girl Rashi and Nakshatra" />
+            <SectionHeader title="Marriage Compatibility" subtitle="Select Moon sign (Rashi) for both partners" />
 
             <View style={styles.inputsRow}>
               {/* Boy Column */}
               <View style={styles.inputCol}>
                 <Text style={styles.colHeader}>👦 BOY'S CHART</Text>
-                <Text style={styles.inputLabel}>Moon Rashi:</Text>
+                <Text style={styles.inputLabel}>Moon Sign:</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }}>
                   <View style={styles.rashiPicker}>
                     {RASHIS.slice(0, 6).map((r, i) => (
@@ -77,7 +77,7 @@ export default function MatchingScreen() {
               {/* Girl Column */}
               <View style={styles.inputCol}>
                 <Text style={[styles.colHeader, { color: colors.coral }]}>👧 GIRL'S CHART</Text>
-                <Text style={styles.inputLabel}>Moon Rashi:</Text>
+                <Text style={styles.inputLabel}>Moon Sign:</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }}>
                   <View style={styles.rashiPicker}>
                     {RASHIS.slice(0, 6).map((r, i) => (
@@ -97,7 +97,7 @@ export default function MatchingScreen() {
             </View>
 
             <Button
-              label="🔮 Calculate 36 Gun Milan Score"
+              label="🔮 Check Compatibility Score"
               variant="coral"
               size="lg"
               onPress={handleMatch}
@@ -141,16 +141,16 @@ export default function MatchingScreen() {
               </LinearGradient>
 
               {/* 8 Ashtakoot Kootas Breakdown Table */}
-              <SectionHeader title="Ashtakoot Compatibility Breakdown" subtitle="Detailed 8 Kootas Analysis" />
+              <SectionHeader title="Compatibility Factors (8 Kootas)" subtitle="Detailed breakdown of your match score" />
               {[
-                { name: 'Varna Koota', data: result.varna },
-                { name: 'Vashya Koota', data: result.vashya },
-                { name: 'Tara Koota', data: result.tara },
-                { name: 'Yoni Koota', data: result.yoni },
-                { name: 'Maitri Koota', data: result.maitri },
-                { name: 'Gana Koota', data: result.gana },
-                { name: 'Bhakoot Koota', data: result.bhakoot },
-                { name: 'Nadi Koota', data: result.nadi },
+                { name: 'Work & Ego (Varna)', data: result.varna },
+                { name: 'Mutual Attraction (Vashya)', data: result.vashya },
+                { name: 'Destiny & Health (Tara)', data: result.tara },
+                { name: 'Intimacy & Bonding (Yoni)', data: result.yoni },
+                { name: 'Friendship & Mental Harmony (Maitri)', data: result.maitri },
+                { name: 'Temperament & Nature (Gana)', data: result.gana },
+                { name: 'Love & Family Longevity (Bhakoot)', data: result.bhakoot },
+                { name: 'Health & Genetic Harmony (Nadi)', data: result.nadi },
               ].map((k) => (
                 <Card key={k.name} style={styles.kootaCard}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>

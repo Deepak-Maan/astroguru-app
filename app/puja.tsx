@@ -98,8 +98,8 @@ export default function SacredPujaAndAstroMallScreen() {
     }
 
     const desc = selectedItem.category === 'puja'
-      ? `Sacred Puja Sankalp: ${selectedItem.name}`
-      : `AstroMall Consecrated Remedy: ${selectedItem.name}`;
+      ? `Puja Booking: ${selectedItem.name}`
+      : `Store Order: ${selectedItem.name}`;
 
     const success = debit(selectedItem.price, desc);
     if (success) {
@@ -110,8 +110,8 @@ export default function SacredPujaAndAstroMallScreen() {
         item: selectedItem,
         message:
           selectedItem.category === 'puja'
-            ? `Your sacred Sankalp in the name of ${seekerName} (Gotra: ${gotra}) has been accepted. Live darshan link & consecrated Prasad dispatch tracking will be sent to WhatsApp.`
-            : `Order confirmed! Your consecrated ${selectedItem.name} has been placed for energization and will be dispatched to your registered address with laboratory certificate.`,
+            ? `Your puja has been booked in the name of ${seekerName} (Gotra: ${gotra}). The pandits will perform the puja and we will send you the live video link and holy Prasad tracking on WhatsApp.`
+            : `Order confirmed! Your genuine ${selectedItem.name} is being prepared and will be delivered to your address with a certificate of authenticity.`,
       });
     }
   };
@@ -120,8 +120,8 @@ export default function SacredPujaAndAstroMallScreen() {
     <GradientBackground>
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
         <ScreenHeader
-          title="Sacred Sanctuary"
-          subtitle="Temple E-Pujas & Consecrated Remedies"
+          title="Temple Puja & Store"
+          subtitle="Book temple pujas & buy genuine remedies"
           showBack
           showWallet
         />
@@ -139,7 +139,7 @@ export default function SacredPujaAndAstroMallScreen() {
               />
               <Text style={styles.mainTabIcon}>🪔</Text>
               <Text style={[styles.mainTabText, mainTab === 'puja' && styles.mainTabTextActive]}>
-                Sacred Temple Pujas
+                Temple Pujas
               </Text>
             </Pressable>
 
@@ -153,7 +153,7 @@ export default function SacredPujaAndAstroMallScreen() {
               />
               <Text style={styles.mainTabIcon}>💎</Text>
               <Text style={[styles.mainTabText, mainTab === 'mall' && styles.mainTabTextActive]}>
-                AstroMall Remedies
+                Gemstones & Store
               </Text>
             </Pressable>
           </View>
@@ -172,11 +172,11 @@ export default function SacredPujaAndAstroMallScreen() {
                   <Text style={styles.prescripIcon}>🪐</Text>
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.prescripTitle}>Prescribed for Your Kundli</Text>
+                  <Text style={styles.prescripTitle}>Recommended for You</Text>
                   <Text style={styles.prescripSub}>
                     {activeDoshas.length > 0
-                      ? `Targeting active ${activeDoshas.join(' & ')}`
-                      : 'Harmonizing active Mahadasha planetary energies'}
+                      ? `Helpful for ${activeDoshas.join(' & ')}`
+                      : 'Personalized remedies based on your birth chart'}
                   </Text>
                 </View>
               </View>
@@ -238,8 +238,8 @@ export default function SacredPujaAndAstroMallScreen() {
             </Text>
             <Text style={styles.sectionSub}>
               {mainTab === 'puja'
-                ? 'Conducted by certified Purohits with live video proof'
-                : '100% authentic, lab certified with Prana Pratishtha'}
+                ? 'Performed by experienced pandits with live video proof'
+                : '100% authentic & lab-certified with certificate'}
             </Text>
           </View>
 
@@ -271,7 +271,7 @@ export default function SacredPujaAndAstroMallScreen() {
                   )}
 
                   <Text style={styles.doshaTarget}>
-                    🎯 Target: <Text style={{ color: '#FCD34D' }}>{item.doshaTarget}</Text>
+                    Good for: <Text style={{ color: '#FCD34D' }}>{item.doshaTarget}</Text>
                   </Text>
 
                   {/* Bullet Benefits */}
@@ -301,7 +301,7 @@ export default function SacredPujaAndAstroMallScreen() {
                         <Text style={styles.price}>{formatCurrency(item.price)}</Text>
                         <Text style={styles.originalPrice}>{formatCurrency(item.originalPrice)}</Text>
                       </View>
-                      <Text style={styles.taxNotice}>Taxes & Consecration Included</Text>
+                      <Text style={styles.taxNotice}>All Taxes Included</Text>
                     </View>
 
                     <Pressable
@@ -315,7 +315,7 @@ export default function SacredPujaAndAstroMallScreen() {
                         style={StyleSheet.absoluteFill}
                       />
                       <Text style={styles.bookBtnText}>
-                        {item.category === 'puja' ? 'Book Sankalp' : 'Buy Energized'}
+                        {item.category === 'puja' ? 'Book Puja' : 'Order Now'}
                       </Text>
                     </Pressable>
                   </View>
@@ -331,7 +331,7 @@ export default function SacredPujaAndAstroMallScreen() {
             <View style={styles.orderModalCard}>
               <View style={styles.modalTopBar}>
                 <Text style={styles.modalHeading}>
-                  {selectedItem?.category === 'puja' ? 'Sacred Puja Sankalp' : 'Remedy Order Checkout'}
+                  {selectedItem?.category === 'puja' ? 'Book Your Puja' : 'Order Checkout'}
                 </Text>
                 <Pressable onPress={() => setShowOrderModal(false)} style={styles.modalCloseBtn}>
                   <Text style={styles.modalCloseText}>✕</Text>
@@ -353,16 +353,16 @@ export default function SacredPujaAndAstroMallScreen() {
 
                 {/* Form Fields for Sankalp / Delivery */}
                 <Text style={styles.formSectionLabel}>
-                  {selectedItem?.category === 'puja' ? 'Vedic Sankalp Details' : 'Delivery & Consecration Details'}
+                  {selectedItem?.category === 'puja' ? 'Your Details for Puja' : 'Delivery Address & Details'}
                 </Text>
 
                 <View style={styles.inputGroup}>
-                  <Text style={styles.inputLabel}>Devotee Name</Text>
+                  <Text style={styles.inputLabel}>Your Full Name</Text>
                   <TextInput
                     value={seekerName}
                     onChangeText={setSeekerName}
                     style={styles.textInput}
-                    placeholder="Full legal or birth name"
+                    placeholder="Enter your full name"
                     placeholderTextColor="#64748B"
                   />
                 </View>
@@ -371,17 +371,17 @@ export default function SacredPujaAndAstroMallScreen() {
                   <>
                     <View style={styles.inputRow}>
                       <View style={[styles.inputGroup, { flex: 1 }]}>
-                        <Text style={styles.inputLabel}>Gotra</Text>
+                        <Text style={styles.inputLabel}>Gotra (Family Lineage)</Text>
                         <TextInput
                           value={gotra}
                           onChangeText={setGotra}
                           style={styles.textInput}
-                          placeholder="e.g. Kashyap, Bharadwaj"
+                          placeholder="e.g. Kashyap (or blank if unsure)"
                           placeholderTextColor="#64748B"
                         />
                       </View>
                       <View style={[styles.inputGroup, { flex: 1 }]}>
-                        <Text style={styles.inputLabel}>Birth Nakshatra</Text>
+                        <Text style={styles.inputLabel}>Birth Star (Nakshatra)</Text>
                         <TextInput
                           value={nakshatra}
                           onChangeText={setNakshatra}
@@ -393,13 +393,13 @@ export default function SacredPujaAndAstroMallScreen() {
                     </View>
 
                     <View style={styles.inputGroup}>
-                      <Text style={styles.inputLabel}>Sankalp Wish / Focus Concern</Text>
+                      <Text style={styles.inputLabel}>Your Wish or Prayer Focus</Text>
                       <TextInput
                         value={sankalpWish}
                         onChangeText={setSankalpWish}
                         style={[styles.textInput, { height: 60 }]}
                         multiline
-                        placeholder="e.g. Health recovery, overcoming financial hurdles"
+                        placeholder="e.g. Health recovery, peace of mind, career growth"
                         placeholderTextColor="#64748B"
                       />
                     </View>
@@ -408,14 +408,14 @@ export default function SacredPujaAndAstroMallScreen() {
 
                 <View style={styles.inputGroup}>
                   <Text style={styles.inputLabel}>
-                    {selectedItem?.category === 'puja' ? 'Prasad Delivery Address' : 'Shipping Address'}
+                    {selectedItem?.category === 'puja' ? 'Delivery Address for Holy Prasad' : 'Delivery Address'}
                   </Text>
                   <TextInput
                     value={deliveryAddress}
                     onChangeText={setDeliveryAddress}
                     style={[styles.textInput, { height: 60 }]}
                     multiline
-                    placeholder="Enter complete postal address with PIN"
+                    placeholder="Enter complete postal address with PIN code"
                     placeholderTextColor="#64748B"
                   />
                 </View>
@@ -459,7 +459,7 @@ export default function SacredPujaAndAstroMallScreen() {
               <View style={styles.successIconCircle}>
                 <Text style={{ fontSize: 36 }}>🪔</Text>
               </View>
-              <Text style={styles.successTitle}>Sankalp Confirmed!</Text>
+              <Text style={styles.successTitle}>Booking Confirmed! 🎉</Text>
               <Text style={styles.orderIdBadge}>Order #{orderConfirmation?.id}</Text>
 
               <Text style={styles.successMsg}>{orderConfirmation?.message}</Text>
@@ -468,7 +468,7 @@ export default function SacredPujaAndAstroMallScreen() {
                 onPress={() => setOrderConfirmation(null)}
                 style={styles.doneBtn}
               >
-                <Text style={styles.doneBtnText}>Return to Sanctuary</Text>
+                <Text style={styles.doneBtnText}>Back to Store</Text>
               </Pressable>
             </View>
           </View>

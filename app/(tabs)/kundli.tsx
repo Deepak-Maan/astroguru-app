@@ -217,11 +217,11 @@ export default function KundliScreen() {
               <Card>
                 <SectionHeader title="Core Details" />
                 {[
-                  ['Lagna (Ascendant)', `${lagna.sanskrit} · ${lagna.english}`, `Lord: ${PLANETS[lagna.lord].name}`],
-                  ['Janma Rashi (Moon)', `${moon.sanskrit} · ${moon.english}`, `Element: ${moon.element}`],
-                  ['Nakshatra', `${nak.name} · Pada ${kundli.moonPada}`, `Lord: ${PLANETS[nak.lord].name} · Deity: ${nak.deity}`],
-                  ['Sun Sign (sidereal)', RASHIS[kundli.sunRashiIndex].sanskrit, RASHIS[kundli.sunRashiIndex].english],
-                  ['Ayanamsa (Lahiri)', `${kundli.ayanamsa.toFixed(3)}°`, 'Sidereal correction applied'],
+                  ['Rising Sign (Lagna)', `${lagna.english} (${lagna.sanskrit})`, `Ruling Planet: ${PLANETS[lagna.lord].name}`],
+                  ['Moon Sign (Janma Rashi)', `${moon.english} (${moon.sanskrit})`, `Element: ${moon.element}`],
+                  ['Birth Star (Nakshatra)', `${nak.name} (Quarter ${kundli.moonPada})`, `Ruling Planet: ${PLANETS[nak.lord].name}`],
+                  ['Sun Sign (Surya Rashi)', `${RASHIS[kundli.sunRashiIndex].english} (${RASHIS[kundli.sunRashiIndex].sanskrit})`, 'Based on Vedic sidereal calculation'],
+                  ['Chart System', `${kundli.ayanamsa.toFixed(2)}°`, 'Lahiri calculation system'],
                 ].map(([label, value, sub]) => (
                   <View key={label} style={styles.detailRow}>
                     <Text style={styles.detailLabel}>{label}</Text>
@@ -248,8 +248,8 @@ export default function KundliScreen() {
                     </Text>
                     <Text style={styles.doshaText}>
                       {kundli.mangalDosha
-                        ? 'Mars occupies house 1, 2, 4, 7, 8 or 12. Traditionally this calls for a proper kundli match before marriage.'
-                        : 'Mars is not placed in the houses associated with Mangal dosha in your chart.'}
+                        ? 'Mars is placed in a sensitive house. This is common and can be easily balanced with simple remedies and proper partner matching.'
+                        : 'No Mangal dosha found in your birth chart. Mars is placed in a favorable position.'}
                     </Text>
                   </View>
                 </View>

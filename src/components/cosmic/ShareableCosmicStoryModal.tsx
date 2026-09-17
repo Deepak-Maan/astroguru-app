@@ -33,19 +33,19 @@ export function ShareableCosmicStoryModal({ visible, rashiId, onClose }: Props) 
 
   const getShareText = () => {
     return (
-      `✨ AstroGuru Daily Cosmic Directive ✨\n` +
+      `✨ AstroGuru Daily Guide ✨\n` +
       `🪐 Rashi: ${directive.rashiName} (${directive.sanskritName}) | ${formattedDate}\n\n` +
-      `🟢 EMBRACE TODAY:\n` +
+      `🟢 GOOD TO DO TODAY:\n` +
       directive.embrace.map((e) => `• ${e}`).join('\n') +
-      `\n\n🔴 AVOID TODAY:\n` +
+      `\n\n🔴 WHAT TO AVOID TODAY:\n` +
       directive.avoid.map((a) => `• ${a}`).join('\n') +
-      `\n\n⚡ POWER MATRIX:\n` +
+      `\n\n⚡ LUCKY FACTORS:\n` +
       `• Lucky Color: ${directive.powerMatrix.luckyColor}\n` +
       `• Lucky Number: ${directive.powerMatrix.luckyNumber}\n` +
       `• Lucky Direction: ${directive.powerMatrix.luckyDirection}\n` +
-      `• Abhijit Muhurat: ${directive.powerMatrix.abhijitMuhurat}\n\n` +
+      `• Best Time: ${directive.powerMatrix.abhijitMuhurat}\n\n` +
       `“${directive.affirmation}”\n\n` +
-      `📲 Discover your personalized Kundli & Vedic Forecast on AstroGuru!`
+      `📲 Discover your daily horoscope and birth chart on AstroGuru!`
     );
   };
 
@@ -173,7 +173,7 @@ export function ShareableCosmicStoryModal({ visible, rashiId, onClose }: Props) 
                 </View>
 
                 <View style={styles.matrixCol}>
-                  <Text style={styles.matrixLabel}>Abhijit Muhurat</Text>
+                  <Text style={styles.matrixLabel}>Best Time</Text>
                   <Text style={[styles.matrixValue, { color: '#38BDF8', fontSize: 11 }]}>
                     {directive.powerMatrix.abhijitMuhurat.split('–')[0]?.trim()}
                   </Text>
@@ -187,7 +187,7 @@ export function ShareableCosmicStoryModal({ visible, rashiId, onClose }: Props) 
 
               {/* Story Watermark Footer */}
               <View style={styles.storyFooter}>
-                <Text style={styles.footerPrompt}>Daily Vedic Horoscope & Kundli Insights</Text>
+                <Text style={styles.footerPrompt}>Daily Horoscope & Birth Chart Insights</Text>
                 <Text style={styles.footerLink}>astroguru.app</Text>
               </View>
             </View>

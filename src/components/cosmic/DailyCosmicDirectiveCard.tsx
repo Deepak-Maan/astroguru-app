@@ -27,7 +27,7 @@ export function DailyCosmicDirectiveCard({ rashiId, rashiName, onOpenShareModal 
           </View>
           <View>
             <View style={styles.titleBadgeRow}>
-              <Text style={styles.title}>Cosmic Directives</Text>
+              <Text style={styles.title}>Today's Guide</Text>
               <View style={styles.liveTag}>
                 <View style={styles.liveDot} />
                 <Text style={styles.liveText}>Today</Text>
@@ -67,7 +67,7 @@ export function DailyCosmicDirectiveCard({ rashiId, rashiName, onOpenShareModal 
           style={[styles.tab, activeTab === 'embrace' && styles.tabActiveEmbrace]}
         >
           <Text style={[styles.tabText, activeTab === 'embrace' && styles.tabTextActiveEmbrace]}>
-            🟢 Embrace (Do)
+            🟢 Good to Do
           </Text>
         </Pressable>
 
@@ -76,7 +76,7 @@ export function DailyCosmicDirectiveCard({ rashiId, rashiName, onOpenShareModal 
           style={[styles.tab, activeTab === 'avoid' && styles.tabActiveAvoid]}
         >
           <Text style={[styles.tabText, activeTab === 'avoid' && styles.tabTextActiveAvoid]}>
-            🔴 Avoid (Don't)
+            🔴 What to Avoid
           </Text>
         </Pressable>
 
@@ -85,7 +85,7 @@ export function DailyCosmicDirectiveCard({ rashiId, rashiName, onOpenShareModal 
           style={[styles.tab, activeTab === 'power' && styles.tabActivePower]}
         >
           <Text style={[styles.tabText, activeTab === 'power' && styles.tabTextActivePower]}>
-            ⚡ Power Matrix
+            ⚡ Lucky Factors
           </Text>
         </Pressable>
       </View>
@@ -137,7 +137,7 @@ export function DailyCosmicDirectiveCard({ rashiId, rashiName, onOpenShareModal 
             </View>
 
             <View style={styles.powerPill}>
-              <Text style={styles.powerLabel}>Abhijit Muhurat</Text>
+              <Text style={styles.powerLabel}>Best Time Today</Text>
               <Text style={[styles.powerVal, { color: '#38BDF8', fontSize: 11 }]}>
                 {directive.powerMatrix.abhijitMuhurat}
               </Text>

@@ -26,12 +26,12 @@ interface Props {
 type ConsultationStatus = 'idle' | 'listening' | 'thinking' | 'speaking';
 
 const QUICK_VEDIC_PROMPTS = [
-  'Will my career see growth in 2026?',
-  'How is my Shani Sade Sati affecting me?',
-  'Which gemstone is most auspicious for my Kundli?',
-  'What remedy brings mental peace & family harmony?',
-  'Is this an auspicious time for financial investments?',
-  'Tell me about my Lagna lord and current Dasha.',
+  'Will I get a promotion or good job this year?',
+  'How is Saturn (Shani) affecting my life right now?',
+  'Which gemstone is best for my birth chart?',
+  'Simple remedies for mental peace & family harmony',
+  'Is this a good time to invest or buy property?',
+  'What are my main strengths in life based on my Kundli?',
 ];
 
 export function GuruVaniVoiceModal({ visible, onClose }: Props) {
@@ -275,26 +275,26 @@ export function GuruVaniVoiceModal({ visible, onClose }: Props) {
   const getStatusText = () => {
     switch (status) {
       case 'listening':
-        return 'Acharya GuruVani is Listening...';
+        return 'GuruVani is listening...';
       case 'thinking':
-        return 'Consulting Planetary Gochar & Shastras...';
+        return 'Checking your birth chart & planets...';
       case 'speaking':
-        return 'GuruVani is Speaking Sacred Guidance...';
+        return 'GuruVani is answering...';
       default:
-        return 'Tap Orb or Ask Any Vedic Question';
+        return 'Tap the orb or ask any question';
     }
   };
 
   const getStatusSubtext = () => {
     switch (status) {
       case 'listening':
-        return 'Speak your question clearly or tap again to synthesize.';
+        return 'Speak clearly into your mic or tap again to send.';
       case 'thinking':
-        return 'Synthesizing your Lagna chart, planetary dasha & transits...';
+        return 'Reading your horoscope to find the best answer...';
       case 'speaking':
-        return 'Listen with a serene mind. Tap Stop Audio anytime.';
+        return 'Listen with an open mind. Tap "Stop Audio" anytime.';
       default:
-        return 'Conversational Voice Astrologer powered by Divine Jyotish AI';
+        return 'Your personal AI Astrologer. Ask anything about career, love, or life.';
     }
   };
 
@@ -309,8 +309,8 @@ export function GuruVaniVoiceModal({ visible, onClose }: Props) {
         {/* Top Header */}
         <View style={styles.header}>
           <View style={styles.headerInfo}>
-            <Text style={styles.headerTitle}>✨ Acharya GuruVani AI</Text>
-            <Text style={styles.headerSubtitle}>Vedic Voice Jyotishi • Instant Cosmic Guidance</Text>
+            <Text style={styles.headerTitle}>✨ GuruVani AI Astrologer</Text>
+            <Text style={styles.headerSubtitle}>Voice Astrologer • Instant simple guidance</Text>
           </View>
           <Pressable
             onPress={() => {
@@ -408,7 +408,7 @@ export function GuruVaniVoiceModal({ visible, onClose }: Props) {
           {lastAnswer && (
             <View style={styles.guidanceCard}>
               <View style={styles.guidanceCardHeader}>
-                <Text style={styles.guidanceCardBadge}>DIVINE REVELATION</Text>
+                <Text style={styles.guidanceCardBadge}>YOUR ANSWER</Text>
                 {status === 'speaking' ? (
                   <Pressable
                     onPress={() => {
@@ -441,7 +441,7 @@ export function GuruVaniVoiceModal({ visible, onClose }: Props) {
 
           {/* Quick Vedic Question Pills */}
           <View style={styles.quickPromptsSection}>
-            <Text style={styles.quickPromptsTitle}>Sacred Inquiries You May Ask:</Text>
+            <Text style={styles.quickPromptsTitle}>Common questions you can ask:</Text>
             <View style={styles.promptPillWrap}>
               {QUICK_VEDIC_PROMPTS.map((prompt, idx) => (
                 <Pressable
@@ -464,7 +464,7 @@ export function GuruVaniVoiceModal({ visible, onClose }: Props) {
           <TextInput
             value={inputText}
             onChangeText={setInputText}
-            placeholder="Type or speak your astrological question..."
+            placeholder="Type or speak your question here..."
             placeholderTextColor="#64748B"
             style={styles.textInput}
             returnKeyType="send"

@@ -172,7 +172,7 @@ export default function Horoscope() {
         return;
       }
 
-      const text = `Namaste! Here is your ${period} Rashifal for ${rashi.sanskrit}, ${rashi.english}. ${reading.summary}. Love Guidance: ${reading.love}. Career & Finance: ${reading.career}. Health advice: ${reading.health}. Your lucky color for today is ${reading.luckyColor}, and lucky number is ${reading.luckyNumber}. Har Har Mahadev!`;
+      const text = `Namaste! Here is your ${period} horoscope for ${rashi.english} (${rashi.sanskrit}). ${reading.summary}. Love and Relationships: ${reading.love}. Career and Work: ${reading.career}. Health advice: ${reading.health}. Your lucky color today is ${reading.luckyColor}, and lucky number is ${reading.luckyNumber}. Have a wonderful day ahead!`;
 
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.rate = speechRate;
@@ -192,7 +192,7 @@ export default function Horoscope() {
   return (
     <GradientBackground>
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-        <ScreenHeader title="Horoscope" subtitle="Rashifal for all 12 signs" showWallet />
+        <ScreenHeader title="Horoscope" subtitle="Daily predictions for all 12 signs" showWallet />
 
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
           {/* Sign selector */}
@@ -314,10 +314,10 @@ export default function Horoscope() {
 
               <View style={{ flex: 1 }}>
                 <Text style={{ ...typography.h3, color: '#FFFFFF', fontSize: 14, fontWeight: '800' }}>
-                  {isSpeaking ? 'Reading Audio Rashifal…' : `Listen to ${rashi.sanskrit} Voice Audio`}
+                  {isSpeaking ? 'Reading Horoscope Aloud…' : `Listen to ${rashi.english} (${rashi.sanskrit}) Horoscope`}
                 </Text>
                 <Text style={{ ...typography.tiny, color: 'rgba(255,255,255,0.75)', marginTop: 2, fontWeight: '600' }}>
-                  {isSpeaking ? 'Tap to Pause Speech Engine' : 'AI Voice Reader · 1-Tap Rashifal Synthesis'}
+                  {isSpeaking ? 'Tap to pause audio reading' : 'Tap to listen to today\'s horoscope aloud'}
                 </Text>
               </View>
 
@@ -362,8 +362,8 @@ export default function Horoscope() {
               />
               <Text style={{ fontSize: 20 }}>📸</Text>
               <View style={{ flex: 1 }}>
-                <Text style={styles.shareStoryTitle}>Share Daily Story Card</Text>
-                <Text style={styles.shareStorySub}>Export 9:16 Instagram & WhatsApp Status</Text>
+                <Text style={styles.shareStoryTitle}>Share Horoscope Story</Text>
+                <Text style={styles.shareStorySub}>Share directly to WhatsApp Status & Instagram</Text>
               </View>
               <View style={styles.shareStoryPill}>
                 <Text style={styles.shareStoryPillText}>Share ⚡</Text>

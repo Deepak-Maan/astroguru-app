@@ -54,7 +54,7 @@ class GuruVaniVoiceService {
       return aiReply;
     } catch (error) {
       console.warn('[GuruVani Voice Consultation Error]', error);
-      return `Pranam. According to your Lagna chart, the planetary energies are currently transiting favorably. Focus on disciplined action and maintain calm faith.`;
+      return `Namaste! Based on your birth chart, things are looking positive. Stay focused on your goals, work with patience, and avoid rushing into big decisions. Feel free to ask another question!`;
     }
   }
 

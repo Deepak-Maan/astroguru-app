@@ -154,57 +154,57 @@ function generateContextualVedicReply(
     case 'career':
       if (analysis.isFollowUp) {
         return isHinglish
-          ? `${greeting}Career mein jo main dekh pa raha hoon — aane wale 3 se 4 mahine vishesh roop se parivartan ke hain. Brihaspati ka shubh gochar aapke 10th bhava par drishti de raha hai. Nayi opportunity milegi, lekin jaldbazi mein purani jagah se achanak istifa na dein. Roz Surya Dev ko arghya dein, labh hoga.`
-          : `${greeting}Regarding your career progression — the upcoming 3 to 4 months indicate a clear turning point. Jupiter's favorable transit casts an auspicious aspect on your 10th house of profession. A worthwhile opportunity will present itself, but ensure terms are finalized before making any abrupt moves. Offering water to the Sun daily will bolster confidence.`;
+          ? `${greeting}Career mein agle 3 se 4 mahine naye badlav ke hain. Nayi job ya promotion ke acche avsar milenge. Bas jaldbazi mein purani jagah se achanak istifa na dein. Roz subah Surya Dev ko jal dein, aatmavishwas badhega.`
+          : `${greeting}Your career is entering an encouraging turning point over the next 3 to 4 months. Favorable opportunities will appear. Make sure terms are finalized before making any sudden job change. Offering water to the Sun every morning will boost your confidence.`;
       }
       return isHinglish
-        ? `${greeting}${chartHook}Aapke 10th bhava (Karmasthana) aur Dasha graha ki sthiti sanket deti hai ki career mein sthirta aane ka samay shuru ho raha hai. Pichhle samay ki mehnat ka uchit parinaam aane wale kuch mahinon mein milega. Vyapar ya job change dono ke liye transit anukool ban raha hai. Roz Gayatri Mantra ka 11 baar jaap karein.`
-        : `${greeting}${chartHook}Your 10th house (Karmasthana) and ruling dasha planets indicate that a period of stability and recognized effort is commencing. Delays you experienced previously are clearing away. The current transit supports both promotion in your current field and beneficial shifts. Chanting the Gayatri Mantra daily will enhance mental clarity.`;
+        ? `${greeting}${chartHook}Aapki kundli ke hisaab se career mein achha samay shuru ho raha hai. Pichhle dino ki mehnat ka fal agle kuch mahinon mein milega. Nayi job ya business dono ke liye raste khul rahe hain. Roz Gayatri Mantra ka 11 baar jaap karein.`
+        : `${greeting}${chartHook}Your birth chart shows that your career is entering a period of steady growth. The hard work you put in previously will start showing positive results. Favorable planetary positions support promotions and good job shifts. Chanting the Gayatri Mantra daily will bring mental clarity.`;
 
     case 'marriage':
       if (analysis.isFollowUp) {
         return isHinglish
-          ? `${greeting}Vivah yog ke baare mein — 7th bhava par Shubh grahon ka prabhav dikh raha hai. Aane wale 6 se 8 mahine rishton ke pakke hone ke liye sabse mazboot window hain. Pariwar ke madhyam se anukool rishta aayega. Guruwar ko Vishnu ji ke samaksh ghee ka deepak jalayein.`
-          : `${greeting}${chartHook}Vivah aur jeevansathi ke sambandh mein, 7th house aur Venus ki sthiti mahatvapurna hai. ${mangalText ? mangalText + '. ' : ''}Vedic shastra ke anusar, aapka vivah anukul samay par hi tay hoga. Brihaspati ka transit aane wale cycle mein vivah bandhan ko kripa pradan karega. Shanti aur dhairya rakhein.`;
+          ? `${greeting}Vivah ke baare mein — agle 6 se 8 mahine rishton ke pakke hone ke liye sabse accha samay hain. Pariwar ke madhyam se accha rishta aayega. Guruwar ko bhagwan Vishnu ke aage deepak jalayein.`
+          : `${greeting}${chartHook}Regarding marriage, supportive planetary influences are growing stronger over the next 6 to 8 months. Favorable proposals through family or close circles are indicated. Stay positive and patient.`;
       }
       return isHinglish
-        ? `${greeting}${chartHook}Aapki kundli ke 7th bhava aur Shukra (Venus) ki sthiti dekhkar spasht hai ki vivah ke shubh yog aane wale samay mein prabal ho rahe hain. Agar koi baat atki hui thi, to aane wale mahino mein raste khulenge. ${mangalText ? 'Mangal prabhav ke liye shantipoorna upay upyogi rahenge. ' : ''}Guruwar ko peele vastra dharan karein aur chana daal daan karein.`
-        : `${greeting}${chartHook}Analyzing your 7th house of marriage and Venus placement, supportive marital yogas are gradually activating. ${mangalText ? 'Regarding Manglik factors, regular prayers balance marital harmony smoothly. ' : ''}The transit of Jupiter brings prospective alliances, especially through trusted social circles. Maintain calm faith.`;
+        ? `${greeting}${chartHook}Aapki kundli mein vivah ke shubh yog ban rahe hain. Agar koi rishta pehle atak raha tha, toh aane wale mahino mein raste khulenge. ${mangalText ? 'Mangal prabhav ke liye shanti ke upay kargar rahenge. ' : ''}Guruwar ko peele vastra pehnein aur chana daal daan karein.`
+        : `${greeting}${chartHook}Looking at your chart, marriage prospects are gradually opening up. If matters were delayed earlier, favorable developments will begin soon. ${mangalText ? 'Simple prayers balance any Mangal influence smoothly. ' : ''}Wearing yellow or offering prayers on Thursdays brings blessings.`;
 
     case 'love':
       return isHinglish
-        ? `${greeting}${chartHook}Prem sambandhon mein 5th house aur Shukra ka yog ban raha hai. Dil ke mamlon mein thodi aapsi samajh aur khulkar baat karne ki zaroorat hai. Misunderstanding dur hone ka samay chal raha hai. Kisi bhi teesre vyakti ki baaton par bina pramaan ke vishwas na karein. Shukrawar ko Kheer ka bhog lagayein.`
-        : `${greeting}${chartHook}Your 5th house of affection and Venus indicate deep karmic bonds, yet clear, honest communication is vital right now to clear recent ambiguities. Give your partner space to speak genuinely. Emotional harmony will restore over the coming weeks as lunar transits balance.`;
+        ? `${greeting}${chartHook}Prem sambandh mein thodi aapsi samajh aur khulkar baat karne ki zaroorat hai. Agar koi galatfehmi hui hai, toh shanti se baat karke use suljhayein. Kisi teesre vyakti ki baaton par bina soche vishwas na karein. Aane wale dino mein rishta behtar hoga.`
+        : `${greeting}${chartHook}In your relationship, open and honest communication is essential right now. If there have been recent misunderstandings, speak gently with your partner. Give each other space and avoid listening to outside gossip. Harmony will restore soon.`;
 
     case 'money':
       return isHinglish
-        ? `${greeting}${chartHook}Dhan aur aarthik sthiti ke liye 2nd aur 11th bhava kafi sakriya hain. Income ke naye source banne ke yog hain, lekin bina soche-samjhe kisi ko udhaar dene se bachein. Pichhle fashe hue dhan ki wapsi ki sambhavna banegi. Shukrawar ko Lakshmi Mata ke aage Kamal ka phool ya itra samarpit karein.`
-        : `${greeting}${chartHook}The 2nd house of accumulated wealth and 11th house of gains show potential influx, though controlling impulsive expenditures remains essential. Avoid speculative lending over the next quarter. Consistent savings and dedicated focus will steadily strengthen your financial foundation.`;
+        ? `${greeting}${chartHook}Aarthik sthiti mein sudhar ke yog hain aur aamdani ke naye raste khulenge. Bas ek baat ka dhyan rakhein — bina soche-samjhe kharch na karein aur kisi ko bada udhaar na dein. Dheere-dheere bachat badhayenge toh aage kafi labh hoga.`
+        : `${greeting}${chartHook}Your financial outlook shows steady improvement and new income possibilities. The key is to control impulsive expenses and avoid lending large amounts to others right now. Steady savings will keep your future safe and prosperous.`;
 
     case 'health':
       return isHinglish
-        ? `${greeting}${chartHook}Aapke 6th bhava ki sthiti sanket deti hai ki shareer mein mansik tanav (stress) aur pachan sambandhi dhyan dene ki zaroorat hai. Koi badi pareshani nahi dikh rahi, lekin niyamit dincharya aur subah pranayama karne se urja badhegi. Shivling par niyamit jal chadhayein.`
-        : `${greeting}${chartHook}Your 6th house indicates fatigue stemming largely from mental overexertion rather than constitutional illness. Mindful sleep schedules, morning hydration, and gentle breathwork will substantially rejuvenate your vitality. Offering water to Lord Shiva brings peace of mind.`;
+        ? `${greeting}${chartHook}Aapki sehat theek hai, lekin thoda mansik tanav aur thakan par dhyan dene ki zaroorat hai. Roz subah thodi der walk ya pranayama karein, paryapt paani piyein aur acchi neend lein. Shivling par niyamit jal chadhane se man shant rahega.`
+        : `${greeting}${chartHook}Your overall health is fine, but daily stress and screen fatigue need attention. Getting enough sleep, drinking water, and taking a short morning walk will refresh you. Offering water to Lord Shiva brings deep mental calm.`;
 
     case 'remedy':
       return isHinglish
-        ? `${greeting}Vedic parampara ke anusar aapke liye saral aur prabhavi upay yeh hain:\n1. Roz subah taambe ke lote se Surya Dev ko jal arpit karein.\n2. Mangalwar aur Shanivar ko Hanuman Chalisa ka path karein.\n3. Zarooratmand vyakti ko ann ya vastra daan karein.\nYeh niyamit karne se grah shant honge aur sakaratmak urja badhegi.`
-        : `${greeting}Here are authentic, time-tested Vedic remedies tailored for your chart:\n1. Offer fresh water to the rising Sun every morning.\n2. Recite Hanuman Chalisa on Tuesdays and Saturdays for strength and protection.\n3. Perform simple acts of charity (daan) on weekends.\nConsistent practice will harmonize planetary influences gently.`;
+        ? `${greeting}Aapke liye 3 bahut saral aur prabhavi upay yeh hain:\n1. Roz subah taambe ke lote se Surya Dev ko jal arpit karein.\n2. Mangalwar aur Shanivar ko Hanuman Chalisa padhein.\n3. Pakshiyon ko dana dalein ya zarooratmand ki madad karein.\nYeh saral upay aapke jeevan mein shanti aur barkat layenge.`
+        : `${greeting}Here are 3 simple, effective remedies for peace and prosperity:\n1. Offer fresh water to the rising Sun every morning.\n2. Recite the Hanuman Chalisa on Tuesdays and Saturdays.\n3. Feed birds or help someone in need on weekends.\nThese simple habits will bring positive energy and peace into your home.`;
 
     case 'sadesati':
       return isHinglish
-        ? `${greeting}${chartHook}Shani Dev nyayapriya grah hain — unka prabhav vyakti ko anushasan aur atmanirbharta sikhata hai. Shani ki dasha ya gochar mein kadi mehnat ka fal thoda ruk kar milta hai, lekin sthayi hota hai. Har Shanivar ko sarson ke tel ka deepak peepal ke ped ke neeche jalayein aur Shani Chalisa ka path karein.`
-        : `${greeting}${chartHook}Lord Saturn represents righteous discipline and endurance. Under his transits or dashas, progress is measured through perseverance rather than hasty leaps, yet the results gained are lifelong and solid. Lighting a mustard oil lamp on Saturday evenings will bestow peace and clarity.`;
+        ? `${greeting}${chartHook}Shani Dev kadi mehnat aur imaandari ka fal dete hain. Is dauran kaam thoda dheere ho sakta hai, lekin jo safalta milegi woh sthayi hogi. Har Shanivar ko sarson ke tel ka deepak jalayein aur gareebon ki madad karein, Shani Dev ki kripa banegi.`
+        : `${greeting}${chartHook}Lord Saturn teaches discipline, patience, and honesty. Progress may feel a little slow at times, but the results you gain will be lasting and strong. Lighting a mustard oil lamp on Saturday evenings brings peace and protection.`;
 
     default:
       if (analysis.isFollowUp) {
         return isHinglish
-          ? `${greeting}Haan, main aapki sthiti ko samajh raha hoon. Graha dasha ke hisaab se dhairya rakhna sabse uttam rahega. Aane wale 45 dinon mein rukh badlega aur jo sankat abhi dikh raha hai, woh aage chalkar anukool rasta banayega. Ishwar par vishwas banaye rakhein 🙏`
-          : `${greeting}I completely understand your concern. The planetary transits counsel patience right now. Over the next six weeks, favorable alignments will illuminate paths that presently seem obscured. Keep your faith firm 🙏`;
+          ? `${greeting}Haan, main aapki baat samajh raha hoon. Thoda dhairya rakhein — aane wale dino mein raste khulenge aur pareshani door hogi. Ishwar par vishwas banaye rakhein 🙏`
+          : `${greeting}I completely understand your situation. Have patience right now — favorable paths will open up in the coming weeks. Keep faith and stay positive 🙏`;
       }
       return isHinglish
-        ? `${greeting}${chartHook}Aapne jo prashna poocha hai, uske sandarbh mein grahon ki sthiti anukool disha mein badh rahi hai. Jeevan ke is mod par thoda santulan aur niyamit prarthana se rukawatein door hongi. Kya aap vishesh roop se kisi mahine ya tithi ke baare mein janna chahte hain? Main vistar se bataunga.`
-        : `${greeting}${chartHook}The planetary indications surrounding your query are trending favorably. Maintaining calm dedication and grounding your decisions in thoughtful reflection will yield the desired breakthrough. Feel free to ask more specific details about timing or remedies.`;
+        ? `${greeting}${chartHook}Aapki kundli ke hisaab se sthiti sakaratmak disha mein aage badh rahi hai. Thoda santulan aur niyamit prarthana se rukawatein door hongi. Agar aap kisi vishesh baat ya upay ke baare mein janna chahte hain, toh zaroor batayein!`
+        : `${greeting}${chartHook}The planetary trends for your query are positive. Focusing on your daily goals with a calm mind will bring good breakthroughs. Feel free to ask any specific question about dates or remedies!`;
   }
 }
 

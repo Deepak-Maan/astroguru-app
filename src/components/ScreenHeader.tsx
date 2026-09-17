@@ -113,13 +113,13 @@ export function ScreenHeader({
         <View style={styles.tickerPill}>
           <View style={{ flex: 1 }}>
             <Text style={styles.tickerText} numberOfLines={1}>
-              🌅 Sunrise 06:12 AM · <Text style={{ fontWeight: '800', color: colors.gold }}>Abhijit Muhurat 11:45 AM</Text>
+              🌅 Sunrise 06:12 AM · <Text style={{ fontWeight: '800', color: colors.gold }}>Best Time: 11:45 AM</Text>
             </Text>
           </View>
 
           {/* Shubh Tithi Badge from design screenshot */}
           <View style={styles.shubhBadge}>
-            <Text style={styles.shubhText}>Shubh Tithi</Text>
+            <Text style={styles.shubhText}>Good Day</Text>
           </View>
         </View>
       )}

@@ -76,14 +76,14 @@ export default function Home() {
   }
 
   const quickActions = [
-    { icon: '💬', label: 'Consult', href: '/instant-consult', bg: 'rgba(99, 102, 241, 0.25)' },
+    { icon: '💬', label: 'Astrologer', href: '/instant-consult', bg: 'rgba(99, 102, 241, 0.25)' },
     { icon: '🪐', label: 'Kundli', href: '/(tabs)/kundli', bg: 'rgba(56, 189, 248, 0.22)' },
-    { icon: '🪔', label: 'E-Puja', href: '/puja', bg: 'rgba(245, 158, 11, 0.25)' },
-    { icon: '🎙️', label: 'GuruVani', href: 'guruvani_modal', bg: 'rgba(168, 85, 247, 0.25)' },
+    { icon: '🪔', label: 'Book Puja', href: '/puja', bg: 'rgba(245, 158, 11, 0.25)' },
+    { icon: '🎙️', label: 'Voice AI', href: 'guruvani_modal', bg: 'rgba(168, 85, 247, 0.25)' },
     { icon: '💳', label: 'Wallet', href: '/wallet', bg: 'rgba(236, 72, 153, 0.22)' },
     { icon: '🔢', label: 'Numerology', href: '/numerology', bg: 'rgba(129, 140, 248, 0.22)' },
-    { icon: '🪄', label: 'Vedic Spells', href: '/spells', bg: 'rgba(168, 85, 247, 0.22)' },
-    { icon: '🔮', label: 'Soulmate AI', href: '/soulmate-ai', bg: 'rgba(244, 114, 182, 0.22)' },
+    { icon: '🪄', label: 'Mantras', href: '/spells', bg: 'rgba(168, 85, 247, 0.22)' },
+    { icon: '🔮', label: 'Love Match', href: '/soulmate-ai', bg: 'rgba(244, 114, 182, 0.22)' },
   ];
 
   const today = new Date().toLocaleDateString('en-GB', {
@@ -117,7 +117,7 @@ export default function Home() {
             />
             <Text style={styles.transitIcon}>🪐</Text>
             <Text style={styles.transitText} numberOfLines={1}>
-              <Text style={{ fontWeight: '800', color: colors.primary }}>LIVE TRANSIT:</Text> Guru in Taurus · Surya in Simha · Chandra in {rashi.sanskrit} · Shubh Muhurta active
+              <Text style={{ fontWeight: '800', color: colors.primary }}>TODAY'S PLANETS:</Text> Jupiter in Taurus · Sun in Leo · Moon in {rashi.english} · Good time active
             </Text>
           </View>
 
@@ -133,7 +133,7 @@ export default function Home() {
             <View style={styles.shlokaLeft}>
               <Text style={styles.shlokaSoundIcon}>🔊</Text>
               <View>
-                <Text style={styles.shlokaTitle}>Daily Vedic Shloka · Gayatri Mantra</Text>
+                <Text style={styles.shlokaTitle}>Daily Mantra · Gayatri Mantra</Text>
                 <Text style={styles.shlokaSub}>ॐ भूर्भुवः स्वः तत्सवितुर्वरेण्यं भर्गो देवस्य धीमहि...</Text>
               </View>
             </View>
@@ -146,12 +146,12 @@ export default function Home() {
           <Pressable onPress={() => router.push(kundli ? '/(tabs)/kundli' : '/(onboarding)/birth-details')}>
             <View style={styles.skyCard}>
               <View style={styles.constellationGlow} />
-              <Text style={styles.skyEyebrow}>✨ YOUR SKY AT BIRTH</Text>
+              <Text style={styles.skyEyebrow}>✨ YOUR BIRTH CHART (KUNDLI)</Text>
               <Text style={styles.skyTitle}>
-                {kundli ? `${rashi.english} Rashi Chart` : 'Add your birth details'}
+                {kundli ? `${rashi.english} Birth Chart` : 'Enter your birth details'}
               </Text>
               <Text style={styles.skySub}>
-                The chakra fills with your nine grahas once we know when and where you were born.
+                See where the planets were when you were born. Tap to view your full Kundli chart.
               </Text>
               <View style={styles.startNowRow}>
                 <Text style={styles.startNowText}>{kundli ? 'View full chart →' : 'Start now →'}</Text>
@@ -169,7 +169,7 @@ export default function Home() {
                     <Text style={{ fontSize: 16 }}>🔮</Text>
                   </View>
                   <Text style={styles.todayLabel}>
-                    TODAY'S READING • {rashi.sanskrit.toUpperCase()}
+                    TODAY'S HOROSCOPE • {rashi.english.toUpperCase()} ({rashi.sanskrit})
                   </Text>
                   <View style={styles.moodBadge}>
                     <Text style={styles.todayMood}>{reading.mood}% Positive</Text>
@@ -240,14 +240,14 @@ export default function Home() {
               </View>
               <View style={{ flex: 1, gap: 2 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <Text style={styles.sanctuaryTag}>SACRED SANCTUARY & ASTROMALL</Text>
+                  <Text style={styles.sanctuaryTag}>ONLINE PUJAS & REMEDIES</Text>
                   <View style={styles.sanctuaryLivePill}>
                     <Text style={styles.sanctuaryLiveText}>KASHI & UJJAIN</Text>
                   </View>
                 </View>
-                <Text style={styles.sanctuaryTitle}>Temple E-Pujas & Consecrated Remedies</Text>
+                <Text style={styles.sanctuaryTitle}>Book Temple Pujas & Buy Remedies</Text>
                 <Text style={styles.sanctuarySub} numberOfLines={1}>
-                  Sankalp with Vedic Gotra · Rudraksha & Certified Gemstones
+                  Pujas performed in your name · Genuine certified Rudraksha & Gemstones
                 </Text>
               </View>
               <Text style={styles.sanctuaryArrow}>›</Text>
@@ -261,12 +261,12 @@ export default function Home() {
                 <Text style={styles.numBadgeVal}>{numerology.lifePathNumber}</Text>
               </View>
               <View style={{ flex: 1, gap: 1 }}>
-                <Text style={styles.numBannerTag}>🔢 VEDIC NUMEROLOGY GRID</Text>
+                <Text style={styles.numBannerTag}>🔢 NUMEROLOGY PREDICTION</Text>
                 <Text style={styles.numBannerTitle}>
-                  Life Path #{numerology.lifePathNumber} · Personal Year {numerology.personalYear2026}
+                  Life Path #{numerology.lifePathNumber} · Year {numerology.personalYear2026}
                 </Text>
                 <Text style={styles.numBannerSub} numberOfLines={1}>
-                  📜 Past Life: {numerology.pastLifeInsight.pastLifeRole} · 🔮 2026-2030 Timeline
+                  Your personality strengths & 2026 life forecast
                 </Text>
               </View>
               <Text style={styles.numBannerArrow}>›</Text>
@@ -385,7 +385,7 @@ export default function Home() {
             <Text style={styles.floatingGuruVaniIcon}>🎙️</Text>
           </LinearGradient>
           <View style={styles.floatingGuruVaniPill}>
-            <Text style={styles.floatingGuruVaniPillText}>GuruVani AI</Text>
+            <Text style={styles.floatingGuruVaniPillText}>Talk to AI</Text>
           </View>
         </Pressable>
 
