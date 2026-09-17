@@ -77,6 +77,7 @@ export function InCallRechargeBanner({
 const styles = StyleSheet.create({
   container: {
     marginHorizontal: spacing.md,
+    alignSelf: 'center',
     marginBottom: spacing.xs,
     borderRadius: radius.lg,
     overflow: 'hidden',

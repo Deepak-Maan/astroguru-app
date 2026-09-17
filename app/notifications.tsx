@@ -222,7 +222,13 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
 
-  topActionsRow: { flexDirection: 'row', justifyContent: 'flex-end', gap: spacing.sm },
+  topActionsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.xs,
+  },
 
   notifCard: {
     backgroundColor: 'rgba(26, 33, 64, 0.78)',

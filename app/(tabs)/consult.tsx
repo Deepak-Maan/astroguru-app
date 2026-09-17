@@ -339,7 +339,10 @@ export default function Consult() {
           style={{ flexGrow: 0 }}
         >
           {FILTERS.map((f) => {
-            const active = filter === f;
+            const active =
+              filter.toLowerCase() === f.toLowerCase() ||
+              (f !== 'All' && filter.toLowerCase().includes(f.toLowerCase())) ||
+              (f === 'All' && filter === 'All' && !activeConcern);
             return (
               <Pressable
                 key={f}
@@ -350,6 +353,9 @@ export default function Consult() {
                     } catch (_) {}
                   }
                   setFilter(f);
+                  if (f === 'All') {
+                    setActiveConcern(null);
+                  }
                 }}
                 style={({ pressed }) => [
                   styles.filterChip,

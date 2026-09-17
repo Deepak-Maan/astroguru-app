@@ -14,9 +14,10 @@ import { colors, radius, spacing, typography } from '../theme';
 interface VoiceNoteRecorderProps {
   onSendVoiceNote: (durationSec: number) => void;
   disabled?: boolean;
+  onRecordingChange?: (recording: boolean) => void;
 }
 
-export function VoiceNoteRecorder({ onSendVoiceNote, disabled }: VoiceNoteRecorderProps) {
+export function VoiceNoteRecorder({ onSendVoiceNote, disabled, onRecordingChange }: VoiceNoteRecorderProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [duration, setDuration] = useState(0);
   const timerRef = useRef<any>(null);
@@ -81,6 +82,7 @@ export function VoiceNoteRecorder({ onSendVoiceNote, disabled }: VoiceNoteRecord
     }
     setDuration(0);
     setIsRecording(true);
+    onRecordingChange?.(true);
   };
 
   const cancelRecording = () => {
@@ -91,6 +93,7 @@ export function VoiceNoteRecorder({ onSendVoiceNote, disabled }: VoiceNoteRecord
     }
     setIsRecording(false);
     setDuration(0);
+    onRecordingChange?.(false);
   };
 
   const sendRecording = () => {
@@ -107,6 +110,7 @@ export function VoiceNoteRecorder({ onSendVoiceNote, disabled }: VoiceNoteRecord
     const finalSec = duration;
     setIsRecording(false);
     setDuration(0);
+    onRecordingChange?.(false);
     onSendVoiceNote(finalSec);
   };
 

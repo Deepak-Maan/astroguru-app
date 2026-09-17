@@ -135,6 +135,7 @@ export default function ChatScreen() {
   const [mode, setMode] = useState<'chat' | 'call'>('chat');
   const [isMuted, setIsMuted] = useState(false);
   const [isSpeaker, setIsSpeaker] = useState(false);
+  const [isRecordingAudio, setIsRecordingAudio] = useState(false);
 
   const scrollRef = useRef<ScrollView>(null);
   const sendScaleAnim = useRef(new Animated.Value(1)).current;
@@ -761,47 +762,57 @@ export default function ChatScreen() {
               />
             )}
 
-            {/* Sleek WhatsApp/Telegram Style Composer Pill with Integrated Send Button & Voice Note */}
+            {/* Sleek WhatsApp/Telegram Style Composer with Full-Width Voice Recording */}
             <View style={styles.composer}>
-              <View style={styles.inputPillContainer}>
-                <TextInput
-                  value={draft}
-                  onChangeText={setDraft}
-                  placeholder="Type your question to Acharya…"
-                  placeholderTextColor={colors.textFaint}
-                  style={styles.input}
-                  onSubmitEditing={() => send()}
-                  returnKeyType="send"
+              {isRecordingAudio ? (
+                <VoiceNoteRecorder
+                  onSendVoiceNote={sendVoiceNote}
+                  onRecordingChange={setIsRecordingAudio}
                 />
-                {draft.trim().length > 0 ? (
-                  <Pressable
-                    onPress={() => {
-                      if (Platform.OS !== 'web') {
-                        try {
-                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        } catch (_) {}
-                      }
-                      send();
-                    }}
-                    style={({ pressed }) => [
-                      styles.sendBtn,
-                      pressed && { transform: [{ translateY: 1.5 }], opacity: 0.85 },
-                    ]}
-                  >
-                    <Animated.View style={{ transform: [{ scale: sendScaleAnim }], flex: 1, width: '100%', alignItems: 'center', justifyContent: 'center' }}>
-                      <LinearGradient
-                        colors={['#FF3366', '#F43F5E']}
-                        style={StyleSheet.absoluteFill}
-                      />
-                      <Text style={styles.sendIcon}>➤</Text>
-                    </Animated.View>
-                  </Pressable>
-                ) : (
-                  <VoiceNoteRecorder
-                    onSendVoiceNote={sendVoiceNote}
-                  />
-                )}
-              </View>
+              ) : (
+                <>
+                  <View style={styles.inputPillContainer}>
+                    <TextInput
+                      value={draft}
+                      onChangeText={setDraft}
+                      placeholder="Type your question to Acharya…"
+                      placeholderTextColor={colors.textFaint}
+                      style={styles.input}
+                      onSubmitEditing={() => send()}
+                      returnKeyType="send"
+                    />
+                  </View>
+                  {draft.trim().length > 0 ? (
+                    <Pressable
+                      onPress={() => {
+                        if (Platform.OS !== 'web') {
+                          try {
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                          } catch (_) {}
+                        }
+                        send();
+                      }}
+                      style={({ pressed }) => [
+                        styles.sendBtn,
+                        pressed && { transform: [{ translateY: 1.5 }], opacity: 0.85 },
+                      ]}
+                    >
+                      <Animated.View style={{ transform: [{ scale: sendScaleAnim }], flex: 1, width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+                        <LinearGradient
+                          colors={['#FF3366', '#F43F5E']}
+                          style={StyleSheet.absoluteFill}
+                        />
+                        <Text style={styles.sendIcon}>➤</Text>
+                      </Animated.View>
+                    </Pressable>
+                  ) : (
+                    <VoiceNoteRecorder
+                      onSendVoiceNote={sendVoiceNote}
+                      onRecordingChange={setIsRecordingAudio}
+                    />
+                  )}
+                </>
+              )}
             </View>
           </KeyboardAvoidingView>
         )}
@@ -1093,10 +1104,12 @@ const styles = StyleSheet.create({
   noticeText: { ...typography.small, color: colors.text, textAlign: 'center', fontWeight: '600' },
 
   composer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderTopWidth: 1.5,
-    borderTopColor: 'rgba(129, 140, 248, 0.25)',
+    paddingTop: spacing.xs,
+    paddingBottom: Platform.OS === 'ios' ? 24 : spacing.sm,
     backgroundColor: 'rgba(14, 18, 38, 0.94)',
     shadowColor: '#6366F1',
     shadowOffset: { width: 0, height: -3 },
@@ -1105,13 +1118,12 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   inputPillContainer: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(26, 33, 64, 0.85)',
     borderRadius: radius.pill,
-    paddingLeft: spacing.md,
-    paddingRight: 4,
-    paddingVertical: 3,
+    paddingHorizontal: spacing.md,
     borderWidth: 1.5,
     borderColor: 'rgba(129, 140, 248, 0.35)',
     height: 48,
@@ -1124,23 +1136,19 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
   },
   sendBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
-    borderTopWidth: 1.5,
-    borderTopColor: 'rgba(255, 255, 255, 0.45)',
-    borderBottomWidth: 3,
-    borderBottomColor: '#9D174D',
     shadowColor: colors.coral,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.35,
     shadowRadius: 6,
     elevation: 4,
   },
-  sendBtnOff: { opacity: 0.4, borderBottomColor: '#94A3B8' },
+  sendBtnOff: { opacity: 0.4 },
   sendIcon: { color: colors.white, fontSize: 16, fontWeight: '900', marginLeft: 2 },
 
   /* In-Session Quick Recharge Drawer */

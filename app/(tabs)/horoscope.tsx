@@ -56,12 +56,12 @@ function AcharyaTransits() {
                 onPress={() => setActiveFilter(f)}
                 style={{
                   paddingHorizontal: 18, paddingVertical: 8, borderRadius: radius.pill,
-                  backgroundColor: activeFilter === f ? colors.teal : '#FFFFFF',
-                  borderWidth: 1.5, borderColor: activeFilter === f ? colors.teal : 'rgba(191,219,254,0.6)',
+                  backgroundColor: activeFilter === f ? colors.teal : 'rgba(26, 33, 64, 0.78)',
+                  borderWidth: 1.5, borderColor: activeFilter === f ? colors.teal : 'rgba(129, 140, 248, 0.3)',
                 }}
               >
-                <Text style={{ color: activeFilter === f ? '#FFFFFF' : colors.textMuted, fontWeight: '700', fontSize: 13 }}>
-                  {f === 'all' ? '\ud83c\udf0d All Transits' : '\u26a1 Urgent Alerts'}
+                <Text style={{ color: activeFilter === f ? '#FFFFFF' : '#A5B4FC', fontWeight: '700', fontSize: 13 }}>
+                  {f === 'all' ? '🌍 All Transits' : '⚡ Urgent Alerts'}
                 </Text>
               </Pressable>
             ))}

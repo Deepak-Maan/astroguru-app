@@ -82,7 +82,7 @@ export default function AstrologerProfile() {
           {/* Compact Hero Identity Card — Claymorphism 3D */}
           <View style={styles.head}>
             <LinearGradient
-              colors={['#FFFFFF', '#F5F3FF']}
+              colors={['rgba(26, 33, 64, 0.95)', 'rgba(18, 22, 48, 0.98)']}
               start={{ x: 0, y: 0 }}
               end={{ x: 0, y: 1 }}
               style={StyleSheet.absoluteFill}

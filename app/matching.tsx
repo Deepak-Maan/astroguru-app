@@ -59,7 +59,7 @@ export default function MatchingScreen() {
                 <Text style={styles.inputLabel}>Moon Sign:</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }}>
                   <View style={styles.rashiPicker}>
-                    {RASHIS.slice(0, 6).map((r, i) => (
+                    {RASHIS.map((r, i) => (
                       <Pressable
                         key={r.sanskrit}
                         onPress={() => setBoyRashi(i)}
@@ -80,7 +80,7 @@ export default function MatchingScreen() {
                 <Text style={styles.inputLabel}>Moon Sign:</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }}>
                   <View style={styles.rashiPicker}>
-                    {RASHIS.slice(0, 6).map((r, i) => (
+                    {RASHIS.map((r, i) => (
                       <Pressable
                         key={r.sanskrit}
                         onPress={() => setGirlRashi(i)}
@@ -112,8 +112,8 @@ export default function MatchingScreen() {
               <LinearGradient
                 colors={
                   result.recommendation === 'Excellent' || result.recommendation === 'Good'
-                    ? ['#EDE9FE', '#F5F3FF']
-                    : ['#FDF2F8', '#FCE7F3']
+                    ? ['rgba(30, 27, 75, 0.95)', 'rgba(49, 46, 129, 0.95)']
+                    : ['rgba(67, 24, 60, 0.95)', 'rgba(88, 28, 77, 0.95)']
                 }
                 style={styles.scoreBanner}
               >
