@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
@@ -11,6 +11,9 @@ import { AstrologerCard } from '../../src/components/AstrologerCard';
 import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { RashiChakra } from '../../src/components/hero/RashiChakra';
 import { WarpZoomSlider } from '../../src/components/WarpZoomSlider';
+import { DailyCosmicDirectiveCard } from '../../src/components/cosmic/DailyCosmicDirectiveCard';
+import { ShareableCosmicStoryModal } from '../../src/components/cosmic/ShareableCosmicStoryModal';
+import { GuruVaniVoiceModal } from '../../src/components/voice/GuruVaniVoiceModal';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { useUserStore } from '../../src/store/userStore';
 import { useAuthStore } from '../../src/store/authStore';
@@ -32,6 +35,9 @@ export default function Home() {
   const kundli = useUserStore((s) => s.kundli);
   const isVip = useSubscriptionStore((s) => s.isVip);
   const t = useLanguageStore((s) => s.t);
+
+  const [showStoryModal, setShowStoryModal] = useState(false);
+  const [showGuruVaniModal, setShowGuruVaniModal] = useState(false);
 
   const signIndex = kundli?.moonRashiIndex ?? 0;
   const rashi = RASHIS[signIndex];
@@ -72,6 +78,8 @@ export default function Home() {
   const quickActions = [
     { icon: '💬', label: 'Consult', href: '/instant-consult', bg: 'rgba(99, 102, 241, 0.25)' },
     { icon: '🪐', label: 'Kundli', href: '/(tabs)/kundli', bg: 'rgba(56, 189, 248, 0.22)' },
+    { icon: '🪔', label: 'E-Puja', href: '/puja', bg: 'rgba(245, 158, 11, 0.25)' },
+    { icon: '🎙️', label: 'GuruVani', href: 'guruvani_modal', bg: 'rgba(168, 85, 247, 0.25)' },
     { icon: '💳', label: 'Wallet', href: '/wallet', bg: 'rgba(236, 72, 153, 0.22)' },
     { icon: '🔢', label: 'Numerology', href: '/numerology', bg: 'rgba(129, 140, 248, 0.22)' },
     { icon: '🪄', label: 'Vedic Spells', href: '/spells', bg: 'rgba(168, 85, 247, 0.22)' },
@@ -185,12 +193,23 @@ export default function Home() {
             </View>
           </Pressable>
 
-          {/* Quick Actions 6 Grid Cards matching screenshot */}
+          {/* Quick Actions 8 Grid Cards matching screenshot */}
           <View style={styles.quickGrid}>
             {quickActions.map(({ icon, label, href, bg }) => (
               <Pressable
                 key={label}
-                onPress={() => router.push(href as never)}
+                onPress={() => {
+                  if (href === 'guruvani_modal') {
+                    if (Platform.OS !== 'web') {
+                      try {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                      } catch (_) {}
+                    }
+                    setShowGuruVaniModal(true);
+                  } else {
+                    router.push(href as never);
+                  }
+                }}
                 style={({ pressed }) => [styles.quickCell, pressed && { opacity: 0.75, transform: [{ scale: 0.96 }] }]}
               >
                 <View style={[styles.quickIconCircle, { backgroundColor: bg }]}>
@@ -200,6 +219,40 @@ export default function Home() {
               </Pressable>
             ))}
           </View>
+
+          {/* Daily Cosmic Directives (Do's & Don'ts & 9:16 Story Card) */}
+          <DailyCosmicDirectiveCard
+            rashiId={rashi.english.toLowerCase()}
+            rashiName={rashi.english}
+            onOpenShareModal={() => setShowStoryModal(true)}
+          />
+
+          {/* Sacred Sanctuary & AstroMall Banner */}
+          <Pressable onPress={() => router.push('/puja')} style={({ pressed }) => [pressed && { opacity: 0.85 }]}>
+            <LinearGradient
+              colors={['rgba(79, 70, 229, 0.35)', 'rgba(245, 158, 11, 0.25)']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.sanctuaryBanner}
+            >
+              <View style={styles.sanctuaryIconCircle}>
+                <Text style={{ fontSize: 24 }}>🪔</Text>
+              </View>
+              <View style={{ flex: 1, gap: 2 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Text style={styles.sanctuaryTag}>SACRED SANCTUARY & ASTROMALL</Text>
+                  <View style={styles.sanctuaryLivePill}>
+                    <Text style={styles.sanctuaryLiveText}>KASHI & UJJAIN</Text>
+                  </View>
+                </View>
+                <Text style={styles.sanctuaryTitle}>Temple E-Pujas & Consecrated Remedies</Text>
+                <Text style={styles.sanctuarySub} numberOfLines={1}>
+                  Sankalp with Vedic Gotra · Rudraksha & Certified Gemstones
+                </Text>
+              </View>
+              <Text style={styles.sanctuaryArrow}>›</Text>
+            </LinearGradient>
+          </Pressable>
 
           {/* Dedicated Numerology Past & Future Predictions Banner */}
           <Pressable onPress={() => router.push('/numerology')} style={({ pressed }) => [pressed && { opacity: 0.85 }]}>
@@ -307,6 +360,47 @@ export default function Home() {
               ))}
           </View>
         </ScrollView>
+
+        {/* Floating GuruVani AI Conversational Voice Astrologer Button */}
+        <Pressable
+          onPress={() => {
+            if (Platform.OS !== 'web') {
+              try {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              } catch (_) {}
+            }
+            setShowGuruVaniModal(true);
+          }}
+          style={({ pressed }) => [
+            styles.floatingGuruVaniBtn,
+            pressed && { transform: [{ scale: 0.94 }], opacity: 0.9 },
+          ]}
+        >
+          <LinearGradient
+            colors={['#8B5CF6', '#6366F1', '#4F46E5']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.floatingGuruVaniGradient}
+          >
+            <Text style={styles.floatingGuruVaniIcon}>🎙️</Text>
+          </LinearGradient>
+          <View style={styles.floatingGuruVaniPill}>
+            <Text style={styles.floatingGuruVaniPillText}>GuruVani AI</Text>
+          </View>
+        </Pressable>
+
+        {/* 9:16 Shareable Cosmic Story Modal */}
+        <ShareableCosmicStoryModal
+          visible={showStoryModal}
+          rashiId={rashi.english.toLowerCase()}
+          onClose={() => setShowStoryModal(false)}
+        />
+
+        {/* GuruVani AI Voice Astrologer Modal */}
+        <GuruVaniVoiceModal
+          visible={showGuruVaniModal}
+          onClose={() => setShowGuruVaniModal(false)}
+        />
       </SafeAreaView>
     </GradientBackground>
   );
@@ -637,4 +731,108 @@ const styles = StyleSheet.create({
   aiTitle: { ...typography.h3, color: colors.white, fontWeight: '800', fontSize: 15 },
   aiSub: { ...typography.small, fontSize: 11.5, color: 'rgba(255,255,255,0.9)', marginTop: 1 },
   aiArrow: { fontSize: 22, color: colors.white, fontWeight: '700' },
+
+  /* Sacred Sanctuary & AstroMall Banner */
+  sanctuaryBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm + 2,
+    borderRadius: radius.xl,
+    padding: spacing.md + 2,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(26, 33, 64, 0.78)',
+    borderWidth: 1.2,
+    borderColor: 'rgba(245, 158, 11, 0.35)',
+    shadowColor: '#F59E0B',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  sanctuaryIconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(245, 158, 11, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.4)',
+  },
+  sanctuaryTag: {
+    fontSize: 9.5,
+    fontWeight: '900',
+    color: '#FCD34D',
+    letterSpacing: 0.8,
+  },
+  sanctuaryLivePill: {
+    backgroundColor: 'rgba(239, 68, 68, 0.2)',
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
+    borderRadius: 6,
+    borderWidth: 0.5,
+    borderColor: 'rgba(239, 68, 68, 0.4)',
+  },
+  sanctuaryLiveText: {
+    fontSize: 8.5,
+    fontWeight: '800',
+    color: '#FCA5A5',
+  },
+  sanctuaryTitle: {
+    ...typography.h3,
+    color: '#EEF2FF',
+    fontWeight: '800',
+    fontSize: 14,
+  },
+  sanctuarySub: {
+    fontSize: 11,
+    color: '#CBD5E1',
+    fontWeight: '500',
+  },
+  sanctuaryArrow: {
+    fontSize: 22,
+    color: '#FCD34D',
+    fontWeight: '700',
+  },
+
+  /* Floating GuruVani Voice Button */
+  floatingGuruVaniBtn: {
+    position: 'absolute',
+    bottom: 24,
+    right: 20,
+    alignItems: 'center',
+    gap: 4,
+    zIndex: 999,
+  },
+  floatingGuruVaniGradient: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: 'rgba(252, 211, 77, 0.45)',
+    shadowColor: '#8B5CF6',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.5,
+    shadowRadius: 14,
+    elevation: 10,
+  },
+  floatingGuruVaniIcon: {
+    fontSize: 26,
+  },
+  floatingGuruVaniPill: {
+    backgroundColor: 'rgba(15, 23, 42, 0.95)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(129, 140, 248, 0.4)',
+  },
+  floatingGuruVaniPillText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#EEF2FF',
+    letterSpacing: 0.4,
+  },
 });

@@ -12,6 +12,8 @@ import { colors, radius, spacing, typography } from '../../src/theme';
 import { HoroscopePeriod } from '../../src/types';
 import { RASHIS } from '../../src/data/rashis';
 import { getHoroscope } from '../../src/services/horoscope';
+import { DailyCosmicDirectiveCard } from '../../src/components/cosmic/DailyCosmicDirectiveCard';
+import { ShareableCosmicStoryModal } from '../../src/components/cosmic/ShareableCosmicStoryModal';
 import { useUserStore } from '../../src/store/userStore';
 import { useAuthStore } from '../../src/store/authStore';
 
@@ -155,6 +157,7 @@ export default function Horoscope() {
   const kundli = useUserStore((s) => s.kundli);
   const [sign, setSign] = useState(kundli?.moonRashiIndex ?? 0);
   const [period, setPeriod] = useState<HoroscopePeriod>('daily');
+  const [showStoryModal, setShowStoryModal] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [speechRate, setSpeechRate] = useState<1 | 1.25>(1);
 
@@ -335,6 +338,50 @@ export default function Horoscope() {
             </LinearGradient>
           </Pressable>
 
+          {/* Share Story Card CTA Button */}
+          <View style={{ paddingHorizontal: spacing.lg }}>
+            <Pressable
+              onPress={() => {
+                if (Platform.OS !== 'web') {
+                  try {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  } catch (_) {}
+                }
+                setShowStoryModal(true);
+              }}
+              style={({ pressed }) => [
+                styles.shareStoryBanner,
+                pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] },
+              ]}
+            >
+              <LinearGradient
+                colors={['rgba(236, 72, 153, 0.25)', 'rgba(99, 102, 241, 0.25)']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={StyleSheet.absoluteFill}
+              />
+              <Text style={{ fontSize: 20 }}>📸</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.shareStoryTitle}>Share Daily Story Card</Text>
+                <Text style={styles.shareStorySub}>Export 9:16 Instagram & WhatsApp Status</Text>
+              </View>
+              <View style={styles.shareStoryPill}>
+                <Text style={styles.shareStoryPillText}>Share ⚡</Text>
+              </View>
+            </Pressable>
+          </View>
+
+          {/* If Daily period: Cosmic Directives (Do's & Don'ts & Power Matrix) */}
+          {period === 'daily' && (
+            <View style={{ paddingHorizontal: spacing.lg }}>
+              <DailyCosmicDirectiveCard
+                rashiId={rashi.english.toLowerCase()}
+                rashiName={rashi.english}
+                onOpenShareModal={() => setShowStoryModal(true)}
+              />
+            </View>
+          )}
+
           {/* Main reading card */}
           <Card>
             <View style={styles.readingHead}>
@@ -409,6 +456,13 @@ export default function Horoscope() {
             </View>
           </Card>
         </ScrollView>
+
+        {/* 9:16 Shareable Cosmic Story Modal */}
+        <ShareableCosmicStoryModal
+          visible={showStoryModal}
+          rashiId={rashi.english.toLowerCase()}
+          onClose={() => setShowStoryModal(false)}
+        />
       </SafeAreaView>
     </GradientBackground>
   );
@@ -583,4 +637,46 @@ const styles = StyleSheet.create({
   luckyLabel: { ...typography.tiny, color: '#A5B4FC', fontWeight: '700' },
   luckyValue: { ...typography.h3, fontSize: 13, fontWeight: '800' },
   traitRow: { flexDirection: 'row', marginTop: spacing.md },
+
+  /* Share Story Card CTA */
+  shareStoryBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm + 2,
+    borderRadius: radius.xl,
+    padding: spacing.md,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(26, 33, 64, 0.78)',
+    borderWidth: 1.2,
+    borderColor: 'rgba(236, 72, 153, 0.35)',
+    shadowColor: '#EC4899',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  shareStoryTitle: {
+    ...typography.h3,
+    color: '#EEF2FF',
+    fontSize: 13.5,
+    fontWeight: '800',
+  },
+  shareStorySub: {
+    ...typography.tiny,
+    color: '#F472B6',
+    fontSize: 10.5,
+    fontWeight: '600',
+    marginTop: 1,
+  },
+  shareStoryPill: {
+    backgroundColor: '#DB2777',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: radius.pill,
+  },
+  shareStoryPillText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
 });
