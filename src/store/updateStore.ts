@@ -7,10 +7,10 @@ import * as Updates from 'expo-updates';
 import { inAppUpdateEngine, UpdateDownloadProgress } from '../services/updates/inAppUpdateEngine';
 import { getAppVersionFromFirebase, syncLatestAppVersionToFirebase } from '../services/firebaseRealtimeService';
 
-export const LATEST_RELEASE_VERSION = '2.9.4';
+export const LATEST_RELEASE_VERSION = '2.9.5';
 export const DIRECT_APK_URL = 'https://expo.dev/artifacts/eas/KqNVd3oafIKVeEIuHEhYUUB0ll5xTobex7TfgS_0ZvE.apk';
 
-const NATIVE_VERSION = Constants.expoConfig?.version || '2.9.4';
+const NATIVE_VERSION = Constants.expoConfig?.version || '2.9.5';
 
 function parseSemVer(v: string): number[] {
   return (v || '0.0.0').split('.').map((p) => parseInt(p, 10) || 0);
@@ -67,15 +67,15 @@ export const useUpdateStore = create<UpdateState>()(
       isMandatory: false,
       releaseNotes: [
         `🚀 Official AstroGuru Platform Upgrade v${LATEST_RELEASE_VERSION}`,
-        '💎 100% Complete Option 10: Luminescent Liquid Glass Overhaul (All 44 Screens & Hubs)',
-        '👁️ Zero White-on-White Text & High-Contrast Specular Glass Everywhere',
-        '🌌 3D Warp Zoom Slider & Cosmic Sacred Chakra Visuals',
-        '🪐 Complete Dark Jyotish Kundli SVG Charts & Navagraha Transits',
-        '🧙‍♂️ Fully Re-skinned Acharya Workstation & Live Chat Center',
+        '✨ Plain Everyday Language Across All Screens, Horoscopes & AI Readings',
+        '📸 1-Tap 9:16 WhatsApp Status & Instagram Story Card Exporter',
+        '🎙️ GuruVani AI Voice Astrologer with Pulsating Cosmic Orb & Waveforms',
+        '🪔 Sacred Temple E-Puja Booking & Dosha-Linked AstroMall Hub',
+        '💎 100% Complete Option 10: Luminescent Liquid Glass Overhaul',
+        '🪐 High-Contrast Dark Jyotish Kundli & 36-Point Compatibility Match',
+        '⚡ Fast & Smooth Minimalist Login/Logout Frosted Animations',
         '🎁 First Chat 3-Min FREE Consultation with Zero-Drop Protection',
         '💳 AstroGold Luxury Metal Card & 1-Tap UPI Recharge',
-        '⚡ Ultra-Fast OTA Update Engine & Instant Background Installation',
-        '📦 Direct Native In-App APK Downloader & Package Installer',
       ],
       downloadProgress: 0,
       downloadedBytes: 0,
@@ -326,7 +326,7 @@ export const useUpdateStore = create<UpdateState>()(
       storage: createJSONStorage(() => AsyncStorage),
       onRehydrateStorage: () => (state) => {
         if (state) {
-          const nativeVer = Constants.expoConfig?.version || '2.9.4';
+          const nativeVer = Constants.expoConfig?.version || '2.9.5';
           state.currentVersion = nativeVer;
           state.latestVersion = LATEST_RELEASE_VERSION;
         }
