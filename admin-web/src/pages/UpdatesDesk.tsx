@@ -4,7 +4,7 @@ export const UpdatesDesk: React.FC = () => {
   const [currentRelease, setCurrentRelease] = useState('2.9.6');
   const [minMandatoryVersion, setMinMandatoryVersion] = useState('2.9.0');
   const [isMandatory, setIsMandatory] = useState(false);
-  const [apkUrl, setApkUrl] = useState('https://expo.dev/artifacts/eas/KqNVd3oafIKVeEIuHEhYUUB0ll5xTobex7TfgS_0ZvE.apk');
+  const [apkUrl, setApkUrl] = useState('https://expo.dev/artifacts/eas/eY0X9nAAY9q7HAFZhMJ0rj_JfkMmeysSEdLwn0HHlq8.apk');
   const [saved, setSaved] = useState(false);
 
   const handleSave = () => {
