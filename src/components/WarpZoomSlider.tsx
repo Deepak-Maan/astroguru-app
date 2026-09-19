@@ -17,6 +17,7 @@ import { colors, radius, spacing, typography } from '../theme';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = Math.min(SCREEN_WIDTH - 32, 370);
 const CARD_HEIGHT = 185;
+const AUTO_PLAY_INTERVAL = 3800; // 3.8s per slide
 
 export interface SlideItem {
   id: string;
@@ -90,7 +91,8 @@ const SLIDES: SlideItem[] = [
 export function WarpZoomSlider() {
   const router = useRouter();
   const [activeIndex, setActiveIndex] = useState(0);
-  const animValue = useRef(new Animated.Value(0)).current;
+  const autoPlayTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const isInteracting = useRef(false);
 
   const triggerHaptic = useCallback(() => {
     if (Platform.OS !== 'web') {
@@ -100,19 +102,25 @@ export function WarpZoomSlider() {
     }
   }, []);
 
+  const resetAutoPlay = useCallback(() => {
+    if (autoPlayTimer.current) {
+      clearInterval(autoPlayTimer.current);
+    }
+    autoPlayTimer.current = setInterval(() => {
+      if (!isInteracting.current) {
+        setActiveIndex((prev) => (prev + 1) % SLIDES.length);
+      }
+    }, AUTO_PLAY_INTERVAL);
+  }, []);
+
   const goToSlide = useCallback(
     (index: number) => {
       const target = (index + SLIDES.length) % SLIDES.length;
       triggerHaptic();
       setActiveIndex(target);
-      Animated.spring(animValue, {
-        toValue: target,
-        useNativeDriver: true,
-        friction: 8,
-        tension: 50,
-      }).start();
+      resetAutoPlay();
     },
-    [animValue, triggerHaptic]
+    [triggerHaptic, resetAutoPlay]
   );
 
   const handleNext = useCallback(() => {
@@ -123,30 +131,50 @@ export function WarpZoomSlider() {
     goToSlide(activeIndex - 1);
   }, [activeIndex, goToSlide]);
 
+  // Automatic Slide Advance Timer
+  useEffect(() => {
+    resetAutoPlay();
+    return () => {
+      if (autoPlayTimer.current) {
+        clearInterval(autoPlayTimer.current);
+      }
+    };
+  }, [resetAutoPlay]);
+
   // Touch Swipe Gesture Handler
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, gestureState) => {
-        return Math.abs(gestureState.dx) > 18 && Math.abs(gestureState.dy) < 30;
+        return Math.abs(gestureState.dx) > 16 && Math.abs(gestureState.dy) < 35;
+      },
+      onPanResponderGrant: () => {
+        isInteracting.current = true;
       },
       onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dx < -40) {
+        isInteracting.current = false;
+        if (gestureState.dx < -35) {
           handleNext();
-        } else if (gestureState.dx > 40) {
+        } else if (gestureState.dx > 35) {
           handlePrev();
+        } else {
+          resetAutoPlay();
         }
+      },
+      onPanResponderTerminate: () => {
+        isInteracting.current = false;
+        resetAutoPlay();
       },
     })
   ).current;
 
   return (
     <View style={styles.container}>
-      {/* Header bar with Mode badge & Navigation chevrons */}
+      {/* Header bar with Mode badge, auto-move indicator & Navigation chevrons */}
       <View style={styles.headerRow}>
         <View style={styles.headerLeft}>
           <Text style={styles.eyebrow}>COSMIC HIGHLIGHTS</Text>
           <View style={styles.warpBadge}>
-            <Text style={styles.warpBadgeText}>3D Warp Zoom</Text>
+            <Text style={styles.warpBadgeText}>Auto 3D</Text>
           </View>
         </View>
         <View style={styles.arrowsRow}>
@@ -166,36 +194,34 @@ export function WarpZoomSlider() {
           if (diff > 2) diff -= SLIDES.length;
           if (diff < -1) diff += SLIDES.length;
 
-          // Warp Zoom Spatial Layout:
-          // Active (diff === 0): scaled forward 1.05x, front Z
-          // diff === 1: scaled 0.88x, elevated slightly upwards, opacity 0.8
-          // diff === -1: scaled 0.88x, elevated, opacity 0.8
-          // diff other: pushed back into tunnel 0.76x, opacity 0.3
           const isActive = diff === 0;
-          let scale = 1.04;
+          let scale = 1.0;
           let translateY = 0;
           let opacity = 1;
           let zIndex = 40;
 
           if (diff === 0) {
-            scale = 1.04;
+            // Front Active Card
+            scale = 1.0;
             translateY = 0;
             opacity = 1;
-            zIndex = 40;
+            zIndex = 50;
           } else if (diff === 1 || diff === -1) {
-            scale = 0.90;
-            translateY = -14;
-            opacity = 0.80;
+            // Secondary Card Peek Behind
+            scale = 0.92;
+            translateY = -12;
+            opacity = 0.70;
             zIndex = 20;
           } else {
-            scale = 0.78;
-            translateY = -28;
-            opacity = 0.35;
+            // Deep Background Card
+            scale = 0.84;
+            translateY = -24;
+            opacity = 0.30;
             zIndex = 10;
           }
 
           return (
-            <Animated.View
+            <View
               key={slide.id}
               style={[
                 styles.cardWrapper,
@@ -205,6 +231,7 @@ export function WarpZoomSlider() {
                   transform: [{ scale }, { translateY }],
                 },
               ]}
+              pointerEvents={isActive ? 'auto' : 'box-none'}
             >
               <Pressable
                 onPress={() => {
@@ -218,12 +245,12 @@ export function WarpZoomSlider() {
                 style={({ pressed }) => [
                   styles.cardInner,
                   isActive && styles.cardActiveGlow,
-                  pressed && { opacity: 0.92 },
+                  pressed && { opacity: 0.95 },
                 ]}
               >
-                {/* Translucent Liquid Glass Background */}
+                {/* 100% OPAQUE Solid Cosmic Gradient Background */}
                 <LinearGradient
-                  colors={['rgba(28, 36, 70, 0.88)', 'rgba(14, 18, 40, 0.95)']}
+                  colors={['#1E274E', '#10142A']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={StyleSheet.absoluteFill}
@@ -231,46 +258,54 @@ export function WarpZoomSlider() {
 
                 {/* Top Subtle Luminous Sheen Arc */}
                 <LinearGradient
-                  colors={['rgba(129, 140, 248, 0.25)', 'transparent']}
+                  colors={['rgba(129, 140, 248, 0.22)', 'transparent']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 0, y: 0.6 }}
                   style={styles.topSheen}
                 />
 
-                {/* Card Header: Pill + Meta */}
+                {/* Card Header: Pill + Meta (Always visible for top peek) */}
                 <View style={styles.cardHeader}>
                   <View style={[styles.pillBadge, { backgroundColor: slide.badgeBg }]}>
                     <Text style={[styles.pillBadgeText, { color: slide.badgeColor }]}>
                       {slide.badge}
                     </Text>
                   </View>
-                  <Text style={styles.metaText}>{slide.meta}</Text>
+                  {isActive && <Text style={styles.metaText}>{slide.meta}</Text>}
                 </View>
 
-                {/* Title & Subtitle */}
-                <View style={styles.cardContent}>
-                  <Text style={styles.title} numberOfLines={1}>
-                    {slide.title}
-                  </Text>
-                  <Text style={styles.subtitle} numberOfLines={2}>
-                    {slide.subtitle}
-                  </Text>
-                </View>
-
-                {/* Card Footer: Action */}
-                <View style={styles.cardFooter}>
-                  <View style={styles.perkRow}>
-                    <View style={styles.checkCircle}>
-                      <Text style={styles.checkText}>✓</Text>
-                    </View>
-                    <Text style={styles.perkText}>Instant Connect</Text>
+                {/* Title & Subtitle: ONLY rendered for the active front card to eliminate ghosting */}
+                {isActive ? (
+                  <View style={styles.cardContent}>
+                    <Text style={styles.title} numberOfLines={1}>
+                      {slide.title}
+                    </Text>
+                    <Text style={styles.subtitle} numberOfLines={2}>
+                      {slide.subtitle}
+                    </Text>
                   </View>
-                  <Text style={[styles.ctaText, { color: slide.ctaColor }]}>
-                    {slide.ctaText}
-                  </Text>
-                </View>
+                ) : (
+                  <View style={styles.cardContentPlaceholder} />
+                )}
+
+                {/* Card Footer: Action (ONLY rendered for active card) */}
+                {isActive ? (
+                  <View style={styles.cardFooter}>
+                    <View style={styles.perkRow}>
+                      <View style={styles.checkCircle}>
+                        <Text style={styles.checkText}>✓</Text>
+                      </View>
+                      <Text style={styles.perkText}>Instant Connect</Text>
+                    </View>
+                    <Text style={[styles.ctaText, { color: slide.ctaColor }]}>
+                      {slide.ctaText}
+                    </Text>
+                  </View>
+                ) : (
+                  <View style={styles.cardFooterPlaceholder} />
+                )}
               </Pressable>
-            </Animated.View>
+            </View>
           );
         })}
       </View>
@@ -348,7 +383,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   stackArena: {
-    height: CARD_HEIGHT + 24,
+    height: CARD_HEIGHT + 20,
     alignItems: 'center',
     justifyContent: 'flex-end',
     position: 'relative',
@@ -364,11 +399,12 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: spacing.md,
     justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: 'rgba(129, 140, 248, 0.25)',
+    backgroundColor: '#10142A', // 100% OPAQUE base color ensures ZERO transparency bleed
+    borderWidth: 1.2,
+    borderColor: 'rgba(129, 140, 248, 0.3)',
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.45,
+    shadowOpacity: 0.5,
     shadowRadius: 18,
     elevation: 8,
     overflow: 'hidden',
@@ -376,8 +412,8 @@ const styles = StyleSheet.create({
   cardActiveGlow: {
     borderColor: '#818CF8',
     shadowColor: '#6366F1',
-    shadowOpacity: 0.35,
-    shadowRadius: 20,
+    shadowOpacity: 0.4,
+    shadowRadius: 22,
     elevation: 10,
   },
   topSheen: {
@@ -410,6 +446,10 @@ const styles = StyleSheet.create({
   cardContent: {
     marginVertical: 4,
   },
+  cardContentPlaceholder: {
+    height: 48,
+    marginVertical: 4,
+  },
   title: {
     fontSize: 16,
     fontWeight: '800',
@@ -428,6 +468,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.08)',
+    paddingTop: 8,
+  },
+  cardFooterPlaceholder: {
+    height: 24,
     paddingTop: 8,
   },
   perkRow: {
@@ -471,7 +515,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#334155',
   },
   dotActive: {
-    width: 20,
+    width: 22,
     backgroundColor: '#818CF8',
   },
 });
