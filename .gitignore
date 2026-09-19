@@ -1,42 +1,100 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+# ==============================================================================
+# AstroGuru Git Ignore Rules
+# Protects private secrets, heavy dependencies, binary builds, and system clutter
+# ==============================================================================
 
-# dependencies
+# ------------------------------------------------------------------------------
+# 1. DEPENDENCIES (Never commit node_modules)
+# ------------------------------------------------------------------------------
 node_modules/
+admin-web/node_modules/
+server/node_modules/
+.pnp
+.pnp.js
 
-# Expo
-.expo/
-dist/
-web-build/
-expo-env.d.ts
+# ------------------------------------------------------------------------------
+# 2. ENVIRONMENT VARIABLES & PRIVATE SECRETS (High Security Risk)
+# ------------------------------------------------------------------------------
+.env
+.env.*
+.env*.local
+!.env.example
 
-# Native
-.kotlin/
-*.orig.*
+# Firebase & Google Cloud Service Accounts
+*serviceAccount*.json
+*firebase-adminsdk*.json
+
+# ------------------------------------------------------------------------------
+# 3. ANDROID & IOS SIGNING KEYS / KEYSTORES (Never commit production keys)
+# ------------------------------------------------------------------------------
+*.keystore
 *.jks
 *.p8
 *.p12
 *.key
+*.pem
 *.mobileprovision
+key.properties
 
-# Metro
-.metro-health-check*
+# ------------------------------------------------------------------------------
+# 4. BUILD OUTPUTS, COMPILED PACKAGES & BINARIES
+# ------------------------------------------------------------------------------
+dist/
+admin-web/dist/
+web-build/
+.expo/
+*.apk
+*.aab
+*.ipa
+*.zip
+*.tar.gz
+expo-env.d.ts
 
-# debug
+# ------------------------------------------------------------------------------
+# 5. LOGS & TEMPORARY PROCESS FILES
+# ------------------------------------------------------------------------------
+*.log
 npm-debug.*
 yarn-debug.*
 yarn-error.*
+.metro-health-check*
 
-# macOS
-.DS_Store
-*.pem
-
-# local env files
-.env*.local
-
-# typescript
-*.tsbuildinfo
-
-# generated native folders
+# ------------------------------------------------------------------------------
+# 6. EXPO MANAGED NATIVE FOLDERS (Generated on the fly by EAS Build)
+# ------------------------------------------------------------------------------
 /ios
 /android
+.kotlin/
+*.orig.*
+
+# ------------------------------------------------------------------------------
+# 7. TYPESCRIPT CACHE & SCRATCH
+# ------------------------------------------------------------------------------
+*.tsbuildinfo
 scratch/
+
+# ------------------------------------------------------------------------------
+# 8. OPERATING SYSTEM & IDE CLUTTER
+# ------------------------------------------------------------------------------
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+desktop.ini
+
+# JetBrains / VS Code personal workspace caches
+.idea/workspace.xml
+.idea/shelf/
+.idea/caches/
+.idea/httpRequests/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
