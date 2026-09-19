@@ -176,14 +176,34 @@
   ],
   "spellOrders": [],
   "updates": {
-    "currentVersion": "1.2.0",
-    "latestVersion": "1.2.0",
+    "currentVersion": "2.9.6",
+    "latestVersion": "2.9.6",
+    "buildCode": 296,
+    "downloadUrl": "https://expo.dev/artifacts/eas/KqNVd3oafIKVeEIuHEhYUUB0ll5xTobex7TfgS_0ZvE.apk",
+    "fileSizeMb": 105,
+    "minAndroidVersion": "8.0",
+    "sha256": "3e9b16757b4f3bfa658d3cb1e2aa95dc012a6473210ab6411516eef14f9d2d88",
+    "updatedAt": "2026-09-19T11:00:00.000Z",
     "releaseNotes": [
-      "✨ Redesigned Modern Light UI",
-      "🛡️ Added Security Vault & PIN Lock"
+      "Official Golden Surya Branding & Adaptive Sacred Icons",
+      "WhatsApp-Style Voice Notes in Chat with Live Waveforms",
+      "5-Mode 3D Tarot Reading (Daily, Love & Ex, Career, Timeline, ₹99 Yes/No Oracle)",
+      "Daily 7:00 AM Shubh Muhurat & Rahu Kaal Lock-Screen Alerts",
+      "High-Contrast Vedic Kundli (36-Gun Ashta-Koota Matching)",
+      "Direct In-App APK Download & Package Auto-Installer Engine"
     ],
     "isMandatory": false
   },
+  "releaseHistory": [
+    {
+      "version": "2.9.6",
+      "buildCode": 296,
+      "downloadUrl": "https://expo.dev/artifacts/eas/KqNVd3oafIKVeEIuHEhYUUB0ll5xTobex7TfgS_0ZvE.apk",
+      "fileSizeMb": 105,
+      "uploadedAt": "2026-09-19T11:00:00.000Z",
+      "fileName": "AstroGuru-v2.9.6.apk"
+    }
+  ],
   "otpStore": {
     "9876543210": {
       "otp": "790462",

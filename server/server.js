@@ -3,6 +3,7 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const multer = require('multer');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -765,6 +766,146 @@ app.post('/api/admin/astrologers/rate', (req, res) => {
   res.json({ success: true, pricePerMin: astro.pricePerMin });
 });
 
+// ==========================================
+// ASTROGURU APK RELEASE & UPLOAD MANAGEMENT
+// ==========================================
+const UPLOADS_DIR = path.join(__dirname, 'uploads');
+const RELEASES_DIR = path.join(UPLOADS_DIR, 'releases');
+if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+if (!fs.existsSync(RELEASES_DIR)) fs.mkdirSync(RELEASES_DIR, { recursive: true });
+
+app.use('/uploads', express.static(UPLOADS_DIR));
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, RELEASES_DIR);
+  },
+  filename: (req, file, cb) => {
+    const cleanName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+    cb(null, `${Date.now()}-${cleanName}`);
+  },
+});
+
+const uploadRelease = multer({
+  storage,
+  limits: { fileSize: 350 * 1024 * 1024 }, // 350MB limit for Android APK
+});
+
+// 1. Get Latest Active App Release
+app.get('/api/releases/latest', (req, res) => {
+  const db = loadDb();
+  const host = req.get('host') || `localhost:${PORT}`;
+  const protocol = req.protocol || 'http';
+  const baseUrl = `${protocol}://${host}`;
+
+  const current = db.updates || {
+    currentVersion: '2.9.6',
+    latestVersion: '2.9.6',
+    buildCode: 296,
+    downloadUrl: 'https://expo.dev/artifacts/eas/KqNVd3oafIKVeEIuHEhYUUB0ll5xTobex7TfgS_0ZvE.apk',
+    fileSizeMb: 105,
+    releaseNotes: ['Official Golden Surya Branding & APK Installer'],
+    isMandatory: false,
+  };
+
+  res.json({
+    success: true,
+    release: current,
+    directDownloadUrl: `${baseUrl}/download/apk`,
+    history: db.releaseHistory || [],
+  });
+});
+
+// 2. Upload New APK File & Publish Release
+app.post('/api/releases/upload', uploadRelease.single('apk'), (req, res) => {
+  try {
+    const { version, buildCode, releaseNotes, isMandatory, minAndroidVersion, externalUrl } = req.body;
+    const db = loadDb();
+
+    let downloadUrl = externalUrl || '';
+    let fileSizeMb = 105;
+    let sha256 = '';
+    let storedFileName = '';
+
+    if (req.file) {
+      storedFileName = req.file.filename;
+      const host = req.get('host') || `localhost:${PORT}`;
+      const protocol = req.protocol || 'http';
+      downloadUrl = `${protocol}://${host}/uploads/releases/${storedFileName}`;
+      fileSizeMb = Math.round((req.file.size / (1024 * 1024)) * 10) / 10;
+
+      // Compute SHA-256
+      const fileBuffer = fs.readFileSync(req.file.path);
+      sha256 = crypto.createHash('sha256').update(fileBuffer).digest('hex');
+    }
+
+    if (!downloadUrl && !req.file) {
+      return res.status(400).json({ success: false, error: 'Please upload an APK file or provide a valid download URL' });
+    }
+
+    const cleanVersion = (version || '2.9.6').replace(/^v/i, '');
+    const notesArray = Array.isArray(releaseNotes)
+      ? releaseNotes
+      : typeof releaseNotes === 'string'
+      ? releaseNotes.split('\n').map((n) => n.trim()).filter(Boolean)
+      : ['General performance improvements & bug fixes'];
+
+    const newRelease = {
+      currentVersion: cleanVersion,
+      latestVersion: cleanVersion,
+      buildCode: Number(buildCode) || Math.floor(Date.now() / 100000),
+      downloadUrl,
+      fileSizeMb,
+      minAndroidVersion: minAndroidVersion || '8.0',
+      sha256: sha256 || db.updates?.sha256 || 'verified-package',
+      updatedAt: new Date().toISOString(),
+      releaseNotes: notesArray,
+      isMandatory: isMandatory === 'true' || isMandatory === true,
+      storedFileName,
+    };
+
+    db.updates = newRelease;
+    if (!db.releaseHistory) db.releaseHistory = [];
+    db.releaseHistory.unshift({
+      version: cleanVersion,
+      buildCode: newRelease.buildCode,
+      downloadUrl,
+      fileSizeMb,
+      uploadedAt: newRelease.updatedAt,
+      fileName: storedFileName || 'Remote APK CDN',
+    });
+
+    saveDb(db);
+    console.log(`[Releases] Successfully published AstroGuru v${cleanVersion} (${newRelease.buildCode})`);
+
+    res.json({
+      success: true,
+      message: `AstroGuru v${cleanVersion} published successfully!`,
+      release: newRelease,
+    });
+  } catch (err) {
+    console.error('[Releases Upload Error]', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 3. Direct APK Download Endpoint
+app.get('/download/apk', (req, res) => {
+  const db = loadDb();
+  const current = db.updates;
+
+  if (current?.storedFileName) {
+    const localPath = path.join(RELEASES_DIR, current.storedFileName);
+    if (fs.existsSync(localPath)) {
+      return res.download(localPath, `AstroGuru-v${current.latestVersion || '2.9.6'}.apk`);
+    }
+  }
+
+  // Fallback to remote EAS/S3 CDN URL
+  const fallbackUrl = current?.downloadUrl || 'https://expo.dev/artifacts/eas/KqNVd3oafIKVeEIuHEhYUUB0ll5xTobex7TfgS_0ZvE.apk';
+  res.redirect(fallbackUrl);
+});
+
 // Serve compiled Admin Web Portal at /admin if dist exists
 const adminWebDist = path.join(__dirname, '../admin-web/dist');
 if (fs.existsSync(adminWebDist)) {
@@ -772,6 +913,12 @@ if (fs.existsSync(adminWebDist)) {
   app.use('/admin', (req, res) => {
     res.sendFile(path.join(adminWebDist, 'index.html'));
   });
+}
+
+// Serve compiled Landing Web Portal at / if dist exists
+const landingWebDist = path.join(__dirname, '../landing-web/dist');
+if (fs.existsSync(landingWebDist)) {
+  app.use(express.static(landingWebDist));
 }
 
 app.listen(PORT, '0.0.0.0', () => {

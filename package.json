@@ -49,7 +49,9 @@
     "build:web": "expo export -p web",
     "start:server": "node server/server.js",
     "admin": "npm --prefix admin-web run dev",
-    "admin:build": "npm --prefix admin-web run build"
+    "admin:build": "npm --prefix admin-web run build",
+    "landing": "npm --prefix landing-web run dev",
+    "landing:build": "npm --prefix landing-web run build"
   },
   "private": true
 }

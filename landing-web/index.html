@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AstroGuru · Vedic Astrology & AI Voice Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #060913; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; border: 1px solid rgba(245, 158, 11, 0.2); }
+    ::-webkit-scrollbar-thumb:hover { background: #334155; }
+
+    @keyframes floatOrbit {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-16px) rotate(2deg); }
+    }
+    @keyframes spinClockwise {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    @keyframes spinCounter {
+      from { transform: rotate(360deg); }
+      to { transform: rotate(0deg); }
+    }
+    @keyframes pulseAura {
+      0%, 100% { opacity: 0.5; filter: drop-shadow(0 0 25px rgba(245, 158, 11, 0.35)); }
+      50% { opacity: 1; filter: drop-shadow(0 0 55px rgba(234, 88, 12, 0.7)); }
+    }
+
+    .orbit-slow { animation: spinClockwise 32s linear infinite; }
+    .orbit-reverse { animation: spinCounter 44s linear infinite; }
+    .floating-card { animation: floatOrbit 6s ease-in-out infinite; }
+    .aura-pulse { animation: pulseAura 4s ease-in-out infinite; }
+
+    .liquid-glass {
+      background: rgba(13, 18, 36, 0.75);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(129, 140, 248, 0.22);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+    .liquid-glass-gold {
+      background: rgba(26, 20, 10, 0.75);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      box-shadow: 0 20px 50px rgba(245, 158, 11, 0.08), inset 0 1px 0 rgba(253, 224, 71, 0.2);
+    }
+    .gold-gradient-text {
+      background: linear-gradient(135deg, #FFFBEB 0%, #FDE047 25%, #F59E0B 70%, #D97706 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .perspective-1000 {
+      perspective: 1200px;
+    }
+    .preserve-3d {
+      transform-style: preserve-3d;
+    }
+  </style>
+</head>
+<body class="bg-[#05070F] text-slate-100 antialiased selection:bg-amber-500 selection:text-slate-950 min-h-screen relative overflow-x-hidden">
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+</html>
