@@ -5,9 +5,28 @@ interface HeroProps {
   buildCode: number;
   downloadUrl: string;
   fileSizeMb: number;
+  title?: string;
+  highlight?: string;
+  subtitle?: string;
+  announcementText?: string;
+  ratings?: {
+    score: string;
+    reviewCount: string;
+    todayConsultations: string;
+  };
 }
 
-export const Hero: React.FC<HeroProps> = ({ version, buildCode, downloadUrl, fileSizeMb }) => {
+export const Hero: React.FC<HeroProps> = ({
+  version,
+  buildCode,
+  downloadUrl,
+  fileSizeMb,
+  title,
+  highlight,
+  subtitle,
+  announcementText,
+  ratings,
+}) => {
   const suryaRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -31,25 +50,25 @@ export const Hero: React.FC<HeroProps> = ({ version, buildCode, downloadUrl, fil
   }, []);
 
   return (
-    <section className="relative z-10 min-h-[90vh] flex items-center justify-center px-4 sm:px-6 py-16 overflow-hidden">
+    <section className="relative z-10 min-h-[82vh] flex items-center justify-center px-4 sm:px-6 py-10 sm:py-14 overflow-hidden">
       {/* Ambient Radial Glows */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-tr from-amber-600/15 via-orange-500/10 to-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-gradient-to-tr from-amber-600/15 via-orange-500/10 to-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
         
         {/* Left Narrative */}
         <div className="lg:col-span-7 space-y-6 text-left">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-extrabold tracking-wider">
-            <span className="animate-pulse">✨</span> OFFICIAL v{version} PLATFORM RELEASE
+            <span className="animate-pulse">✨</span> {announcementText || `OFFICIAL v${version} PLATFORM RELEASE`}
           </div>
 
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.08] text-white">
-            Your Destiny, <br />
-            <span className="gold-gradient-text">Engineered by the Stars.</span>
+            {title || 'Your Destiny,'} <br />
+            <span className="gold-gradient-text">{highlight || 'Engineered by the Stars.'}</span>
           </h1>
 
           <p className="text-slate-300 text-base sm:text-lg leading-relaxed max-w-xl font-normal">
-            The ultimate Vedic Astrology platform. High-contrast Lagna Kundlis, conversational GuruVani AI voice readings, WhatsApp audio notes, and 5 specialized 3D Tarot spreads.
+            {subtitle || 'The ultimate Vedic Astrology platform. High-contrast Lagna Kundlis, conversational GuruVani AI voice readings, WhatsApp audio notes, and 5 specialized 3D Tarot spreads.'}
           </p>
 
           {/* High-Conversion Download Container */}
@@ -58,7 +77,7 @@ export const Hero: React.FC<HeroProps> = ({ version, buildCode, downloadUrl, fil
               {/* Primary APK Download CTA */}
               <a
                 href={downloadUrl || '/download/apk'}
-                className="w-full sm:w-auto flex-1 px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-400 to-orange-500 text-slate-950 font-black text-sm text-center flex items-center justify-center gap-3 shadow-xl shadow-amber-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                className="w-full sm:w-auto flex-1 px-7 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-400 to-orange-500 text-slate-950 font-black text-sm text-center flex items-center justify-center gap-3 shadow-xl shadow-amber-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
                 <span className="text-xl">📥</span>
                 <div className="text-left leading-tight">
@@ -69,17 +88,14 @@ export const Hero: React.FC<HeroProps> = ({ version, buildCode, downloadUrl, fil
                 </div>
               </a>
 
-              {/* QR Code Card */}
-              <div className="flex items-center gap-3 bg-slate-950/80 px-4 py-3 rounded-2xl border border-indigo-500/30">
-                <div className="w-12 h-12 bg-white p-1 rounded-xl flex items-center justify-center">
-                  <svg className="w-full h-full text-slate-950" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M2 2h8v8H2zm2 2v4h4V4zm6 16H2v-8h8zm-6-2h4v-4H4zm16-14h-8v8h8zm-2 2v4h-4V4zm-6 10h2v2h-2zm2 2h2v4h-2zm2-2h4v2h-4zm2 4h2v2h-2zm-4 0h2v2h-2z" />
-                  </svg>
-                </div>
-                <div className="text-[11px] text-slate-300 leading-tight font-medium">
-                  Scan QR Code to <br /><span className="text-amber-400 font-bold">Install on Mobile</span>
-                </div>
-              </div>
+              {/* Jump to 3D Sticky Device Showcase */}
+              <a
+                href="#features"
+                className="w-full sm:w-auto px-5 py-3.5 rounded-2xl bg-slate-900/90 border border-indigo-500/40 hover:border-amber-400 text-slate-200 hover:text-white text-xs font-bold flex items-center justify-center gap-2 transition-all hover:scale-105"
+              >
+                <span>📱</span>
+                <span>3D Showcase ↓</span>
+              </a>
             </div>
 
             {/* Integrity Badges */}
@@ -93,21 +109,21 @@ export const Hero: React.FC<HeroProps> = ({ version, buildCode, downloadUrl, fil
           </div>
 
           {/* Social Proof Stats */}
-          <div className="flex flex-wrap items-center gap-8 pt-2 text-xs font-semibold text-slate-400">
+          <div className="flex flex-wrap items-center gap-8 pt-1 text-xs font-semibold text-slate-400">
             <div className="flex items-center gap-2">
               <div className="flex text-amber-400 text-sm">★★★★★</div>
-              <strong className="text-white text-sm">4.9/5</strong>
-              <span>(85k+ Reviews)</span>
+              <strong className="text-white text-sm">{ratings?.score || '4.9/5'}</strong>
+              <span>({ratings?.reviewCount || '85k+ Reviews'})</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-emerald-400">●</span>
-              <span className="text-slate-200">12,500+ Consultations Today</span>
+              <span className="text-slate-200">{ratings?.todayConsultations || '12,500+ Consultations Today'}</span>
             </div>
           </div>
         </div>
 
         {/* Right 3D Interactive Solar Astrolabe */}
-        <div className="lg:col-span-5 flex items-center justify-center relative min-h-[460px]">
+        <div className="lg:col-span-5 flex items-center justify-center relative min-h-[420px]">
           
           {/* Rotating Orbital Track Rings */}
           <div className="absolute w-80 h-80 sm:w-96 sm:h-96 rounded-full border border-amber-500/25 orbit-slow pointer-events-none" />

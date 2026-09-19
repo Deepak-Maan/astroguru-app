@@ -23,6 +23,7 @@ import { UsersDesk } from './pages/UsersDesk';
 import { AstroMallDesk } from './pages/AstroMallDesk';
 import { BroadcastDesk } from './pages/BroadcastDesk';
 import { UpdatesDesk } from './pages/UpdatesDesk';
+import { WebsiteDesk } from './pages/WebsiteDesk';
 import { LoginDesk } from './pages/LoginDesk';
 
 export const App: React.FC = () => {
@@ -248,6 +249,8 @@ export const App: React.FC = () => {
               dutyAlertSent={dutyAlertSent}
             />
           )}
+
+          {currentTab === 'website' && <WebsiteDesk />}
 
           {currentTab === 'watchtower' && (
             <WatchtowerDesk

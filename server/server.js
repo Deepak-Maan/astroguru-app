@@ -791,6 +791,84 @@ const uploadRelease = multer({
   limits: { fileSize: 350 * 1024 * 1024 }, // 350MB limit for Android APK
 });
 
+// ── WEBSITE CMS & CONFIGURATION ENDPOINTS ──
+const DEFAULT_WEBSITE_CONFIG = {
+  heroTitle: 'Your Destiny,',
+  heroHighlight: 'Engineered by the Stars.',
+  heroSubtitle: 'The ultimate Vedic Astrology platform. High-contrast Lagna Kundlis, conversational GuruVani AI voice readings, WhatsApp audio notes, and 5 specialized 3D Tarot spreads.',
+  announcementText: 'OFFICIAL v2.9.6 PLATFORM RELEASE',
+  topBannerText: '✨ Special Rahu-Ketu Transit Consultations: 25% Off Today with Code VEDIC25',
+  topBannerEnabled: true,
+  maintenanceMode: false,
+  showcaseEnabled: true,
+  tarotEnabled: true,
+  voiceEnabled: true,
+  downloadEnabled: true,
+  ratings: {
+    score: '4.9/5',
+    reviewCount: '85k+ Reviews',
+    todayConsultations: '12,500+ Consultations Today',
+  },
+  chapters: [
+    {
+      id: 'kundli',
+      title: 'Vedic Kundli & Ashta-Koota Matching',
+      badge: 'CHAPTER 01',
+      description: 'Full 12-house Vedic Lagna and Navamsha charts rendered with arc-second precision.',
+      enabled: true,
+    },
+    {
+      id: 'voice',
+      title: 'WhatsApp-Style Voice Notes in Chat',
+      badge: 'CHAPTER 02',
+      description: 'No more tedious typing. Tap and hold the mic to record your voice queries with live animated soundwaves.',
+      enabled: true,
+    },
+    {
+      id: 'tarot',
+      title: '5-Mode 3D Tarot & ₹99 Yes/No Oracle',
+      badge: 'CHAPTER 03',
+      description: 'Featuring 5 specialized spread modes with live certainty probability gauges and spoken GuruVani voice synthesis.',
+      enabled: true,
+    },
+    {
+      id: 'muhurat',
+      title: 'Daily 7:00 AM Shubh Muhurat Alerts',
+      badge: 'CHAPTER 04',
+      description: 'Start every morning auspiciously. Automated lock-screen notifications alert you to exact Abhijit Muhurat and Rahu Kaal hours.',
+      enabled: true,
+    },
+  ],
+  tarotSettings: {
+    yesNoPrice: 99,
+    audioReadingEnabled: true,
+  },
+};
+
+app.get('/api/website/config', (req, res) => {
+  const db = loadDb();
+  const config = db.websiteConfig || DEFAULT_WEBSITE_CONFIG;
+  res.json({ success: true, config });
+});
+
+app.post('/api/website/config', (req, res) => {
+  try {
+    const db = loadDb();
+    const updatedConfig = {
+      ...(db.websiteConfig || DEFAULT_WEBSITE_CONFIG),
+      ...req.body,
+      updatedAt: new Date().toISOString(),
+    };
+    db.websiteConfig = updatedConfig;
+    saveDb(db);
+    console.log('[Website CMS] Configuration updated successfully');
+    res.json({ success: true, message: 'Website configuration updated successfully', config: updatedConfig });
+  } catch (err) {
+    console.error('[Website CMS Error]', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // 1. Get Latest Active App Release
 app.get('/api/releases/latest', (req, res) => {
   const db = loadDb();

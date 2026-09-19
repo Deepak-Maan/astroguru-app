@@ -298,3 +298,27 @@ export async function updateAstrologerRateApi(astrologerId: string, ratePerMin: 
     });
   } catch (_) {}
 }
+
+export async function fetchWebsiteConfigApi() {
+  try {
+    const res = await fetch('/api/website/config');
+    const data = await res.json();
+    return data.config || null;
+  } catch (_) {
+    return null;
+  }
+}
+
+export async function saveWebsiteConfigApi(config: any) {
+  try {
+    const res = await fetch('/api/website/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(config),
+    });
+    return await res.json();
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
+}
+

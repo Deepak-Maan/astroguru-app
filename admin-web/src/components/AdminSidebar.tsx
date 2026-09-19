@@ -3,6 +3,7 @@ import { AdminUser } from '../types';
 
 export type AdminTab =
   | 'overview'
+  | 'website'
   | 'watchtower'
   | 'astrologers'
   | 'users'
@@ -33,6 +34,13 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       label: 'Overview & Heatmap',
       icon: '📊',
       badge: null,
+    },
+    {
+      id: 'website' as AdminTab,
+      label: 'Website CMS & Live',
+      icon: '🌐',
+      badge: 'Port 4000',
+      badgeClass: 'badge-amber',
     },
     {
       id: 'watchtower' as AdminTab,
