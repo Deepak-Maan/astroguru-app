@@ -63,7 +63,7 @@ export default function InstantConsultScreen() {
                   label="📞 Launch Call Now"
                   variant="gold"
                   size="md"
-                  onPress={() => router.push(`/chat/${selectedAstrologer.id}`)}
+                  onPress={() => router.push(`/consultation/${selectedAstrologer.id}?type=audio`)}
                   style={{ flex: 1 }}
                 />
                 <Button label="Cancel Queue" variant="outline" size="md" onPress={cancelQueue} style={{ flex: 1 }} />
@@ -71,7 +71,7 @@ export default function InstantConsultScreen() {
             </Card>
           ) : (
             <LinearGradient
-              colors={['#FFFFFF', '#F8FAFC']}
+              colors={['rgba(26, 33, 64, 0.85)', 'rgba(15, 23, 42, 0.95)']}
               style={styles.heroBanner}
             >
               <Text style={{ fontSize: 32 }}>📞</Text>
@@ -134,16 +134,16 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     padding: spacing.xl,
     borderRadius: radius.xl,
-    borderWidth: 1,
-    borderColor: '#E3E8F3',
-    shadowColor: 'rgba(160,175,205,0.30)',
+    borderWidth: 1.2,
+    borderColor: 'rgba(129, 140, 248, 0.35)',
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.8,
+    shadowOpacity: 0.3,
     shadowRadius: 10,
     elevation: 4,
   },
-  heroTitle: { ...typography.h2, color: colors.text, fontSize: 18, fontWeight: '800' },
-  heroSub: { ...typography.small, color: colors.textMuted, marginTop: 2, lineHeight: 18 },
+  heroTitle: { ...typography.h2, color: '#EEF2FF', fontSize: 18, fontWeight: '800' },
+  heroSub: { ...typography.small, color: '#A5B4FC', marginTop: 2, lineHeight: 18, fontWeight: '600' },
 
   queueActiveCard: { gap: spacing.md },
   queueHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },

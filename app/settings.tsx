@@ -168,6 +168,53 @@ export default function Settings() {
     }, 50);
   };
 
+  const handleDeleteAccount = () => {
+    const doDelete = () => {
+      clearAiChat();
+      logout();
+      if (Platform.OS === 'web') {
+        alert('Your AstroGuru account and all associated data have been permanently deleted.');
+        router.replace('/(auth)/login');
+      } else {
+        Alert.alert(
+          'Account & Data Purged',
+          'Your account, birth charts, kundli records, and consultation history have been permanently deleted.',
+          [
+            {
+              text: 'OK',
+              onPress: () => router.replace('/(auth)/login'),
+            },
+          ]
+        );
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      if (
+        typeof confirm === 'function' &&
+        confirm(
+          '⚠️ PERMANENT ACCOUNT DELETION\n\nAre you sure you want to permanently delete your AstroGuru account?\nAll your birth charts, saved kundlis, consultation history, and wallet coins will be permanently purged.\nThis action cannot be undone.'
+        )
+      ) {
+        doDelete();
+      }
+      return;
+    }
+
+    Alert.alert(
+      '⚠️ Delete Account & Wipe Data?',
+      'This will permanently delete your AstroGuru account, birth charts, saved kundlis, consultation messages, and wallet balance.\n\nThis action is irreversible. Are you sure you want to proceed?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Permanently Delete',
+          style: 'destructive',
+          onPress: doDelete,
+        },
+      ]
+    );
+  };
+
   return (
     <GradientBackground>
       <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
@@ -391,10 +438,49 @@ export default function Settings() {
                 style={({ pressed }) => [styles.prefRow, pressed && { opacity: 0.65 }]}
               >
                 <View style={{ flex: 1 }}>
-                  <Text style={[styles.prefLabel, { color: colors.danger }]}>🚪 Sign Out of Account</Text>
+                  <Text style={[styles.prefLabel, { color: colors.gold }]}>🚪 Sign Out of Account</Text>
                   <Text style={styles.prefSub}>Logs you out and returns to the Login screen</Text>
                 </View>
-                <Text style={[styles.chevron, { color: colors.danger }]}>›</Text>
+                <Text style={[styles.chevron, { color: colors.gold }]}>›</Text>
+              </Pressable>
+
+              <Pressable
+                onPress={handleDeleteAccount}
+                style={({ pressed }) => [styles.prefRow, pressed && { opacity: 0.65 }]}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.prefLabel, { color: '#EF4444' }]}>🗑️ Delete Account & Wipe Data</Text>
+                  <Text style={styles.prefSub}>Permanently erases all birth charts, kundli records & wallet coins</Text>
+                </View>
+                <Text style={[styles.chevron, { color: '#EF4444' }]}>›</Text>
+              </Pressable>
+            </Card>
+          </View>
+
+          {/* Legal & Policy Compliance */}
+          <View>
+            <SectionHeader title="Legal & Compliance" subtitle="Google Play Data Safety & Privacy" />
+            <Card padded={false}>
+              <Pressable
+                onPress={() => router.push('/privacy')}
+                style={({ pressed }) => [styles.prefRow, pressed && { opacity: 0.65 }]}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.prefLabel}>🛡️ Privacy Policy</Text>
+                  <Text style={styles.prefSub}>Strict zero-data-selling privacy pledge & data usage terms</Text>
+                </View>
+                <Text style={styles.chevron}>›</Text>
+              </Pressable>
+
+              <Pressable
+                onPress={() => Linking.openURL('https://astroguru.app/delete-account.html').catch(() => {})}
+                style={({ pressed }) => [styles.prefRow, pressed && { opacity: 0.65 }]}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.prefLabel}>📜 Account & Data Deletion Guide</Text>
+                  <Text style={styles.prefSub}>Public web procedure for manual and offline deletion requests</Text>
+                </View>
+                <Text style={styles.chevron}>›</Text>
               </Pressable>
             </Card>
           </View>
@@ -408,6 +494,14 @@ export default function Settings() {
                 Kundli, Lagna, Rashi and Nakshatra are computed on-device using the Lahiri
                 ayanamsa — no internet required. Sun and Moon positions are highly accurate.
               </Text>
+              <View style={{ marginTop: spacing.xs, padding: spacing.md, backgroundColor: 'rgba(245, 158, 11, 0.08)', borderRadius: radius.md, borderWidth: 1, borderColor: 'rgba(245, 158, 11, 0.25)' }}>
+                <Text style={{ ...typography.tiny, color: colors.gold, fontWeight: '800', marginBottom: 3 }}>
+                  ⚖️ Astrological Guidance Disclaimer:
+                </Text>
+                <Text style={{ ...typography.tiny, color: '#CBD5E1', lineHeight: 16 }}>
+                  AstroGuru provides astrological calculations, Janam Kundli charts, and Vedic insights for spiritual, educational, and cultural purposes. Astrological readings should not replace certified financial, legal, or medical advice.
+                </Text>
+              </View>
             </Card>
           </View>
         </ScrollView>

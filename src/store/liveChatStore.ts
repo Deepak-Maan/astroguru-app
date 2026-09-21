@@ -13,7 +13,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { pushMessageToFirebase, syncRoomMetadataToFirebase } from '../services/firebaseRealtimeService';
-import { showChatNotification } from '../services/notificationService';
+import { showChatNotification, sendTwoWayChatPushNotification } from '../services/notificationService';
 
 export type MessageRole = 'seeker' | 'acharya' | 'system';
 
@@ -210,6 +210,15 @@ export const useLiveChatStore = create<LiveChatState>()(
             status: activeRoom.status,
             lastMessage: text,
           });
+
+          // Two-way Push Notification: Seeker -> Acharya / Acharya -> Seeker
+          sendTwoWayChatPushNotification({
+            senderRole: role === 'acharya' ? 'acharya' : 'seeker',
+            senderName,
+            text,
+            roomId,
+            astrologerId: activeRoom.astrologerId,
+          }).catch(() => {});
         }
       },
 
@@ -380,15 +389,14 @@ export const useLiveChatStore = create<LiveChatState>()(
                 read: false,
               });
 
-              // Trigger notification if message is from the other person
-              const notifTitle = m.senderRole === 'acharya'
-                ? `🪔 ${m.senderName || 'Acharya'} replied`
-                : `🔔 ${m.senderName || 'Seeker'} sent a message`;
-              showChatNotification({
-                title: notifTitle,
-                body: m.text,
-                data: { roomId },
-              });
+              // Trigger two-way notification when message arrives over Firebase
+              sendTwoWayChatPushNotification({
+                senderRole: m.senderRole === 'acharya' ? 'acharya' : 'seeker',
+                senderName: m.senderName || (m.senderRole === 'acharya' ? 'Acharya' : 'Seeker'),
+                text: m.text,
+                roomId,
+                astrologerId: currentRoom.astrologerId,
+              }).catch(() => {});
             }
           }
 

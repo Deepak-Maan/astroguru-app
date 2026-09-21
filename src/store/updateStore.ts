@@ -7,10 +7,10 @@ import * as Updates from 'expo-updates';
 import { inAppUpdateEngine, UpdateDownloadProgress } from '../services/updates/inAppUpdateEngine';
 import { getAppVersionFromFirebase, syncLatestAppVersionToFirebase } from '../services/firebaseRealtimeService';
 
-export const LATEST_RELEASE_VERSION = '2.9.6';
+export const LATEST_RELEASE_VERSION = '2.9.7';
 export const DIRECT_APK_URL = 'https://expo.dev/artifacts/eas/eY0X9nAAY9q7HAFZhMJ0rj_JfkMmeysSEdLwn0HHlq8.apk';
 
-const NATIVE_VERSION = Constants.expoConfig?.version || '2.9.6';
+const NATIVE_VERSION = Constants.expoConfig?.version || '2.9.7';
 
 function parseSemVer(v: string): number[] {
   return (v || '0.0.0').split('.').map((p) => parseInt(p, 10) || 0);
@@ -67,14 +67,13 @@ export const useUpdateStore = create<UpdateState>()(
       isMandatory: false,
       releaseNotes: [
         `🚀 Official AstroGuru Platform Upgrade v${LATEST_RELEASE_VERSION}`,
-        '🎙️ WhatsApp-Style Voice Notes in Chat with Live Waveforms & Audio Bubbles',
-        '🎯 Problem-First Jyotish Categories (Love, Marriage, Career, Money, Nazar)',
-        '🌅 Approximate Birth Time Windows (Morning, Afternoon, Evening, Night & Prashna)',
-        '⚡ Seamless 1-Tap Floating Wallet Recharge During Live Calls (+5 Mins ₹99)',
-        '🔔 Daily 7:00 AM "Subah Ka Shubh Muhurat" & Rahu Kaal Push Notifications',
-        '🪐 High-Accuracy Vedic Kundli Match (All 12 Rashis & 36 Ashta-Koota Scoring)',
-        '📦 Direct Native In-App APK Download & Package Auto-Installer Engine',
-        '💎 Ultra-Smooth Liquid Glass UI & Zero-Glitch Polished Experience',
+        '📞 Interactive Two-Way Voice Call Engine with Authentic Ringing & Sound Effects',
+        '🎙️ Real-time Astrologer Vocalized Advice & Speech Recognition with Live Subtitles',
+        '✏️ Seeker Profile Editing & Real-time Cloud Database Synchronization',
+        '💬 Bidirectional Push Notifications between Seekers & Acharyas',
+        '🪐 Live In-Call Vedic Kundli Chart Drawer (Lagna, Rashi, Nakshatra, Dasha)',
+        '⏱️ Post-Consultation Summary Modal with Duration, Fee & 5-Star Rating',
+        '💎 Luminescent Liquid Glass UI Theme Across All Screens & Zero-Glitch Contrast',
       ],
       downloadProgress: 0,
       downloadedBytes: 0,

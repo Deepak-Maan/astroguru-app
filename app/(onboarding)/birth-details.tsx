@@ -20,6 +20,8 @@ import { colors, radius, spacing, typography } from '../../src/theme';
 import { City } from '../../src/types';
 import { searchCities } from '../../src/data/cities';
 import { useUserStore } from '../../src/store/userStore';
+import { useAuthStore } from '../../src/store/authStore';
+import { syncUserProfileToDatabase } from '../../src/services/userProfileService';
 
 /** Numeric segmented input (works identically on web and native). */
 function NumField({
@@ -119,15 +121,34 @@ export default function BirthDetails() {
     }
     setError(null);
     const pad = (n: string) => n.padStart(2, '0');
+    const birthDate = `${yyyy}-${pad(mm)}-${pad(dd)}`;
+    const birthTime = `${pad(hh)}:${pad(min)}`;
+
     setProfile({
       name: name.trim(),
       gender,
-      date: `${yyyy}-${pad(mm)}-${pad(dd)}`,
-      time: `${pad(hh)}:${pad(min)}`,
+      date: birthDate,
+      time: birthTime,
       place: city!,
       isApproxTime,
       approxTimeBand: isApproxTime ? approxBand : undefined,
     });
+
+    const currentAuthUser = useAuthStore.getState().user;
+    const uid = currentAuthUser?.id || `usr_${Date.now()}`;
+
+    syncUserProfileToDatabase({
+      userId: uid,
+      name: name.trim(),
+      email: currentAuthUser?.email,
+      phone: currentAuthUser?.phone,
+      gender,
+      date: birthDate,
+      time: birthTime,
+      place: city!,
+      isApproxTime,
+    }).catch(() => {});
+
     router.replace('/(tabs)');
   }
 
