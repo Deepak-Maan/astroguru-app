@@ -238,15 +238,17 @@ export async function syncRoomMetadataToFirebase(room: {
   ratePerMin?: number;
   status: string;
   lastMessage?: string;
+  senderRole?: 'seeker' | 'acharya' | 'system';
 }) {
   if (!room || !room.roomId || !room.astrologerId) return;
 
   const cleanRoomId = String(room.roomId).replace(/[.#$\[\]\/]/g, '_');
   const cleanAstrologerId = String(room.astrologerId).replace(/[.#$\[\]\/]/g, '_');
+  const cleanSeekerId = String(room.seekerId || 'usr_seeker').replace(/[.#$\[\]\/]/g, '_');
 
   const payload = {
     roomId: cleanRoomId,
-    seekerId: room.seekerId || 'usr_seeker',
+    seekerId: cleanSeekerId,
     seekerName: room.seekerName || 'Seeker',
     astrologerId: cleanAstrologerId,
     astrologerName: room.astrologerName || 'Acharya',
@@ -254,6 +256,7 @@ export async function syncRoomMetadataToFirebase(room: {
     ratePerMin: Number(room.ratePerMin) || 25,
     status: room.status || 'waiting',
     lastMessage: room.lastMessage || 'New consultation request',
+    senderRole: room.senderRole || 'seeker',
     updatedAt: Date.now(),
   };
 
@@ -261,16 +264,32 @@ export async function syncRoomMetadataToFirebase(room: {
     const roomInfoRef = ref(firebaseDb, `rooms/${cleanRoomId}/info`);
     await set(roomInfoRef, payload);
 
-    // Index under /astrologer_rooms/{astrologerId}/{roomId}
-    const indexRef = ref(firebaseDb, `astrologer_rooms/${cleanAstrologerId}/${cleanRoomId}`);
-    await set(indexRef, {
+    const indexData = {
       roomId: cleanRoomId,
       seekerId: payload.seekerId,
       seekerName: payload.seekerName,
+      astrologerId: cleanAstrologerId,
+      astrologerName: payload.astrologerName,
       status: payload.status,
       lastMessage: payload.lastMessage,
-      updatedAt: Date.now(),
-    });
+      senderRole: payload.senderRole,
+      updatedAt: payload.updatedAt,
+    };
+
+    // Index under /astrologer_rooms/{astrologerId}/{roomId}
+    const indexRef = ref(firebaseDb, `astrologer_rooms/${cleanAstrologerId}/${cleanRoomId}`);
+    await set(indexRef, indexData);
+
+    // Also index under astrologer's sanitized name so name-based routing matches
+    if (payload.astrologerName) {
+      const nameKey = payload.astrologerName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+      const nameIndexRef = ref(firebaseDb, `astrologer_rooms/${nameKey}/${cleanRoomId}`);
+      await set(nameIndexRef, indexData);
+    }
+
+    // Also index under /seeker_rooms/{seekerId}/{roomId} for seeker notifications
+    const seekerIndexRef = ref(firebaseDb, `seeker_rooms/${cleanSeekerId}/${cleanRoomId}`);
+    await set(seekerIndexRef, indexData);
   } catch (e: any) {
     console.warn('[Firebase Room Metadata Sync Warning]', e?.message || e);
   }
@@ -296,6 +315,25 @@ export function subscribeToAcharyaRoomsInFirebase(astrologerId: string, callback
 }
 
 /**
+ * Subscribe to Seeker's Incoming Consultation Rooms in Real Time
+ */
+export function subscribeToSeekerRoomsInFirebase(seekerId: string, callback: (rooms: any[]) => void) {
+  const cleanSeekerId = String(seekerId).replace(/[.#$\[\]\/]/g, '_');
+  const seekerRoomsRef = ref(firebaseDb, `seeker_rooms/${cleanSeekerId}`);
+  onValue(seekerRoomsRef, (snapshot) => {
+    const data = snapshot.val();
+    if (!data) {
+      callback([]);
+      return;
+    }
+    const roomsList = Object.values(data);
+    roomsList.sort((a: any, b: any) => (b.updatedAt || 0) - (a.updatedAt || 0));
+    callback(roomsList);
+  });
+  return () => off(seekerRoomsRef);
+}
+
+/**
  * Initiate an Audio or Video Call in Firebase Realtime Database
  */
 export async function initiateCallInFirebase(callData: {
@@ -306,21 +344,25 @@ export async function initiateCallInFirebase(callData: {
   astrologerName: string;
   type: 'audio' | 'video';
   ratePerMin: number;
+  callerRole?: 'seeker' | 'expert';
 }) {
   if (!callData || !callData.callId || !callData.astrologerId) return;
 
   const cleanCallId = String(callData.callId).replace(/[.#$\[\]\/]/g, '_');
   const cleanAstrologerId = String(callData.astrologerId).replace(/[.#$\[\]\/]/g, '_');
+  const cleanSeekerId = String(callData.seekerId || 'usr_seeker').replace(/[.#$\[\]\/]/g, '_');
+  const callerRole = callData.callerRole || 'seeker';
 
   const payload = {
     callId: cleanCallId,
-    seekerId: callData.seekerId || 'usr_seeker',
+    seekerId: cleanSeekerId,
     seekerName: callData.seekerName || 'Seeker',
     astrologerId: cleanAstrologerId,
     astrologerName: callData.astrologerName || 'Acharya',
     type: callData.type || 'audio',
     ratePerMin: Number(callData.ratePerMin) || 25,
     status: 'ringing',
+    callerRole,
     startedAt: Date.now(),
     updatedAt: Date.now(),
   };
@@ -329,8 +371,20 @@ export async function initiateCallInFirebase(callData: {
     const callRef = ref(firebaseDb, `calls/${cleanCallId}`);
     await set(callRef, payload);
 
+    // Save under astrologer_calls for the astrologer to receive
     const astroCallRef = ref(firebaseDb, `astrologer_calls/${cleanAstrologerId}/${cleanCallId}`);
     await set(astroCallRef, payload);
+
+    // Also index under astrologer's sanitized name so matching by name works seamlessly
+    if (callData.astrologerName) {
+      const nameKey = callData.astrologerName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+      const astroNameCallRef = ref(firebaseDb, `astrologer_calls/${nameKey}/${cleanCallId}`);
+      await set(astroNameCallRef, payload);
+    }
+
+    // Save under seeker_calls for the seeker to receive (when astrologer calls seeker)
+    const seekerCallRef = ref(firebaseDb, `seeker_calls/${cleanSeekerId}/${cleanCallId}`);
+    await set(seekerCallRef, payload);
   } catch (e: any) {
     console.warn('[Firebase Call Initiate Warning]', e?.message || e);
   }
@@ -342,11 +396,13 @@ export async function initiateCallInFirebase(callData: {
 export async function updateCallStatusInFirebase(
   callId: string,
   astrologerId: string,
-  status: 'ringing' | 'connected' | 'ended' | 'declined'
+  status: 'ringing' | 'connected' | 'ended' | 'declined',
+  seekerId?: string
 ) {
   if (!callId) return;
   const cleanCallId = String(callId).replace(/[.#$\[\]\/]/g, '_');
   const cleanAstrologerId = String(astrologerId || '').replace(/[.#$\[\]\/]/g, '_');
+  const cleanSeekerId = seekerId ? String(seekerId).replace(/[.#$\[\]\/]/g, '_') : null;
 
   try {
     const callStatusRef = ref(firebaseDb, `calls/${cleanCallId}/status`);
@@ -355,6 +411,11 @@ export async function updateCallStatusInFirebase(
     if (cleanAstrologerId) {
       const astroCallStatusRef = ref(firebaseDb, `astrologer_calls/${cleanAstrologerId}/${cleanCallId}/status`);
       await set(astroCallStatusRef, status);
+    }
+
+    if (cleanSeekerId) {
+      const seekerCallStatusRef = ref(firebaseDb, `seeker_calls/${cleanSeekerId}/${cleanCallId}/status`);
+      await set(seekerCallStatusRef, status);
     }
   } catch (e: any) {
     console.warn('[Firebase Call Status Update Warning]', e?.message || e);
@@ -390,6 +451,34 @@ export function subscribeToIncomingCallsInFirebase(
 }
 
 /**
+ * Subscribe to Incoming Calls for a Seeker in Real Time
+ */
+export function subscribeToIncomingCallsForSeekerInFirebase(
+  seekerId: string,
+  callback: (calls: any[]) => void
+) {
+  if (!seekerId) {
+    callback([]);
+    return () => {};
+  }
+  const cleanSeekerId = String(seekerId).replace(/[.#$\[\]\/]/g, '_');
+  const seekerCallsRef = ref(firebaseDb, `seeker_calls/${cleanSeekerId}`);
+
+  onValue(seekerCallsRef, (snapshot) => {
+    const data = snapshot.val();
+    if (!data) {
+      callback([]);
+      return;
+    }
+    const callsList = Object.values(data);
+    callsList.sort((a: any, b: any) => (b.startedAt || 0) - (a.startedAt || 0));
+    callback(callsList);
+  });
+
+  return () => off(seekerCallsRef);
+}
+
+/**
  * Sync Latest Release Version Metadata to Firebase Realtime Database
  */
 export async function syncLatestAppVersionToFirebase(
@@ -402,7 +491,7 @@ export async function syncLatestAppVersionToFirebase(
     await set(metaRef, {
       latestVersion: version,
       releaseNotes: notes,
-      apkUrl: apkUrl || 'https://expo.dev/artifacts/eas/KqNVd3oafIKVeEIuHEhYUUB0ll5xTobex7TfgS_0ZvE.apk',
+      apkUrl: apkUrl || '/download/apk',
       updatedAt: Date.now(),
     });
   } catch (e) {

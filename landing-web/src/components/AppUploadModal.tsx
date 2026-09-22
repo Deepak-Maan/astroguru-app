@@ -181,7 +181,7 @@ export const AppUploadModal: React.FC<AppUploadModalProps> = ({
               type="url"
               value={externalUrl}
               onChange={(e) => setExternalUrl(e.target.value)}
-              placeholder="https://expo.dev/artifacts/eas/...apk"
+              placeholder="/download/apk or internal CDN URL"
               className="w-full bg-slate-950/80 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
             />
           </div>

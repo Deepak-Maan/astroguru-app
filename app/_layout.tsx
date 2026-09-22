@@ -10,6 +10,7 @@ import { AppUpdateModal } from '../src/components/AppUpdateModal';
 import { SecurityLockModal } from '../src/components/SecurityLockModal';
 import { NotificationToast } from '../src/components/NotificationToast';
 import { IncomingCallModal } from '../src/components/IncomingCallModal';
+import { GlobalChatNotificationManager } from '../src/components/GlobalChatNotificationManager';
 
 import { useUpdateStore } from '../src/store/updateStore';
 import { seedAllUsersAndAstrologersToFirebase } from '../src/services/firebaseRealtimeService';
@@ -209,6 +210,7 @@ export default function RootLayout() {
           </Stack>
           <NotificationToast />
           <IncomingCallModal />
+          <GlobalChatNotificationManager />
           <AppUpdateModal />
           <SecurityLockModal />
         </SafeAreaProvider>

@@ -24,7 +24,6 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 import { getAstrologerByIdFromFirebase } from '../../src/services/firebaseAuthService';
 import { initiateCallInFirebase, updateCallStatusInFirebase } from '../../src/services/firebaseRealtimeService';
-import { showIncomingCallNotification } from '../../src/services/notificationService';
 import { Astrologer } from '../../src/types';
 
 export default function LiveConsultationScreen() {
@@ -60,7 +59,7 @@ export default function LiveConsultationScreen() {
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const waveAnim = useRef(new Animated.Value(0.4)).current;
 
-  // Initiate call in Firebase & notify Acharya when seeker starts call
+  // Initiate call in Firebase for Acharya when seeker starts call
   useEffect(() => {
     if (astrologer && role !== 'expert') {
       const seekerName = user?.name || 'Seeker';
@@ -72,12 +71,7 @@ export default function LiveConsultationScreen() {
         astrologerName: astrologer.name,
         type: type === 'video' ? 'video' : 'audio',
         ratePerMin: astrologer.pricePerMin,
-      });
-
-      showIncomingCallNotification({
-        seekerName,
-        type: type === 'video' ? 'video' : 'audio',
-        callId: activeCallId,
+        callerRole: 'seeker',
       });
     }
   }, [astrologer?.id, activeCallId, role]);

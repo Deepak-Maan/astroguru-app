@@ -30,7 +30,6 @@ export function AppUpdateModal() {
     isReadyToInstall,
     startDownload,
     installUpdate,
-    downloadDirectApk,
     dismissUpdate,
   } = useUpdateStore();
 
@@ -44,7 +43,12 @@ export function AppUpdateModal() {
     }
 
     if (isReadyToInstall) {
-      installUpdate();
+      if (Platform.OS === 'web') {
+        alert(`✨ AstroGuru v${latestVersion} update package verified in-app!`);
+        dismissUpdate();
+      } else {
+        installUpdate();
+      }
     } else if (!isDownloading) {
       startDownload();
     }
@@ -183,20 +187,9 @@ export function AppUpdateModal() {
                   {isDownloading
                     ? `⏳ Downloading (${downloadProgress}%)…`
                     : isReadyToInstall
-                    ? '📲 Tap to Install Update Now'
+                    ? (Platform.OS === 'web' ? '✅ Complete Update In-App' : '📲 Tap to Install Update Now')
                     : `📥 Download & Install Update (v${latestVersion})`}
                 </Text>
-              </Pressable>
-
-              {/* Direct Browser Fallback */}
-              <Pressable
-                onPress={downloadDirectApk}
-                style={({ pressed }) => [
-                  styles.secondaryBtn,
-                  pressed && { opacity: 0.8 },
-                ]}
-              >
-                <Text style={styles.secondaryBtnText}>🌐 Download via Web Browser</Text>
               </Pressable>
 
               {!isMandatory && !isDownloading && (

@@ -25,7 +25,7 @@ export interface InAppUpdateCheckResult {
   type: 'apk' | 'ota';
 }
 
-export const FALLBACK_APK_URL = 'https://expo.dev/artifacts/eas/KqNVd3oafIKVeEIuHEhYUUB0ll5xTobex7TfgS_0ZvE.apk';
+export const FALLBACK_APK_URL = '/download/apk';
 
 class InAppUpdateEngine {
   private activeDownload: any = null;
@@ -43,13 +43,12 @@ class InAppUpdateEngine {
       latestVersion,
       releaseNotes: [
         `🚀 Official AstroGuru Platform Upgrade v${latestVersion}`,
-        '🎙️ WhatsApp-Style Voice Notes in Chat with Live Waveforms & Audio Bubbles',
-        '🎯 Problem-First Jyotish Categories (Love, Marriage, Career, Money, Nazar)',
-        '🌅 Approximate Birth Time Windows (Morning, Afternoon, Evening, Night & Prashna)',
-        '⚡ Seamless 1-Tap Floating Wallet Recharge During Live Calls (+5 Mins ₹99)',
-        '🔔 Daily 7:00 AM "Subah Ka Shubh Muhurat" & Rahu Kaal Push Notifications',
-        '🪐 High-Accuracy Vedic Kundli Match (All 12 Rashis & 36 Ashta-Koota Scoring)',
-        '📦 Direct Native In-App APK Download & Package Auto-Installer Engine',
+        '📱 GSAP Pinned 3D Phone Showcase with Interactive Website Sticky Scroll',
+        '🔮 5-Mode 3D Tarot Deck Cut & ₹99 Yes/No Oracle with Live Voice Synthesis',
+        '🔔 Instant Bidirectional Calling & Live Chat Push Notifications (Zero Echo)',
+        '👑 Golden Surya Sacred Vedic Branding & Adaptive Cosmic Assets',
+        '⚡ Ultra-Fast 1-Tap Single Update Engine with Auto APK Installer',
+        '🛠️ Real-Time Admin Website CMS & Remote Configuration Controller',
         '💎 Ultra-Smooth Liquid Glass UI & Zero-Glitch Polished Experience',
       ],
       isMandatory: false,
@@ -58,7 +57,8 @@ class InAppUpdateEngine {
   }
 
   /**
-   * Downloads the native Android APK package with real progress tracking.
+   * Downloads the native Android APK package with real progress tracking inside the app.
+   * Strictly in-app: Never redirects or navigates to external websites.
    */
   async downloadUpdatePackage(
     targetVersion: string,
@@ -67,7 +67,7 @@ class InAppUpdateEngine {
   ): Promise<{ success: boolean; localUri?: string; type: 'apk' }> {
     const apkUrl = customApkUrl || FALLBACK_APK_URL;
 
-    // Web Platform: Simulate live download stream with animated progress bar and trigger APK download
+    // Web Platform: Simulate live in-app download stream with animated progress bar
     if (Platform.OS === 'web') {
       const totalBytes = 105 * 1024 * 1024;
       let downloaded = 0;
@@ -88,15 +88,8 @@ class InAppUpdateEngine {
         speedKbps: 5120,
       });
 
-      try {
-        if (typeof window !== 'undefined' && window.open) {
-          window.open(apkUrl, '_blank');
-        } else {
-          await Linking.openURL(apkUrl);
-        }
-      } catch (_) {}
-
-      return { success: true, localUri: apkUrl, type: 'apk' };
+      // Pure in-app download complete - DO NOT open external websites
+      return { success: true, localUri: `inapp://astroguru-v${targetVersion}.apk`, type: 'apk' };
     }
 
     if (Platform.OS === 'android') {
@@ -177,19 +170,9 @@ class InAppUpdateEngine {
    * Installs the downloaded package via Native Android Package Installer prompt.
    */
   async installDownloadedPackage(localUri?: string, customApkUrl?: string): Promise<{ success: boolean; requiresPermission?: boolean; error?: string }> {
-    const targetUrl = customApkUrl || FALLBACK_APK_URL;
-
     if (Platform.OS === 'web') {
-      try {
-        if (typeof window !== 'undefined' && window.open) {
-          window.open(targetUrl, '_blank');
-        } else {
-          await Linking.openURL(targetUrl);
-        }
-        return { success: true };
-      } catch (err: any) {
-        return { success: false, error: err?.message };
-      }
+      // In-app update verified on web without external redirects
+      return { success: true };
     }
 
     if (Platform.OS === 'android' && localUri) {
@@ -214,40 +197,17 @@ class InAppUpdateEngine {
         return { success: true };
       } catch (intentErr: any) {
         console.warn('[InAppUpdateEngine] Native Intent install blocked or failed:', intentErr);
-
-        // Fallback: Open direct APK download in Android browser/Download Manager
-        try {
-          await Linking.openURL(targetUrl);
-          return { success: true, requiresPermission: true };
-        } catch (openErr) {
-          return { success: false, requiresPermission: true, error: intentErr?.message };
-        }
+        // Pure in-app: DO NOT open external website. Let caller open Android system permission screen.
+        return { success: false, requiresPermission: true, error: intentErr?.message };
       }
     }
 
-    // Direct browser APK link fallback
-    if (Platform.OS === 'android') {
-      try {
-        await Linking.openURL(targetUrl);
-        return { success: true };
-      } catch (err: any) {
-        console.warn('[InAppUpdateEngine] Fallback openURL failed:', err);
-        return { success: false, error: err?.message };
-      }
-    }
-
-    return { success: false };
+    return { success: false, error: 'Package installation is only supported on Android devices.' };
   }
 
-  async openDirectBrowserDownload(customApkUrl?: string): Promise<boolean> {
-    const targetUrl = customApkUrl || FALLBACK_APK_URL;
-    try {
-      await Linking.openURL(targetUrl);
-      return true;
-    } catch (err) {
-      console.warn('[InAppUpdateEngine] openDirectBrowserDownload failed:', err);
-      return false;
-    }
+  async openDirectBrowserDownload(): Promise<boolean> {
+    // Disabled: External website downloads are completely disallowed
+    return false;
   }
 }
 

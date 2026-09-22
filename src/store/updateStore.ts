@@ -6,11 +6,12 @@ import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
 import { inAppUpdateEngine, UpdateDownloadProgress } from '../services/updates/inAppUpdateEngine';
 import { getAppVersionFromFirebase, syncLatestAppVersionToFirebase } from '../services/firebaseRealtimeService';
+import { openUnknownAppSourcesSettings } from '../services/apkInstallerService';
 
-export const LATEST_RELEASE_VERSION = '2.9.6';
-export const DIRECT_APK_URL = 'https://expo.dev/artifacts/eas/KqNVd3oafIKVeEIuHEhYUUB0ll5xTobex7TfgS_0ZvE.apk';
+export const LATEST_RELEASE_VERSION = '3.0.0';
+export const DIRECT_APK_URL = '/download/apk';
 
-const NATIVE_VERSION = Constants.expoConfig?.version || '2.9.6';
+const NATIVE_VERSION = Constants.expoConfig?.version || '2.9.9';
 
 function parseSemVer(v: string): number[] {
   return (v || '0.0.0').split('.').map((p) => parseInt(p, 10) || 0);
@@ -63,18 +64,17 @@ export const useUpdateStore = create<UpdateState>()(
     (set, get) => ({
       currentVersion: NATIVE_VERSION,
       latestVersion: LATEST_RELEASE_VERSION,
-      updateAvailable: false,
+      updateAvailable: isVersionHigher(LATEST_RELEASE_VERSION, NATIVE_VERSION),
       isMandatory: false,
       releaseNotes: [
         `🚀 Official AstroGuru Platform Upgrade v${LATEST_RELEASE_VERSION}`,
-        '🎙️ WhatsApp-Style Voice Notes in Chat with Live Waveforms & Audio Bubbles',
-        '🎯 Problem-First Jyotish Categories (Love, Marriage, Career, Money, Nazar)',
-        '🌅 Approximate Birth Time Windows (Morning, Afternoon, Evening, Night & Prashna)',
-        '⚡ Seamless 1-Tap Floating Wallet Recharge During Live Calls (+5 Mins ₹99)',
-        '🔔 Daily 7:00 AM "Subah Ka Shubh Muhurat" & Rahu Kaal Push Notifications',
-        '🪐 High-Accuracy Vedic Kundli Match (All 12 Rashis & 36 Ashta-Koota Scoring)',
-        '📦 Direct Native In-App APK Download & Package Auto-Installer Engine',
-        '💎 Ultra-Smooth Liquid Glass UI & Zero-Glitch Polished Experience',
+        '📦 100% Native In-App APK Download & Package Auto-Installer (Zero Redirects)',
+        '📱 GSAP Pinned 3D Phone Showcase with Interactive Sticky Scroll Physics',
+        '🔮 5-Mode 3D Tarot Deck Cut & ₹99 Yes/No Oracle with Confidence Meter',
+        '🔔 Instant Zero-Echo Bidirectional Calling & Live Chat Push Alerts',
+        '👑 Golden Surya Sacred Vedic Branding & Adaptive Cosmic Graphics',
+        '⚡ High-Contrast 36-Point Lagna Kundli & Ashta-Koota Matching',
+        '🛠️ Real-Time Admin Website CMS & Remote Configuration Controller',
       ],
       downloadProgress: 0,
       downloadedBytes: 0,
@@ -91,16 +91,6 @@ export const useUpdateStore = create<UpdateState>()(
       autoCheckAndFetchOnStartup: async () => {
         const currentVer = Constants.expoConfig?.version || NATIVE_VERSION;
         set({ currentVersion: currentVer });
-
-        try {
-          syncLatestAppVersionToFirebase(LATEST_RELEASE_VERSION, get().releaseNotes, DIRECT_APK_URL);
-        } catch (_) {}
-
-        // If app is already on latest version, never auto-popup update modal
-        if (currentVer === LATEST_RELEASE_VERSION) {
-          set({ updateAvailable: false, isReadyToInstall: false });
-          return;
-        }
 
         // Silent background OTA fetch without hijacking the APK install modal
         if (Platform.OS !== 'web' && Updates.isEnabled) {
@@ -139,7 +129,7 @@ export const useUpdateStore = create<UpdateState>()(
             isReadyToInstall: false,
           });
 
-          // Self-heal Firebase app_meta if outdated
+          // Self-heal/sync Firebase app_meta if remote is older or missing
           if (!remoteMeta || isVersionHigher(LATEST_RELEASE_VERSION, remoteMeta.latestVersion || '0.0.0')) {
             syncLatestAppVersionToFirebase(LATEST_RELEASE_VERSION, get().releaseNotes, DIRECT_APK_URL).catch(() => {});
           }
@@ -224,25 +214,32 @@ export const useUpdateStore = create<UpdateState>()(
       },
 
       broadcastUpdate: (newVer, notes, mandatory = false) => {
-        set({
-          latestVersion: newVer,
-          releaseNotes: notes,
-          isMandatory: mandatory,
-          updateAvailable: true,
-          isReadyToInstall: false,
-          updateType: 'apk',
-        });
+        const currentVer = get().currentVersion || NATIVE_VERSION;
+        const isNewer = isVersionHigher(newVer, currentVer);
+        if (isNewer) {
+          set({
+            latestVersion: newVer,
+            releaseNotes: notes,
+            isMandatory: mandatory,
+            updateAvailable: true,
+            isReadyToInstall: false,
+            updateType: 'apk',
+          });
+        }
       },
 
       triggerUpdateModal: () => {
-        set({
-          updateAvailable: true,
-          latestVersion: LATEST_RELEASE_VERSION,
-          updateType: 'apk',
-          isDownloading: false,
-          isReadyToInstall: false,
-          downloadProgress: 0,
-        });
+        const { latestVersion, currentVersion } = get();
+        // Only trigger update modal if an update is strictly newer/available
+        if (isVersionHigher(latestVersion, currentVersion)) {
+          set({
+            updateAvailable: true,
+            updateType: 'apk',
+            isDownloading: false,
+            isReadyToInstall: false,
+            downloadProgress: 0,
+          });
+        }
       },
 
       startDownload: async () => {
@@ -272,18 +269,18 @@ export const useUpdateStore = create<UpdateState>()(
               updateType: 'apk',
             });
 
-            // Automatically launch Android Package Installer prompt!
-            setTimeout(async () => {
-              await get().installUpdate();
-            }, 350);
+            // Automatically launch Android Package Installer prompt on Android devices
+            if (Platform.OS === 'android') {
+              setTimeout(async () => {
+                await get().installUpdate();
+              }, 350);
+            }
           } else {
-            // Direct browser fallback so user is never stuck
             set({ isDownloading: false });
-            await get().downloadDirectApk();
           }
         } catch (err: any) {
+          console.warn('[In-App Download Error]', err);
           set({ isDownloading: false });
-          await get().downloadDirectApk();
         }
       },
 
@@ -291,18 +288,18 @@ export const useUpdateStore = create<UpdateState>()(
         const { downloadedPackageUri, apkDownloadUrl } = get();
         try {
           const result = await inAppUpdateEngine.installDownloadedPackage(downloadedPackageUri || undefined, apkDownloadUrl);
-          if (!result.success && !result.requiresPermission) {
-            await inAppUpdateEngine.openDirectBrowserDownload(apkDownloadUrl);
+          if (!result.success && result.requiresPermission) {
+            // Guide user to Android system permission screen
+            await openUnknownAppSourcesSettings();
           }
         } catch (err) {
           console.warn('[Install Update Error]', err);
-          await inAppUpdateEngine.openDirectBrowserDownload(apkDownloadUrl);
         }
       },
 
       downloadDirectApk: async () => {
-        const { apkDownloadUrl } = get();
-        await inAppUpdateEngine.openDirectBrowserDownload(apkDownloadUrl);
+        // Enforce 100% in-app download without external websites
+        await get().startDownload();
       },
 
       dismissUpdate: () => {
@@ -316,9 +313,11 @@ export const useUpdateStore = create<UpdateState>()(
       storage: createJSONStorage(() => AsyncStorage),
       onRehydrateStorage: () => (state) => {
         if (state) {
-          const nativeVer = Constants.expoConfig?.version || '2.9.6';
+          const nativeVer = Constants.expoConfig?.version || '2.9.9';
           state.currentVersion = nativeVer;
           state.latestVersion = LATEST_RELEASE_VERSION;
+          state.updateAvailable = isVersionHigher(state.latestVersion, nativeVer);
+          state.isDownloading = false;
         }
       },
     }

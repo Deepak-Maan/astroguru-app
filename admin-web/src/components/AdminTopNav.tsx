@@ -99,7 +99,7 @@ export const AdminTopNav: React.FC<AdminTopNavProps> = ({
           fontWeight: '700',
         }}>
           <span style={{ color: '#FCD34D' }}>⚡ EAS OTA</span>
-          <span style={{ color: '#EEF2FF' }}>v2.9.6</span>
+          <span style={{ color: '#EEF2FF' }}>v3.0.0</span>
         </div>
 
         {/* Real-time Clock */}

@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 
 export const UpdatesDesk: React.FC = () => {
-  const [currentRelease, setCurrentRelease] = useState('2.9.6');
+  const [currentRelease, setCurrentRelease] = useState('3.0.0');
   const [minMandatoryVersion, setMinMandatoryVersion] = useState('2.9.0');
   const [isMandatory, setIsMandatory] = useState(false);
-  const [apkUrl, setApkUrl] = useState('https://expo.dev/artifacts/eas/KqNVd3oafIKVeEIuHEhYUUB0ll5xTobex7TfgS_0ZvE.apk');
+  const [apkUrl, setApkUrl] = useState('/download/apk');
   const [saved, setSaved] = useState(false);
 
   const handleSave = () => {
@@ -141,7 +141,7 @@ export const UpdatesDesk: React.FC = () => {
             <div style={{ fontSize: '12.5px', color: '#A5B4FC', lineHeight: '20px' }}>
               • App Name: <strong>AstroGuru</strong><br />
               • Package: <code style={{ color: '#FCD34D' }}>com.deepak00007.astrologerapp</code><br />
-              • Official Build Code: <strong>296 (v2.9.6)</strong><br />
+              • Official Build Code: <strong>300 (v3.0.0)</strong><br />
               • App Store Icons: 3 Gilded High-Res 512x512 assets generated in brand vault.
             </div>
           </div>

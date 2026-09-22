@@ -10,20 +10,20 @@ import { Footer } from './components/Footer';
 import { WebsiteConfig, ReleaseData } from './types';
 
 const DEFAULT_RELEASE: ReleaseData = {
-  currentVersion: '2.9.6',
-  latestVersion: '2.9.6',
-  buildCode: 296,
-  downloadUrl: 'https://expo.dev/artifacts/eas/KqNVd3oafIKVeEIuHEhYUUB0ll5xTobex7TfgS_0ZvE.apk',
+  currentVersion: '3.0.0',
+  latestVersion: '3.0.0',
+  buildCode: 300,
+  downloadUrl: '/download/apk',
   fileSizeMb: 105,
   minAndroidVersion: '8.0',
   sha256: '3e9b16757b4f3bfa658d3cb1e2aa95dc012a6473210ab6411516eef14f9d2d88',
   releaseNotes: [
-    'Official Golden Surya Branding & Adaptive Sacred Icons',
-    'WhatsApp-Style Voice Notes in Chat with Live Waveforms',
-    '5-Mode 3D Tarot Reading (Daily, Love & Ex, Career, Timeline, ₹99 Yes/No Oracle)',
-    'Daily 7:00 AM Shubh Muhurat & Rahu Kaal Lock-Screen Alerts',
-    'High-Contrast Vedic Kundli (36-Gun Ashta-Koota Matching)',
-    'Direct In-App APK Download & Package Auto-Installer Engine',
+    'Official v3.0.0 Milestone Release: In-App Download Engine',
+    '100% In-App Direct APK Download without external website redirects',
+    'Real-time streaming download progress bar with background session support',
+    'Instant native APK package installer prompt upon completion',
+    'GSAP Sticky 3D Phone Showcase with live interactive screens',
+    'Synchronized single update action button across Seeker & Acharya profiles',
   ],
   isMandatory: false,
 };

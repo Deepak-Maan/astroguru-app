@@ -13,11 +13,13 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Avatar } from './Avatar';
 import { colors, radius, spacing, typography } from '../theme';
 import { useAuthStore } from '../store/authStore';
+import { useNotificationStore } from '../store/notificationStore';
+import { ASTROLOGERS } from '../data/astrologers';
 import {
   subscribeToIncomingCallsInFirebase,
+  subscribeToIncomingCallsForSeekerInFirebase,
   updateCallStatusInFirebase,
 } from '../services/firebaseRealtimeService';
-
 import { showIncomingCallNotification } from '../services/notificationService';
 
 export function IncomingCallModal() {
@@ -29,37 +31,90 @@ export function IncomingCallModal() {
   const [pulseAnim] = useState(new Animated.Value(1));
 
   useEffect(() => {
-    if (!isAstrologer) return;
-
-    const possibleIds = [
-      String(authUser?.id || ''),
-      String(authUser?.email?.split('@')[0] || ''),
-      'astro_1786457216977',
-      'prince_more',
-      '1',
-    ].filter(Boolean);
-
     const unsubs: (() => void)[] = [];
 
-    possibleIds.forEach((astroKey) => {
-      const unsub = subscribeToIncomingCallsInFirebase(astroKey, (calls) => {
-        const activeRinging = calls.find((c) => c && c.status === 'ringing');
+    if (isAstrologer) {
+      // ── ASTROLOGER MODE: Watch for incoming calls from Seekers (callerRole !== 'expert') ──
+      const keysToWatch = new Set<string>();
+
+      if (authUser?.id) {
+        keysToWatch.add(String(authUser.id));
+        keysToWatch.add(String(authUser.id).replace(/[.#$\[\]\/]/g, '_'));
+      }
+      if (authUser?.email) {
+        const emailPrefix = authUser.email.split('@')[0];
+        keysToWatch.add(emailPrefix);
+        keysToWatch.add(emailPrefix.replace(/[.#$\[\]\/]/g, '_'));
+      }
+      if (authUser?.name) {
+        const nameKey = authUser.name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+        keysToWatch.add(nameKey);
+
+        const matched = ASTROLOGERS.filter(
+          (a) =>
+            a.name.toLowerCase().includes(authUser.name.toLowerCase()) ||
+            authUser.name.toLowerCase().includes(a.name.toLowerCase())
+        );
+        matched.forEach((a) => keysToWatch.add(a.id));
+      }
+
+      keysToWatch.add('astro_1786457216977');
+      keysToWatch.add('prince_more');
+      keysToWatch.add('vivek_kumar');
+      keysToWatch.add('1');
+
+      Array.from(keysToWatch)
+        .filter(Boolean)
+        .forEach((astroKey) => {
+          const unsub = subscribeToIncomingCallsInFirebase(astroKey, (calls) => {
+            // Only ring if status is 'ringing' AND caller was the Seeker (callerRole !== 'expert')
+            const activeRinging = calls.find(
+              (c) => c && c.status === 'ringing' && c.callerRole !== 'expert'
+            );
+            if (activeRinging) {
+              setIncomingCall(activeRinging);
+              showIncomingCallNotification({
+                seekerName: activeRinging.seekerName || 'Seeker',
+                type: activeRinging.type === 'video' ? 'video' : 'audio',
+                callId: activeRinging.callId,
+              });
+              useNotificationStore.getState().addNotification({
+                type: 'astrologer_live',
+                title: `📞 Incoming ${activeRinging.type === 'video' ? 'Video' : 'Audio'} Call`,
+                message: `${activeRinging.seekerName || 'Seeker'} is calling for Vedic Consultation...`,
+              });
+            }
+          });
+          unsubs.push(unsub);
+        });
+    } else {
+      // ── SEEKER MODE: Watch for incoming calls from Astrologers (callerRole === 'expert') ──
+      const seekerId = authUser?.id ? String(authUser.id) : 'usr_seeker_demo';
+      const unsub = subscribeToIncomingCallsForSeekerInFirebase(seekerId, (calls) => {
+        const activeRinging = calls.find(
+          (c) => c && c.status === 'ringing' && c.callerRole === 'expert'
+        );
         if (activeRinging) {
           setIncomingCall(activeRinging);
           showIncomingCallNotification({
-            seekerName: activeRinging.seekerName || 'Seeker',
+            seekerName: activeRinging.astrologerName || 'Astrologer',
             type: activeRinging.type === 'video' ? 'video' : 'audio',
             callId: activeRinging.callId,
+          });
+          useNotificationStore.getState().addNotification({
+            type: 'astrologer_live',
+            title: `📞 Incoming Astrologer Call`,
+            message: `${activeRinging.astrologerName || 'Acharya'} is calling you for live consultation...`,
           });
         }
       });
       unsubs.push(unsub);
-    });
+    }
 
     return () => {
       unsubs.forEach((u) => u());
     };
-  }, [isAstrologer, authUser?.id, authUser?.email]);
+  }, [isAstrologer, authUser?.id, authUser?.email, authUser?.name]);
 
   // Pulse animation when incoming call is active
   useEffect(() => {
@@ -86,20 +141,50 @@ export function IncomingCallModal() {
   if (!incomingCall) return null;
 
   const isVideo = incomingCall.type === 'video';
+  const displayName = isAstrologer
+    ? incomingCall.seekerName || 'Seeker'
+    : incomingCall.astrologerName || 'Acharya';
+  const displayBadge = isAstrologer
+    ? isVideo
+      ? '📹 INCOMING HD VIDEO CALL'
+      : '📞 INCOMING AUDIO CALL'
+    : isVideo
+    ? '📹 ACHARYA VIDEO CALL'
+    : '📞 ACHARYA AUDIO CALL';
+  const displaySubtitle = isAstrologer
+    ? `Requesting a live Vedic ${isVideo ? 'Video' : 'Audio'} Consultation`
+    : `Your Astrologer is calling you for live Jyotish consultation`;
 
   function handleAccept() {
-    if (!incomingCall || !authUser?.id) return;
-    updateCallStatusInFirebase(incomingCall.callId, String(authUser.id), 'connected');
+    if (!incomingCall) return;
     const callInfo = { ...incomingCall };
-    setIncomingCall(null);
-    router.push(
-      `/consultation/${callInfo.astrologerId}?type=${callInfo.type}&callId=${callInfo.callId}&role=expert`
+    updateCallStatusInFirebase(
+      callInfo.callId,
+      callInfo.astrologerId,
+      'connected',
+      callInfo.seekerId
     );
+    setIncomingCall(null);
+
+    if (isAstrologer) {
+      router.push(
+        `/consultation/${callInfo.astrologerId}?type=${callInfo.type}&callId=${callInfo.callId}&role=expert`
+      );
+    } else {
+      router.push(
+        `/consultation/${callInfo.astrologerId}?type=${callInfo.type}&callId=${callInfo.callId}`
+      );
+    }
   }
 
   function handleDecline() {
-    if (!incomingCall || !authUser?.id) return;
-    updateCallStatusInFirebase(incomingCall.callId, String(authUser.id), 'declined');
+    if (!incomingCall) return;
+    updateCallStatusInFirebase(
+      incomingCall.callId,
+      incomingCall.astrologerId,
+      'declined',
+      incomingCall.seekerId
+    );
     setIncomingCall(null);
   }
 
@@ -112,18 +197,14 @@ export function IncomingCallModal() {
         />
 
         <View style={styles.card}>
-          <Text style={styles.callBadge}>
-            {isVideo ? '📹 INCOMING HD VIDEO CALL' : '📞 INCOMING AUDIO CALL'}
-          </Text>
+          <Text style={styles.callBadge}>{displayBadge}</Text>
 
           <Animated.View style={[styles.avatarWrapper, { transform: [{ scale: pulseAnim }] }]}>
-            <Avatar name={incomingCall.seekerName || 'Seeker'} size={96} />
+            <Avatar name={displayName} size={96} />
           </Animated.View>
 
-          <Text style={styles.callerName}>{incomingCall.seekerName || 'Seeker'}</Text>
-          <Text style={styles.callerSub}>
-            Requesting a live Vedic {isVideo ? 'Video' : 'Audio'} Consultation
-          </Text>
+          <Text style={styles.callerName}>{displayName}</Text>
+          <Text style={styles.callerSub}>{displaySubtitle}</Text>
 
           <View style={styles.rateBadge}>
             <Text style={styles.rateText}>Rate: ₹{incomingCall.ratePerMin || 25}/min</Text>

@@ -58,12 +58,6 @@ export async function launchNativeInstaller(targetFileUri: string, apkUrl?: stri
     return { success: true };
   } catch (intentErr: any) {
     console.warn('[Installer Intent VIEW]', intentErr);
-    if (apkUrl) {
-      try {
-        await Linking.openURL(apkUrl);
-        return { success: true, requiresPermission: true };
-      } catch (_) {}
-    }
     return { success: false, requiresPermission: true };
   }
 }

@@ -14,6 +14,8 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { pushMessageToFirebase, syncRoomMetadataToFirebase } from '../services/firebaseRealtimeService';
 import { showChatNotification } from '../services/notificationService';
+import { useAuthStore } from './authStore';
+import { useNotificationStore } from './notificationStore';
 
 export type MessageRole = 'seeker' | 'acharya' | 'system';
 
@@ -209,6 +211,7 @@ export const useLiveChatStore = create<LiveChatState>()(
             astrologerName: activeRoom.astrologerName,
             status: activeRoom.status,
             lastMessage: text,
+            senderRole: role,
           });
         }
       },
@@ -380,15 +383,51 @@ export const useLiveChatStore = create<LiveChatState>()(
                 read: false,
               });
 
-              // Trigger notification if message is from the other person
-              const notifTitle = m.senderRole === 'acharya'
-                ? `🪔 ${m.senderName || 'Acharya'} replied`
-                : `🔔 ${m.senderName || 'Seeker'} sent a message`;
-              showChatNotification({
-                title: notifTitle,
-                body: m.text,
-                data: { roomId },
-              });
+              // Check current user identity to NEVER notify the sender for their own message
+              const authUser = useAuthStore.getState().user;
+              const isAstrologer = authUser?.role === 'astrologer';
+              const myId = String(authUser?.id || '').trim();
+              const myName = String(authUser?.name || '').trim().toLowerCase();
+
+              const isSelf =
+                (m.senderId && m.senderId === myId) ||
+                (m.senderRole === 'seeker' && !isAstrologer) ||
+                (m.senderRole === 'acharya' && isAstrologer) ||
+                (m.senderName && myName && m.senderName.trim().toLowerCase() === myName);
+
+              // ONLY trigger notification for the intended RECIPIENT
+              if (!isSelf) {
+                if (isAstrologer && m.senderRole === 'seeker') {
+                  // Astrologer receiving Seeker's message
+                  const notifTitle = `🔔 New message from ${m.senderName || 'Seeker'}`;
+                  showChatNotification({
+                    title: notifTitle,
+                    body: m.text,
+                    data: { roomId, actionUrl: `/acharya-chat/${roomId}` },
+                  });
+                  useNotificationStore.getState().addNotification({
+                    type: 'chat_message',
+                    title: notifTitle,
+                    message: m.text,
+                    actionUrl: `/acharya-chat/${roomId}`,
+                  });
+                } else if (!isAstrologer && m.senderRole === 'acharya') {
+                  // Seeker receiving Astrologer's reply
+                  const notifTitle = `🪔 ${m.senderName || 'Acharya'} replied`;
+                  const astroId = roomId.split('__')[1] || 'a1';
+                  showChatNotification({
+                    title: notifTitle,
+                    body: m.text,
+                    data: { roomId, actionUrl: `/chat/${astroId}` },
+                  });
+                  useNotificationStore.getState().addNotification({
+                    type: 'chat_message',
+                    title: notifTitle,
+                    message: m.text,
+                    actionUrl: `/chat/${astroId}`,
+                  });
+                }
+              }
             }
           }
 
