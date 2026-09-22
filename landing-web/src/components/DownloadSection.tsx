@@ -69,32 +69,30 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
             </div>
           </div>
 
-          {/* Web Admin & Cloud Launcher */}
+          {/* AI Jyotishi & Live Vedic Consultations */}
           <div className="liquid-glass p-8 rounded-3xl border-indigo-500/30 space-y-6 flex flex-col justify-between">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-3xl">🌐</span>
+                <span className="text-3xl">🔮</span>
                 <span className="text-xs px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 font-bold border border-indigo-500/30">
-                  Web & Admin Desks
+                  Google Gemini Vedic AI
                 </span>
               </div>
-              <h3 className="text-xl font-black text-white">Live Enterprise Web Portal</h3>
+              <h3 className="text-xl font-black text-white">Instant AI Jyotishi & Live Consultations</h3>
               <p className="text-slate-300 text-xs leading-relaxed">
-                Manage real-time live astrologer sessions, monitor fraud watchtower security, process KYC payouts, and propagate OTA releases.
+                Receive instant Vedic Kundli readings, real-time remedies, and multi-lingual astrological guidance 24/7 in Hindi, Hinglish, and English.
               </p>
             </div>
 
             <div className="space-y-3">
               <a
-                href="http://localhost:3000"
-                target="_blank"
-                rel="noreferrer"
-                className="w-full py-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-indigo-200 hover:text-white font-bold text-sm text-center flex items-center justify-center gap-2 border border-indigo-500/40 transition-all"
+                href={downloadUrl || '/download/apk'}
+                className="w-full py-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-300 hover:text-amber-200 font-bold text-sm text-center flex items-center justify-center gap-2 border border-amber-500/30 transition-all"
               >
-                <span>🖥️</span> Open Web Admin Console (Port 3000)
+                <span>✨</span> Start 3-Min Free Consultation
               </a>
               <div className="text-[11px] text-center text-slate-400">
-                Live Backend API running on <code className="text-amber-300 font-mono">http://localhost:5000</code>
+                100% Private, Secure & End-to-End Encrypted Readings
               </div>
             </div>
           </div>

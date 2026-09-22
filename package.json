@@ -1,6 +1,6 @@
 {
   "name": "astrologer-app",
-  "version": "2.9.7",
+  "version": "2.9.8",
   "main": "expo-router/entry",
   "dependencies": {
     "@expo/metro-runtime": "~57.0.8",

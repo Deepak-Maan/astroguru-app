@@ -12,6 +12,7 @@ import { Astrologer, BirthProfile, ChatMessage, Kundli } from '../../types';
 import { RASHIS } from '../../data/rashis';
 import { NAKSHATRAS } from '../../data/nakshatras';
 import { PLANETS } from '../../data/planets';
+import { askGeminiAstrologer } from './gemini';
 
 export interface GenerateAiReplyOptions {
   currentMessage: string;
@@ -215,10 +216,26 @@ function generateContextualVedicReply(
 export async function generateAstrologyAiReply(options: GenerateAiReplyOptions): Promise<string> {
   const { currentMessage, history, astrologer, kundli, profile } = options;
 
-  // 1. Try local Express server endpoint
+  // 1. Google Gemini AI Engine (Real-time intelligent response with full Vedic chart context)
+  try {
+    const geminiResult = await askGeminiAstrologer({
+      currentMessage,
+      history,
+      astrologer,
+      kundli,
+      profile,
+    });
+    if (geminiResult.ok && geminiResult.text && geminiResult.text.length > 10) {
+      return geminiResult.text;
+    }
+  } catch (geminiErr) {
+    console.warn('[Gemini AI Engine Fallback]', geminiErr);
+  }
+
+  // 2. Try local Express server endpoint (if running in dev)
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2500);
+    const timeoutId = setTimeout(() => controller.abort(), 2000);
 
     const res = await fetch('http://localhost:5000/api/ai/chat', {
       method: 'POST',
@@ -248,10 +265,10 @@ export async function generateAstrologyAiReply(options: GenerateAiReplyOptions):
       }
     }
   } catch (err) {
-    // Graceful fallback to client engine
+    // Graceful fallback to local engine
   }
 
-  // 2. High-intelligence local Vedic inference engine
+  // 3. High-intelligence local Vedic inference engine (Offline safe)
   const analysis = analyzeTopicAndContext(currentMessage, history);
   const features = getKundliFeatures(kundli, profile);
   return generateContextualVedicReply(analysis, features, astrologer, history, currentMessage);
