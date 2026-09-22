@@ -51,7 +51,8 @@
     "admin": "npm --prefix admin-web run dev",
     "admin:build": "npm --prefix admin-web run build",
     "landing": "npm --prefix landing-web run dev",
-    "landing:build": "npm --prefix landing-web run build"
+    "landing:build": "npm --prefix landing-web run build",
+    "build": "npm --prefix landing-web run build"
   },
   "private": true
 }

@@ -1,4 +1,4 @@
-﻿export interface WebsiteChapter {
+export interface WebsiteChapter {
   id: string;
   title: string;
   badge: string;
@@ -18,6 +18,7 @@ export interface WebsiteConfig {
   tarotEnabled: boolean;
   voiceEnabled: boolean;
   downloadEnabled: boolean;
+  navagrahaEnabled?: boolean;
   ratings: {
     score: string;
     reviewCount: string;

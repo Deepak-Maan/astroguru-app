@@ -13,7 +13,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { pushMessageToFirebase, syncRoomMetadataToFirebase } from '../services/firebaseRealtimeService';
-import { showChatNotification } from '../services/notificationService';
+import { showChatNotification, sendTwoWayChatPushNotification } from '../services/notificationService';
 import { useAuthStore } from './authStore';
 import { useNotificationStore } from './notificationStore';
 
@@ -213,6 +213,15 @@ export const useLiveChatStore = create<LiveChatState>()(
             lastMessage: text,
             senderRole: role,
           });
+
+          // Two-way Push Notification: Seeker -> Acharya / Acharya -> Seeker
+          sendTwoWayChatPushNotification({
+            senderRole: role === 'acharya' ? 'acharya' : 'seeker',
+            senderName,
+            text,
+            roomId,
+            astrologerId: activeRoom.astrologerId,
+          }).catch(() => {});
         }
       },
 

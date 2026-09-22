@@ -35,6 +35,7 @@ import { useAuthStore } from '../../src/store/authStore';
 import { formatCurrency } from '../../src/utils';
 import { getAstrologerByIdFromFirebase } from '../../src/services/firebaseAuthService';
 import { subscribeToFirebaseRoomMessages } from '../../src/services/firebaseRealtimeService';
+import { sendTwoWayChatPushNotification } from '../../src/services/notificationService';
 import { Astrologer, ChatMessage } from '../../src/types';
 
 let idCounter = 0;
@@ -377,6 +378,15 @@ export default function ChatScreen() {
           at: Date.now(),
         });
         scrollToEnd();
+
+        // Push Notification for User (Seeker) from Acharya
+        sendTwoWayChatPushNotification({
+          senderRole: 'acharya',
+          senderName: astrologer.name,
+          text: reply,
+          astrologerId: astrologer.id,
+          avatar: astrologer.avatar,
+        }).catch(() => {});
       }, delay);
     } catch (e) {
       setTyping(false);
@@ -389,6 +399,15 @@ export default function ChatScreen() {
         at: Date.now(),
       });
       scrollToEnd();
+
+      // Push Notification for User (Seeker) from Acharya
+      sendTwoWayChatPushNotification({
+        senderRole: 'acharya',
+        senderName: astrologer.name,
+        text: fallbackReply,
+        astrologerId: astrologer.id,
+        avatar: astrologer.avatar,
+      }).catch(() => {});
     }
   }
 
@@ -436,6 +455,15 @@ export default function ChatScreen() {
           at: Date.now(),
         });
         scrollToEnd();
+
+        // Push Notification for User (Seeker) from Acharya
+        sendTwoWayChatPushNotification({
+          senderRole: 'acharya',
+          senderName: astrologer.name,
+          text: reply,
+          astrologerId: astrologer.id,
+          avatar: astrologer.avatar,
+        }).catch(() => {});
       }, delay);
     } catch (e) {
       setTyping(false);
@@ -447,6 +475,15 @@ export default function ChatScreen() {
         at: Date.now(),
       });
       scrollToEnd();
+
+      // Push Notification for User (Seeker) from Acharya
+      sendTwoWayChatPushNotification({
+        senderRole: 'acharya',
+        senderName: astrologer.name,
+        text: fallbackReply,
+        astrologerId: astrologer.id,
+        avatar: astrologer.avatar,
+      }).catch(() => {});
     }
   }
 
@@ -560,17 +597,17 @@ export default function ChatScreen() {
           </Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
             <Pressable
-              onPress={() => setMode(mode === 'chat' ? 'call' : 'chat')}
+              onPress={() => router.push(`/consultation/${astrologer.id}?type=audio`)}
               style={styles.modeToggle}
             >
               <LinearGradient
-                colors={mode === 'call' ? ['#6366F1', '#8B5CF6'] : ['rgba(26,33,64,0.7)', 'rgba(30,41,80,0.6)']}
+                colors={['#6366F1', '#8B5CF6']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.modeToggleGrad}
               >
-                <Text style={[styles.modeToggleText, mode === 'call' ? { color: colors.white } : { color: '#A5B4FC' }]}>
-                  {mode === 'chat' ? '📞 Audio Call' : '💬 Live Chat'}
+                <Text style={[styles.modeToggleText, { color: colors.white }]}>
+                  📞 Audio Call
                 </Text>
               </LinearGradient>
             </Pressable>

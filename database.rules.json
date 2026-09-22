@@ -1,0 +1,44 @@
+{
+  "rules": {
+    "app_meta": {
+      ".read": true,
+      ".write": "auth != null && (auth.token.role === 'admin' || auth.uid === 'p0W49NSO0ddmapaj2oZ7IWQ25Ef1' || auth.uid === '2mpD0bDBkNXC71vzgPx7kk0zIHX2' || root.child('users').child(auth.uid).child('role').val() === 'admin')"
+    },
+    "users": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || auth.token.role === 'admin' || auth.token.role === 'astrologer')",
+        ".write": "auth != null && (auth.uid === $uid || auth.token.role === 'admin')"
+      }
+    },
+    "seekers": {
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null && (auth.uid === $uid || auth.token.role === 'admin')"
+      }
+    },
+    "astrologers": {
+      ".read": true,
+      "$astroId": {
+        ".write": "auth != null && (auth.uid === $astroId || auth.token.role === 'admin' || auth.token.role === 'astrologer')"
+      }
+    },
+    "rooms": {
+      ".read": "auth != null",
+      "$roomId": {
+        ".write": "auth != null"
+      }
+    },
+    "calls": {
+      ".read": "auth != null",
+      "$callId": {
+        ".write": "auth != null"
+      }
+    },
+    "claimed_utrs": {
+      ".read": "auth != null",
+      "$utr": {
+        ".write": "auth != null && !data.exists()"
+      }
+    }
+  }
+}

@@ -1,5 +1,17 @@
-import React, { useState } from 'react';
-import { Alert, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,18 +20,28 @@ import { GradientBackground } from '../../src/components/GradientBackground';
 import { Avatar } from '../../src/components/Avatar';
 import { Button } from '../../src/components/Button';
 import { Card } from '../../src/components/Card';
+import { Chip } from '../../src/components/Chip';
 import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { SectionHeader } from '../../src/components/SectionHeader';
+import { AnimatedAuthOverlay } from '../../src/components/AnimatedAuthOverlay';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { useUserStore } from '../../src/store/userStore';
 import { useAuthStore } from '../../src/store/authStore';
 import { useWalletStore } from '../../src/store/walletStore';
 import { useSubscriptionStore } from '../../src/store/subscriptionStore';
 import { useUpdateStore } from '../../src/store/updateStore';
+import { useLiveChatStore } from '../../src/store/liveChatStore';
 import { RASHIS } from '../../src/data/rashis';
 import { NAKSHATRAS } from '../../src/data/nakshatras';
+import { searchCities } from '../../src/data/cities';
 import { formatCurrency } from '../../src/utils';
-import { useLiveChatStore } from '../../src/store/liveChatStore';
+import { City } from '../../src/types';
+import {
+  fetchUserProfileFromDatabase,
+  syncUserProfileToDatabase,
+} from '../../src/services/userProfileService';
+
+const AVATAR_OPTIONS = ['☀️', '🔱', '🪷', '🦚', '🕉️', '⚡', '🌙', '🧘'];
 
 function AcharyaLiveQueue({ astrologerId }: { astrologerId: string }) {
   const router = useRouter();
@@ -121,7 +143,36 @@ function Row({
   );
 }
 
-import { AnimatedAuthOverlay } from '../../src/components/AnimatedAuthOverlay';
+function EditNumField({
+  value,
+  onChange,
+  placeholder,
+  max,
+  width = 64,
+  label,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+  max: number;
+  width?: number;
+  label?: string;
+}) {
+  return (
+    <View style={{ gap: 4 }}>
+      {!!label && <Text style={styles.modalFieldMicro}>{label}</Text>}
+      <TextInput
+        value={value}
+        onChangeText={(t) => onChange(t.replace(/[^0-9]/g, '').slice(0, String(max).length))}
+        placeholder={placeholder}
+        placeholderTextColor="#64748B"
+        keyboardType="number-pad"
+        style={[styles.modalNumInput, { width, textAlign: 'center' }]}
+        maxLength={String(max).length}
+      />
+    </View>
+  );
+}
 
 export default function Profile() {
   const router = useRouter();
@@ -142,6 +193,157 @@ export default function Profile() {
   const triggerUpdateModal = useUpdateStore((s) => s.triggerUpdateModal);
 
   const [showLogoutOverlay, setShowLogoutOverlay] = useState(false);
+
+  // Profile Edit Modal State
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccessMessage, setSaveSuccessMessage] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [editGender, setEditGender] = useState<'male' | 'female' | 'other'>('male');
+  const [editAvatar, setEditAvatar] = useState('☀️');
+  const [editDd, setEditDd] = useState('');
+  const [editMm, setEditMm] = useState('');
+  const [editYyyy, setEditYyyy] = useState('');
+  const [editHh, setEditHh] = useState('');
+  const [editMin, setEditMin] = useState('');
+  const [editCity, setEditCity] = useState<City | null>(null);
+  const [editCityQuery, setEditCityQuery] = useState('');
+  const [showCityList, setShowCityList] = useState(false);
+  const [editGotra, setEditGotra] = useState('');
+  const [editMaritalStatus, setEditMaritalStatus] = useState<'single' | 'married' | 'divorced' | 'separated' | 'other'>('single');
+  const [editError, setEditError] = useState<string | null>(null);
+
+  const cityResults = useMemo(() => searchCities(editCityQuery, 6), [editCityQuery]);
+
+  // Sync cloud profile on load
+  useEffect(() => {
+    if (authUser?.id) {
+      fetchUserProfileFromDatabase(authUser.id)
+        .then((cloudData) => {
+          if (cloudData) {
+            if (cloudData.avatar) setEditAvatar(cloudData.avatar);
+            if (cloudData.gotra) setEditGotra(cloudData.gotra);
+            if (cloudData.maritalStatus) setEditMaritalStatus(cloudData.maritalStatus as any);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [authUser?.id]);
+
+  const handleOpenEditModal = () => {
+    setEditName(authUser?.name || profile?.name || '');
+    setEditEmail(authUser?.email || '');
+    setEditPhone(authUser?.phone || '');
+    setEditGender((profile?.gender as any) || 'male');
+    if (profile?.date) {
+      const parts = profile.date.split('-');
+      setEditYyyy(parts[0] || '');
+      setEditMm(parts[1] || '');
+      setEditDd(parts[2] || '');
+    } else {
+      setEditYyyy('');
+      setEditMm('');
+      setEditDd('');
+    }
+    if (profile?.time) {
+      const parts = profile.time.split(':');
+      setEditHh(parts[0] || '');
+      setEditMin(parts[1] || '');
+    } else {
+      setEditHh('');
+      setEditMin('');
+    }
+    setEditCity(profile?.place || null);
+    setEditCityQuery(profile?.place?.name || '');
+    setShowCityList(false);
+    setEditError(null);
+    setSaveSuccessMessage(null);
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveProfile = async () => {
+    if (!editName.trim()) {
+      setEditError('Please enter your full name.');
+      return;
+    }
+
+    const d = Number(editDd), m = Number(editMm), y = Number(editYyyy);
+    const h = Number(editHh), mi = Number(editMin);
+
+    const hasAnyBirth = editDd || editMm || editYyyy || editHh || editMin || editCity;
+    if (hasAnyBirth) {
+      if (!editDd || !editMm || !editYyyy) {
+        setEditError('Please enter day, month, and year of birth.');
+        return;
+      }
+      if (m < 1 || m > 12) {
+        setEditError('Month must be between 1 and 12.');
+        return;
+      }
+      if (y < 1900 || y > 2100) {
+        setEditError('Year must be between 1900 and 2100.');
+        return;
+      }
+      const daysInMonth = new Date(y, m, 0).getDate();
+      if (d < 1 || d > daysInMonth) {
+        setEditError(`Day must be between 1 and ${daysInMonth}.`);
+        return;
+      }
+      if (editHh === '' || editMin === '') {
+        setEditError('Please enter hour and minute of birth.');
+        return;
+      }
+      if (h < 0 || h > 23 || mi < 0 || mi > 59) {
+        setEditError('Invalid time (hours 00-23, minutes 00-59).');
+        return;
+      }
+      if (!editCity) {
+        setEditError('Please select a birth place/city.');
+        return;
+      }
+    }
+
+    setIsSaving(true);
+    setEditError(null);
+
+    const pad = (n: string) => n.padStart(2, '0');
+    const birthDate = hasAnyBirth ? `${editYyyy}-${pad(editMm)}-${pad(editDd)}` : undefined;
+    const birthTime = hasAnyBirth ? `${pad(editHh)}:${pad(editMin)}` : undefined;
+
+    const uid = authUser?.id || `usr_${Date.now()}`;
+    const res = await syncUserProfileToDatabase({
+      userId: uid,
+      name: editName.trim(),
+      email: editEmail.trim(),
+      phone: editPhone.trim(),
+      gender: editGender,
+      avatar: editAvatar,
+      date: birthDate,
+      time: birthTime,
+      place: editCity || undefined,
+      gotra: editGotra.trim(),
+      maritalStatus: editMaritalStatus,
+    });
+
+    setIsSaving(false);
+
+    if (res.success) {
+      setSaveSuccessMessage('✨ Profile & Kundli updated in database!');
+      if (Platform.OS !== 'web') {
+        try {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        } catch (_) {}
+      }
+      setTimeout(() => {
+        setSaveSuccessMessage(null);
+        setIsEditModalOpen(false);
+      }, 1200);
+    } else {
+      setEditError(res.error || 'Failed to update database. Please try again.');
+    }
+  };
 
   const handleSignOut = () => {
     setShowLogoutOverlay(true);
@@ -186,6 +388,7 @@ export default function Profile() {
           message="Session securely ended."
           onFinished={handleOverlayFinish}
         />
+
         {!isAuthenticated || !authUser ? (
           <View style={{ flex: 1, backgroundColor: colors.bg }} />
         ) : authUser?.role === 'astrologer' ? (
@@ -193,7 +396,6 @@ export default function Profile() {
           <>
             <ScreenHeader title="Acharya Profile" />
             <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-
               {/* Identity Hero */}
               <View style={styles.identityCard}>
                 <Avatar name={authUser?.name ?? 'Acharya'} size={80} />
@@ -214,6 +416,14 @@ export default function Profile() {
                     </View>
                   ))}
                 </View>
+
+                <Button
+                  label="✏️ Edit Acharya Profile"
+                  variant="gold"
+                  size="sm"
+                  style={{ marginTop: spacing.md, width: '100%' }}
+                  onPress={handleOpenEditModal}
+                />
               </View>
 
               {/* Acharya Specialties */}
@@ -274,7 +484,14 @@ export default function Profile() {
             <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
               {/* Identity hero */}
               <View style={styles.identityCard}>
-                <Avatar name={authUser?.name ?? profile?.name ?? 'Seeker'} size={80} />
+                <View style={{ position: 'relative' }}>
+                  <Avatar name={authUser?.name ?? profile?.name ?? 'Seeker'} size={80} />
+                  {!!editAvatar && (
+                    <View style={styles.avatarPillBadge}>
+                      <Text style={{ fontSize: 16 }}>{editAvatar}</Text>
+                    </View>
+                  )}
+                </View>
                 <Text style={styles.name}>{authUser?.name ?? profile?.name ?? 'Seeker'}</Text>
                 <Text style={styles.emailText}>{authUser?.email ?? 'seeker@astroguru.app'}</Text>
 
@@ -285,6 +502,12 @@ export default function Profile() {
                     </Text>
                   </View>
                 )}
+
+                {editGotra ? (
+                  <View style={[styles.adminRoleTag, { borderColor: colors.teal, backgroundColor: 'rgba(5,150,105,0.15)', marginTop: 4 }]}>
+                    <Text style={[styles.adminRoleText, { color: colors.teal }]}>🪔 GOTRA: {editGotra.toUpperCase()}</Text>
+                  </View>
+                ) : null}
 
                 {profile ? (
                   <Text style={styles.birth}>
@@ -309,13 +532,22 @@ export default function Profile() {
                   </View>
                 )}
 
-                <Button
-                  label={profile ? 'Edit birth details' : 'Add birth details'}
-                  variant="outline"
-                  size="sm"
-                  style={{ marginTop: spacing.lg }}
-                  onPress={() => router.push('/(onboarding)/birth-details')}
-                />
+                <View style={{ flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md, width: '100%' }}>
+                  <Button
+                    label="✏️ Edit Profile"
+                    variant="gold"
+                    size="sm"
+                    style={{ flex: 1 }}
+                    onPress={handleOpenEditModal}
+                  />
+                  <Button
+                    label={profile ? 'Full Chart' : 'Add Birth Data'}
+                    variant="outline"
+                    size="sm"
+                    style={{ flex: 1 }}
+                    onPress={() => router.push('/(onboarding)/birth-details')}
+                  />
+                </View>
               </View>
 
               {/* Wallet snapshot */}
@@ -385,6 +617,232 @@ export default function Profile() {
             </ScrollView>
           </>
         )}
+
+        {/* ─── EDIT PROFILE & DATABASE SYNC MODAL ─── */}
+        <Modal
+          visible={isEditModalOpen}
+          animationType="slide"
+          transparent
+          onRequestClose={() => !isSaving && setIsEditModalOpen(false)}
+        >
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            style={styles.modalOverlay}
+          >
+            <View style={styles.modalContainer}>
+              {/* Modal Header */}
+              <View style={styles.modalHeader}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.modalTitle}>✏️ Update Seeker Profile</Text>
+                  <Text style={styles.modalSubtitle}>Data instantly syncs with cloud database & Kundli chart</Text>
+                </View>
+                <Pressable
+                  onPress={() => !isSaving && setIsEditModalOpen(false)}
+                  style={styles.modalCloseButton}
+                  hitSlop={8}
+                >
+                  <Text style={styles.modalCloseText}>✕</Text>
+                </Pressable>
+              </View>
+
+              <ScrollView
+                style={styles.modalScroll}
+                contentContainerStyle={styles.modalScrollContent}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+              >
+                {/* Spiritual Avatar Selector */}
+                <View style={styles.modalSection}>
+                  <Text style={styles.modalSectionTitle}>🌟 Spiritual Persona</Text>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.avatarRow}>
+                    {AVATAR_OPTIONS.map((emoji) => {
+                      const isSelected = editAvatar === emoji;
+                      return (
+                        <Pressable
+                          key={emoji}
+                          onPress={() => setEditAvatar(emoji)}
+                          style={[
+                            styles.avatarOption,
+                            isSelected && styles.avatarOptionSelected,
+                          ]}
+                        >
+                          <Text style={{ fontSize: 24 }}>{emoji}</Text>
+                        </Pressable>
+                      );
+                    })}
+                  </ScrollView>
+                </View>
+
+                {/* Personal Information */}
+                <View style={styles.modalSection}>
+                  <Text style={styles.modalSectionTitle}>👤 Personal Details</Text>
+
+                  <Text style={styles.modalLabel}>Full Name *</Text>
+                  <TextInput
+                    value={editName}
+                    onChangeText={setEditName}
+                    placeholder="Your legal or spiritual name"
+                    placeholderTextColor="#64748B"
+                    style={styles.modalInput}
+                  />
+
+                  <Text style={styles.modalLabel}>Phone Number</Text>
+                  <TextInput
+                    value={editPhone}
+                    onChangeText={setEditPhone}
+                    placeholder="+91 9876543210"
+                    placeholderTextColor="#64748B"
+                    keyboardType="phone-pad"
+                    style={styles.modalInput}
+                  />
+
+                  <Text style={styles.modalLabel}>Email Address</Text>
+                  <TextInput
+                    value={editEmail}
+                    onChangeText={setEditEmail}
+                    placeholder="user@astroguru.app"
+                    placeholderTextColor="#64748B"
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    style={styles.modalInput}
+                  />
+
+                  <Text style={styles.modalLabel}>Gender</Text>
+                  <View style={styles.chipRow}>
+                    {(['male', 'female', 'other'] as const).map((g) => (
+                      <Chip
+                        key={g}
+                        label={g === 'male' ? '♂ Male' : g === 'female' ? '♀ Female' : '⚥ Other'}
+                        selected={editGender === g}
+                        onPress={() => setEditGender(g)}
+                        tone={editGender === g ? 'gold' : 'default'}
+                      />
+                    ))}
+                  </View>
+
+                  <Text style={styles.modalLabel}>Marital Status</Text>
+                  <View style={styles.chipRow}>
+                    {(['single', 'married', 'divorced', 'other'] as const).map((s) => (
+                      <Chip
+                        key={s}
+                        label={s.charAt(0).toUpperCase() + s.slice(1)}
+                        selected={editMaritalStatus === s}
+                        onPress={() => setEditMaritalStatus(s)}
+                        tone={editMaritalStatus === s ? 'teal' : 'default'}
+                      />
+                    ))}
+                  </View>
+
+                  <Text style={styles.modalLabel}>Gotra (Optional)</Text>
+                  <TextInput
+                    value={editGotra}
+                    onChangeText={setEditGotra}
+                    placeholder="e.g. Kashyapa, Bharadwaja, Vashistha"
+                    placeholderTextColor="#64748B"
+                    style={styles.modalInput}
+                  />
+                </View>
+
+                {/* Vedic Birth & Astrological Details */}
+                <View style={styles.modalSection}>
+                  <Text style={styles.modalSectionTitle}>🪐 Vedic Birth & Kundli Coordinates</Text>
+
+                  {/* Date of Birth */}
+                  <Text style={styles.modalLabel}>Date of Birth</Text>
+                  <View style={styles.rowInputs}>
+                    <EditNumField value={editDd} onChange={setEditDd} placeholder="DD" max={31} label="Day" width={56} />
+                    <EditNumField value={editMm} onChange={setEditMm} placeholder="MM" max={12} label="Month" width={56} />
+                    <EditNumField value={editYyyy} onChange={setEditYyyy} placeholder="YYYY" max={2099} label="Year" width={76} />
+                  </View>
+
+                  {/* Time of Birth */}
+                  <Text style={[styles.modalLabel, { marginTop: spacing.md }]}>Time of Birth (24-Hour)</Text>
+                  <View style={styles.rowInputs}>
+                    <EditNumField value={editHh} onChange={setEditHh} placeholder="HH" max={23} label="Hour (0-23)" width={70} />
+                    <EditNumField value={editMin} onChange={setEditMin} placeholder="MM" max={59} label="Min (0-59)" width={70} />
+                  </View>
+
+                  {/* Place of Birth */}
+                  <Text style={[styles.modalLabel, { marginTop: spacing.md }]}>Place of Birth / City</Text>
+                  <TextInput
+                    value={editCityQuery}
+                    onChangeText={(t) => {
+                      setEditCityQuery(t);
+                      setShowCityList(true);
+                    }}
+                    onFocus={() => setShowCityList(true)}
+                    placeholder="Type city (e.g. Mumbai, Delhi, London)..."
+                    placeholderTextColor="#64748B"
+                    style={styles.modalInput}
+                  />
+
+                  {/* Selected City Confirmation */}
+                  {editCity && !showCityList && (
+                    <View style={styles.selectedCityBanner}>
+                      <Text style={styles.selectedCityText}>
+                        📍 {editCity.name}, {editCity.state} · {editCity.lat.toFixed(2)}°, {editCity.lon.toFixed(2)}°
+                      </Text>
+                    </View>
+                  )}
+
+                  {/* City dropdown results */}
+                  {showCityList && cityResults.length > 0 && (
+                    <View style={styles.dropdown}>
+                      {cityResults.map((c) => (
+                        <Pressable
+                          key={`${c.name}-${c.state}-${c.lat}`}
+                          onPress={() => {
+                            setEditCity(c);
+                            setEditCityQuery(c.name);
+                            setShowCityList(false);
+                          }}
+                          style={styles.dropdownItem}
+                        >
+                          <Text style={styles.dropdownItemText}>{c.name}, {c.state}</Text>
+                          <Text style={styles.dropdownItemCoords}>{c.lat.toFixed(2)}°, {c.lon.toFixed(2)}°</Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                  )}
+                </View>
+
+                {/* Error Banner */}
+                {!!editError && (
+                  <View style={styles.errorBox}>
+                    <Text style={styles.errorText}>⚠️ {editError}</Text>
+                  </View>
+                )}
+
+                {/* Success Banner */}
+                {!!saveSuccessMessage && (
+                  <View style={styles.successBox}>
+                    <Text style={styles.successText}>{saveSuccessMessage}</Text>
+                  </View>
+                )}
+              </ScrollView>
+
+              {/* Modal Footer Actions */}
+              <View style={styles.modalFooter}>
+                <Button
+                  label="Cancel"
+                  variant="ghost"
+                  size="md"
+                  disabled={isSaving}
+                  onPress={() => setIsEditModalOpen(false)}
+                  style={{ flex: 1 }}
+                />
+                <Button
+                  label={isSaving ? 'Syncing to DB...' : '💾 Save to Database'}
+                  variant="gold"
+                  size="md"
+                  disabled={isSaving}
+                  onPress={handleSaveProfile}
+                  style={{ flex: 2 }}
+                />
+              </View>
+            </View>
+          </KeyboardAvoidingView>
+        </Modal>
       </SafeAreaView>
     </GradientBackground>
   );
@@ -407,6 +865,19 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 14,
     elevation: 4,
+  },
+  avatarPillBadge: {
+    position: 'absolute',
+    bottom: -4,
+    right: -4,
+    backgroundColor: '#0F172A',
+    borderRadius: radius.pill,
+    width: 28,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: '#FCD34D',
   },
   name: { ...typography.h1, color: '#EEF2FF', marginTop: spacing.sm, textAlign: 'center', fontWeight: '800' },
   emailText: { ...typography.small, color: '#A5B4FC', marginTop: 1, fontWeight: '700' },
@@ -439,28 +910,6 @@ const styles = StyleSheet.create({
   },
   badgeLabel: { ...typography.tiny, color: '#A5B4FC', fontWeight: '600' },
   badgeValue: { ...typography.small, color: '#EEF2FF', fontWeight: '800', fontSize: 12 },
-
-  adminBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    padding: spacing.lg,
-    borderRadius: radius.xl,
-    overflow: 'hidden',
-    borderTopWidth: 2,
-    borderTopColor: 'rgba(255, 255, 255, 0.45)',
-    borderBottomWidth: 3.5,
-    borderBottomColor: 'rgba(0, 0, 0, 0.25)',
-    shadowColor: '#7C3AED',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  adminBannerIcon: { fontSize: 24 },
-  adminBannerTitle: { ...typography.h3, color: '#FFFFFF', fontWeight: '900', fontSize: 15 },
-  adminBannerSub: { ...typography.tiny, color: 'rgba(255, 255, 255, 0.85)', marginTop: 2 },
-  adminBannerArrow: { fontSize: 24, color: '#FFFFFF', fontWeight: '900' },
 
   walletCard: {
     flexDirection: 'row',
@@ -512,5 +961,221 @@ const styles = StyleSheet.create({
     color: colors.textFaint,
     textAlign: 'center',
     marginTop: spacing.sm,
+  },
+
+  /* ─── Modal Styles (Option 10 Luminescent Liquid Glass) ─── */
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(5, 7, 15, 0.85)',
+    justifyContent: 'flex-end',
+  },
+  modalContainer: {
+    backgroundColor: '#0E1225',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    borderWidth: 1.5,
+    borderColor: 'rgba(129, 140, 248, 0.35)',
+    maxHeight: '92%',
+    paddingBottom: Platform.OS === 'ios' ? 32 : 16,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: -8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(129, 140, 248, 0.2)',
+  },
+  modalTitle: {
+    ...typography.h2,
+    color: '#EEF2FF',
+    fontWeight: '900',
+    fontSize: 18,
+  },
+  modalSubtitle: {
+    ...typography.tiny,
+    color: '#A5B4FC',
+    marginTop: 2,
+    fontWeight: '600',
+  },
+  modalCloseButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(129, 140, 248, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(129, 140, 248, 0.3)',
+  },
+  modalCloseText: {
+    color: '#EEF2FF',
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  modalScroll: {
+    maxHeight: 520,
+  },
+  modalScrollContent: {
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.lg,
+    gap: spacing.lg,
+  },
+  modalSection: {
+    gap: spacing.xs,
+  },
+  modalSectionTitle: {
+    ...typography.h3,
+    color: '#FCD34D',
+    fontWeight: '800',
+    fontSize: 15,
+    marginBottom: spacing.xs,
+  },
+  modalLabel: {
+    ...typography.tiny,
+    color: '#EEF2FF',
+    fontWeight: '700',
+    marginTop: 6,
+    marginBottom: 4,
+  },
+  modalFieldMicro: {
+    ...typography.tiny,
+    color: '#A5B4FC',
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  modalInput: {
+    backgroundColor: 'rgba(26, 33, 64, 0.85)',
+    borderWidth: 1.2,
+    borderColor: 'rgba(129, 140, 248, 0.3)',
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 10,
+    color: '#EEF2FF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  modalNumInput: {
+    backgroundColor: 'rgba(26, 33, 64, 0.85)',
+    borderWidth: 1.2,
+    borderColor: 'rgba(129, 140, 248, 0.3)',
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.xs,
+    paddingVertical: 10,
+    color: '#EEF2FF',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  avatarRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
+  avatarOption: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: 'rgba(26, 33, 64, 0.75)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(129, 140, 248, 0.25)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarOptionSelected: {
+    borderColor: '#FCD34D',
+    backgroundColor: 'rgba(252, 211, 77, 0.2)',
+    borderWidth: 2,
+    transform: [{ scale: 1.08 }],
+  },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginTop: 4,
+  },
+  rowInputs: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    alignItems: 'center',
+  },
+  selectedCityBanner: {
+    backgroundColor: 'rgba(5, 150, 105, 0.18)',
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.4)',
+    borderRadius: radius.md,
+    padding: spacing.sm,
+    marginTop: 6,
+  },
+  selectedCityText: {
+    ...typography.tiny,
+    color: '#34D399',
+    fontWeight: '700',
+  },
+  dropdown: {
+    backgroundColor: '#131833',
+    borderWidth: 1.2,
+    borderColor: 'rgba(129, 140, 248, 0.4)',
+    borderRadius: radius.md,
+    marginTop: 4,
+    overflow: 'hidden',
+  },
+  dropdownItem: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(129, 140, 248, 0.2)',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  dropdownItemText: {
+    ...typography.small,
+    color: '#EEF2FF',
+    fontWeight: '600',
+  },
+  dropdownItemCoords: {
+    ...typography.tiny,
+    color: '#A5B4FC',
+    fontSize: 10,
+  },
+  errorBox: {
+    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.4)',
+    borderRadius: radius.md,
+    padding: spacing.md,
+  },
+  errorText: {
+    ...typography.small,
+    color: '#F87171',
+    fontWeight: '700',
+  },
+  successBox: {
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.4)',
+    borderRadius: radius.md,
+    padding: spacing.md,
+  },
+  successText: {
+    ...typography.small,
+    color: '#34D399',
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  modalFooter: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(129, 140, 248, 0.2)',
   },
 });

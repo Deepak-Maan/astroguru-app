@@ -1,7 +1,5 @@
 {
-  "version": 2,
-  "buildCommand": "npm --prefix landing-web install && npm --prefix landing-web run build",
-  "outputDirectory": "landing-web/dist",
+  "framework": "vite",
   "cleanUrls": true,
   "rewrites": [
     { "source": "/privacy", "destination": "/privacy.html" },

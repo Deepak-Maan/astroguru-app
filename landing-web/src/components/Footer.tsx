@@ -16,8 +16,8 @@ export const Footer: React.FC<FooterProps> = ({ version, buildCode }) => {
         </div>
         <div className="flex items-center gap-6 text-slate-400 font-medium">
           <a href="#sticky-showcase" className="hover:text-amber-400 transition-colors">3D Showcase</a>
-          <a href="#tarot" className="hover:text-amber-400 transition-colors">5 Tarot Spreads</a>
-          <a href="http://localhost:3000" target="_blank" rel="noreferrer" className="hover:text-amber-400 transition-colors">Admin Portal</a>
+          <a href="/privacy" className="hover:text-amber-400 transition-colors">Privacy Policy</a>
+          <a href="/delete-account" className="hover:text-amber-400 transition-colors">Delete Account</a>
           <a href="https://github.com/Deepak-Maan/astroguru-app" target="_blank" rel="noreferrer" className="hover:text-amber-400 transition-colors">GitHub</a>
           <span>© 2026 AstroGuru Inc.</span>
         </div>

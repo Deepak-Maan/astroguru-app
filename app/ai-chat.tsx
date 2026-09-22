@@ -126,7 +126,7 @@ export default function AiChat() {
       <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
         <ScreenHeader
           title="AI Jyotishi"
-          subtitle={apiKey ? 'Powered by Claude · Reads your Kundli' : 'Vedic AI Intelligence · Reads your Kundli'}
+          subtitle="Google Gemini Vedic AI · Reads your Kundli"
           showBack
         />
 

@@ -3,6 +3,7 @@ import { StarfieldCanvas } from './components/StarfieldCanvas';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { StickyShowcase } from './components/StickyShowcase';
+import { NavagrahaOrbitRadar } from './components/NavagrahaOrbitRadar';
 import { TarotStage } from './components/TarotStage';
 import { DownloadSection } from './components/DownloadSection';
 import { AppUploadModal } from './components/AppUploadModal';
@@ -153,6 +154,11 @@ export function App() {
       {/* GSAP ScrollTrigger Pinned 3D Phone Showcase */}
       {(websiteConfig?.showcaseEnabled ?? true) && (
         <StickyShowcase chapters={websiteConfig?.chapters} />
+      )}
+
+      {/* Navagraha Planetary Orbit Radar & Real-Time Transit Clock */}
+      {(websiteConfig?.navagrahaEnabled ?? true) && (
+        <NavagrahaOrbitRadar />
       )}
 
       {/* 3D Interactive Tarot Stage with GuruVani Voice Waveforms */}

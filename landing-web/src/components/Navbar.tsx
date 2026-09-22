@@ -36,24 +36,11 @@ export const Navbar: React.FC<NavbarProps> = ({ version, downloadUrl, onOpenUplo
           <a href="#features" className="hover:text-amber-400 transition-colors">Core Features</a>
           <a href="#sticky-showcase" className="hover:text-amber-400 transition-colors">Live 3D Preview</a>
           <a href="#tarot" className="hover:text-amber-400 transition-colors">5 Tarot Spreads</a>
-          <a href="#download" className="hover:text-amber-400 transition-colors">Download APK</a>
-          <a href="http://localhost:3000" target="_blank" rel="noreferrer" className="px-3 py-1.5 rounded-lg bg-indigo-500/10 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-500/20 transition-all">
-            🖥️ Web Admin
-          </a>
+          <a href="#download" className="hover:text-amber-400 transition-colors">Download App</a>
         </div>
 
         {/* Action Buttons */}
         <div className="flex items-center gap-3">
-          {/* Admin Upload Button */}
-          <button
-            onClick={onOpenUpload}
-            className="px-3.5 py-2 rounded-xl bg-slate-900 border border-amber-500/40 hover:border-amber-400 text-amber-300 font-bold text-xs shadow-md transition-all flex items-center gap-1.5 hover:scale-105"
-            title="Upload new APK build or manage releases"
-          >
-            <span>🚀</span>
-            <span className="hidden sm:inline">Upload App</span>
-          </button>
-
           {/* Primary Download Button */}
           <a
             href={downloadUrl || '/download/apk'}

@@ -1,4 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ref, get, set } from 'firebase/database';
+import { firebaseDb } from './firebaseConfig';
+import { useAuthStore } from '../store/authStore';
 
 export interface BankVerificationResult {
   verified: boolean;
@@ -61,8 +64,8 @@ function validateNcpiUtrStructure(utr: string): { valid: boolean; reason?: strin
 
 /**
  * Production-Grade Payment Verification Engine
- * Validates UTR against NPCI checksums, anti-fraud duplicate ledger,
- * and live merchant bank reconciliation.
+ * Validates UTR against NPCI checksums, Cloud Anti-Replay Ledger,
+ * and multi-device duplicate fraud prevention.
  */
 export async function verifyPaymentWithBankServer(
   txnId: string,
@@ -85,7 +88,26 @@ export async function verifyPaymentWithBankServer(
     };
   }
 
-  // 2. Anti-Replay / Duplicate UTR Ledger Check
+  // 2. Cloud Anti-Replay Check (Firebase Realtime DB Global Deduplication)
+  try {
+    const cloudUtrRef = ref(firebaseDb, `claimed_utrs/${utr}`);
+    const cloudSnap = await get(cloudUtrRef);
+    if (cloudSnap.exists()) {
+      return {
+        verified: false,
+        status: 'DUPLICATE_UTR',
+        utr,
+        bankName: structCheck.bank || 'AstroGuru Fraud Protection',
+        timestamp: new Date().toISOString(),
+        gatewayRef: `PG_CLOUD_DUP_${utr}`,
+        message: '❌ REJECTED: This UTR has already been claimed on this or another device.',
+      };
+    }
+  } catch (cloudErr) {
+    console.warn('[Cloud UTR Check Warning]', cloudErr);
+  }
+
+  // 3. Local Anti-Replay / Offline Duplicate UTR Ledger Check
   try {
     const stored = await AsyncStorage.getItem(USED_UTRS_KEY);
     const usedUtrs: string[] = stored ? JSON.parse(stored) : [];
@@ -102,7 +124,17 @@ export async function verifyPaymentWithBankServer(
       };
     }
 
-    // 3. Store verified UTR in ledger to prevent future duplicate reuse
+    // 4. Record verified UTR globally in Firebase Cloud & locally in AsyncStorage
+    const currentUserId = useAuthStore.getState().user?.id || 'guest';
+    try {
+      await set(ref(firebaseDb, `claimed_utrs/${utr}`), {
+        claimedAt: Date.now(),
+        amount: expectedAmount,
+        claimedBy: currentUserId,
+        bank: structCheck.bank || 'NPCI Node',
+      });
+    } catch (_) {}
+
     usedUtrs.push(utr);
     await AsyncStorage.setItem(USED_UTRS_KEY, JSON.stringify(usedUtrs));
 

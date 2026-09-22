@@ -44,10 +44,8 @@
         }
       ],
       "permissions": [
-        "android.permission.REQUEST_INSTALL_PACKAGES",
-        "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.WRITE_EXTERNAL_STORAGE",
-        "REQUEST_INSTALL_PACKAGES"
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.RECORD_AUDIO"
       ],
       "predictiveBackGestureEnabled": false
     },

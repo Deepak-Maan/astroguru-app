@@ -5,6 +5,7 @@
  */
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
+import { useNotificationStore } from '../store/notificationStore';
 
 // Configure how notifications are handled safely
 try {
@@ -169,3 +170,92 @@ export async function showIncomingCallNotification(
 function callerNameOrSeeker(name: string) {
   return name || 'Seeker';
 }
+
+/**
+ * Bidirectional (Two-Way) Push Notification for Seeker ↔ Acharya Chat
+ * - When Seeker sends a message: Astrologer receives "💬 Naya Sandesh: [Seeker Name]"
+ * - When Acharya sends a message: Seeker receives "🪔 [Acharya Name] ne reply kiya"
+ */
+export async function sendTwoWayChatPushNotification({
+  senderRole,
+  senderName,
+  text,
+  roomId,
+  astrologerId,
+  avatar,
+  isAudio = false,
+}: {
+  senderRole: 'seeker' | 'acharya';
+  senderName: string;
+  text: string;
+  roomId?: string;
+  astrologerId?: string;
+  avatar?: string;
+  isAudio?: boolean;
+}) {
+  const isFromSeeker = senderRole === 'seeker';
+
+  // Derived Title & Content
+  const title = isFromSeeker
+    ? `💬 Naya Sandesh: ${senderName || 'Seeker'}`
+    : `🪔 ${senderName || 'Acharya'} ne reply kiya`;
+
+  const preview = isAudio
+    ? (isFromSeeker ? '🎤 Voice note received. Tap to listen.' : '🎤 Guru ji ne audio sandesh bheja. Tap to listen.')
+    : (text.length > 120 ? text.slice(0, 117) + '...' : text);
+
+  // Target Action Route
+  let actionUrl = '/(tabs)';
+  if (isFromSeeker) {
+    actionUrl = roomId ? `/acharya-chat/${roomId}` : '/acharya';
+  } else {
+    actionUrl = astrologerId
+      ? `/chat/${astrologerId}`
+      : (roomId ? `/chat/${roomId.split('__')[1] || 'astro-1'}` : '/(tabs)');
+  }
+
+  // 1. Add to In-App Notification Store (triggers floating banner & unread badge)
+  try {
+    useNotificationStore.getState().addNotification({
+      type: 'chat_message',
+      title,
+      message: preview,
+      avatar,
+      actionUrl,
+    });
+  } catch (e) {
+    console.warn('[AddInAppNotification Warning]', e);
+  }
+
+  // 2. Native Expo Push Notification
+  try {
+    if (Platform.OS !== 'web') {
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title,
+          body: preview,
+          sound: 'default',
+          priority: Notifications.AndroidNotificationPriority.MAX,
+          color: isFromSeeker ? '#6366F1' : '#F59E0B',
+          data: {
+            roomId: roomId || '',
+            astrologerId: astrologerId || '',
+            senderRole,
+            actionUrl,
+          },
+        },
+        trigger: null, // trigger immediately
+      });
+    } else {
+      // 3. Web Browser Notification
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+        new Notification(title, {
+          body: preview,
+          icon: avatar || '/favicon.ico',
+        });
+      }
+    }
+  } catch (err) {
+    console.warn('[sendTwoWayChatPushNotification Error]', err);
+  }
+}
