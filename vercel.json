@@ -4,6 +4,7 @@
   "outputDirectory": "landing-web/dist",
   "cleanUrls": true,
   "rewrites": [
+    { "source": "/assets/(.*)", "destination": "/assets/$1" },
     { "source": "/admin/assets/(.*)", "destination": "/admin/assets/$1" },
     { "source": "/admin/(.*)", "destination": "/admin/index.html" },
     { "source": "/admin", "destination": "/admin/index.html" },

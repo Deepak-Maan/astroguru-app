@@ -18,5 +18,15 @@ if (fs.existsSync(adminDist)) {
     fs.mkdirSync(targetAdminDir, { recursive: true });
   }
   fs.cpSync(adminDist, targetAdminDir, { recursive: true });
+
+  // Fallback safeguard: also mirror admin assets into landing-web/dist/assets
+  const adminAssets = path.join(adminDist, 'assets');
+  const landingAssets = path.join(__dirname, '../landing-web/dist/assets');
+  if (fs.existsSync(adminAssets) && fs.existsSync(landingAssets)) {
+    console.log('🛡️ Mirroring Admin assets into landing-web/dist/assets fallback pool...');
+    fs.cpSync(adminAssets, landingAssets, { recursive: true });
+  }
+
   console.log('✅ Admin Portal embedded at /admin successfully!');
 }
+
