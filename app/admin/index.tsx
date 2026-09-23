@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, Pressable, Linking } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Pressable, Linking, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -9,11 +9,16 @@ import { colors, radius, spacing, typography } from '../../src/theme';
 
 export default function AdminWebRedirectScreen() {
   const router = useRouter();
+  const [copied, setCopied] = useState(false);
 
-  const handleOpenWebAdmin = () => {
-    Linking.openURL('https://admin.astroguru.app').catch(() => {
-      // Fallback to localhost if external link unavailable
-      Linking.openURL('http://localhost:3000');
+  const localWebUrl = 'http://localhost:3000';
+  const lanWebUrl = 'http://192.168.31.252:3000';
+  const serverAdminUrl = 'http://192.168.31.252:5000/admin';
+  const primaryUrl = Platform.OS === 'web' ? localWebUrl : lanWebUrl;
+
+  const handleOpenWebAdmin = (targetUrl = primaryUrl) => {
+    Linking.openURL(targetUrl).catch(() => {
+      Linking.openURL(localWebUrl);
     });
   };
 
@@ -30,28 +35,37 @@ export default function AdminWebRedirectScreen() {
             </LinearGradient>
 
             <View style={styles.badge}>
-              <Text style={styles.badgeText}>MIGRATED TO DESKTOP WEB</Text>
+              <Text style={styles.badgeText}>DEDICATED DESKTOP WEB DASHBOARD</Text>
             </View>
 
             <Text style={styles.title}>AstroGuru Admin Portal</Text>
 
             <Text style={styles.description}>
-              Administrative controls, cybersecurity watchtowers, astrologer verification,
-              and business intelligence have moved to the dedicated Desktop Web Dashboard.
+              Administrative controls, live app releases, website CMS, and financial telemetry
+              run on the dedicated Desktop Web Dashboard.
             </Text>
 
             <View style={styles.urlBox}>
-              <Text style={styles.urlLabel}>ADMIN WEB PORTAL URL</Text>
-              <Text style={styles.urlText}>https://admin.astroguru.app</Text>
-              <Text style={styles.urlSub}>Local Development: http://localhost:3000</Text>
+              <Text style={styles.urlLabel}>PRIMARY ADMIN WEB URL</Text>
+              <Text style={styles.urlText}>{localWebUrl}</Text>
+              <Text style={styles.urlSub}>LAN Mobile Access: {lanWebUrl}</Text>
+              <Text style={styles.urlSub}>Unified Server Route: {serverAdminUrl}</Text>
             </View>
 
             <View style={styles.actions}>
               <Button
-                label="Launch Web Admin in Browser 🚀"
+                label="Launch Web Admin (Port 3000) 🚀"
                 variant="primary"
                 size="lg"
-                onPress={handleOpenWebAdmin}
+                onPress={() => handleOpenWebAdmin(primaryUrl)}
+                style={styles.primaryBtn}
+              />
+
+              <Button
+                label="Open via Server /admin (:5000) 🌐"
+                variant="outline"
+                size="md"
+                onPress={() => handleOpenWebAdmin(Platform.OS === 'web' ? 'http://localhost:5000/admin' : serverAdminUrl)}
                 style={styles.primaryBtn}
               />
 

@@ -995,7 +995,7 @@ app.get('/download/apk', (req, res) => {
 const adminWebDist = path.join(__dirname, '../admin-web/dist');
 if (fs.existsSync(adminWebDist)) {
   app.use('/admin', express.static(adminWebDist));
-  app.use('/admin', (req, res) => {
+  app.get('/admin*', (req, res) => {
     res.sendFile(path.join(adminWebDist, 'index.html'));
   });
 }

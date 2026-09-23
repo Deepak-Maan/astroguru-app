@@ -113,6 +113,32 @@ export const AdminTopNav: React.FC<AdminTopNavProps> = ({
           🕒 {timeStr}
         </div>
 
+        {/* View Live Website Button */}
+        <a
+          href={typeof window !== 'undefined' && window.location.port === '3000' ? `http://${window.location.hostname}:4000` : '/'}
+          target="_blank"
+          rel="noreferrer"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            fontSize: '12px',
+            padding: '7px 12px',
+            textDecoration: 'none',
+            color: '#EEF2FF',
+            borderRadius: '10px',
+            border: '1px solid rgba(129, 140, 248, 0.3)',
+            background: 'rgba(30, 41, 75, 0.5)',
+            fontWeight: '600',
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+          }}
+          title="Open live public landing website in a new tab"
+        >
+          <span>🌐</span>
+          <span>Live Website</span>
+        </a>
+
         {/* Quick Operational Actions */}
         <button
           onClick={onSendDutyAlert}

@@ -1,9 +1,12 @@
 {
   "version": 2,
-  "buildCommand": "npm --prefix landing-web install && npm --prefix landing-web run build",
+  "buildCommand": "npm --prefix landing-web install && npm --prefix admin-web install && node scripts/build-all-web.js",
   "outputDirectory": "landing-web/dist",
   "cleanUrls": true,
   "rewrites": [
+    { "source": "/admin/assets/(.*)", "destination": "/admin/assets/$1" },
+    { "source": "/admin/(.*)", "destination": "/admin/index.html" },
+    { "source": "/admin", "destination": "/admin/index.html" },
     { "source": "/privacy", "destination": "/privacy.html" },
     { "source": "/delete-account", "destination": "/delete-account.html" },
     { "source": "/(.*)", "destination": "/index.html" }

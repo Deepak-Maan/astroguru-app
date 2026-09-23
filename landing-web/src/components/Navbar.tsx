@@ -7,6 +7,10 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ version, downloadUrl, onOpenUpload }) => {
+  const adminUrl = typeof window !== 'undefined' && window.location.port === '4000'
+    ? `http://${window.location.hostname}:3000`
+    : '/admin';
+
   return (
     <nav className="sticky top-0 z-50 bg-[#070A17]/85 backdrop-blur-xl border-b border-indigo-500/20 px-4 sm:px-8 py-3.5 transition-all">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -37,10 +41,32 @@ export const Navbar: React.FC<NavbarProps> = ({ version, downloadUrl, onOpenUplo
           <a href="#sticky-showcase" className="hover:text-amber-400 transition-colors">Live 3D Preview</a>
           <a href="#tarot" className="hover:text-amber-400 transition-colors">5 Tarot Spreads</a>
           <a href="#download" className="hover:text-amber-400 transition-colors">Download App</a>
+          <a
+            href={adminUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="hover:text-amber-400 transition-colors flex items-center gap-1.5 text-indigo-300"
+          >
+            <span className="text-amber-400">🛡️</span>
+            <span>Admin Panel</span>
+          </a>
         </div>
 
         {/* Action Buttons */}
         <div className="flex items-center gap-3">
+          {/* Admin Panel Button */}
+          <a
+            href={adminUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-xl bg-indigo-950/70 hover:bg-indigo-900/80 border border-indigo-500/35 hover:border-amber-400/60 text-indigo-100 hover:text-amber-300 font-bold text-xs shadow-md shadow-indigo-950/50 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 backdrop-blur-md group"
+            title="Launch AstroGuru Enterprise Web Admin Dashboard"
+          >
+            <span className="text-amber-400 group-hover:rotate-12 transition-transform">🛡️</span>
+            <span className="hidden sm:inline">Admin Panel</span>
+            <span className="text-[10px] text-indigo-400 group-hover:text-amber-300 transition-colors font-mono">↗</span>
+          </a>
+
           {/* Primary Download Button */}
           <a
             href={downloadUrl || '/download/apk'}

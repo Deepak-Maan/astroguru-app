@@ -6,6 +6,10 @@ interface FooterProps {
 }
 
 export const Footer: React.FC<FooterProps> = ({ version, buildCode }) => {
+  const adminUrl = typeof window !== 'undefined' && window.location.port === '4000'
+    ? `http://${window.location.hostname}:3000`
+    : '/admin';
+
   return (
     <footer className="border-t border-slate-900 bg-[#02040A] py-12 text-xs text-slate-500 text-center">
       <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -18,6 +22,15 @@ export const Footer: React.FC<FooterProps> = ({ version, buildCode }) => {
           <a href="#sticky-showcase" className="hover:text-amber-400 transition-colors">3D Showcase</a>
           <a href="/privacy" className="hover:text-amber-400 transition-colors">Privacy Policy</a>
           <a href="/delete-account" className="hover:text-amber-400 transition-colors">Delete Account</a>
+          <a
+            href={adminUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="hover:text-amber-400 text-indigo-300 font-bold transition-colors flex items-center gap-1"
+          >
+            <span>🛡️</span>
+            <span>Admin Portal</span>
+          </a>
           <a href="https://github.com/Deepak-Maan/astroguru-app" target="_blank" rel="noreferrer" className="hover:text-amber-400 transition-colors">GitHub</a>
           <span>© 2026 AstroGuru Inc.</span>
         </div>
