@@ -1,10 +1,23 @@
 import React, { useState } from 'react';
-import { AdminUser, AstrologerProfile, BannedEntity, OrderItem, SecurityIncident, UserRecord } from './types';
+import {
+  AdminAuditLog,
+  AdminUser,
+  AstrologerProfile,
+  BannedEntity,
+  LiveConsultationSession,
+  OrderItem,
+  SecurityIncident,
+  SystemHealthConfig,
+  UserRecord,
+} from './types';
 import {
   INITIAL_ASTROLOGERS,
+  INITIAL_AUDIT_LOGS,
   INITIAL_BLACKLIST,
   INITIAL_INCIDENTS,
+  INITIAL_LIVE_SESSIONS,
   INITIAL_ORDERS,
+  INITIAL_SYSTEM_HEALTH,
   INITIAL_USERS,
   fetchLiveAdminData,
   adjustUserWalletApi,
@@ -12,6 +25,14 @@ import {
   toggleAstrologerDutyApi,
   verifyAstrologerApi,
   updateAstrologerRateApi,
+  fetchLiveSessionsApi,
+  terminateLiveSessionApi,
+  toggleAstrologerBoostApi,
+  issueAstrologerStrikeApi,
+  fetchAuditLogsApi,
+  recordAuditLogApi,
+  fetchSystemHealthApi,
+  saveSystemHealthApi,
 } from './services/api';
 import { AdminSidebar, AdminTab } from './components/AdminSidebar';
 import { AdminTopNav } from './components/AdminTopNav';
@@ -25,6 +46,9 @@ import { BroadcastDesk } from './pages/BroadcastDesk';
 import { UpdatesDesk } from './pages/UpdatesDesk';
 import { WebsiteDesk } from './pages/WebsiteDesk';
 import { LoginDesk } from './pages/LoginDesk';
+import { LiveDesk } from './pages/LiveDesk';
+import { SystemAuditDesk } from './pages/SystemAuditDesk';
+
 
 export const App: React.FC = () => {
   // Authentication State with secure sessionStorage
@@ -61,6 +85,9 @@ export const App: React.FC = () => {
   const [astrologers, setAstrologers] = useState<AstrologerProfile[]>(INITIAL_ASTROLOGERS);
   const [users, setUsers] = useState<UserRecord[]>(INITIAL_USERS);
   const [orders, setOrders] = useState<OrderItem[]>(INITIAL_ORDERS);
+  const [liveSessions, setLiveSessions] = useState<LiveConsultationSession[]>(INITIAL_LIVE_SESSIONS);
+  const [auditLogs, setAuditLogs] = useState<AdminAuditLog[]>(INITIAL_AUDIT_LOGS);
+  const [systemHealth, setSystemHealth] = useState<SystemHealthConfig>(INITIAL_SYSTEM_HEALTH);
 
   // Load live data from database on mount
   React.useEffect(() => {
@@ -71,7 +98,20 @@ export const App: React.FC = () => {
       if (data.incidents && data.incidents.length > 0) setIncidents(data.incidents);
       if (data.blacklist && data.blacklist.length > 0) setBlacklist(data.blacklist);
     });
+
+    fetchLiveSessionsApi().then((data) => {
+      if (data && data.length > 0) setLiveSessions(data);
+    });
+
+    fetchAuditLogsApi().then((data) => {
+      if (data && data.length > 0) setAuditLogs(data);
+    });
+
+    fetchSystemHealthApi().then((data) => {
+      if (data) setSystemHealth(data);
+    });
   }, []);
+
 
   // Modals & Feedback
   const [isBanModalOpen, setIsBanModalOpen] = useState(false);
@@ -196,6 +236,116 @@ export const App: React.FC = () => {
     setTimeout(() => setDutyAlertSent(false), 5000);
   };
 
+  // Live Sessions Actions (Option 3)
+  const handleTerminateSession = (sessionId: string, reason: string) => {
+    setLiveSessions((prev) =>
+      prev.map((s) => (s.id === sessionId ? { ...s, status: 'terminated_by_admin' } : s))
+    );
+    const newLog: AdminAuditLog = {
+      id: `AUD-${Date.now()}`,
+      timestamp: 'Just now',
+      adminName: adminUser?.name || 'Master Admin',
+      action: 'EMERGENCY_SESSION_KILL',
+      targetEntity: `Session: ${sessionId}`,
+      details: `Force terminated session. Reason: ${reason}. Full refund credited.`,
+      severity: 'warning',
+      ipAddress: '223.185.59.145',
+    };
+    setAuditLogs((prev) => [newLog, ...prev]);
+    terminateLiveSessionApi(sessionId, reason, adminUser?.name || 'Master Admin');
+    showToast(`🚨 Session ${sessionId} terminated & seeker refunded.`);
+  };
+
+  const handleUpdateBoost = (astroId: string, isFeatured: boolean, rank: number) => {
+    setAstrologers((prev) =>
+      prev.map((a) => (a.id === astroId ? { ...a, isFeatured, boostRank: rank } : a))
+    );
+    const astro = astrologers.find((a) => a.id === astroId);
+    const newLog: AdminAuditLog = {
+      id: `AUD-${Date.now()}`,
+      timestamp: 'Just now',
+      adminName: adminUser?.name || 'Master Admin',
+      action: 'ASTRO_BOOST_UPDATED',
+      targetEntity: `Acharya: ${astro?.name || astroId}`,
+      details: isFeatured ? `Boosted to mobile slot #${rank}` : 'Removed from featured rank',
+      severity: 'info',
+      ipAddress: '223.185.59.145',
+    };
+    setAuditLogs((prev) => [newLog, ...prev]);
+    toggleAstrologerBoostApi(astroId, isFeatured, rank);
+    showToast(`⭐ ${astro?.name || 'Acharya'} rank updated to ${isFeatured ? `#${rank} Featured` : 'Standard'}`);
+  };
+
+  const handleIssueAstroStrike = (astroId: string, reason: string) => {
+    setAstrologers((prev) =>
+      prev.map((a) => {
+        if (a.id === astroId) {
+          const nextCount = (a.strikesCount || 0) + 1;
+          const shouldPause = nextCount >= 2;
+          return {
+            ...a,
+            strikesCount: nextCount,
+            onDuty: shouldPause ? false : a.onDuty,
+          };
+        }
+        return a;
+      })
+    );
+    const astro = astrologers.find((a) => a.id === astroId);
+    const nextCount = (astro?.strikesCount || 0) + 1;
+    const newLog: AdminAuditLog = {
+      id: `AUD-${Date.now()}`,
+      timestamp: 'Just now',
+      adminName: adminUser?.name || 'Master Admin',
+      action: 'ASTRO_STRIKE_ISSUED',
+      targetEntity: `Acharya: ${astro?.name || astroId}`,
+      details: `Recorded strike #${nextCount}. Reason: ${reason}.${nextCount >= 2 ? ' Duty automatically paused.' : ''}`,
+      severity: 'warning',
+      ipAddress: '223.185.59.145',
+    };
+    setAuditLogs((prev) => [newLog, ...prev]);
+    issueAstrologerStrikeApi(astroId, reason, adminUser?.name || 'Master Admin');
+    showToast(`⚠️ Strike #${nextCount} issued to ${astro?.name}. ${nextCount >= 2 ? 'Duty paused for 2h.' : ''}`);
+  };
+
+  const handleClearStrikes = (astroId: string) => {
+    setAstrologers((prev) =>
+      prev.map((a) => (a.id === astroId ? { ...a, strikesCount: 0 } : a))
+    );
+    const astro = astrologers.find((a) => a.id === astroId);
+    const newLog: AdminAuditLog = {
+      id: `AUD-${Date.now()}`,
+      timestamp: 'Just now',
+      adminName: adminUser?.name || 'Master Admin',
+      action: 'ASTRO_STRIKES_CLEARED',
+      targetEntity: `Acharya: ${astro?.name || astroId}`,
+      details: 'Pardoned and cleared all strikes back to 0',
+      severity: 'info',
+      ipAddress: '223.185.59.145',
+    };
+    setAuditLogs((prev) => [newLog, ...prev]);
+    showToast(`✓ Strikes cleared for ${astro?.name || 'Astrologer'}`);
+  };
+
+  // System Health & Maintenance (Option 6)
+  const handleUpdateSystemHealth = (newConfig: SystemHealthConfig) => {
+    setSystemHealth(newConfig);
+    const newLog: AdminAuditLog = {
+      id: `AUD-${Date.now()}`,
+      timestamp: 'Just now',
+      adminName: adminUser?.name || 'Master Admin',
+      action: 'MAINTENANCE_MODE_TOGGLED',
+      targetEntity: 'Platform Infrastructure',
+      details: `Maintenance mode switched to: ${newConfig.maintenanceMode ? 'ACTIVE (OFFLINE)' : 'INACTIVE (ONLINE)'}`,
+      severity: newConfig.maintenanceMode ? 'critical' : 'info',
+      ipAddress: '223.185.59.145',
+    };
+    setAuditLogs((prev) => [newLog, ...prev]);
+    saveSystemHealthApi(newConfig);
+    showToast(`System Health updated: ${newConfig.maintenanceMode ? '⚠️ Maintenance Mode Activated' : '● System Online'}`);
+  };
+
+
   // If not logged in, render dedicated Admin Login screen
   if (!adminUser) {
     return <LoginDesk onLoginSuccess={handleLoginSuccess} />;
@@ -231,6 +381,7 @@ export const App: React.FC = () => {
         onLogout={handleLogout}
         incidentCount={incidents.filter((i) => i.status === 'pending').length}
         pendingAstrosCount={astrologers.filter((a) => a.status === 'pending_verification').length}
+        liveSessionsCount={liveSessions.filter((s) => s.status === 'active').length}
       />
 
       {/* Main Content Area */}
@@ -247,6 +398,17 @@ export const App: React.FC = () => {
             <OverviewDesk
               onSendDutyAlert={handleSendDutyAlert}
               dutyAlertSent={dutyAlertSent}
+            />
+          )}
+
+          {currentTab === 'live' && (
+            <LiveDesk
+              sessions={liveSessions}
+              astrologers={astrologers}
+              onTerminateSession={handleTerminateSession}
+              onUpdateBoost={handleUpdateBoost}
+              onIssueStrike={handleIssueAstroStrike}
+              onClearStrikes={handleClearStrikes}
             />
           )}
 
@@ -291,6 +453,17 @@ export const App: React.FC = () => {
           {currentTab === 'broadcast' && <BroadcastDesk />}
 
           {currentTab === 'updates' && <UpdatesDesk />}
+
+          {currentTab === 'system' && (
+            <SystemAuditDesk
+              systemHealth={systemHealth}
+              onUpdateSystemHealth={handleUpdateSystemHealth}
+              auditLogs={auditLogs}
+              users={users}
+              astrologers={astrologers}
+              orders={orders}
+            />
+          )}
         </main>
       </div>
 

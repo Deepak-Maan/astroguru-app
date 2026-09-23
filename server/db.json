@@ -278,5 +278,92 @@
       "audioReadingEnabled": true
     },
     "updatedAt": "2026-09-19T11:48:56.917Z"
+  },
+  "liveSessions": [
+    {
+      "id": "LIVE-SES-701",
+      "type": "audio_call",
+      "astrologerId": "astro_1001",
+      "astrologerName": "Acharya Dev Sharma",
+      "astrologerAvatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200",
+      "userId": "usr_1001",
+      "userName": "Ananya Sharma",
+      "userPhone": "9876543210",
+      "startedAt": "2026-09-23T08:25:00.000Z",
+      "ratePerMin": 25,
+      "durationSeconds": 480,
+      "totalBilled": 200,
+      "status": "active"
+    },
+    {
+      "id": "LIVE-SES-702",
+      "type": "chat",
+      "astrologerId": "astro-2",
+      "astrologerName": "Dr. Radhika Veda",
+      "astrologerAvatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200",
+      "userId": "usr_1786458873223",
+      "userName": "Seeker 0133",
+      "userPhone": "7496850133",
+      "startedAt": "2026-09-23T08:28:00.000Z",
+      "ratePerMin": 20,
+      "durationSeconds": 310,
+      "totalBilled": 103,
+      "status": "active"
+    },
+    {
+      "id": "LIVE-SES-703",
+      "type": "video_call",
+      "astrologerId": "astro_1786457216977",
+      "astrologerName": "vivek kumar",
+      "astrologerAvatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200",
+      "userId": "usr_admin_1",
+      "userName": "Master Admin",
+      "userPhone": "9999999999",
+      "startedAt": "2026-09-23T08:20:00.000Z",
+      "ratePerMin": 25,
+      "durationSeconds": 720,
+      "totalBilled": 300,
+      "status": "active",
+      "flaggedReason": "Rapid message counter exceeded threshold - potential phone number exchange"
+    }
+  ],
+  "auditLogs": [
+    {
+      "id": "AUD-8801",
+      "timestamp": "Today, 12:45 PM",
+      "adminName": "Master Admin",
+      "action": "ASTRO_BOOST_UPDATED",
+      "targetEntity": "Acharya Dev Sharma (astro_1001)",
+      "details": "Pinned to mobile slot #1 with priority boost score 10",
+      "severity": "info",
+      "ipAddress": "223.185.59.145"
+    },
+    {
+      "id": "AUD-8802",
+      "timestamp": "Today, 11:20 AM",
+      "adminName": "Master Admin",
+      "action": "WALLET_MANUAL_CREDIT",
+      "targetEntity": "User: Deepak Maan (+91 74968 50133)",
+      "details": "Credited ₹500 (V3.0.0 Welcome Bonus)",
+      "severity": "info",
+      "ipAddress": "223.185.59.145"
+    },
+    {
+      "id": "AUD-8803",
+      "timestamp": "Today, 09:15 AM",
+      "adminName": "Master Admin",
+      "action": "UNIVERSAL_BAN_HAMMER",
+      "targetEntity": "Device: UUID-8891-AA02-9999",
+      "details": "Permanently banned device for multi-account free chat exploit",
+      "severity": "critical",
+      "ipAddress": "223.185.59.145"
+    }
+  ],
+  "systemHealth": {
+    "maintenanceMode": false,
+    "maintenanceNotice": "AstroGuru is undergoing scheduled Vedic planetary alignment and platform optimization. We will be back online in a few minutes!",
+    "estimatedDowntime": "15 mins",
+    "allowAdminsBypass": true,
+    "lastUpdated": "Today, 02:00 PM"
   }
-}
+}

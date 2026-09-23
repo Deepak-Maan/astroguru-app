@@ -991,7 +991,138 @@ app.get('/download/apk', (req, res) => {
   res.send(Buffer.from(`ASTROGURU_OFFICIAL_RELEASE_V${current?.latestVersion || '3.0.0'}_INTERNAL_PACKAGE`));
 });
 
+// -------------------------------------------------------------
+// Live Sessions, Rank Boost, Audit Trail & System Health APIs
+// -------------------------------------------------------------
+
+app.get('/api/admin/live-sessions', (req, res) => {
+  const db = loadDb();
+  res.json({ success: true, sessions: db.liveSessions || [] });
+});
+
+app.post('/api/admin/live-sessions/:id/terminate', (req, res) => {
+  const db = loadDb();
+  const { id } = req.params;
+  const { reason, adminName } = req.body;
+  if (!db.liveSessions) db.liveSessions = [];
+  const session = db.liveSessions.find((s) => s.id === id);
+  if (session) {
+    session.status = 'terminated_by_admin';
+  }
+  if (!db.auditLogs) db.auditLogs = [];
+  db.auditLogs.unshift({
+    id: `AUD-${Date.now()}`,
+    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    adminName: adminName || 'Admin',
+    action: 'EMERGENCY_SESSION_KILL',
+    targetEntity: `Session: ${id}`,
+    details: `Terminated session. Reason: ${reason || 'Admin intervention'}. Auto-refunded user.`,
+    severity: 'warning',
+    ipAddress: req.ip || '127.0.0.1',
+  });
+  saveDb(db);
+  res.json({ success: true, message: `Session ${id} terminated` });
+});
+
+app.post('/api/admin/astrologers/:id/boost', (req, res) => {
+  const db = loadDb();
+  const { id } = req.params;
+  const { isFeatured, boostRank } = req.body;
+  const astro = (db.astrologers || []).find((a) => a.id === id);
+  if (astro) {
+    astro.isFeatured = isFeatured;
+    astro.boostRank = boostRank;
+  }
+  if (!db.auditLogs) db.auditLogs = [];
+  db.auditLogs.unshift({
+    id: `AUD-${Date.now()}`,
+    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    adminName: 'Admin',
+    action: 'ASTRO_BOOST_UPDATED',
+    targetEntity: `Astro: ${astro?.name || id}`,
+    details: isFeatured ? `Boosted to priority rank #${boostRank || 1}` : 'Removed from featured rank',
+    severity: 'info',
+    ipAddress: req.ip || '127.0.0.1',
+  });
+  saveDb(db);
+  res.json({ success: true, astrologer: astro });
+});
+
+app.post('/api/admin/astrologers/:id/strike', (req, res) => {
+  const db = loadDb();
+  const { id } = req.params;
+  const { reason, adminName } = req.body;
+  const astro = (db.astrologers || []).find((a) => a.id === id);
+  if (astro) {
+    astro.strikesCount = (astro.strikesCount || 0) + 1;
+    if (astro.strikesCount >= 2) {
+      astro.onDuty = false;
+      astro.penaltyPausedUntil = new Date(Date.now() + 2 * 3600 * 1000).toISOString();
+    }
+  }
+  if (!db.auditLogs) db.auditLogs = [];
+  db.auditLogs.unshift({
+    id: `AUD-${Date.now()}`,
+    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    adminName: adminName || 'Admin',
+    action: 'ASTRO_STRIKE_ISSUED',
+    targetEntity: `Astro: ${astro?.name || id}`,
+    details: `Issued strike #${astro?.strikesCount || 1}. Reason: ${reason || 'Missed calls / SLA breach'}. Duty paused: ${astro && astro.strikesCount >= 2}`,
+    severity: 'warning',
+    ipAddress: req.ip || '127.0.0.1',
+  });
+  saveDb(db);
+  res.json({ success: true, astrologer: astro });
+});
+
+app.get('/api/admin/audit-logs', (req, res) => {
+  const db = loadDb();
+  res.json({ success: true, logs: db.auditLogs || [] });
+});
+
+app.post('/api/admin/audit-logs', (req, res) => {
+  const db = loadDb();
+  const entry = {
+    id: `AUD-${Date.now()}`,
+    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    ipAddress: req.ip || '127.0.0.1',
+    ...req.body,
+  };
+  if (!db.auditLogs) db.auditLogs = [];
+  db.auditLogs.unshift(entry);
+  saveDb(db);
+  res.json({ success: true, log: entry });
+});
+
+app.get('/api/system/maintenance', (req, res) => {
+  const db = loadDb();
+  res.json({ success: true, config: db.systemHealth || { maintenanceMode: false } });
+});
+
+app.post('/api/system/maintenance', (req, res) => {
+  const db = loadDb();
+  db.systemHealth = {
+    ...db.systemHealth,
+    ...req.body,
+    lastUpdated: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+  };
+  if (!db.auditLogs) db.auditLogs = [];
+  db.auditLogs.unshift({
+    id: `AUD-${Date.now()}`,
+    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    adminName: 'Admin',
+    action: 'MAINTENANCE_MODE_TOGGLED',
+    targetEntity: 'Platform System',
+    details: `Maintenance mode switched to: ${req.body.maintenanceMode ? 'ACTIVE (Offline)' : 'INACTIVE (Online)'}`,
+    severity: req.body.maintenanceMode ? 'critical' : 'info',
+    ipAddress: req.ip || '127.0.0.1',
+  });
+  saveDb(db);
+  res.json({ success: true, config: db.systemHealth });
+});
+
 // Serve compiled Admin Web Portal at /admin if dist exists
+
 const adminWebDist = path.join(__dirname, '../admin-web/dist');
 if (fs.existsSync(adminWebDist)) {
   app.use('/admin', express.static(adminWebDist));

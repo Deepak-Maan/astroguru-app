@@ -3,13 +3,15 @@ import { AdminUser } from '../types';
 
 export type AdminTab =
   | 'overview'
+  | 'live'
   | 'website'
   | 'watchtower'
   | 'astrologers'
   | 'users'
   | 'astromall'
   | 'broadcast'
-  | 'updates';
+  | 'updates'
+  | 'system';
 
 interface AdminSidebarProps {
   currentTab: AdminTab;
@@ -18,6 +20,7 @@ interface AdminSidebarProps {
   onLogout: () => void;
   incidentCount: number;
   pendingAstrosCount: number;
+  liveSessionsCount?: number;
 }
 
 export const AdminSidebar: React.FC<AdminSidebarProps> = ({
@@ -27,6 +30,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   onLogout,
   incidentCount,
   pendingAstrosCount,
+  liveSessionsCount = 3,
 }) => {
   const navItems = [
     {
@@ -34,6 +38,13 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       label: 'Overview & Heatmap',
       icon: '📊',
       badge: null,
+    },
+    {
+      id: 'live' as AdminTab,
+      label: 'Live Sessions & Ranks',
+      icon: '🔴',
+      badge: liveSessionsCount > 0 ? `${liveSessionsCount} Live` : null,
+      badgeClass: 'badge-rose',
     },
     {
       id: 'website' as AdminTab,
@@ -82,7 +93,15 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       badge: 'v3.0.0',
       badgeClass: 'badge-emerald',
     },
+    {
+      id: 'system' as AdminTab,
+      label: 'System Health & Audit',
+      icon: '⚙️',
+      badge: 'Audit & CSV',
+      badgeClass: 'badge-indigo',
+    },
   ];
+
 
   return (
     <aside style={{

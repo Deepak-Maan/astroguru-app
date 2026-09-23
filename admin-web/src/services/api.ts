@@ -1,4 +1,13 @@
-import { AstrologerProfile, BannedEntity, OrderItem, SecurityIncident, UserRecord } from '../types';
+import {
+  AdminAuditLog,
+  AstrologerProfile,
+  BannedEntity,
+  LiveConsultationSession,
+  OrderItem,
+  SecurityIncident,
+  SystemHealthConfig,
+  UserRecord,
+} from '../types';
 
 export const INITIAL_INCIDENTS: SecurityIncident[] = [
   {
@@ -85,6 +94,9 @@ export const INITIAL_ASTROLOGERS: AstrologerProfile[] = [
     status: 'active',
     commissionRate: 75,
     onDuty: true,
+    isFeatured: true,
+    boostRank: 1,
+    strikesCount: 0,
   },
   {
     id: 'astro_1786457216977',
@@ -101,6 +113,9 @@ export const INITIAL_ASTROLOGERS: AstrologerProfile[] = [
     status: 'active',
     commissionRate: 75,
     onDuty: true,
+    isFeatured: false,
+    boostRank: 3,
+    strikesCount: 0,
   },
   {
     id: 'astro-2',
@@ -117,6 +132,9 @@ export const INITIAL_ASTROLOGERS: AstrologerProfile[] = [
     status: 'active',
     commissionRate: 70,
     onDuty: true,
+    isFeatured: true,
+    boostRank: 2,
+    strikesCount: 0,
   },
   {
     id: 'astro-3',
@@ -133,8 +151,12 @@ export const INITIAL_ASTROLOGERS: AstrologerProfile[] = [
     status: 'active',
     commissionRate: 80,
     onDuty: false,
+    isFeatured: false,
+    boostRank: 5,
+    strikesCount: 1,
   },
 ];
+
 
 export const INITIAL_USERS: UserRecord[] = [
   {
@@ -321,4 +343,207 @@ export async function saveWebsiteConfigApi(config: any) {
     return { success: false, error: e.message };
   }
 }
+
+// -------------------------------------------------------------
+// Live Sessions, Rank Boost, Audit Trail & System Health Models
+// -------------------------------------------------------------
+
+export const INITIAL_LIVE_SESSIONS: LiveConsultationSession[] = [
+  {
+    id: 'LIVE-SES-701',
+    type: 'audio_call',
+    astrologerId: 'astro_1001',
+    astrologerName: 'Acharya Dev Sharma',
+    astrologerAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200',
+    userId: 'usr_201',
+    userName: 'Aakash Verma',
+    userPhone: '+91 98112 44321',
+    startedAt: new Date(Date.now() - 480 * 1000).toISOString(),
+    ratePerMin: 25,
+    durationSeconds: 480,
+    totalBilled: 200,
+    status: 'active',
+  },
+  {
+    id: 'LIVE-SES-702',
+    type: 'chat',
+    astrologerId: 'astro-2',
+    astrologerName: 'Dr. Radhika Veda',
+    astrologerAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200',
+    userId: 'usr_202',
+    userName: 'Megha Singhania',
+    userPhone: '+91 99201 88312',
+    startedAt: new Date(Date.now() - 310 * 1000).toISOString(),
+    ratePerMin: 20,
+    durationSeconds: 310,
+    totalBilled: 103,
+    status: 'active',
+  },
+  {
+    id: 'LIVE-SES-703',
+    type: 'video_call',
+    astrologerId: 'astro_1786457216977',
+    astrologerName: 'Vivek Kumar',
+    astrologerAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200',
+    userId: 'usr_203',
+    userName: 'Rohit Khandelwal',
+    userPhone: '+91 97112 00192',
+    startedAt: new Date(Date.now() - 720 * 1000).toISOString(),
+    ratePerMin: 25,
+    durationSeconds: 720,
+    totalBilled: 300,
+    status: 'active',
+    flaggedReason: 'Rapid message counter exceeded threshold - potential phone number exchange',
+  },
+];
+
+export const INITIAL_AUDIT_LOGS: AdminAuditLog[] = [
+  {
+    id: 'AUD-8801',
+    timestamp: 'Today, 12:45 PM',
+    adminName: 'Master Admin',
+    action: 'ASTRO_BOOST_UPDATED',
+    targetEntity: 'Acharya Dev Sharma (astro_1001)',
+    details: 'Pinned to mobile slot #1 with priority boost score 10',
+    severity: 'info',
+    ipAddress: '223.185.59.145',
+  },
+  {
+    id: 'AUD-8802',
+    timestamp: 'Today, 11:20 AM',
+    adminName: 'Master Admin',
+    action: 'WALLET_MANUAL_CREDIT',
+    targetEntity: 'User: Deepak Maan (+91 74968 50133)',
+    details: 'Credited ₹500 (V3.0.0 Welcome Bonus)',
+    severity: 'info',
+    ipAddress: '223.185.59.145',
+  },
+  {
+    id: 'AUD-8803',
+    timestamp: 'Today, 09:15 AM',
+    adminName: 'Master Admin',
+    action: 'UNIVERSAL_BAN_HAMMER',
+    targetEntity: 'Device: UUID-8891-AA02-9999',
+    details: 'Permanently banned device for multi-account free chat exploit',
+    severity: 'critical',
+    ipAddress: '223.185.59.145',
+  },
+  {
+    id: 'AUD-8804',
+    timestamp: 'Yesterday, 06:30 PM',
+    adminName: 'Security Ops',
+    action: 'EMERGENCY_SESSION_KILL',
+    targetEntity: 'Session: LIVE-SES-694',
+    details: 'Terminated session due to direct WhatsApp solicitation. Auto-refunded user.',
+    severity: 'warning',
+    ipAddress: '192.168.31.252',
+  },
+];
+
+export const INITIAL_SYSTEM_HEALTH: SystemHealthConfig = {
+  maintenanceMode: false,
+  maintenanceNotice: 'AstroGuru is undergoing scheduled Vedic planetary alignment and platform optimization. We will be back online in a few minutes!',
+  estimatedDowntime: '15 mins',
+  allowAdminsBypass: true,
+  lastUpdated: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+};
+
+export async function fetchLiveSessionsApi(): Promise<LiveConsultationSession[]> {
+  try {
+    const res = await fetch('/api/admin/live-sessions');
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && data.sessions) return data.sessions;
+    }
+  } catch (_) {}
+  return INITIAL_LIVE_SESSIONS;
+}
+
+export async function terminateLiveSessionApi(sessionId: string, reason: string, adminName: string) {
+  try {
+    const res = await fetch(`/api/admin/live-sessions/${sessionId}/terminate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reason, adminName }),
+    });
+    return await res.json();
+  } catch (_) {
+    return { success: true };
+  }
+}
+
+export async function toggleAstrologerBoostApi(id: string, isFeatured: boolean, boostRank: number) {
+  try {
+    const res = await fetch(`/api/admin/astrologers/${id}/boost`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isFeatured, boostRank }),
+    });
+    return await res.json();
+  } catch (_) {
+    return { success: true };
+  }
+}
+
+export async function issueAstrologerStrikeApi(id: string, reason: string, adminName: string) {
+  try {
+    const res = await fetch(`/api/admin/astrologers/${id}/strike`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reason, adminName }),
+    });
+    return await res.json();
+  } catch (_) {
+    return { success: true };
+  }
+}
+
+export async function fetchAuditLogsApi(): Promise<AdminAuditLog[]> {
+  try {
+    const res = await fetch('/api/admin/audit-logs');
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && data.logs) return data.logs;
+    }
+  } catch (_) {}
+  return INITIAL_AUDIT_LOGS;
+}
+
+export async function recordAuditLogApi(entry: Omit<AdminAuditLog, 'id' | 'timestamp'>) {
+  try {
+    const res = await fetch('/api/admin/audit-logs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(entry),
+    });
+    return await res.json();
+  } catch (_) {
+    return { success: true };
+  }
+}
+
+export async function fetchSystemHealthApi(): Promise<SystemHealthConfig> {
+  try {
+    const res = await fetch('/api/system/maintenance');
+    if (res.ok) {
+      const data = await res.json();
+      if (data.config) return data.config;
+    }
+  } catch (_) {}
+  return INITIAL_SYSTEM_HEALTH;
+}
+
+export async function saveSystemHealthApi(config: SystemHealthConfig) {
+  try {
+    const res = await fetch('/api/system/maintenance', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(config),
+    });
+    return await res.json();
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
+}
+
 

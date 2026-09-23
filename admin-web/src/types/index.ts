@@ -46,7 +46,48 @@ export interface AstrologerProfile {
   status: 'active' | 'pending_verification' | 'suspended';
   commissionRate: number; // e.g. 75 means 75% to astrologer, 25% to platform
   onDuty: boolean;
+  isFeatured?: boolean;
+  boostRank?: number;
+  strikesCount?: number;
+  penaltyPausedUntil?: string | null;
 }
+
+export interface LiveConsultationSession {
+  id: string;
+  type: 'audio_call' | 'chat' | 'video_call';
+  astrologerId: string;
+  astrologerName: string;
+  astrologerAvatar: string;
+  userId: string;
+  userName: string;
+  userPhone: string;
+  startedAt: string;
+  ratePerMin: number;
+  durationSeconds: number;
+  totalBilled: number;
+  status: 'active' | 'terminated_by_admin' | 'completed';
+  flaggedReason?: string;
+}
+
+export interface AdminAuditLog {
+  id: string;
+  timestamp: string;
+  adminName: string;
+  action: string;
+  targetEntity: string;
+  details: string;
+  severity: 'info' | 'warning' | 'critical';
+  ipAddress?: string;
+}
+
+export interface SystemHealthConfig {
+  maintenanceMode: boolean;
+  maintenanceNotice: string;
+  estimatedDowntime: string;
+  allowAdminsBypass: boolean;
+  lastUpdated?: string;
+}
+
 
 export interface UserRecord {
   id: string;
