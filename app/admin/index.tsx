@@ -11,10 +11,11 @@ export default function AdminWebRedirectScreen() {
   const router = useRouter();
   const [copied, setCopied] = useState(false);
 
+  const vercelAdminUrl = 'https://astrologer-app-alpha.vercel.app/admin';
   const localWebUrl = 'http://localhost:3000';
   const lanWebUrl = 'http://192.168.31.252:3000';
   const serverAdminUrl = 'http://192.168.31.252:5000/admin';
-  const primaryUrl = Platform.OS === 'web' ? localWebUrl : lanWebUrl;
+  const primaryUrl = vercelAdminUrl;
 
   const handleOpenWebAdmin = (targetUrl = primaryUrl) => {
     Linking.openURL(targetUrl).catch(() => {
@@ -46,26 +47,26 @@ export default function AdminWebRedirectScreen() {
             </Text>
 
             <View style={styles.urlBox}>
-              <Text style={styles.urlLabel}>PRIMARY ADMIN WEB URL</Text>
-              <Text style={styles.urlText}>{localWebUrl}</Text>
+              <Text style={styles.urlLabel}>LIVE VERCEL ADMIN URL</Text>
+              <Text style={styles.urlText}>{vercelAdminUrl}</Text>
+              <Text style={styles.urlSub}>Local Development: {localWebUrl}</Text>
               <Text style={styles.urlSub}>LAN Mobile Access: {lanWebUrl}</Text>
-              <Text style={styles.urlSub}>Unified Server Route: {serverAdminUrl}</Text>
             </View>
 
             <View style={styles.actions}>
               <Button
-                label="Launch Web Admin (Port 3000) 🚀"
+                label="Launch Live Vercel Admin 🚀"
                 variant="primary"
                 size="lg"
-                onPress={() => handleOpenWebAdmin(primaryUrl)}
+                onPress={() => handleOpenWebAdmin(vercelAdminUrl)}
                 style={styles.primaryBtn}
               />
 
               <Button
-                label="Open via Server /admin (:5000) 🌐"
+                label="Open Local Web Admin (:3000) 💻"
                 variant="outline"
                 size="md"
-                onPress={() => handleOpenWebAdmin(Platform.OS === 'web' ? 'http://localhost:5000/admin' : serverAdminUrl)}
+                onPress={() => handleOpenWebAdmin(Platform.OS === 'web' ? localWebUrl : lanWebUrl)}
                 style={styles.primaryBtn}
               />
 
