@@ -233,6 +233,7 @@
       "version": "3.0.1",
       "buildCode": 301,
       "downloadUrl": "/download/apk",
+      "cloudApkUrl": "https://expo.dev/artifacts/eas/9A5-SgMrgSInJI1TRDDY-8fLrIBckNwXMrr-P7OfMgM.apk",
       "fileSizeMb": 105,
       "uploadedAt": "2026-09-24T16:15:00.000Z",
       "fileName": "AstroGuru-v3.0.1.apk"
