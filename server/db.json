@@ -44,9 +44,45 @@
       "role": "user",
       "wallet": 50,
       "createdAt": "2026-08-11"
+    },
+    {
+      "id": "astro_1790246420075",
+      "name": "Acharya Test",
+      "email": "testacharya@vedic.com",
+      "password": "password123",
+      "phone": "9876543210",
+      "role": "astrologer",
+      "wallet": 0
     }
   ],
   "astrologers": [
+    {
+      "id": "astro_1790246420075",
+      "name": "Acharya Test Updated",
+      "email": "testacharya@vedic.com",
+      "password": "password123",
+      "phone": "9876543210",
+      "avatar": "https://ui-avatars.com/api/?name=Acharya%20Test&background=0D8ABC&color=fff&size=200",
+      "rating": 5,
+      "reviews": 1,
+      "pricePerMin": 35,
+      "experienceYears": 8,
+      "specialties": [
+        "Vedic Astrology",
+        "Numerology"
+      ],
+      "languages": [
+        "Hindi",
+        "English"
+      ],
+      "consultations": 0,
+      "online": true,
+      "about": "Certified Vedic Jyotish Expert",
+      "role": "astrologer",
+      "status": "active",
+      "onDuty": true,
+      "commissionSplit": 80
+    },
     {
       "id": "astro_1786457216977",
       "name": "vivek kumar",
@@ -366,4 +402,4 @@
     "allowAdminsBypass": true,
     "lastUpdated": "Today, 02:00 PM"
   }
-}
+}

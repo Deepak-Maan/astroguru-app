@@ -64,7 +64,11 @@ export async function firebaseSignup(
       wallet: 0,
       createdAt: new Date().toISOString().split('T')[0],
     };
-    await set(ref(firebaseDb, 'users/' + fbUser.uid), profile);
+    try {
+      await set(ref(firebaseDb, 'users/' + fbUser.uid), profile);
+    } catch (e) {
+      console.warn('[Firebase user set profile warning]', e);
+    }
     return { success: true, user: profile };
   } catch (err: any) {
     if (err.code === 'auth/email-already-in-use')
@@ -86,19 +90,25 @@ export async function firebaseLogin(
       firebaseAuth, email.trim().toLowerCase(), password
     );
     const fbUser = credential.user;
-    const snap = await get(ref(firebaseDb, 'users/' + fbUser.uid));
-    const profile: FirebaseUserProfile = snap.exists()
-      ? snap.val()
-      : {
-          id: fbUser.uid,
-          name: fbUser.displayName || 'Seeker',
-          email: fbUser.email || email,
-          phone: '',
-          role: 'user',
-          wallet: 0,
-          createdAt: new Date().toISOString().split('T')[0],
-        };
-    if (!snap.exists()) await set(ref(firebaseDb, 'users/' + fbUser.uid), profile);
+    let profile: FirebaseUserProfile = {
+      id: fbUser.uid,
+      name: fbUser.displayName || 'Seeker',
+      email: fbUser.email || email,
+      phone: '',
+      role: 'user',
+      wallet: 0,
+      createdAt: new Date().toISOString().split('T')[0],
+    };
+    try {
+      const snap = await get(ref(firebaseDb, 'users/' + fbUser.uid));
+      if (snap.exists()) {
+        profile = snap.val();
+      } else {
+        await set(ref(firebaseDb, 'users/' + fbUser.uid), profile);
+      }
+    } catch (dbErr) {
+      console.warn('[Firebase user login read warning]', dbErr);
+    }
     return { success: true, user: profile };
   } catch (err: any) {
     if (
@@ -124,44 +134,92 @@ export async function firebaseExpertSignup(expertData: {
   pricePerMin?: string | number;
   about?: string;
 }): Promise<{ success: boolean; expert?: FirebaseJyotishiProfile; error?: string }> {
+  const cleanEmail = expertData.email.trim().toLowerCase();
+  let fbUser: any = null;
+
   try {
     const credential = await createUserWithEmailAndPassword(
-      firebaseAuth, expertData.email.trim().toLowerCase(), expertData.password
+      firebaseAuth, cleanEmail, expertData.password
     );
-    const fbUser = credential.user;
+    fbUser = credential.user;
+  } catch (authErr: any) {
+    if (authErr.code === 'auth/email-already-in-use') {
+      // If user was created previously but database write failed, authenticate and recover!
+      try {
+        const loginCred = await signInWithEmailAndPassword(firebaseAuth, cleanEmail, expertData.password);
+        fbUser = loginCred.user;
+      } catch (_) {
+        return { success: false, error: 'This email is already registered. Please use Expert Sign In.' };
+      }
+    } else if (authErr.code === 'auth/weak-password') {
+      return { success: false, error: 'Password must be at least 6 characters.' };
+    } else if (authErr.code === 'auth/invalid-email') {
+      return { success: false, error: 'Please enter a valid email address.' };
+    } else {
+      return { success: false, error: authErr.message || 'Expert registration failed. Please try again.' };
+    }
+  }
+
+  if (!fbUser) {
+    return { success: false, error: 'Failed to authenticate expert account.' };
+  }
+
+  try {
     await updateProfile(fbUser, { displayName: expertData.name.trim() });
-    const profile: FirebaseJyotishiProfile = {
+  } catch (_) {}
+
+  const profile: FirebaseJyotishiProfile = {
+    id: fbUser.uid,
+    name: expertData.name.trim(),
+    email: fbUser.email || cleanEmail,
+    phone: expertData.phone || '',
+    role: 'astrologer',
+    pricePerMin: Number(expertData.pricePerMin) || 25,
+    rating: 5.0,
+    reviews: 0,
+    specialties: expertData.specialties || ['Vedic Astrology'],
+    languages: expertData.languages || ['Hindi', 'English'],
+    experienceYears: Number(expertData.experienceYears) || 1,
+    about: expertData.about || 'Certified Vedic Jyotish Expert',
+    avatar:
+      'https://ui-avatars.com/api/?name=' +
+      encodeURIComponent(expertData.name) +
+      '&background=0D8ABC&color=fff&size=200',
+    online: true,
+    consultations: 0,
+    createdAt: new Date().toISOString().split('T')[0],
+    updatedAt: Date.now(),
+  };
+
+  // 1. Write to users/${fbUser.uid} (permitted under default Firebase auth.uid === $uid rule)
+  try {
+    await set(ref(firebaseDb, 'users/' + fbUser.uid), {
       id: fbUser.uid,
       name: expertData.name.trim(),
-      email: fbUser.email || expertData.email,
+      email: fbUser.email || cleanEmail,
       phone: expertData.phone || '',
       role: 'astrologer',
-      pricePerMin: Number(expertData.pricePerMin) || 25,
-      rating: 5.0,
-      reviews: 0,
-      specialties: expertData.specialties || ['Vedic Astrology'],
-      languages: expertData.languages || ['Hindi', 'English'],
-      experienceYears: Number(expertData.experienceYears) || 1,
-      about: expertData.about || 'Certified Vedic Jyotish Expert',
-      avatar:
-        'https://ui-avatars.com/api/?name=' +
-        encodeURIComponent(expertData.name) +
-        '&background=0D8ABC&color=fff&size=200',
-      online: true,
-      consultations: 0,
+      wallet: 0,
       createdAt: new Date().toISOString().split('T')[0],
-      updatedAt: Date.now(),
-    };
-    await set(ref(firebaseDb, 'jyotishis/' + fbUser.uid), profile);
-    await set(ref(firebaseDb, 'astrologers/' + fbUser.uid), profile);
-    return { success: true, expert: profile };
-  } catch (err: any) {
-    if (err.code === 'auth/email-already-in-use')
-      return { success: false, error: 'This email is already registered. Please use Expert Sign In.' };
-    if (err.code === 'auth/weak-password')
-      return { success: false, error: 'Password must be at least 6 characters.' };
-    return { success: false, error: err.message || 'Expert registration failed. Please try again.' };
+    });
+  } catch (dbErr) {
+    console.warn('[Firebase Expert set users node warning]', dbErr);
   }
+
+  // 2. Best-effort write to jyotishis and astrologers (will not crash if RTDB rules restrict custom nodes)
+  try {
+    await set(ref(firebaseDb, 'jyotishis/' + fbUser.uid), profile);
+  } catch (dbErr) {
+    console.warn('[Firebase Expert set jyotishis node warning - permission restricted on RTDB]', dbErr);
+  }
+
+  try {
+    await set(ref(firebaseDb, 'astrologers/' + fbUser.uid), profile);
+  } catch (dbErr) {
+    console.warn('[Firebase Expert set astrologers node warning - permission restricted on RTDB]', dbErr);
+  }
+
+  return { success: true, expert: profile };
 }
 
 export async function firebaseExpertLogin(
@@ -169,37 +227,72 @@ export async function firebaseExpertLogin(
   password: string
 ): Promise<{ success: boolean; expert?: FirebaseJyotishiProfile; error?: string }> {
   try {
+    const cleanEmail = email.trim().toLowerCase();
     const credential = await signInWithEmailAndPassword(
-      firebaseAuth, email.trim().toLowerCase(), password
+      firebaseAuth, cleanEmail, password
     );
     const fbUser = credential.user;
-    let snap = await get(ref(firebaseDb, 'jyotishis/' + fbUser.uid));
-    if (!snap.exists()) snap = await get(ref(firebaseDb, 'astrologers/' + fbUser.uid));
-    if (snap.exists()) {
-      const profile = { ...snap.val(), role: 'astrologer' } as FirebaseJyotishiProfile;
-      return { success: true, expert: profile };
+
+    let profileData: any = null;
+
+    // 1. Try reading jyotishis
+    try {
+      const snap = await get(ref(firebaseDb, 'jyotishis/' + fbUser.uid));
+      if (snap.exists()) profileData = snap.val();
+    } catch (e) {
+      console.warn('[Firebase read jyotishis warning]', e);
     }
-    // Auto-create profile if not found
-    const autoProfile: FirebaseJyotishiProfile = {
+
+    // 2. Try reading astrologers
+    if (!profileData) {
+      try {
+        const snap = await get(ref(firebaseDb, 'astrologers/' + fbUser.uid));
+        if (snap.exists()) profileData = snap.val();
+      } catch (e) {
+        console.warn('[Firebase read astrologers warning]', e);
+      }
+    }
+
+    // 3. Try reading users
+    if (!profileData) {
+      try {
+        const snap = await get(ref(firebaseDb, 'users/' + fbUser.uid));
+        if (snap.exists()) profileData = snap.val();
+      } catch (e) {
+        console.warn('[Firebase read users warning]', e);
+      }
+    }
+
+    const expertProfile: FirebaseJyotishiProfile = {
       id: fbUser.uid,
-      name: fbUser.displayName || email.split('@')[0],
-      email: fbUser.email || email,
-      phone: '',
+      name: profileData?.name || fbUser.displayName || cleanEmail.split('@')[0],
+      email: fbUser.email || cleanEmail,
+      phone: profileData?.phone || '',
       role: 'astrologer',
-      pricePerMin: 25,
-      rating: 5.0,
-      reviews: 0,
-      specialties: ['Vedic Astrology'],
-      languages: ['Hindi', 'English'],
-      experienceYears: 1,
-      about: 'Certified Vedic Jyotish Expert',
+      pricePerMin: profileData?.pricePerMin || 25,
+      rating: profileData?.rating || 5.0,
+      reviews: profileData?.reviews || 0,
+      specialties: profileData?.specialties || ['Vedic Astrology'],
+      languages: profileData?.languages || ['Hindi', 'English'],
+      experienceYears: profileData?.experienceYears || 1,
+      about: profileData?.about || 'Certified Vedic Jyotish Expert',
+      avatar:
+        profileData?.avatar ||
+        'https://ui-avatars.com/api/?name=' +
+          encodeURIComponent(fbUser.displayName || 'Astrologer') +
+          '&background=0D8ABC&color=fff&size=200',
       online: true,
-      consultations: 0,
-      createdAt: new Date().toISOString().split('T')[0],
+      consultations: profileData?.consultations || 0,
+      createdAt: profileData?.createdAt || new Date().toISOString().split('T')[0],
       updatedAt: Date.now(),
     };
-    await set(ref(firebaseDb, 'jyotishis/' + fbUser.uid), autoProfile);
-    return { success: true, expert: autoProfile };
+
+    // Best-effort write back to jyotishis (silent if permission denied)
+    try {
+      await set(ref(firebaseDb, 'jyotishis/' + fbUser.uid), expertProfile);
+    } catch (_) {}
+
+    return { success: true, expert: expertProfile };
   } catch (err: any) {
     if (
       err.code === 'auth/user-not-found' ||
@@ -212,6 +305,7 @@ export async function firebaseExpertLogin(
     return { success: false, error: err.message || 'Expert sign in failed. Please try again.' };
   }
 }
+
 
 export async function firebaseSignOut(): Promise<void> {
   try {
@@ -236,14 +330,30 @@ export function subscribeToJyotishis(
   callback: (list: FirebaseJyotishiProfile[]) => void
 ) {
   const jyotishisRef = ref(firebaseDb, 'jyotishis');
-  onValue(jyotishisRef, (snap) => {
-    if (!snap.exists()) {
-      callback([]);
-      return;
-    }
-    callback(Object.values(snap.val()) as FirebaseJyotishiProfile[]);
-  });
-  return () => off(jyotishisRef);
+  try {
+    onValue(
+      jyotishisRef,
+      (snap) => {
+        if (!snap.exists()) {
+          callback([]);
+          return;
+        }
+        callback(Object.values(snap.val()) as FirebaseJyotishiProfile[]);
+      },
+      (err) => {
+        console.warn('[Firebase subscribeToJyotishis warning]', err);
+        callback([]);
+      }
+    );
+  } catch (err) {
+    console.warn('[Firebase subscribeToJyotishis sync error]', err);
+    callback([]);
+  }
+  return () => {
+    try {
+      off(jyotishisRef);
+    } catch (_) {}
+  };
 }
 
 export async function setJyotishiOnlineStatus(uid: string, online: boolean) {
@@ -277,9 +387,13 @@ export async function migrateLocalJyotishisToFirebase(localAstrologers: any[]) {
       createdAt: a.createdAt || new Date().toISOString().split('T')[0],
       updatedAt: Date.now(),
     };
-    await set(ref(firebaseDb, 'jyotishis/' + a.id), profile);
-    await set(ref(firebaseDb, 'astrologers/' + a.id), profile);
-    console.log('[Firebase Migration] Seeded Jyotishi: ' + a.name);
+    try {
+      await set(ref(firebaseDb, 'jyotishis/' + a.id), profile);
+      await set(ref(firebaseDb, 'astrologers/' + a.id), profile);
+      console.log('[Firebase Migration] Seeded Jyotishi: ' + a.name);
+    } catch (migErr) {
+      console.warn('[Firebase Migration Warning for ' + a.name + ']', migErr);
+    }
   }
 }
 

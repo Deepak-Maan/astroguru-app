@@ -59,7 +59,12 @@ export default function ExpertLoginScreen() {
         router.replace('/(tabs)');
         return;
       }
-      if (fbRes.error && !fbRes.error.toLowerCase().includes('network')) {
+      if (
+        fbRes.error &&
+        !fbRes.error.toLowerCase().includes('network') &&
+        !fbRes.error.toLowerCase().includes('permission') &&
+        !fbRes.error.toLowerCase().includes('denied')
+      ) {
         setLoading(false);
         setError(fbRes.error);
         return;

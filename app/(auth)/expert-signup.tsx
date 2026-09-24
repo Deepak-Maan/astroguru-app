@@ -81,6 +81,8 @@ export default function ExpertSignupScreen() {
     setLoading(true);
     setError(null);
 
+    let loggedInProfile: any = null;
+
     // 1️⃣ Firebase Expert Signup (works globally)
     try {
       const fbRes = await firebaseExpertSignup({
@@ -96,48 +98,71 @@ export default function ExpertSignupScreen() {
       });
 
       if (fbRes.success && fbRes.expert) {
-        setUserSession({
+        loggedInProfile = {
           id: fbRes.expert.id,
           name: fbRes.expert.name,
           email: fbRes.expert.email,
-          phone: fbRes.expert.phone || '',
-          role: 'astrologer',
+          phone: fbRes.expert.phone || phone,
+          role: 'astrologer' as const,
           createdAt: fbRes.expert.createdAt || new Date().toISOString().split('T')[0],
-        });
-        setLoading(false);
-        router.replace('/(tabs)');
-        return;
+        };
+      } else if (fbRes.error) {
+        const isPermission =
+          fbRes.error.toLowerCase().includes('permission') ||
+          fbRes.error.toLowerCase().includes('denied');
+        if (!isPermission && fbRes.error.includes('already registered')) {
+          setLoading(false);
+          setError(fbRes.error);
+          return;
+        }
+        console.warn('[Expert Signup Firebase warning, syncing to backend]', fbRes.error);
       }
-      if (fbRes.error) {
-        setLoading(false);
-        setError(fbRes.error);
-        return;
-      }
-    } catch (e) {
+    } catch (e: any) {
       console.warn('[Expert Signup Firebase fallback to local server]', e);
     }
 
-    // 2️⃣ Fallback: local server signup
-    const res = await ApiClient.expertSignup({
-      name, email, phone, password,
-      specialties: selectedSpecialties,
-      languages: selectedLanguages,
-      experienceYears, pricePerMin, about,
-    });
+    // 2️⃣ Sync to backend API / local database
+    try {
+      const res = await ApiClient.expertSignup({
+        id: loggedInProfile?.id,
+        name,
+        email,
+        phone,
+        password,
+        specialties: selectedSpecialties,
+        languages: selectedLanguages,
+        experienceYears,
+        pricePerMin,
+        about,
+      });
+
+      if (res && res.success && res.expert) {
+        if (!loggedInProfile) {
+          loggedInProfile = {
+            id: res.expert.id,
+            name: res.expert.name,
+            email: res.expert.email,
+            phone: res.expert.phone || phone,
+            role: 'astrologer' as const,
+            createdAt: new Date().toISOString().split('T')[0],
+          };
+        }
+      } else if (!loggedInProfile && res?.error) {
+        setLoading(false);
+        setError(res.error);
+        return;
+      }
+    } catch (apiErr) {
+      console.warn('[Expert Signup ApiClient sync warning]', apiErr);
+    }
+
     setLoading(false);
 
-    if (res && res.success && res.expert) {
-      setUserSession({
-        id: res.expert.id,
-        name: res.expert.name,
-        email: res.expert.email,
-        phone: res.expert.phone || '',
-        role: 'astrologer',
-        createdAt: new Date().toISOString().split('T')[0],
-      });
+    if (loggedInProfile) {
+      setUserSession(loggedInProfile);
       router.replace('/(tabs)');
     } else {
-      setError(res?.error || 'Registration failed. Please try again.');
+      setError('Registration failed. Please check your details and try again.');
     }
   };
 

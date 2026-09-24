@@ -275,22 +275,40 @@ app.post('/api/auth/otp/verify', (req, res) => {
 
 // ── EXPERT AUTH ENDPOINTS ──
 app.post('/api/auth/expert/signup', (req, res) => {
-  const { name, email, phone, password, specialties, languages, experienceYears, pricePerMin, about } = req.body;
+  const { id, uid, name, email, phone, password, specialties, languages, experienceYears, pricePerMin, about } = req.body;
   const db = loadDb();
 
-  const existing = db.astrologers.find((a) => (a.email || '').toLowerCase() === (email || '').toLowerCase());
-  if (existing) {
-    return res.status(400).json({ success: false, error: 'An expert account with this email already exists.' });
+  const existingIndex = db.astrologers.findIndex(
+    (a) => (a.email || '').toLowerCase() === (email || '').toLowerCase()
+  );
+  if (existingIndex >= 0) {
+    const existing = db.astrologers[existingIndex];
+    db.astrologers[existingIndex] = {
+      ...existing,
+      name: name || existing.name,
+      phone: phone || existing.phone,
+      specialties: specialties || existing.specialties,
+      languages: languages || existing.languages,
+      experienceYears: Number(experienceYears) || existing.experienceYears,
+      pricePerMin: Number(pricePerMin) || existing.pricePerMin,
+      about: about || existing.about,
+    };
+    saveDb(db);
+    const { password: _, ...cleanExisting } = db.astrologers[existingIndex];
+    return res.json({ success: true, expert: cleanExisting, message: 'Expert profile updated successfully!' });
   }
 
-  const expertId = `astro_${Date.now()}`;
+  const expertId = id || uid || `astro_${Date.now()}`;
   const newExpert = {
     id: expertId,
     name,
     email,
     password,
     phone,
-    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200',
+    avatar:
+      'https://ui-avatars.com/api/?name=' +
+      encodeURIComponent(name || 'Astrologer') +
+      '&background=0D8ABC&color=fff&size=200',
     rating: 5.0,
     reviews: 1,
     pricePerMin: Number(pricePerMin) || 25,
@@ -301,6 +319,9 @@ app.post('/api/auth/expert/signup', (req, res) => {
     online: true,
     about: about || 'Certified Vedic Jyotish Expert',
     role: 'astrologer',
+    status: 'active',
+    onDuty: true,
+    commissionSplit: 80,
   };
 
   db.astrologers.unshift(newExpert);
@@ -317,7 +338,7 @@ app.post('/api/auth/expert/signup', (req, res) => {
 
   saveDb(db);
 
-  // Sync to Firebase Cloud Database
+  // Sync to Firebase Cloud Database (best effort)
   fetch(`https://astroguru-d3c86-default-rtdb.firebaseio.com/jyotishis/${newExpert.id}.json`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
