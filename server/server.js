@@ -817,7 +817,7 @@ const DEFAULT_WEBSITE_CONFIG = {
   heroTitle: 'Your Destiny,',
   heroHighlight: 'Engineered by the Stars.',
   heroSubtitle: 'The ultimate Vedic Astrology platform. High-contrast Lagna Kundlis, conversational GuruVani AI voice readings, WhatsApp audio notes, and 5 specialized 3D Tarot spreads.',
-  announcementText: 'OFFICIAL v3.0.0 MILESTONE RELEASE',
+  announcementText: 'OFFICIAL v3.0.1 RELEASE',
   topBannerText: '✨ Special Rahu-Ketu Transit Consultations: 25% Off Today with Code VEDIC25',
   topBannerEnabled: true,
   maintenanceMode: false,
@@ -898,13 +898,15 @@ app.get('/api/releases/latest', (req, res) => {
   const baseUrl = `${protocol}://${host}`;
 
   const current = db.updates || {
-    currentVersion: '3.0.0',
-    latestVersion: '3.0.0',
-    buildCode: 300,
+    currentVersion: '3.0.1',
+    latestVersion: '3.0.1',
+    buildCode: 301,
     downloadUrl: `${baseUrl}/download/apk`,
     fileSizeMb: 105,
     releaseNotes: [
-      'Official v3.0.0 Milestone Release',
+      'Official v3.0.1 Release',
+      'Resolved Astrologer Registration permission-denied issue & seamless database sync',
+      'Instant verified active onboarding & admin fleet management',
       '100% In-App Direct APK Download Engine without external redirects',
       'Real-time streaming download progress bar',
       'Auto-install triggers directly upon verification',
@@ -1002,14 +1004,14 @@ app.get('/download/apk', (req, res) => {
   if (current?.storedFileName) {
     const localPath = path.join(RELEASES_DIR, current.storedFileName);
     if (fs.existsSync(localPath)) {
-      return res.download(localPath, `AstroGuru-v${current.latestVersion || '3.0.0'}.apk`);
+      return res.download(localPath, `AstroGuru-v${current.latestVersion || '3.0.1'}.apk`);
     }
   }
 
   // Deliver package directly from AstroGuru platform server
   res.setHeader('Content-Type', 'application/vnd.android.package-archive');
-  res.setHeader('Content-Disposition', `attachment; filename="AstroGuru-v${current?.latestVersion || '3.0.0'}.apk"`);
-  res.send(Buffer.from(`ASTROGURU_OFFICIAL_RELEASE_V${current?.latestVersion || '3.0.0'}_INTERNAL_PACKAGE`));
+  res.setHeader('Content-Disposition', `attachment; filename="AstroGuru-v${current?.latestVersion || '3.0.1'}.apk"`);
+  res.send(Buffer.from(`ASTROGURU_OFFICIAL_RELEASE_V${current?.latestVersion || '3.0.1'}_INTERNAL_PACKAGE`));
 });
 
 // -------------------------------------------------------------

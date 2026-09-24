@@ -8,10 +8,10 @@ import { inAppUpdateEngine, UpdateDownloadProgress } from '../services/updates/i
 import { getAppVersionFromFirebase, syncLatestAppVersionToFirebase } from '../services/firebaseRealtimeService';
 import { openUnknownAppSourcesSettings } from '../services/apkInstallerService';
 
-export const LATEST_RELEASE_VERSION = '3.0.0';
+export const LATEST_RELEASE_VERSION = '3.0.1';
 export const DIRECT_APK_URL = '/download/apk';
 
-const NATIVE_VERSION = Constants.expoConfig?.version || '2.9.9';
+const NATIVE_VERSION = Constants.expoConfig?.version || '3.0.1';
 
 function parseSemVer(v: string): number[] {
   return (v || '0.0.0').split('.').map((p) => parseInt(p, 10) || 0);

@@ -90,7 +90,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       id: 'updates' as AdminTab,
       label: 'App Release & OTA',
       icon: '📱',
-      badge: 'v3.0.0',
+      badge: 'v3.0.1',
       badgeClass: 'badge-emerald',
     },
     {

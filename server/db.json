@@ -212,25 +212,31 @@
   ],
   "spellOrders": [],
   "updates": {
-    "currentVersion": "3.0.0",
-    "latestVersion": "3.0.0",
-    "buildCode": 300,
+    "currentVersion": "3.0.1",
+    "latestVersion": "3.0.1",
+    "buildCode": 301,
     "downloadUrl": "/download/apk",
     "fileSizeMb": 105,
     "minAndroidVersion": "8.0",
     "sha256": "3e9b16757b4f3bfa658d3cb1e2aa95dc012a6473210ab6411516eef14f9d2d88",
-    "updatedAt": "2026-09-22T16:27:00.000Z",
+    "updatedAt": "2026-09-24T16:15:00.000Z",
     "releaseNotes": [
-      "AstroGuru 3.0 Milestone: 100% Native In-App APK Download & Package Installer",
-      "GSAP Pinned 3D Phone Showcase with Sticky Physics & Sacred Cosmic Chapters",
-      "5-Mode 3D Tarot Deck Cut & ₹99 Yes/No Oracle with Live Voice Synthesis",
-      "Zero-Echo Instant Bidirectional Call & Live Chat Push Alert Routing",
-      "Golden Surya Sacred Vedic Branding Overhaul with Adaptive Icons",
-      "Real-Time Website CMS Controller in Desktop Web Admin Panel"
+      "AstroGuru 3.0.1: Resolved Astrologer Registration permission-denied issue & seamless database profile sync",
+      "Instant verified active onboarding & admin fleet management",
+      "100% Native In-App APK Download & Package Installer stability improvements",
+      "Live consultation monitoring and real-time session controls"
     ],
     "isMandatory": false
   },
   "releaseHistory": [
+    {
+      "version": "3.0.1",
+      "buildCode": 301,
+      "downloadUrl": "/download/apk",
+      "fileSizeMb": 105,
+      "uploadedAt": "2026-09-24T16:15:00.000Z",
+      "fileName": "AstroGuru-v3.0.1.apk"
+    },
     {
       "version": "3.0.0",
       "buildCode": 300,
@@ -266,7 +272,7 @@
     "heroTitle": "Your Destiny,",
     "heroHighlight": "Engineered by the Stars.",
     "heroSubtitle": "The ultimate Vedic Astrology platform. High-contrast Lagna Kundlis, conversational GuruVani AI voice readings, WhatsApp audio notes, and 5 specialized 3D Tarot spreads.",
-    "announcementText": "OFFICIAL v3.0.0 MILESTONE RELEASE",
+    "announcementText": "OFFICIAL v3.0.1 RELEASE",
     "topBannerText": "✨ Special Rahu-Ketu Transit Consultations: 25% Off Today with Code VEDIC25",
     "topBannerEnabled": true,
     "maintenanceMode": false,

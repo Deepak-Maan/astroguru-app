@@ -6,7 +6,7 @@ const DEFAULT_CONFIG: WebsiteConfig = {
   heroTitle: 'Your Destiny,',
   heroHighlight: 'Engineered by the Stars.',
   heroSubtitle: 'The ultimate Vedic Astrology platform. High-contrast Lagna Kundlis, conversational GuruVani AI voice readings, WhatsApp audio notes, and 5 specialized 3D Tarot spreads.',
-  announcementText: 'OFFICIAL v3.0.0 MILESTONE RELEASE',
+  announcementText: 'OFFICIAL v3.0.1 RELEASE',
   topBannerText: '✨ Special Rahu-Ketu Transit Consultations: 25% Off Today with Code VEDIC25',
   topBannerEnabled: true,
   maintenanceMode: false,
