@@ -31,6 +31,22 @@ export interface BannedEntity {
   duration: '24 Hours' | '7 Days' | '30 Days' | 'Permanent';
 }
 
+export interface AstrologerDailyEarning {
+  date: string; // ISO date 'YYYY-MM-DD'
+  formattedDate: string; // e.g. '29 Sep 2026'
+  dayOfWeek: string; // e.g. 'Tuesday'
+  consultationsCount: number;
+  chatConsultations: number;
+  callConsultations: number;
+  totalBillableMinutes: number;
+  grossRevenue: number;
+  commissionRate: number;
+  platformCommission: number;
+  netPayout: number;
+  payoutStatus: 'settled' | 'pending';
+  payoutReference?: string;
+}
+
 export interface AstrologerProfile {
   id: string;
   name: string;
@@ -50,6 +66,9 @@ export interface AstrologerProfile {
   boostRank?: number;
   strikesCount?: number;
   penaltyPausedUntil?: string | null;
+  dailyEarnings?: AstrologerDailyEarning[];
+  lifetimeEarned?: number;
+  pendingPayout?: number;
 }
 
 export interface LiveConsultationSession {

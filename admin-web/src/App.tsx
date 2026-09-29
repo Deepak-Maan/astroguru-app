@@ -33,6 +33,8 @@ import {
   recordAuditLogApi,
   fetchSystemHealthApi,
   saveSystemHealthApi,
+  settleDailyPayoutApi,
+  settleAllPendingPayoutsApi,
 } from './services/api';
 import { AdminSidebar, AdminTab } from './components/AdminSidebar';
 import { AdminTopNav } from './components/AdminTopNav';
@@ -191,6 +193,53 @@ export const App: React.FC = () => {
     );
     verifyAstrologerApi(id);
     showToast('✓ Astrologer credentials verified and approved for duty!');
+  };
+
+  const handleSettlePayout = (astroId: string, date?: string) => {
+    const astro = astrologers.find((a) => a.id === astroId);
+    setAstrologers((prev) =>
+      prev.map((a) => {
+        if (a.id !== astroId) return a;
+        const updatedEarnings = a.dailyEarnings?.map((d) => {
+          if (!date || d.date === date) {
+            return {
+              ...d,
+              payoutStatus: 'settled' as const,
+              payoutReference: d.payoutReference || `TXN-NEFT-${Date.now().toString().slice(-6)}`,
+            };
+          }
+          return d;
+        });
+        const pending = updatedEarnings
+          ?.filter((e) => e.payoutStatus === 'pending')
+          .reduce((acc, curr) => acc + curr.netPayout, 0) || 0;
+        return {
+          ...a,
+          dailyEarnings: updatedEarnings,
+          pendingPayout: pending,
+        };
+      })
+    );
+
+    const newLog: AdminAuditLog = {
+      id: `AUD-${Date.now()}`,
+      timestamp: 'Just now',
+      adminName: adminUser?.name || 'Master Admin',
+      action: 'PAYOUT_DISBURSED',
+      targetEntity: `Acharya: ${astro?.name || astroId}`,
+      details: date ? `Marked day payout for ${date} as settled` : `Settled all pending day payouts`,
+      severity: 'info',
+      ipAddress: '223.185.59.145',
+    };
+    setAuditLogs((prev) => [newLog, ...prev]);
+
+    if (date) {
+      settleDailyPayoutApi(astroId, date);
+      showToast(`✓ Day payout for ${astro?.name || 'Acharya'} (${date}) settled & recorded.`);
+    } else {
+      settleAllPendingPayoutsApi(astroId);
+      showToast(`✓ All pending day payouts for ${astro?.name || 'Acharya'} marked as settled.`);
+    }
   };
 
   // User Actions
@@ -432,6 +481,7 @@ export const App: React.FC = () => {
               onToggleDuty={handleToggleDuty}
               onUpdateCommission={handleUpdateCommission}
               onApproveAstro={handleApproveAstro}
+              onSettlePayout={handleSettlePayout}
             />
           )}
 

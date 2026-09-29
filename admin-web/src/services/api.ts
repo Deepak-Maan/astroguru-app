@@ -1,5 +1,6 @@
 import {
   AdminAuditLog,
+  AstrologerDailyEarning,
   AstrologerProfile,
   BannedEntity,
   LiveConsultationSession,
@@ -78,7 +79,95 @@ export const INITIAL_BLACKLIST: BannedEntity[] = [
   },
 ];
 
-export const INITIAL_ASTROLOGERS: AstrologerProfile[] = [
+export function generateDailyEarningsForAstro(
+  astro: Partial<AstrologerProfile>,
+  days: number = 30
+): AstrologerDailyEarning[] {
+  const earnings: AstrologerDailyEarning[] = [];
+  // Reference date: 29 Sep 2026
+  const baseDate = new Date(2026, 8, 29);
+  const rate = astro.ratePerMin || 25;
+  const comm = astro.commissionRate || 75;
+  const seedMultiplier = (astro.id || 'astro').split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+
+  for (let i = 0; i < days; i++) {
+    const d = new Date(baseDate.getTime() - i * 24 * 60 * 60 * 1000);
+    const dayOfWeekShort = d.toLocaleDateString('en-US', { weekday: 'short' });
+    const isWeekend = dayOfWeekShort === 'Sat' || dayOfWeekShort === 'Sun';
+
+    // Deterministic pseudo-random variation based on seed and day index
+    const pseudoRand = Math.sin(seedMultiplier + i * 19.3) * 10000;
+    const normRand = Math.abs(pseudoRand - Math.floor(pseudoRand)); // 0..1
+
+    // Seniority & fleet standing factors
+    const expBonus = (astro.experienceYears && astro.experienceYears >= 15) ? 6 : 2;
+    const weekendFactor = isWeekend ? 1.4 : 1.0;
+    const baseCount = Math.max(4, Math.round((7 + expBonus + normRand * 9) * weekendFactor));
+
+    const callConsultations = Math.max(1, Math.round(baseCount * 0.65));
+    const chatConsultations = Math.max(1, baseCount - callConsultations);
+    const totalConsultations = callConsultations + chatConsultations;
+
+    // Average session: 12-18 minutes for calls, 8-15 minutes for chats
+    const avgCallDuration = 13 + Math.round(normRand * 5);
+    const avgChatDuration = 10 + Math.round(normRand * 4);
+    const totalBillableMinutes = (callConsultations * avgCallDuration) + (chatConsultations * avgChatDuration);
+
+    const grossRevenue = totalBillableMinutes * rate;
+    const netPayout = Math.round(grossRevenue * (comm / 100));
+    const platformCommission = grossRevenue - netPayout;
+
+    // Today (i=0) and Yesterday (i=1) are pending payout settlement; older days are settled
+    const isPending = i === 0 || i === 1;
+
+    earnings.push({
+      date: d.toISOString().split('T')[0],
+      formattedDate: d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+      dayOfWeek: d.toLocaleDateString('en-US', { weekday: 'long' }),
+      consultationsCount: totalConsultations,
+      callConsultations,
+      chatConsultations,
+      totalBillableMinutes,
+      grossRevenue,
+      commissionRate: comm,
+      platformCommission,
+      netPayout,
+      payoutStatus: isPending ? 'pending' : 'settled',
+      payoutReference: isPending ? undefined : `TXN-NEFT-${901200 + i * 317 + (seedMultiplier % 500)}`,
+    });
+  }
+
+  return earnings;
+}
+
+export function enrichAstrologerWithEarnings(astro: AstrologerProfile): AstrologerProfile {
+  const dailyEarnings = (astro.dailyEarnings && astro.dailyEarnings.length > 0)
+    ? astro.dailyEarnings
+    : generateDailyEarningsForAstro(astro, 30);
+
+  const pending = dailyEarnings
+    .filter((e) => e.payoutStatus === 'pending')
+    .reduce((acc, curr) => acc + curr.netPayout, 0);
+
+  const totalSettledIn30Days = dailyEarnings
+    .filter((e) => e.payoutStatus === 'settled')
+    .reduce((acc, curr) => acc + curr.netPayout, 0);
+
+  // Lifetime earnings calculated from total consultations or 30-day extrapolation
+  const estimatedLifetime = Math.max(
+    totalSettledIn30Days * 3.8,
+    astro.totalConsultations * (astro.ratePerMin || 25) * 11 * ((astro.commissionRate || 75) / 100)
+  );
+
+  return {
+    ...astro,
+    dailyEarnings,
+    lifetimeEarned: Math.round(estimatedLifetime),
+    pendingPayout: pending,
+  };
+}
+
+const BASE_ASTROLOGERS: AstrologerProfile[] = [
   {
     id: 'astro_1001',
     name: 'Acharya Dev Sharma',
@@ -156,6 +245,8 @@ export const INITIAL_ASTROLOGERS: AstrologerProfile[] = [
     strikesCount: 1,
   },
 ];
+
+export const INITIAL_ASTROLOGERS: AstrologerProfile[] = BASE_ASTROLOGERS.map(enrichAstrologerWithEarnings);
 
 
 export const INITIAL_USERS: UserRecord[] = [
@@ -258,7 +349,10 @@ export async function fetchLiveAdminData(): Promise<{
     if (res.ok) {
       const data = await res.json();
       if (data.success) {
-        return data;
+        return {
+          ...data,
+          astrologers: data.astrologers ? data.astrologers.map(enrichAstrologerWithEarnings) : INITIAL_ASTROLOGERS,
+        };
       }
     }
   } catch (_) {}
@@ -269,6 +363,27 @@ export async function fetchLiveAdminData(): Promise<{
     incidents: INITIAL_INCIDENTS,
     blacklist: INITIAL_BLACKLIST,
   };
+}
+
+export async function settleDailyPayoutApi(astrologerId: string, date: string) {
+  try {
+    await fetch(`/api/admin/astrologers/${astrologerId}/payout/settle`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ date }),
+    });
+  } catch (_) {}
+  return { success: true };
+}
+
+export async function settleAllPendingPayoutsApi(astrologerId: string) {
+  try {
+    await fetch(`/api/admin/astrologers/${astrologerId}/payout/settle-all`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (_) {}
+  return { success: true };
 }
 
 export async function adjustUserWalletApi(userId: string, delta: number, note: string) {
