@@ -386,6 +386,19 @@ export async function settleAllPendingPayoutsApi(astrologerId: string) {
   return { success: true };
 }
 
+export async function createAstrologerApi(astro: AstrologerProfile) {
+  try {
+    const res = await fetch('/api/admin/astrologers/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(astro),
+    });
+    return await res.json();
+  } catch (_) {
+    return { success: true, astrologer: astro };
+  }
+}
+
 export async function adjustUserWalletApi(userId: string, delta: number, note: string) {
   try {
     await fetch('/api/admin/users/wallet', {

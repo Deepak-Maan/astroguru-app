@@ -787,6 +787,43 @@ app.post('/api/admin/astrologers/rate', (req, res) => {
   res.json({ success: true, pricePerMin: astro.pricePerMin });
 });
 
+app.post('/api/admin/astrologers/create', (req, res) => {
+  const { id, name, email, phone, specialties, experienceYears, ratePerMin, commissionRate, onDuty, status, avatar } = req.body;
+  const db = loadDb();
+  if (!db.astrologers) db.astrologers = [];
+
+  const astroId = id || `astro_${Date.now()}`;
+  const newAstro = {
+    id: astroId,
+    name: name || 'Acharya Vedic Scholar',
+    email: email || `${astroId}@astroguru.app`,
+    phone: phone || '+91 98765 00000',
+    avatar: avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'Astrologer')}&background=0D8ABC&color=fff&size=200`,
+    specialties: specialties || ['Vedic Astrology'],
+    experienceYears: Number(experienceYears) || 5,
+    pricePerMin: Number(ratePerMin) || 25,
+    rating: 5.0,
+    reviews: 0,
+    consultations: 0,
+    status: status || 'active',
+    onDuty: Boolean(onDuty),
+    commissionRate: Number(commissionRate) || 75,
+    isVerified: true,
+  };
+
+  db.astrologers.unshift(newAstro);
+  saveDb(db);
+
+  // Sync to Firebase best-effort
+  fetch(`https://astroguru-d3c86-default-rtdb.firebaseio.com/jyotishis/${newAstro.id}.json`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(newAstro),
+  }).catch(() => {});
+
+  res.json({ success: true, astrologer: newAstro });
+});
+
 // ==========================================
 // ASTROGURU APK RELEASE & UPLOAD MANAGEMENT
 // ==========================================

@@ -35,6 +35,8 @@ import {
   saveSystemHealthApi,
   settleDailyPayoutApi,
   settleAllPendingPayoutsApi,
+  createAstrologerApi,
+  enrichAstrologerWithEarnings,
 } from './services/api';
 import { AdminSidebar, AdminTab } from './components/AdminSidebar';
 import { AdminTopNav } from './components/AdminTopNav';
@@ -240,6 +242,25 @@ export const App: React.FC = () => {
       settleAllPendingPayoutsApi(astroId);
       showToast(`✓ All pending day payouts for ${astro?.name || 'Acharya'} marked as settled.`);
     }
+  };
+
+  const handleCreateAstrologer = (newAstro: AstrologerProfile) => {
+    const enrichedAstro = enrichAstrologerWithEarnings(newAstro);
+    setAstrologers((prev) => [enrichedAstro, ...prev]);
+
+    const newLog: AdminAuditLog = {
+      id: `AUD-${Date.now()}`,
+      timestamp: 'Just now',
+      adminName: adminUser?.name || 'Master Admin',
+      action: 'ASTRO_ID_GENERATED',
+      targetEntity: `Acharya: ${newAstro.name} (${newAstro.id})`,
+      details: `Generated Astro ID ${newAstro.id} (Tariff: ₹${newAstro.ratePerMin}/min, Split: ${newAstro.commissionRate}%)`,
+      severity: 'info',
+      ipAddress: '223.185.59.145',
+    };
+    setAuditLogs((prev) => [newLog, ...prev]);
+    createAstrologerApi(enrichedAstro);
+    showToast(`✨ Astro ID ${newAstro.id} generated successfully for ${newAstro.name}!`);
   };
 
   // User Actions
@@ -482,6 +503,7 @@ export const App: React.FC = () => {
               onUpdateCommission={handleUpdateCommission}
               onApproveAstro={handleApproveAstro}
               onSettlePayout={handleSettlePayout}
+              onCreateAstrologer={handleCreateAstrologer}
             />
           )}
 

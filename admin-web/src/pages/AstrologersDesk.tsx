@@ -7,7 +7,30 @@ interface AstrologersDeskProps {
   onUpdateCommission: (id: string, newRate: number) => void;
   onApproveAstro: (id: string) => void;
   onSettlePayout?: (id: string, date?: string) => void;
+  onCreateAstrologer?: (newAstro: AstrologerProfile) => void;
 }
+
+const PRESET_SPECIALTIES = [
+  'Vedic Astrology',
+  'Kundli Prashna',
+  'Nadi Shastra',
+  'Tarot Cards',
+  'Love Compatibility',
+  'Numerology',
+  'Lal Kitab',
+  'Vastu Shastra',
+  'Muhurat',
+  'Gemology',
+  'Palmistry',
+  'Face Reading',
+];
+
+const PRESET_AVATARS = [
+  { label: 'Acharya Dev', url: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200' },
+  { label: 'Pt. Shastri', url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200' },
+  { label: 'Dr. Radhika', url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200' },
+  { label: 'Acharya Anand', url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=200' },
+];
 
 export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
   astrologers,
@@ -15,6 +38,7 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
   onUpdateCommission,
   onApproveAstro,
   onSettlePayout,
+  onCreateAstrologer,
 }) => {
   // Navigation / View Tabs
   const [activeTab, setActiveTab] = useState<'roster' | 'master_ledger'>('roster');
@@ -35,6 +59,94 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
   const todayIso = '2026-09-29';
   const [selectedLedgerDate, setSelectedLedgerDate] = useState<string>(todayIso);
   const [ledgerSearchQuery, setLedgerSearchQuery] = useState('');
+
+  // Astro ID Generation Modal State
+  const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
+  const [genId, setGenId] = useState(() => `astro_${Date.now()}`);
+  const [genName, setGenName] = useState('');
+  const [genEmail, setGenEmail] = useState('');
+  const [genPhone, setGenPhone] = useState('');
+  const [genRate, setGenRate] = useState(25);
+  const [genCommission, setGenCommission] = useState(75);
+  const [genExp, setGenExp] = useState(8);
+  const [genSpecialties, setGenSpecialties] = useState<string[]>(['Vedic Astrology', 'Kundli Prashna']);
+  const [genAvatar, setGenAvatar] = useState(PRESET_AVATARS[0].url);
+  const [genOnDuty, setGenOnDuty] = useState(true);
+  const [genStatus, setGenStatus] = useState<'active' | 'pending_verification'>('active');
+  const [successGeneratedAstro, setSuccessGeneratedAstro] = useState<AstrologerProfile | null>(null);
+  const [copiedText, setCopiedText] = useState<string | null>(null);
+
+  // Helper to copy text with transient visual feedback
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedText(text);
+    setTimeout(() => setCopiedText(null), 2500);
+  };
+
+  // Open Astro ID Modal with fresh ID
+  const handleOpenGenerateModal = () => {
+    const freshId = `astro_${Date.now()}`;
+    setGenId(freshId);
+    setGenName('');
+    setGenEmail('');
+    setGenPhone('');
+    setGenRate(25);
+    setGenCommission(75);
+    setGenExp(8);
+    setGenSpecialties(['Vedic Astrology', 'Kundli Prashna']);
+    setGenAvatar(PRESET_AVATARS[0].url);
+    setGenOnDuty(true);
+    setGenStatus('active');
+    setSuccessGeneratedAstro(null);
+    setIsGenerateModalOpen(true);
+  };
+
+  // Regenerate random or timestamped Astro ID
+  const handleRegenerateId = () => {
+    setGenId(`astro_${Date.now()}`);
+  };
+
+  // Toggle specialty in generator
+  const toggleSpecialty = (spec: string) => {
+    setGenSpecialties((prev) =>
+      prev.includes(spec) ? prev.filter((s) => s !== spec) : [...prev, spec]
+    );
+  };
+
+  // Submit generated Astrologer
+  const handleGenerateSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const finalId = genId.trim() || `astro_${Date.now()}`;
+    const cleanName = genName.trim() || 'Acharya Vedic Scholar';
+    const cleanEmail = genEmail.trim() || `${finalId}@astroguru.app`;
+    const cleanPhone = genPhone.trim() || '+91 98765 00000';
+
+    const newAstro: AstrologerProfile = {
+      id: finalId,
+      name: cleanName,
+      email: cleanEmail,
+      phone: cleanPhone,
+      avatar: genAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(cleanName)}&background=0D8ABC&color=fff&size=200`,
+      specialties: genSpecialties.length ? genSpecialties : ['Vedic Astrology'],
+      experienceYears: Number(genExp) || 5,
+      ratePerMin: Number(genRate) || 25,
+      rating: 5.0,
+      reviewsCount: 0,
+      totalConsultations: 0,
+      status: genStatus,
+      commissionRate: Number(genCommission) || 75,
+      onDuty: genOnDuty,
+      isFeatured: false,
+      boostRank: 0,
+      strikesCount: 0,
+      dailyEarnings: [],
+    };
+
+    if (onCreateAstrologer) {
+      onCreateAstrologer(newAstro);
+    }
+    setSuccessGeneratedAstro(newAstro);
+  };
 
   // Find currently selected astrologer for income drawer
   const selectedIncomeAstro = useMemo(() => {
@@ -80,6 +192,7 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         return (
+          a.id.toLowerCase().includes(q) ||
           a.name.toLowerCase().includes(q) ||
           a.email.toLowerCase().includes(q) ||
           a.specialties.some((s) => s.toLowerCase().includes(q))
@@ -165,7 +278,7 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
 
     if (!ledgerSearchQuery.trim()) return rows;
     const q = ledgerSearchQuery.toLowerCase();
-    return rows.filter((r) => r.astro.name.toLowerCase().includes(q) || r.astro.email.toLowerCase().includes(q));
+    return rows.filter((r) => r.astro.id.toLowerCase().includes(q) || r.astro.name.toLowerCase().includes(q) || r.astro.email.toLowerCase().includes(q));
   }, [astrologers, selectedLedgerDate, ledgerSearchQuery]);
 
   // Master Ledger Aggregates for the selected date
@@ -213,6 +326,7 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
   const handleExportAstroIncomeCsv = () => {
     if (!selectedIncomeAstro) return;
     const headers = [
+      'Astro ID',
       'Date',
       'Day',
       'Consultations Count',
@@ -228,6 +342,7 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
       'Payout Reference',
     ];
     const rows = filteredDailyEarnings.map((d) => [
+      selectedIncomeAstro.id,
       d.formattedDate,
       d.dayOfWeek,
       d.consultationsCount,
@@ -250,7 +365,7 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
   const handleExportMasterLedgerCsv = () => {
     const headers = [
       'Ledger Date',
-      'Astrologer ID',
+      'Astro ID',
       'Astrologer Name',
       'Tariff (INR/min)',
       'Total Consultations',
@@ -298,53 +413,73 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
             </span>
           </div>
           <p style={{ fontSize: '13px', color: '#A5B4FC', marginTop: '4px' }}>
-            Audit daily earnings, gross consultation volumes, platform commission splits, and disburse bank payouts.
+            Generate official Astro IDs, verify Vedic degrees, manage tariffs, audit day-wise income, and disburse bank payouts.
           </p>
         </div>
 
-        {/* Primary View Switcher: Fleet Roster vs Master Day-Wise Ledger */}
-        <div style={{ display: 'flex', gap: '8px', backgroundColor: 'rgba(10, 12, 22, 0.7)', padding: '4px', borderRadius: '12px', border: '1px solid rgba(129, 140, 248, 0.25)' }}>
+        {/* Action Controls: Generate Astro ID + View Switcher */}
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+          {/* ✨ GENERATE ASTRO ID BUTTON */}
           <button
-            onClick={() => setActiveTab('roster')}
+            onClick={handleOpenGenerateModal}
+            className="btn-gold"
             style={{
+              padding: '8px 18px',
+              fontSize: '12.5px',
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              padding: '7px 16px',
-              fontSize: '12.5px',
-              fontWeight: activeTab === 'roster' ? '700' : '600',
-              borderRadius: '8px',
-              border: 'none',
-              cursor: 'pointer',
-              backgroundColor: activeTab === 'roster' ? '#6366F1' : 'transparent',
-              color: activeTab === 'roster' ? '#FFFFFF' : '#A5B4FC',
-              transition: 'all 0.2s',
+              boxShadow: '0 4px 18px rgba(245, 158, 11, 0.45)',
             }}
           >
-            <span>👥</span>
-            <span>Acharya Fleet ({astrologers.length})</span>
+            <span>✨</span>
+            <span>Generate New Astro ID</span>
           </button>
 
-          <button
-            onClick={() => setActiveTab('master_ledger')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '7px 16px',
-              fontSize: '12.5px',
-              fontWeight: activeTab === 'master_ledger' ? '700' : '600',
-              borderRadius: '8px',
-              border: 'none',
-              cursor: 'pointer',
-              backgroundColor: activeTab === 'master_ledger' ? '#6366F1' : 'transparent',
-              color: activeTab === 'master_ledger' ? '#FFFFFF' : '#A5B4FC',
-              transition: 'all 0.2s',
-            }}
-          >
-            <span>📅</span>
-            <span>Master Day-Wise Ledger</span>
-          </button>
+          {/* Primary View Switcher: Fleet Roster vs Master Day-Wise Ledger */}
+          <div style={{ display: 'flex', gap: '6px', backgroundColor: 'rgba(10, 12, 22, 0.7)', padding: '4px', borderRadius: '12px', border: '1px solid rgba(129, 140, 248, 0.25)' }}>
+            <button
+              onClick={() => setActiveTab('roster')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '7px 16px',
+                fontSize: '12.5px',
+                fontWeight: activeTab === 'roster' ? '700' : '600',
+                borderRadius: '8px',
+                border: 'none',
+                cursor: 'pointer',
+                backgroundColor: activeTab === 'roster' ? '#6366F1' : 'transparent',
+                color: activeTab === 'roster' ? '#FFFFFF' : '#A5B4FC',
+                transition: 'all 0.2s',
+              }}
+            >
+              <span>👥</span>
+              <span>Acharya Fleet ({astrologers.length})</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('master_ledger')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '7px 16px',
+                fontSize: '12.5px',
+                fontWeight: activeTab === 'master_ledger' ? '700' : '600',
+                borderRadius: '8px',
+                border: 'none',
+                cursor: 'pointer',
+                backgroundColor: activeTab === 'master_ledger' ? '#6366F1' : 'transparent',
+                color: activeTab === 'master_ledger' ? '#FFFFFF' : '#A5B4FC',
+                transition: 'all 0.2s',
+              }}
+            >
+              <span>📅</span>
+              <span>Master Day-Wise Ledger</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -423,7 +558,7 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="🔍 Search Acharya by name, phone or specialty..."
+                placeholder="🔍 Search Acharya by name, Astro ID, email or specialty..."
                 style={{
                   backgroundColor: 'rgba(10, 12, 22, 0.8)',
                   border: '1px solid rgba(129, 140, 248, 0.3)',
@@ -431,7 +566,7 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
                   padding: '8px 14px',
                   color: '#EEF2FF',
                   fontSize: '12.5px',
-                  width: '320px',
+                  width: '360px',
                   outline: 'none',
                 }}
               />
@@ -455,12 +590,12 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
             </div>
           </div>
 
-          {/* Astrologers Table with In-line Today & Lifetime Earnings */}
+          {/* Astrologers Table with Copyable Astro ID, In-line Today & Lifetime Earnings */}
           <div className="liquid-card" style={{ overflow: 'hidden' }}>
             <table className="cosmic-table">
               <thead>
                 <tr>
-                  <th>Acharya Profile</th>
+                  <th>Acharya & Astro ID</th>
                   <th>Specialties</th>
                   <th>Rate / min</th>
                   <th>Rating & Volume</th>
@@ -480,15 +615,15 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
 
                   return (
                     <tr key={astro.id}>
-                      {/* Profile info */}
+                      {/* Profile info with Clickable Astro ID */}
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                           <img
                             src={astro.avatar}
                             alt={astro.name}
                             style={{
-                              width: '44px',
-                              height: '44px',
+                              width: '46px',
+                              height: '46px',
                               borderRadius: '50%',
                               border: '1.5px solid rgba(129, 140, 248, 0.45)',
                               objectFit: 'cover',
@@ -501,7 +636,33 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
                                 <span style={{ color: '#34D399', fontSize: '13px' }} title="Verified Vedic Scholar">✓</span>
                               )}
                             </div>
-                            <div style={{ fontSize: '11px', color: '#818CF8' }}>
+                            
+                            {/* Copyable Astro ID Pill */}
+                            <div style={{ marginTop: '3px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <button
+                                onClick={() => handleCopy(astro.id)}
+                                title="Click to copy Astro ID"
+                                style={{
+                                  backgroundColor: 'rgba(99, 102, 241, 0.15)',
+                                  border: '1px solid rgba(129, 140, 248, 0.35)',
+                                  borderRadius: '6px',
+                                  padding: '2px 7px',
+                                  color: '#A5B4FC',
+                                  fontFamily: 'monospace',
+                                  fontSize: '11px',
+                                  fontWeight: '600',
+                                  cursor: 'pointer',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                }}
+                              >
+                                <span>🆔 {astro.id}</span>
+                                <span style={{ fontSize: '10px' }}>{copiedText === astro.id ? '✓ Copied' : '📋'}</span>
+                              </button>
+                            </div>
+
+                            <div style={{ fontSize: '11px', color: '#818CF8', marginTop: '2px' }}>
                               {astro.email} · {astro.experienceYears}y exp
                             </div>
                           </div>
@@ -612,7 +773,7 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
                             title="Inspect full day-wise income breakdown, history, and settlement"
                           >
                             <span>📊</span>
-                            <span>Day-Wise Income</span>
+                            <span>Day-Wise</span>
                           </button>
 
                           {astro.status === 'pending_verification' ? (
@@ -698,7 +859,7 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
                 type="text"
                 value={ledgerSearchQuery}
                 onChange={(e) => setLedgerSearchQuery(e.target.value)}
-                placeholder="Search Acharya..."
+                placeholder="Search by ID or name..."
                 style={{
                   backgroundColor: 'rgba(10, 12, 22, 0.8)',
                   border: '1px solid rgba(129, 140, 248, 0.3)',
@@ -772,7 +933,7 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
             <table className="cosmic-table">
               <thead>
                 <tr>
-                  <th>Acharya</th>
+                  <th>Acharya & Astro ID</th>
                   <th>Tariff</th>
                   <th>Consultations Breakdown</th>
                   <th>Billable Time</th>
@@ -787,7 +948,7 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
               <tbody>
                 {masterLedgerForDate.map(({ astro, dayRecord }) => (
                   <tr key={astro.id}>
-                    {/* Acharya */}
+                    {/* Acharya & Astro ID */}
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <img
@@ -797,7 +958,24 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
                         />
                         <div>
                           <div style={{ fontWeight: '700', color: '#EEF2FF', fontSize: '13px' }}>{astro.name}</div>
-                          <div style={{ fontSize: '11px', color: '#818CF8' }}>{astro.specialties[0] || 'Vedic Jyotish'}</div>
+                          <button
+                            onClick={() => handleCopy(astro.id)}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: '#818CF8',
+                              fontFamily: 'monospace',
+                              fontSize: '11px',
+                              cursor: 'pointer',
+                              padding: 0,
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                            }}
+                          >
+                            <span>🆔 {astro.id}</span>
+                            <span style={{ fontSize: '10px' }}>{copiedText === astro.id ? '✓' : '📋'}</span>
+                          </button>
                         </div>
                       </div>
                     </td>
@@ -894,6 +1072,484 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
       )}
 
       {/* ===================================================================== */}
+      {/* MODAL: GENERATE NEW ASTRO ID & ONBOARD ACHARYA                        */}
+      {/* ===================================================================== */}
+      {isGenerateModalOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(4, 6, 15, 0.88)',
+            backdropFilter: 'blur(12px)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 130,
+            padding: '20px',
+          }}
+        >
+          <div
+            className="liquid-card"
+            style={{
+              width: '680px',
+              maxWidth: '96vw',
+              maxHeight: '92vh',
+              overflowY: 'auto',
+              padding: '28px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '20px',
+            }}
+          >
+            {/* Modal Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '24px' }}>✨</span>
+                <div>
+                  <h2 style={{ fontSize: '19px', fontWeight: '800', color: '#EEF2FF' }}>
+                    Generate Astro ID & Onboard Acharya
+                  </h2>
+                  <p style={{ fontSize: '12px', color: '#A5B4FC', marginTop: '2px' }}>
+                    Mint an official unique Astro ID for a new astrologer and configure tariffs & credentials.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsGenerateModalOpen(false)}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  border: '1px solid rgba(129, 140, 248, 0.3)',
+                  color: '#EEF2FF',
+                  borderRadius: '8px',
+                  width: '32px',
+                  height: '32px',
+                  fontSize: '16px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* If Astrologer was just generated, show Success Dossier */}
+            {successGeneratedAstro ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                <div
+                  style={{
+                    backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                    border: '1.5px solid #10B981',
+                    borderRadius: '16px',
+                    padding: '24px',
+                    textAlign: 'center',
+                  }}
+                >
+                  <div style={{ fontSize: '38px', marginBottom: '8px' }}>🎉</div>
+                  <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#EEF2FF' }}>
+                    Astro ID Generated Successfully!
+                  </h3>
+                  <p style={{ fontSize: '13px', color: '#A5B4FC', marginTop: '4px' }}>
+                    {successGeneratedAstro.name} is now onboarded into the AstroGuru platform.
+                  </p>
+
+                  {/* Astro ID Highlight Box */}
+                  <div
+                    style={{
+                      margin: '18px auto',
+                      backgroundColor: 'rgba(10, 12, 22, 0.85)',
+                      border: '1.5px dashed #FCD34D',
+                      borderRadius: '12px',
+                      padding: '12px 24px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '14px',
+                    }}
+                  >
+                    <span style={{ fontSize: '12px', fontWeight: '700', color: '#FCD34D' }}>ASSIGNED ASTRO ID:</span>
+                    <span style={{ fontSize: '20px', fontWeight: '800', color: '#EEF2FF', fontFamily: 'monospace' }}>
+                      {successGeneratedAstro.id}
+                    </span>
+                    <button
+                      onClick={() => handleCopy(successGeneratedAstro.id)}
+                      className="btn-primary"
+                      style={{ fontSize: '11px', padding: '4px 10px' }}
+                    >
+                      {copiedText === successGeneratedAstro.id ? '✓ Copied!' : '📋 Copy ID'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Acharya Welcome Kit Dossier (WhatsApp / SMS Ready) */}
+                <div className="inset-box" style={{ padding: '16px 20px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '12px', fontWeight: '700', color: '#EEF2FF' }}>
+                      📲 Acharya Welcome Onboarding Dossier:
+                    </span>
+                    <button
+                      onClick={() => {
+                        const dossier = `🌟 Welcome to AstroGuru Astrologer Network! 🌟\nNamaste ${successGeneratedAstro.name} ji,\n\nYour verified AstroGuru Acharya credentials have been generated:\n🆔 Astro ID: ${successGeneratedAstro.id}\n📞 Registered Phone: ${successGeneratedAstro.phone}\n💰 Consultation Tariff: ₹${successGeneratedAstro.ratePerMin}/min (${successGeneratedAstro.commissionRate}% Acharya Split)\n📲 Astrologer App: https://astroguru.app/download\n\nPlease login to start taking live consultations.`;
+                        handleCopy(dossier);
+                      }}
+                      className="btn-gold"
+                      style={{ fontSize: '11px', padding: '5px 12px' }}
+                    >
+                      {copiedText?.includes('Welcome to AstroGuru') ? '✓ Dossier Copied!' : '📋 Copy Welcome Message'}
+                    </button>
+                  </div>
+                  <pre
+                    style={{
+                      marginTop: '10px',
+                      backgroundColor: 'rgba(4, 6, 15, 0.7)',
+                      padding: '12px',
+                      borderRadius: '8px',
+                      fontSize: '11.5px',
+                      color: '#A5B4FC',
+                      whiteSpace: 'pre-wrap',
+                      lineHeight: '18px',
+                      fontFamily: 'monospace',
+                    }}
+                  >
+{`🌟 Welcome to AstroGuru Astrologer Network! 🌟
+Namaste ${successGeneratedAstro.name} ji,
+
+Your verified AstroGuru Acharya credentials have been generated:
+🆔 Astro ID: ${successGeneratedAstro.id}
+📞 Registered Phone: ${successGeneratedAstro.phone}
+💰 Consultation Tariff: ₹${successGeneratedAstro.ratePerMin}/min (${successGeneratedAstro.commissionRate}% Acharya Split)
+📲 Astrologer App: https://astroguru.app/download
+
+Please login to start taking live consultations.`}
+                  </pre>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '6px' }}>
+                  <button
+                    onClick={() => {
+                      setIncomeAstroId(successGeneratedAstro.id);
+                      setIsGenerateModalOpen(false);
+                    }}
+                    className="btn-gold"
+                    style={{ fontSize: '12px', padding: '8px 16px' }}
+                  >
+                    📊 View Day-Wise Ledger
+                  </button>
+                  <button
+                    onClick={() => setIsGenerateModalOpen(false)}
+                    className="btn-secondary"
+                    style={{ fontSize: '12px', padding: '8px 16px' }}
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* Astrologer Generation Form */
+              <form onSubmit={handleGenerateSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {/* 1. Astro ID Generator Strip */}
+                <div
+                  style={{
+                    backgroundColor: 'rgba(99, 102, 241, 0.12)',
+                    border: '1px solid rgba(129, 140, 248, 0.35)',
+                    borderRadius: '12px',
+                    padding: '14px 16px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <label style={{ fontSize: '12px', fontWeight: '700', color: '#EEF2FF' }}>
+                      Unique Astro ID (System Identifier)
+                    </label>
+                    <span style={{ fontSize: '11px', color: '#34D399', fontWeight: '600' }}>
+                      ✓ Auto-Generated & Available
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <div style={{ position: 'relative', flex: 1 }}>
+                      <input
+                        type="text"
+                        value={genId}
+                        onChange={(e) => setGenId(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))}
+                        required
+                        style={{
+                          width: '100%',
+                          backgroundColor: 'rgba(10, 12, 22, 0.9)',
+                          border: '1px solid #818CF8',
+                          borderRadius: '8px',
+                          padding: '8px 12px',
+                          color: '#FCD34D',
+                          fontFamily: 'monospace',
+                          fontSize: '14px',
+                          fontWeight: '700',
+                          outline: 'none',
+                        }}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRegenerateId}
+                      className="btn-secondary"
+                      style={{ fontSize: '11.5px', padding: '8px 14px' }}
+                      title="Generate a fresh timestamped Astro ID"
+                    >
+                      🎲 Fresh ID
+                    </button>
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#818CF8' }}>
+                    Format: <code>astro_&#123;timestamp&#125;</code> or custom handle (e.g. <code>astro_kanhaiya</code>)
+                  </div>
+                </div>
+
+                {/* 2. Basic Profile Inputs */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: '700', color: '#EEF2FF', display: 'block', marginBottom: '6px' }}>
+                      Acharya Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={genName}
+                      onChange={(e) => setGenName(e.target.value)}
+                      placeholder="e.g. Pt. Kanhaiya Lal Sharma"
+                      required
+                      style={{
+                        width: '100%',
+                        backgroundColor: 'rgba(10, 12, 22, 0.8)',
+                        border: '1px solid rgba(129, 140, 248, 0.3)',
+                        borderRadius: '8px',
+                        padding: '8px 12px',
+                        color: '#EEF2FF',
+                        fontSize: '12.5px',
+                        outline: 'none',
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: '700', color: '#EEF2FF', display: 'block', marginBottom: '6px' }}>
+                      Mobile Phone Number *
+                    </label>
+                    <input
+                      type="text"
+                      value={genPhone}
+                      onChange={(e) => setGenPhone(e.target.value)}
+                      placeholder="+91 98765 43210"
+                      required
+                      style={{
+                        width: '100%',
+                        backgroundColor: 'rgba(10, 12, 22, 0.8)',
+                        border: '1px solid rgba(129, 140, 248, 0.3)',
+                        borderRadius: '8px',
+                        padding: '8px 12px',
+                        color: '#EEF2FF',
+                        fontSize: '12.5px',
+                        outline: 'none',
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: '700', color: '#EEF2FF', display: 'block', marginBottom: '6px' }}>
+                      Email Address (Optional)
+                    </label>
+                    <input
+                      type="email"
+                      value={genEmail}
+                      onChange={(e) => setGenEmail(e.target.value)}
+                      placeholder={`e.g. ${genId || 'acharya'}@astroguru.app`}
+                      style={{
+                        width: '100%',
+                        backgroundColor: 'rgba(10, 12, 22, 0.8)',
+                        border: '1px solid rgba(129, 140, 248, 0.3)',
+                        borderRadius: '8px',
+                        padding: '8px 12px',
+                        color: '#EEF2FF',
+                        fontSize: '12.5px',
+                        outline: 'none',
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: '700', color: '#EEF2FF', display: 'block', marginBottom: '6px' }}>
+                      Years of Experience
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="60"
+                      value={genExp}
+                      onChange={(e) => setGenExp(Number(e.target.value))}
+                      style={{
+                        width: '100%',
+                        backgroundColor: 'rgba(10, 12, 22, 0.8)',
+                        border: '1px solid rgba(129, 140, 248, 0.3)',
+                        borderRadius: '8px',
+                        padding: '8px 12px',
+                        color: '#EEF2FF',
+                        fontSize: '12.5px',
+                        outline: 'none',
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* 3. Tariff & Commission Split */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: '700', color: '#EEF2FF', display: 'block', marginBottom: '6px' }}>
+                      Consultation Tariff (₹ / min)
+                    </label>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      {[15, 20, 25, 35, 50].map((rate) => (
+                        <button
+                          key={rate}
+                          type="button"
+                          onClick={() => setGenRate(rate)}
+                          className={genRate === rate ? 'btn-primary' : 'btn-secondary'}
+                          style={{ fontSize: '11px', padding: '5px 9px', flex: 1 }}
+                        >
+                          ₹{rate}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                      <label style={{ fontSize: '12px', fontWeight: '700', color: '#EEF2FF' }}>
+                        Commission Split: <strong style={{ color: '#34D399' }}>{genCommission}%</strong>
+                      </label>
+                      <span style={{ fontSize: '11px', color: '#A5B4FC' }}>Platform: {100 - genCommission}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="50"
+                      max="90"
+                      step="5"
+                      value={genCommission}
+                      onChange={(e) => setGenCommission(Number(e.target.value))}
+                      style={{ width: '100%', accentColor: '#6366F1', cursor: 'pointer', marginTop: '6px' }}
+                    />
+                  </div>
+                </div>
+
+                {/* 4. Specialties Selection */}
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: '700', color: '#EEF2FF', display: 'block', marginBottom: '6px' }}>
+                    Vedic Specialties (Select All That Apply)
+                  </label>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    {PRESET_SPECIALTIES.map((spec) => {
+                      const isSelected = genSpecialties.includes(spec);
+                      return (
+                        <button
+                          key={spec}
+                          type="button"
+                          onClick={() => toggleSpecialty(spec)}
+                          style={{
+                            padding: '4px 10px',
+                            fontSize: '11px',
+                            borderRadius: '999px',
+                            cursor: 'pointer',
+                            border: isSelected ? '1px solid #6366F1' : '1px solid rgba(129, 140, 248, 0.2)',
+                            backgroundColor: isSelected ? 'rgba(99, 102, 241, 0.3)' : 'rgba(10, 12, 22, 0.6)',
+                            color: isSelected ? '#EEF2FF' : '#A5B4FC',
+                            fontWeight: isSelected ? '700' : '500',
+                            transition: 'all 0.15s ease',
+                          }}
+                        >
+                          {isSelected ? '✓ ' : '+ '}
+                          {spec}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 5. Avatar Selection */}
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: '700', color: '#EEF2FF', display: 'block', marginBottom: '6px' }}>
+                    Select Acharya Avatar
+                  </label>
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    {PRESET_AVATARS.map((av, idx) => (
+                      <img
+                        key={idx}
+                        src={av.url}
+                        alt={av.label}
+                        onClick={() => setGenAvatar(av.url)}
+                        style={{
+                          width: '44px',
+                          height: '44px',
+                          borderRadius: '50%',
+                          cursor: 'pointer',
+                          border: genAvatar === av.url ? '2.5px solid #FCD34D' : '2px solid rgba(129, 140, 248, 0.3)',
+                          boxShadow: genAvatar === av.url ? '0 0 12px rgba(252, 211, 77, 0.5)' : 'none',
+                          objectFit: 'cover',
+                          transition: 'all 0.15s',
+                        }}
+                      />
+                    ))}
+                    <div style={{ fontSize: '11px', color: '#A5B4FC', marginLeft: '6px' }}>
+                      Or custom initials avatar will be generated.
+                    </div>
+                  </div>
+                </div>
+
+                {/* 6. Initial Status Toggles */}
+                <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginTop: '4px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '12.5px', color: '#EEF2FF' }}>
+                    <input
+                      type="checkbox"
+                      checked={genOnDuty}
+                      onChange={(e) => setGenOnDuty(e.target.checked)}
+                      style={{ accentColor: '#10B981', width: '16px', height: '16px' }}
+                    />
+                    <span>Immediately Online on Duty</span>
+                  </label>
+
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '12.5px', color: '#EEF2FF' }}>
+                    <input
+                      type="checkbox"
+                      checked={genStatus === 'active'}
+                      onChange={(e) => setGenStatus(e.target.checked ? 'active' : 'pending_verification')}
+                      style={{ accentColor: '#6366F1', width: '16px', height: '16px' }}
+                    />
+                    <span>Pre-Approved Vedic KYC Degree</span>
+                  </label>
+                </div>
+
+                {/* Actions */}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setIsGenerateModalOpen(false)}
+                    className="btn-secondary"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn-gold"
+                    style={{ padding: '8px 20px', fontSize: '13px' }}
+                  >
+                    ✨ Generate Astro ID & Onboard
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ===================================================================== */}
       {/* DRAWER / MODAL: INDIVIDUAL ASTROLOGER DAY-WISE INCOME BREAKDOWN       */}
       {/* ===================================================================== */}
       {selectedIncomeAstro && (
@@ -944,8 +1600,33 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
                     </h2>
                     <span className="badge-pill badge-emerald">Verified Scholar</span>
                   </div>
-                  <div style={{ fontSize: '12px', color: '#A5B4FC', marginTop: '3px' }}>
-                    {selectedIncomeAstro.email} · {selectedIncomeAstro.phone} · Tariff: <strong style={{ color: '#FCD34D' }}>₹{selectedIncomeAstro.ratePerMin}/min</strong> · Commission Cut: <strong style={{ color: '#34D399' }}>{selectedIncomeAstro.commissionRate}%</strong>
+                  
+                  {/* Astro ID Badge in Drawer */}
+                  <div style={{ marginTop: '4px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <button
+                      onClick={() => handleCopy(selectedIncomeAstro.id)}
+                      style={{
+                        backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                        border: '1px solid #818CF8',
+                        borderRadius: '6px',
+                        padding: '2px 8px',
+                        color: '#EEF2FF',
+                        fontFamily: 'monospace',
+                        fontSize: '11px',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                      }}
+                      title="Click to copy Astro ID"
+                    >
+                      <span>🆔 {selectedIncomeAstro.id}</span>
+                      <span style={{ fontSize: '10px' }}>{copiedText === selectedIncomeAstro.id ? '✓ Copied' : '📋'}</span>
+                    </button>
+                    <span style={{ fontSize: '12px', color: '#A5B4FC' }}>
+                      Tariff: <strong style={{ color: '#FCD34D' }}>₹{selectedIncomeAstro.ratePerMin}/min</strong> · Commission Cut: <strong style={{ color: '#34D399' }}>{selectedIncomeAstro.commissionRate}%</strong>
+                    </span>
                   </div>
                 </div>
               </div>
@@ -1236,7 +1917,7 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
             {/* Modal Footer */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
               <div style={{ fontSize: '11px', color: '#818CF8' }}>
-                Showing {filteredDailyEarnings.length} daily earning records for {selectedIncomeAstro.name}
+                Showing {filteredDailyEarnings.length} daily earning records for {selectedIncomeAstro.name} ({selectedIncomeAstro.id})
               </div>
               <button onClick={() => setIncomeAstroId(null)} className="btn-secondary">
                 Close Ledger
@@ -1283,7 +1964,31 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
               />
               <div>
                 <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#EEF2FF' }}>{selectedAstroForKYC.name}</h3>
-                <p style={{ fontSize: '12px', color: '#A5B4FC' }}>
+                
+                {/* Astro ID in Dossier */}
+                <div style={{ marginTop: '3px' }}>
+                  <button
+                    onClick={() => handleCopy(selectedAstroForKYC.id)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#FCD34D',
+                      fontFamily: 'monospace',
+                      fontSize: '12px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      padding: 0,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                    }}
+                  >
+                    <span>🆔 {selectedAstroForKYC.id}</span>
+                    <span style={{ fontSize: '11px' }}>{copiedText === selectedAstroForKYC.id ? '✓' : '📋'}</span>
+                  </button>
+                </div>
+
+                <p style={{ fontSize: '12px', color: '#A5B4FC', marginTop: '2px' }}>
                   {selectedAstroForKYC.email} · {selectedAstroForKYC.phone}
                 </p>
                 <div style={{ marginTop: '6px' }}>
@@ -1295,6 +2000,7 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
             <div className="inset-box" style={{ padding: '16px', marginTop: '20px' }}>
               <div style={{ fontSize: '11px', fontWeight: '700', color: '#FCD34D' }}>VERIFIED CREDENTIALS:</div>
               <ul style={{ fontSize: '13px', color: '#EEF2FF', marginTop: '8px', paddingLeft: '18px', lineHeight: '22px' }}>
+                <li>Astro ID Identifier: <strong style={{ color: '#FCD34D', fontFamily: 'monospace' }}>{selectedAstroForKYC.id}</strong></li>
                 <li>Aadhaar & PAN Identity Verification: <span style={{ color: '#34D399' }}>Verified ✓</span></li>
                 <li>Vedic Jyotish Acharya Degree: <span style={{ color: '#34D399' }}>Verified ✓</span></li>
                 <li>Test Audition Audio Quality Score: <span style={{ color: '#34D399' }}>98/100 ✓</span></li>
