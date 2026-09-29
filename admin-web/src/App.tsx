@@ -522,7 +522,12 @@ export const App: React.FC = () => {
             />
           )}
 
-          {currentTab === 'broadcast' && <BroadcastDesk />}
+          {currentTab === 'broadcast' && (
+            <BroadcastDesk
+              users={users}
+              astrologers={astrologers}
+            />
+          )}
 
           {currentTab === 'updates' && <UpdatesDesk />}
 

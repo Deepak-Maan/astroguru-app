@@ -166,3 +166,32 @@ export interface WebsiteConfig {
   };
 }
 
+export interface ReengagementCampaign {
+  id: string;
+  title: string;
+  body: string;
+  channel: 'push' | 'whatsapp' | 'sms' | 'omnichannel';
+  segment: 'dormant_with_balance' | 'zero_balance' | 'first_time_dropouts' | 'vip' | 'all';
+  deepLink: string;
+  sentCount: number;
+  deliveredCount: number;
+  openedCount: number;
+  consultationsUnlocked: number;
+  revenueGenerated: number;
+  status: 'dispatched' | 'scheduled' | 'active_rule';
+  sentAt: string;
+}
+
+export interface AutomatedTriggerRule {
+  id: string;
+  name: string;
+  description: string;
+  channel: 'push' | 'whatsapp' | 'sms';
+  targetSegment: string;
+  triggerCondition: string;
+  scheduleTime: string;
+  enabled: boolean;
+  timesTriggered: number;
+  revenueImpact: number;
+}
+

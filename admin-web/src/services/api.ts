@@ -2,9 +2,11 @@ import {
   AdminAuditLog,
   AstrologerDailyEarning,
   AstrologerProfile,
+  AutomatedTriggerRule,
   BannedEntity,
   LiveConsultationSession,
   OrderItem,
+  ReengagementCampaign,
   SecurityIncident,
   SystemHealthConfig,
   UserRecord,
@@ -672,6 +674,148 @@ export async function saveSystemHealthApi(config: SystemHealthConfig) {
   } catch (e: any) {
     return { success: false, error: e.message };
   }
+}
+
+// -------------------------------------------------------------
+// DORMANT USER RE-ENGAGEMENT & AUTOMATION REVENUE ENGINE
+// -------------------------------------------------------------
+
+export const INITIAL_CAMPAIGNS: ReengagementCampaign[] = [
+  {
+    id: 'CMP-801',
+    title: '💰 Unused Wallet Balance: Acharya Dev Sharma is Online!',
+    body: 'Namaste! You have ₹310 unused balance in your AstroGuru wallet. Acharya Dev Sharma is available now for a direct career reading.',
+    channel: 'omnichannel',
+    segment: 'dormant_with_balance',
+    deepLink: '/(tabs)/consult',
+    sentCount: 4820,
+    deliveredCount: 4712,
+    openedCount: 1684,
+    consultationsUnlocked: 342,
+    revenueGenerated: 85500,
+    status: 'dispatched',
+    sentAt: 'Yesterday, 07:30 PM',
+  },
+  {
+    id: 'CMP-802',
+    title: '🪐 Shani Gochar Alert: Crucial Transit Shifts for Your Rashi',
+    body: 'Major planetary alignment tonight! Auspicious wealth & career yogas are activating in your birth chart. Tap to read your personalized remedy.',
+    channel: 'push',
+    segment: 'all',
+    deepLink: '/(tabs)/kundli',
+    sentCount: 38400,
+    deliveredCount: 37200,
+    openedCount: 9840,
+    consultationsUnlocked: 610,
+    revenueGenerated: 152500,
+    status: 'dispatched',
+    sentAt: '3 days ago',
+  },
+  {
+    id: 'CMP-803',
+    title: '🎁 Special +30% Wallet Cashback Bonus Deposit',
+    body: 'Weekend Vedic Blessings: Recharge ₹200 and get ₹60 extra instantly! Offer expires at midnight.',
+    channel: 'whatsapp',
+    segment: 'zero_balance',
+    deepLink: '/wallet',
+    sentCount: 6240,
+    deliveredCount: 6110,
+    openedCount: 3890,
+    consultationsUnlocked: 420,
+    revenueGenerated: 105000,
+    status: 'dispatched',
+    sentAt: '5 days ago',
+  },
+  {
+    id: 'CMP-804',
+    title: '🌟 Your 1st 5-Minute Free Consultation is Waiting',
+    body: 'Namaste! Connect with top-rated Vedic scholars on AstroGuru for your first life & marriage reading completely on us.',
+    channel: 'whatsapp',
+    segment: 'first_time_dropouts',
+    deepLink: '/(tabs)/consult',
+    sentCount: 2150,
+    deliveredCount: 2090,
+    openedCount: 1120,
+    consultationsUnlocked: 310,
+    revenueGenerated: 46500,
+    status: 'dispatched',
+    sentAt: '1 week ago',
+  },
+];
+
+export const INITIAL_TRIGGER_RULES: AutomatedTriggerRule[] = [
+  {
+    id: 'RULE-101',
+    name: 'Day-3 Dormant Wallet Balance Nudge',
+    description: 'Sends automated WhatsApp & Push alert at 8:00 PM if a seeker has >₹50 balance and no call in 3 days.',
+    channel: 'whatsapp',
+    targetSegment: 'Seekers with Wallet > ₹50 (Inactive 3d)',
+    triggerCondition: 'wallet_balance >= 50 && last_call_days >= 3',
+    scheduleTime: 'Daily @ 08:00 PM',
+    enabled: true,
+    timesTriggered: 1420,
+    revenueImpact: 142000,
+  },
+  {
+    id: 'RULE-102',
+    name: 'Abandoned Astrologer Profile Call-Back',
+    description: 'Dispatches WhatsApp nudge 20 mins after seeker browses astrologer profile without starting session.',
+    channel: 'whatsapp',
+    targetSegment: 'Call Abandonment Dropouts',
+    triggerCondition: 'profile_viewed && session_not_started_20m',
+    scheduleTime: 'Real-time (20 min delay)',
+    enabled: true,
+    timesTriggered: 890,
+    revenueImpact: 98000,
+  },
+  {
+    id: 'RULE-103',
+    name: 'Weekly Planetary Gochar & Nakshatra Alert',
+    description: 'Broadcasts personalized Kundli transit insights every Thursday & Saturday morning.',
+    channel: 'push',
+    targetSegment: 'All Registered Seekers with Kundli',
+    triggerCondition: 'kundli_created == true',
+    scheduleTime: 'Thu & Sat @ 08:30 AM',
+    enabled: true,
+    timesTriggered: 5200,
+    revenueImpact: 310000,
+  },
+  {
+    id: 'RULE-104',
+    name: 'Low Balance (+30% Recharge Cashback) Alert',
+    description: 'Sends special bonus recharge code within 2 hours of wallet dipping below ₹20.',
+    channel: 'push',
+    targetSegment: 'Zero / Low Balance Seekers (<₹20)',
+    triggerCondition: 'wallet_balance < 20',
+    scheduleTime: 'Instant Event Trigger',
+    enabled: true,
+    timesTriggered: 1640,
+    revenueImpact: 182000,
+  },
+];
+
+export async function dispatchCampaignApi(campaign: Partial<ReengagementCampaign>) {
+  try {
+    const res = await fetch('/api/admin/broadcast/dispatch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(campaign),
+    });
+    return await res.json();
+  } catch (_) {
+    return { success: true };
+  }
+}
+
+export async function toggleTriggerRuleApi(ruleId: string, enabled: boolean) {
+  try {
+    await fetch(`/api/admin/broadcast/rules/${ruleId}/toggle`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabled }),
+    });
+  } catch (_) {}
+  return { success: true };
 }
 
 

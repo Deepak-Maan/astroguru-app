@@ -82,9 +82,10 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
     },
     {
       id: 'broadcast' as AdminTab,
-      label: 'Push Broadcast Hub',
+      label: 'Dormant Re-Engagement',
       icon: '📢',
-      badge: null,
+      badge: 'WhatsApp & Push',
+      badgeClass: 'badge-emerald',
     },
     {
       id: 'updates' as AdminTab,
