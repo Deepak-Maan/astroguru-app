@@ -2,8 +2,10 @@ export interface AdminUser {
   id: string;
   name: string;
   email: string;
-  role: 'super_admin' | 'moderator' | 'support';
+  role: 'super_admin' | 'sub_admin' | 'moderator' | 'support';
   avatar?: string;
+  subAdminId?: string;
+  permissions?: SubAdminPermissions;
 }
 
 export interface SecurityIncident {
@@ -193,5 +195,70 @@ export interface AutomatedTriggerRule {
   enabled: boolean;
   timesTriggered: number;
   revenueImpact: number;
+}
+
+export interface SubAdminPermissions {
+  // Astrologer Sector
+  canViewAstrologers: boolean;
+  canEditTariffs: boolean;
+  canApproveKYC: boolean;
+  canGenerateAstroId: boolean;
+  canViewDayWiseIncome: boolean;
+  canSettlePayouts: boolean;
+
+  // Live Operations & Security
+  canMonitorLiveSessions: boolean;
+  canTerminateSessions: boolean;
+  canIssueStrikes: boolean;
+  canAccessWatchtower: boolean;
+  canBanDevices: boolean;
+
+  // Users & Wallets
+  canViewUsers: boolean;
+  canAdjustWallet: boolean;
+  maxWalletCreditLimitPerDay: number; // in INR
+  canSuspendUsers: boolean;
+
+  // AstroMall & E-Puja
+  canManageAstroMall: boolean;
+  canAssignPandits: boolean;
+
+  // Marketing & Re-engagement
+  canDispatchBroadcast: boolean;
+  canAccessAutomationRules: boolean;
+
+  // System Infrastructure (Locked to Super Admin)
+  canAccessSystemHealth: boolean;
+  canViewAuditLogs: boolean;
+}
+
+export interface SubAdminProfile {
+  id: string; // e.g., 'subadmin_1001'
+  name: string;
+  email: string;
+  phone: string;
+  avatar?: string;
+  role: 'sub_admin';
+  assignedRegion?: string;
+
+  // Licensing & Fee Details (₹599)
+  joiningFeeStatus: 'paid' | 'pending' | 'waived';
+  joiningFeeAmount: number; // 599
+  transactionRef?: string;
+  paymentMode?: 'UPI' | 'Razorpay' | 'Bank Transfer' | 'Cash / Offline';
+  licensedAt: string;
+  licenseExpiresAt?: string;
+
+  // Status
+  status: 'active' | 'suspended' | 'pending_approval';
+
+  // Granular Rights
+  permissions: SubAdminPermissions;
+
+  // Operational Scoping
+  assignedAstrologerIds?: string[];
+  totalRevenueManaged?: number;
+  subAdminCommissionRate?: number; // e.g. 5% override commission
+  totalEarningsWithdrawn?: number;
 }
 

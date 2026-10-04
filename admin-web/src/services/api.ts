@@ -8,6 +8,8 @@ import {
   OrderItem,
   ReengagementCampaign,
   SecurityIncident,
+  SubAdminPermissions,
+  SubAdminProfile,
   SystemHealthConfig,
   UserRecord,
 } from '../types';
@@ -816,6 +818,220 @@ export async function toggleTriggerRuleApi(ruleId: string, enabled: boolean) {
     });
   } catch (_) {}
   return { success: true };
+}
+
+// -------------------------------------------------------------
+// SUB-ADMIN HIERARCHY, RBAC & ₹599 ONBOARDING ENGINE
+// -------------------------------------------------------------
+
+export const DEFAULT_SUBADMIN_PERMISSIONS: SubAdminPermissions = {
+  canViewAstrologers: true,
+  canEditTariffs: false,
+  canApproveKYC: false,
+  canGenerateAstroId: true,
+  canViewDayWiseIncome: true,
+  canSettlePayouts: false,
+
+  canMonitorLiveSessions: true,
+  canTerminateSessions: false,
+  canIssueStrikes: false,
+  canAccessWatchtower: false,
+  canBanDevices: false,
+
+  canViewUsers: true,
+  canAdjustWallet: true,
+  maxWalletCreditLimitPerDay: 500,
+  canSuspendUsers: false,
+
+  canManageAstroMall: true,
+  canAssignPandits: true,
+
+  canDispatchBroadcast: false,
+  canAccessAutomationRules: false,
+
+  canAccessSystemHealth: false,
+  canViewAuditLogs: false,
+};
+
+export const INITIAL_SUB_ADMINS: SubAdminProfile[] = [
+  {
+    id: 'subadmin_1001',
+    name: 'Ramesh Sharma',
+    email: 'ramesh.ops@astroguru.app',
+    phone: '+91 98112 33445',
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200',
+    role: 'sub_admin',
+    assignedRegion: 'Delhi-NCR & North Zone',
+    joiningFeeStatus: 'paid',
+    joiningFeeAmount: 599,
+    transactionRef: 'UPI/6029182910/SBIN',
+    paymentMode: 'UPI',
+    licensedAt: '12 Sep 2026',
+    licenseExpiresAt: '11 Sep 2027',
+    status: 'active',
+    permissions: {
+      canViewAstrologers: true,
+      canEditTariffs: true,
+      canApproveKYC: true,
+      canGenerateAstroId: true,
+      canViewDayWiseIncome: true,
+      canSettlePayouts: false,
+
+      canMonitorLiveSessions: true,
+      canTerminateSessions: true,
+      canIssueStrikes: true,
+      canAccessWatchtower: true,
+      canBanDevices: false,
+
+      canViewUsers: true,
+      canAdjustWallet: false,
+      maxWalletCreditLimitPerDay: 0,
+      canSuspendUsers: false,
+
+      canManageAstroMall: false,
+      canAssignPandits: false,
+
+      canDispatchBroadcast: false,
+      canAccessAutomationRules: false,
+
+      canAccessSystemHealth: false,
+      canViewAuditLogs: false,
+    },
+    totalRevenueManaged: 148500,
+    subAdminCommissionRate: 5,
+    totalEarningsWithdrawn: 7425,
+  },
+  {
+    id: 'subadmin_1002',
+    name: 'Priya Patel',
+    email: 'priya.support@astroguru.app',
+    phone: '+91 99201 55667',
+    avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=200',
+    role: 'sub_admin',
+    assignedRegion: 'Gujarat & Maharashtra Zone',
+    joiningFeeStatus: 'paid',
+    joiningFeeAmount: 599,
+    transactionRef: 'PAY_RZP_991823901',
+    paymentMode: 'Razorpay',
+    licensedAt: '18 Sep 2026',
+    licenseExpiresAt: '17 Sep 2027',
+    status: 'active',
+    permissions: {
+      canViewAstrologers: true,
+      canEditTariffs: false,
+      canApproveKYC: false,
+      canGenerateAstroId: false,
+      canViewDayWiseIncome: false,
+      canSettlePayouts: false,
+
+      canMonitorLiveSessions: false,
+      canTerminateSessions: false,
+      canIssueStrikes: false,
+      canAccessWatchtower: false,
+      canBanDevices: false,
+
+      canViewUsers: true,
+      canAdjustWallet: true,
+      maxWalletCreditLimitPerDay: 500,
+      canSuspendUsers: false,
+
+      canManageAstroMall: true,
+      canAssignPandits: true,
+
+      canDispatchBroadcast: true,
+      canAccessAutomationRules: false,
+
+      canAccessSystemHealth: false,
+      canViewAuditLogs: false,
+    },
+    totalRevenueManaged: 92400,
+    subAdminCommissionRate: 5,
+    totalEarningsWithdrawn: 4620,
+  },
+  {
+    id: 'subadmin_1003',
+    name: 'Amitabh Verma',
+    email: 'amitabh.verma@gmail.com',
+    phone: '+91 97112 88990',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200',
+    role: 'sub_admin',
+    assignedRegion: 'Uttar Pradesh & Bihar Zone',
+    joiningFeeStatus: 'pending',
+    joiningFeeAmount: 599,
+    transactionRef: undefined,
+    paymentMode: 'UPI',
+    licensedAt: 'Today',
+    status: 'pending_approval',
+    permissions: DEFAULT_SUBADMIN_PERMISSIONS,
+    totalRevenueManaged: 0,
+    subAdminCommissionRate: 5,
+    totalEarningsWithdrawn: 0,
+  },
+];
+
+export async function fetchSubAdminsApi(): Promise<SubAdminProfile[]> {
+  try {
+    const res = await fetch('/api/admin/subadmins');
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && data.subAdmins) return data.subAdmins;
+    }
+  } catch (_) {}
+  return INITIAL_SUB_ADMINS;
+}
+
+export async function createSubAdminApi(subAdmin: SubAdminProfile) {
+  try {
+    const res = await fetch('/api/admin/subadmins/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(subAdmin),
+    });
+    return await res.json();
+  } catch (_) {
+    return { success: true, subAdmin };
+  }
+}
+
+export async function updateSubAdminPermissionsApi(
+  subAdminId: string,
+  permissions: SubAdminPermissions
+) {
+  try {
+    const res = await fetch(`/api/admin/subadmins/${subAdminId}/permissions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ permissions }),
+    });
+    return await res.json();
+  } catch (_) {
+    return { success: true };
+  }
+}
+
+export async function toggleSubAdminStatusApi(subAdminId: string) {
+  try {
+    const res = await fetch(`/api/admin/subadmins/${subAdminId}/status`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    return await res.json();
+  } catch (_) {
+    return { success: true };
+  }
+}
+
+export async function verifySubAdminFeeApi(subAdminId: string, transactionRef: string) {
+  try {
+    const res = await fetch(`/api/admin/subadmins/${subAdminId}/verify-fee`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ transactionRef }),
+    });
+    return await res.json();
+  } catch (_) {
+    return { success: true };
+  }
 }
 
 

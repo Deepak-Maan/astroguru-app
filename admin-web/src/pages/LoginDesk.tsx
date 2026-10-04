@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { AdminUser } from '../types';
+import { INITIAL_SUB_ADMINS } from '../services/api';
 
 interface LoginDeskProps {
   onLoginSuccess: (user: AdminUser) => void;
@@ -10,6 +11,38 @@ export const LoginDesk: React.FC<LoginDeskProps> = ({ onLoginSuccess }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const checkLocalCredentials = (testEmail: string, testPass: string) => {
+    const cleanEmail = testEmail.trim().toLowerCase();
+    const cleanPass = testPass.trim();
+
+    // 1. Check Super Admin
+    if (cleanEmail === 'admin@astroguru.app' && (cleanPass === 'admin123' || cleanPass === 'admin')) {
+      return {
+        id: 'usr_admin_1',
+        name: 'Master Admin',
+        email: 'admin@astroguru.app',
+        role: 'super_admin' as const,
+      };
+    }
+
+    // 2. Check Sub-Admins in INITIAL_SUB_ADMINS or localStorage
+    const matchedSub = INITIAL_SUB_ADMINS.find(
+      (s) => s.email.toLowerCase() === cleanEmail
+    );
+    if (matchedSub && (cleanPass === 'subadmin123' || cleanPass === 'admin123' || cleanPass === 'admin')) {
+      return {
+        id: `usr_${matchedSub.id}`,
+        name: matchedSub.name,
+        email: matchedSub.email,
+        role: 'sub_admin' as const,
+        subAdminId: matchedSub.id,
+        permissions: matchedSub.permissions,
+      };
+    }
+
+    return null;
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,28 +65,22 @@ export const LoginDesk: React.FC<LoginDeskProps> = ({ onLoginSuccess }) => {
         setLoading(false);
         if (data.success && data.admin) {
           onLoginSuccess(data.admin);
-        } else if (email.trim().toLowerCase() === 'admin@astroguru.app' && password.trim() === 'admin123') {
-          onLoginSuccess({
-            id: 'usr_admin_1',
-            name: 'Master Admin',
-            email: 'admin@astroguru.app',
-            role: 'super_admin',
-          });
         } else {
-          setError(data.error || 'Invalid administrator email or password.');
+          const localUser = checkLocalCredentials(email, password);
+          if (localUser) {
+            onLoginSuccess(localUser);
+          } else {
+            setError(data.error || 'Invalid administrator email or password.');
+          }
         }
       })
       .catch(() => {
         setLoading(false);
-        if (email.trim().toLowerCase() === 'admin@astroguru.app' && password.trim() === 'admin123') {
-          onLoginSuccess({
-            id: 'usr_admin_1',
-            name: 'Master Admin',
-            email: 'admin@astroguru.app',
-            role: 'super_admin',
-          });
+        const localUser = checkLocalCredentials(email, password);
+        if (localUser) {
+          onLoginSuccess(localUser);
         } else {
-          setError('Authentication server error. Please check server connection.');
+          setError('Invalid credentials or authentication server unavailable.');
         }
       });
   };
@@ -156,6 +183,47 @@ export const LoginDesk: React.FC<LoginDeskProps> = ({ onLoginSuccess }) => {
             {loading ? 'Authenticating…' : 'Sign In to Console ⚡'}
           </button>
         </form>
+
+        {/* Demo Fast-Login Selector for Testing RBAC */}
+        <div style={{
+          width: '100%',
+          marginTop: '6px',
+          paddingTop: '16px',
+          borderTop: '1px solid rgba(129, 140, 248, 0.2)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
+        }}>
+          <div style={{ fontSize: '11px', fontWeight: '700', color: '#64748B', textAlign: 'center', letterSpacing: '0.5px' }}>
+            QUICK DEMO ACCESS (RBAC SIMULATION)
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            <button
+              type="button"
+              onClick={() => {
+                setEmail('admin@astroguru.app');
+                setPassword('admin123');
+              }}
+              className="btn-secondary"
+              style={{ fontSize: '11px', padding: '8px 10px', justifyContent: 'center' }}
+            >
+              👑 Master Admin
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setEmail('ramesh.ops@astroguru.app');
+                setPassword('subadmin123');
+              }}
+              className="btn-secondary"
+              style={{ fontSize: '11px', padding: '8px 10px', justifyContent: 'center' }}
+            >
+              🛡️ Sub-Admin (Delhi)
+            </button>
+          </div>
+        </div>
 
       </div>
     </div>

@@ -10,6 +10,7 @@ export type AdminTab =
   | 'users'
   | 'astromall'
   | 'broadcast'
+  | 'subadmins'
   | 'updates'
   | 'system';
 
@@ -32,7 +33,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   pendingAstrosCount,
   liveSessionsCount = 3,
 }) => {
-  const navItems = [
+  const allNavItems = [
     {
       id: 'overview' as AdminTab,
       label: 'Overview & Heatmap',
@@ -88,6 +89,13 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       badgeClass: 'badge-emerald',
     },
     {
+      id: 'subadmins' as AdminTab,
+      label: 'Sub-Admin Hierarchy',
+      icon: '🛡️',
+      badge: '₹599 RBAC',
+      badgeClass: 'badge-amber',
+    },
+    {
       id: 'updates' as AdminTab,
       label: 'App Release & OTA',
       icon: '📱',
@@ -102,6 +110,30 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       badgeClass: 'badge-indigo',
     },
   ];
+
+  // RBAC Filtering based on user role and permissions
+  const navItems = allNavItems.filter((item) => {
+    if (adminUser.role === 'super_admin') {
+      return true; // Super Admin has unrestricted access to all modules
+    }
+
+    // Sub-Admin role: restricted modules
+    if (item.id === 'subadmins' || item.id === 'system') {
+      return false; // Sub-Admins cannot manage other subadmins or system infra
+    }
+
+    const perms = adminUser.permissions;
+    if (!perms) return ['overview', 'website', 'updates'].includes(item.id);
+
+    if (item.id === 'astrologers') return perms.canViewAstrologers !== false;
+    if (item.id === 'live') return perms.canMonitorLiveSessions !== false;
+    if (item.id === 'watchtower') return perms.canAccessWatchtower !== false;
+    if (item.id === 'users') return perms.canViewUsers !== false;
+    if (item.id === 'astromall') return perms.canManageAstroMall !== false;
+    if (item.id === 'broadcast') return perms.canDispatchBroadcast !== false;
+
+    return true;
+  });
 
 
   return (
@@ -249,21 +281,25 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
               width: '36px',
               height: '36px',
               borderRadius: '50%',
-              backgroundColor: 'rgba(99, 102, 241, 0.35)',
-              border: '1px solid #818CF8',
+              backgroundColor: adminUser.role === 'super_admin' ? 'rgba(99, 102, 241, 0.35)' : 'rgba(245, 158, 11, 0.35)',
+              border: adminUser.role === 'super_admin' ? '1px solid #818CF8' : '1px solid #F59E0B',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: '16px',
             }}>
-              👑
+              {adminUser.role === 'super_admin' ? '👑' : '🛡️'}
             </div>
             <div>
               <div style={{ fontSize: '13px', fontWeight: '700', color: '#EEF2FF' }}>
                 {adminUser.name}
               </div>
-              <div style={{ fontSize: '11px', color: '#818CF8', fontWeight: '600' }}>
-                Super Admin
+              <div style={{
+                fontSize: '11px',
+                color: adminUser.role === 'super_admin' ? '#818CF8' : '#FCD34D',
+                fontWeight: '600',
+              }}>
+                {adminUser.role === 'super_admin' ? 'Super Admin' : (adminUser.permissions?.assignedRegion || 'Sub-Admin Partner')}
               </div>
             </div>
           </div>

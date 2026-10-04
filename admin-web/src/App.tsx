@@ -7,6 +7,8 @@ import {
   LiveConsultationSession,
   OrderItem,
   SecurityIncident,
+  SubAdminPermissions,
+  SubAdminProfile,
   SystemHealthConfig,
   UserRecord,
 } from './types';
@@ -17,6 +19,7 @@ import {
   INITIAL_INCIDENTS,
   INITIAL_LIVE_SESSIONS,
   INITIAL_ORDERS,
+  INITIAL_SUB_ADMINS,
   INITIAL_SYSTEM_HEALTH,
   INITIAL_USERS,
   fetchLiveAdminData,
@@ -37,6 +40,11 @@ import {
   settleAllPendingPayoutsApi,
   createAstrologerApi,
   enrichAstrologerWithEarnings,
+  fetchSubAdminsApi,
+  createSubAdminApi,
+  updateSubAdminPermissionsApi,
+  toggleSubAdminStatusApi,
+  verifySubAdminFeeApi,
 } from './services/api';
 import { AdminSidebar, AdminTab } from './components/AdminSidebar';
 import { AdminTopNav } from './components/AdminTopNav';
@@ -47,6 +55,7 @@ import { AstrologersDesk } from './pages/AstrologersDesk';
 import { UsersDesk } from './pages/UsersDesk';
 import { AstroMallDesk } from './pages/AstroMallDesk';
 import { BroadcastDesk } from './pages/BroadcastDesk';
+import { SubAdminsDesk } from './pages/SubAdminsDesk';
 import { UpdatesDesk } from './pages/UpdatesDesk';
 import { WebsiteDesk } from './pages/WebsiteDesk';
 import { LoginDesk } from './pages/LoginDesk';
@@ -92,6 +101,7 @@ export const App: React.FC = () => {
   const [liveSessions, setLiveSessions] = useState<LiveConsultationSession[]>(INITIAL_LIVE_SESSIONS);
   const [auditLogs, setAuditLogs] = useState<AdminAuditLog[]>(INITIAL_AUDIT_LOGS);
   const [systemHealth, setSystemHealth] = useState<SystemHealthConfig>(INITIAL_SYSTEM_HEALTH);
+  const [subAdmins, setSubAdmins] = useState<SubAdminProfile[]>(INITIAL_SUB_ADMINS);
 
   // Load live data from database on mount
   React.useEffect(() => {
@@ -113,6 +123,10 @@ export const App: React.FC = () => {
 
     fetchSystemHealthApi().then((data) => {
       if (data) setSystemHealth(data);
+    });
+
+    fetchSubAdminsApi().then((data) => {
+      if (data && data.length > 0) setSubAdmins(data);
     });
   }, []);
 
@@ -415,6 +429,78 @@ export const App: React.FC = () => {
     showToast(`System Health updated: ${newConfig.maintenanceMode ? '⚠️ Maintenance Mode Activated' : '● System Online'}`);
   };
 
+  // Sub-Admin Hierarchy & RBAC Handlers (₹599 Joining Fee & Rights)
+  const handleUpdateSubAdminPermissions = async (id: string, perms: SubAdminPermissions) => {
+    const updated = await updateSubAdminPermissionsApi(id, perms);
+    setSubAdmins((prev) => prev.map((s) => (s.id === id ? updated : s)));
+    const target = subAdmins.find((s) => s.id === id);
+    const newLog: AdminAuditLog = {
+      id: `AUD-${Date.now()}`,
+      timestamp: 'Just now',
+      adminName: adminUser?.name || 'Master Admin',
+      action: 'SUB_ADMIN_PERMISSIONS_UPDATED',
+      targetEntity: `Sub-Admin: ${target?.name || id}`,
+      details: `Permissions modified for ${target?.region || 'Franchise Partner'}`,
+      severity: 'warning',
+      ipAddress: '223.185.59.145',
+    };
+    setAuditLogs((prev) => [newLog, ...prev]);
+    showToast(`Permissions updated for ${target?.name || 'Sub-Admin'}`);
+  };
+
+  const handleToggleSubAdminStatus = async (id: string) => {
+    const updated = await toggleSubAdminStatusApi(id);
+    setSubAdmins((prev) => prev.map((s) => (s.id === id ? updated : s)));
+    const target = subAdmins.find((s) => s.id === id);
+    const newStatus = updated.status;
+    const newLog: AdminAuditLog = {
+      id: `AUD-${Date.now()}`,
+      timestamp: 'Just now',
+      adminName: adminUser?.name || 'Master Admin',
+      action: newStatus === 'active' ? 'SUB_ADMIN_ACTIVATED' : 'SUB_ADMIN_SUSPENDED',
+      targetEntity: `Sub-Admin: ${target?.name || id}`,
+      details: `Access changed to ${newStatus.toUpperCase()}`,
+      severity: newStatus === 'active' ? 'info' : 'critical',
+      ipAddress: '223.185.59.145',
+    };
+    setAuditLogs((prev) => [newLog, ...prev]);
+    showToast(`${target?.name || 'Sub-Admin'} is now ${newStatus.toUpperCase()}`);
+  };
+
+  const handleCreateSubAdmin = async (newSubAdmin: SubAdminProfile) => {
+    const created = await createSubAdminApi(newSubAdmin);
+    setSubAdmins((prev) => [created, ...prev]);
+    const newLog: AdminAuditLog = {
+      id: `AUD-${Date.now()}`,
+      timestamp: 'Just now',
+      adminName: adminUser?.name || 'Master Admin',
+      action: 'SUB_ADMIN_CREATED',
+      targetEntity: `Sub-Admin: ${created.name}`,
+      details: `Onboarded with ₹599 License Fee (${created.feeStatus}) in ${created.region}`,
+      severity: 'info',
+      ipAddress: '223.185.59.145',
+    };
+    setAuditLogs((prev) => [newLog, ...prev]);
+    showToast(`New Sub-Admin ${created.name} onboarded successfully!`);
+  };
+
+  const handleVerifySubAdminFee = async (id: string, txnRef: string) => {
+    const updated = await verifySubAdminFeeApi(id, txnRef);
+    setSubAdmins((prev) => prev.map((s) => (s.id === id ? updated : s)));
+    const target = subAdmins.find((s) => s.id === id);
+    const newLog: AdminAuditLog = {
+      id: `AUD-${Date.now()}`,
+      timestamp: 'Just now',
+      adminName: adminUser?.name || 'Master Admin',
+      action: 'SUB_ADMIN_FEE_VERIFIED',
+      targetEntity: `Sub-Admin: ${target?.name || id}`,
+      details: `₹599 Joining License Fee Verified (UTR: ${txnRef})`,
+      severity: 'info',
+      ipAddress: '223.185.59.145',
+    };
+    setAuditLogs((prev) => [newLog, ...prev]);
+    showToast(`₹599 Joining Fee verified for ${target?.name || 'Sub-Admin'}!`);
+  };
 
   // If not logged in, render dedicated Admin Login screen
   if (!adminUser) {
@@ -526,6 +612,16 @@ export const App: React.FC = () => {
             <BroadcastDesk
               users={users}
               astrologers={astrologers}
+            />
+          )}
+
+          {currentTab === 'subadmins' && (
+            <SubAdminsDesk
+              subAdmins={subAdmins}
+              onUpdatePermissions={handleUpdateSubAdminPermissions}
+              onToggleStatus={handleToggleSubAdminStatus}
+              onCreateSubAdmin={handleCreateSubAdmin}
+              onVerifyFee={handleVerifySubAdminFee}
             />
           )}
 
