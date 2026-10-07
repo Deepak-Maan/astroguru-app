@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { UserRecord, AstrologerProfile, ReengagementCampaign, AutomatedTriggerRule } from '../types';
+import { UserRecord, AstrologerProfile, ReengagementCampaign, AutomatedTriggerRule, AdminUser } from '../types';
 import { INITIAL_CAMPAIGNS, INITIAL_TRIGGER_RULES, dispatchCampaignApi, toggleTriggerRuleApi } from '../services/api';
 
 interface BroadcastDeskProps {
+  adminUser?: AdminUser | null;
   users?: UserRecord[];
   astrologers?: AstrologerProfile[];
   onTriggerNotification?: (title: string, body: string) => void;
@@ -57,9 +58,16 @@ const REENGAGEMENT_TEMPLATES = [
 ];
 
 export const BroadcastDesk: React.FC<BroadcastDeskProps> = ({
+  adminUser,
   users = [],
   astrologers = [],
 }) => {
+  // Granular RBAC Permissions
+  const isSuperAdmin = !adminUser || adminUser.role === 'super_admin';
+  const perms = adminUser?.permissions;
+  const canDispatch = isSuperAdmin || perms?.canDispatchBroadcast !== false;
+  const canAccessRules = isSuperAdmin || perms?.canAccessAutomationRules !== false;
+
   // Navigation View Tab
   const [activeTab, setActiveTab] = useState<'composer' | 'automation_rules' | 'history'>('composer');
 
@@ -288,26 +296,28 @@ export const BroadcastDesk: React.FC<BroadcastDeskProps> = ({
             <span>Broadcast Composer</span>
           </button>
 
-          <button
-            onClick={() => setActiveTab('automation_rules')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '7px 16px',
-              fontSize: '12.5px',
-              fontWeight: activeTab === 'automation_rules' ? '700' : '600',
-              borderRadius: '8px',
-              border: 'none',
-              cursor: 'pointer',
-              backgroundColor: activeTab === 'automation_rules' ? '#6366F1' : 'transparent',
-              color: activeTab === 'automation_rules' ? '#FFFFFF' : '#A5B4FC',
-              transition: 'all 0.2s',
-            }}
-          >
-            <span>⚡</span>
-            <span>Automated Trigger Rules ({triggerRules.filter((r) => r.enabled).length} Active)</span>
-          </button>
+          {canAccessRules && (
+            <button
+              onClick={() => setActiveTab('automation_rules')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '7px 16px',
+                fontSize: '12.5px',
+                fontWeight: activeTab === 'automation_rules' ? '700' : '600',
+                borderRadius: '8px',
+                border: 'none',
+                cursor: 'pointer',
+                backgroundColor: activeTab === 'automation_rules' ? '#6366F1' : 'transparent',
+                color: activeTab === 'automation_rules' ? '#FFFFFF' : '#A5B4FC',
+                transition: 'all 0.2s',
+              }}
+            >
+              <span>⚡</span>
+              <span>Automated Trigger Rules ({triggerRules.filter((r) => r.enabled).length} Active)</span>
+            </button>
+          )}
 
           <button
             onClick={() => setActiveTab('history')}
@@ -602,23 +612,28 @@ export const BroadcastDesk: React.FC<BroadcastDeskProps> = ({
             <div style={{ marginTop: '8px' }}>
               <button
                 type="button"
-                onClick={handleDispatchCampaign}
-                disabled={isDispatching}
+                onClick={canDispatch ? handleDispatchCampaign : undefined}
+                disabled={isDispatching || !canDispatch}
                 className="btn-gold"
                 style={{
                   width: '100%',
                   justifyContent: 'center',
                   padding: '14px',
                   fontSize: '14px',
-                  boxShadow: '0 6px 24px rgba(245, 158, 11, 0.45)',
+                  boxShadow: canDispatch ? '0 6px 24px rgba(245, 158, 11, 0.45)' : 'none',
+                  opacity: canDispatch ? 1 : 0.45,
+                  cursor: canDispatch ? 'pointer' : 'not-allowed',
                 }}
+                title={canDispatch ? 'Launch re-engagement blast across channel' : 'Action restricted by Master Admin (canDispatchBroadcast)'}
               >
                 {isDispatching ? (
                   <span>⏳ Dispatching to {audienceMetrics.currentCount.toLocaleString('en-IN')} Seekers...</span>
                 ) : dispatchSuccess ? (
                   <span>✅ Broadcast Dispatched to {audienceMetrics.currentCount.toLocaleString('en-IN')} Seekers!</span>
-                ) : (
+                ) : canDispatch ? (
                   <span>🚀 Launch Re-Engagement Campaign ({audienceMetrics.currentCount.toLocaleString('en-IN')} Seekers)</span>
+                ) : (
+                  <span>🔒 Broadcast Dispatch Restricted</span>
                 )}
               </button>
             </div>

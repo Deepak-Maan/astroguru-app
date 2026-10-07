@@ -856,15 +856,16 @@ export const DEFAULT_SUBADMIN_PERMISSIONS: SubAdminPermissions = {
 export const INITIAL_SUB_ADMINS: SubAdminProfile[] = [
   {
     id: 'subadmin_1001',
-    name: 'Ramesh Sharma',
-    email: 'ramesh.ops@astroguru.app',
+    name: 'Rohan Mehra',
+    email: 'rohan.ops@astroguru.app',
     phone: '+91 98112 33445',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200',
     role: 'sub_admin',
     assignedRegion: 'Delhi-NCR & North Zone',
+    licenseId: 'AG-LIC-89211',
     joiningFeeStatus: 'paid',
     joiningFeeAmount: 599,
-    transactionRef: 'UPI/6029182910/SBIN',
+    transactionRef: 'UPI/8920192831/HDFC',
     paymentMode: 'UPI',
     licensedAt: '12 Sep 2026',
     licenseExpiresAt: '11 Sep 2027',
@@ -875,7 +876,7 @@ export const INITIAL_SUB_ADMINS: SubAdminProfile[] = [
       canApproveKYC: true,
       canGenerateAstroId: true,
       canViewDayWiseIncome: true,
-      canSettlePayouts: false,
+      canSettlePayouts: true,
 
       canMonitorLiveSessions: true,
       canTerminateSessions: true,
@@ -884,12 +885,12 @@ export const INITIAL_SUB_ADMINS: SubAdminProfile[] = [
       canBanDevices: false,
 
       canViewUsers: true,
-      canAdjustWallet: false,
-      maxWalletCreditLimitPerDay: 0,
-      canSuspendUsers: false,
+      canAdjustWallet: true,
+      maxWalletCreditLimitPerDay: 5000,
+      canSuspendUsers: true,
 
-      canManageAstroMall: false,
-      canAssignPandits: false,
+      canManageAstroMall: true,
+      canAssignPandits: true,
 
       canDispatchBroadcast: false,
       canAccessAutomationRules: false,
@@ -909,6 +910,7 @@ export const INITIAL_SUB_ADMINS: SubAdminProfile[] = [
     avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=200',
     role: 'sub_admin',
     assignedRegion: 'Gujarat & Maharashtra Zone',
+    licenseId: 'AG-LIC-89212',
     joiningFeeStatus: 'paid',
     joiningFeeAmount: 599,
     transactionRef: 'PAY_RZP_991823901',
@@ -919,24 +921,24 @@ export const INITIAL_SUB_ADMINS: SubAdminProfile[] = [
     permissions: {
       canViewAstrologers: true,
       canEditTariffs: false,
-      canApproveKYC: false,
-      canGenerateAstroId: false,
+      canApproveKYC: true,
+      canGenerateAstroId: true,
       canViewDayWiseIncome: false,
       canSettlePayouts: false,
 
-      canMonitorLiveSessions: false,
-      canTerminateSessions: false,
-      canIssueStrikes: false,
-      canAccessWatchtower: false,
+      canMonitorLiveSessions: true,
+      canTerminateSessions: true,
+      canIssueStrikes: true,
+      canAccessWatchtower: true,
       canBanDevices: false,
 
       canViewUsers: true,
       canAdjustWallet: true,
-      maxWalletCreditLimitPerDay: 500,
+      maxWalletCreditLimitPerDay: 2000,
       canSuspendUsers: false,
 
-      canManageAstroMall: true,
-      canAssignPandits: true,
+      canManageAstroMall: false,
+      canAssignPandits: false,
 
       canDispatchBroadcast: true,
       canAccessAutomationRules: false,
@@ -956,6 +958,7 @@ export const INITIAL_SUB_ADMINS: SubAdminProfile[] = [
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200',
     role: 'sub_admin',
     assignedRegion: 'Uttar Pradesh & Bihar Zone',
+    licenseId: 'AG-LIC-89213',
     joiningFeeStatus: 'pending',
     joiningFeeAmount: 599,
     transactionRef: undefined,
@@ -1033,5 +1036,34 @@ export async function verifySubAdminFeeApi(subAdminId: string, transactionRef: s
     return { success: true };
   }
 }
+
+export async function clearSubAdminFeeAtLoginApi(
+  idOrEmail: string,
+  transactionRef: string
+) {
+  try {
+    const res = await fetch('/api/admin/subadmins/clear-fee-and-activate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: idOrEmail, email: idOrEmail, transactionRef }),
+    });
+    return await res.json();
+  } catch (_) {
+    return {
+      success: true,
+      admin: {
+        id: `usr_${idOrEmail}`,
+        name: 'Amitabh Verma',
+        email: idOrEmail,
+        role: 'sub_admin' as const,
+        subAdminId: idOrEmail,
+        assignedRegion: 'Uttar Pradesh & Bihar Zone',
+        licenseId: 'AG-LIC-89213',
+        permissions: DEFAULT_SUBADMIN_PERMISSIONS,
+      },
+    };
+  }
+}
+
 
 

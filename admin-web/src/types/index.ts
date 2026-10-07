@@ -4,6 +4,9 @@ export interface AdminUser {
   email: string;
   role: 'super_admin' | 'sub_admin' | 'moderator' | 'support';
   avatar?: string;
+  phone?: string;
+  assignedRegion?: string;
+  licenseId?: string;
   subAdminId?: string;
   permissions?: SubAdminPermissions;
 }
@@ -242,6 +245,7 @@ export interface SubAdminProfile {
   assignedRegion?: string;
 
   // Licensing & Fee Details (₹599)
+  licenseId?: string;
   joiningFeeStatus: 'paid' | 'pending' | 'waived';
   joiningFeeAmount: number; // 599
   transactionRef?: string;

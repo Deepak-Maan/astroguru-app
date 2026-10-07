@@ -1230,7 +1230,9 @@ You can now log in to the AstroGuru Admin Portal to manage your regional fleet.`
               </div>
               <div>
                 <span style={{ fontSize: '10.5px', color: '#A5B4FC', textTransform: 'uppercase', fontWeight: '700' }}>LICENSE ID:</span>
-                <div style={{ fontSize: '14px', fontWeight: '800', color: '#FCD34D', fontFamily: 'monospace' }}>{selectedSubAdminForCert.id}</div>
+                <div style={{ fontSize: '14px', fontWeight: '800', color: '#FCD34D', fontFamily: 'monospace' }}>
+                  {selectedSubAdminForCert.licenseId || selectedSubAdminForCert.id}
+                </div>
               </div>
               <div>
                 <span style={{ fontSize: '10.5px', color: '#A5B4FC', textTransform: 'uppercase', fontWeight: '700' }}>ASSIGNED ZONE:</span>
@@ -1247,13 +1249,24 @@ You can now log in to the AstroGuru Admin Portal to manage your regional fleet.`
                 <div style={{ fontSize: '11px', color: '#818CF8' }}>Issued: {selectedSubAdminForCert.licensedAt}</div>
                 <div style={{ fontSize: '11px', color: '#34D399', fontWeight: '700' }}>Status: Officially Licensed ✓</div>
               </div>
-              <button
-                onClick={() => setSelectedSubAdminForCert(null)}
-                className="btn-gold"
-                style={{ fontSize: '12px', padding: '7px 16px' }}
-              >
-                Close Certificate
-              </button>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="btn-secondary"
+                  style={{ fontSize: '12px', padding: '7px 14px' }}
+                >
+                  🖨️ Print Certificate
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedSubAdminForCert(null)}
+                  className="btn-gold"
+                  style={{ fontSize: '12px', padding: '7px 16px' }}
+                >
+                  Close Certificate
+                </button>
+              </div>
             </div>
           </div>
         </div>

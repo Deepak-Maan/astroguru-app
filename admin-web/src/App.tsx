@@ -584,6 +584,7 @@ export const App: React.FC = () => {
 
           {currentTab === 'astrologers' && (
             <AstrologersDesk
+              adminUser={adminUser}
               astrologers={astrologers}
               onToggleDuty={handleToggleDuty}
               onUpdateCommission={handleUpdateCommission}
@@ -610,6 +611,7 @@ export const App: React.FC = () => {
 
           {currentTab === 'broadcast' && (
             <BroadcastDesk
+              adminUser={adminUser}
               users={users}
               astrologers={astrologers}
             />

@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { AstrologerProfile, AstrologerDailyEarning } from '../types';
+import { AstrologerProfile, AstrologerDailyEarning, AdminUser } from '../types';
 
 interface AstrologersDeskProps {
+  adminUser?: AdminUser | null;
   astrologers: AstrologerProfile[];
   onToggleDuty: (id: string) => void;
   onUpdateCommission: (id: string, newRate: number) => void;
@@ -33,6 +34,7 @@ const PRESET_AVATARS = [
 ];
 
 export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
+  adminUser,
   astrologers,
   onToggleDuty,
   onUpdateCommission,
@@ -40,6 +42,16 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
   onSettlePayout,
   onCreateAstrologer,
 }) => {
+  // Granular RBAC Permissions
+  const isSuperAdmin = !adminUser || adminUser.role === 'super_admin';
+  const perms = adminUser?.permissions;
+
+  const canGenerateAstroId = isSuperAdmin || perms?.canGenerateAstroId !== false;
+  const canEditTariffs = isSuperAdmin || perms?.canEditTariffs !== false;
+  const canApproveKYC = isSuperAdmin || perms?.canApproveKYC !== false;
+  const canViewDayWiseIncome = isSuperAdmin || perms?.canViewDayWiseIncome !== false;
+  const canSettlePayouts = isSuperAdmin || perms?.canSettlePayouts !== false;
+
   // Navigation / View Tabs
   const [activeTab, setActiveTab] = useState<'roster' | 'master_ledger'>('roster');
 
@@ -421,7 +433,8 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
           {/* ✨ GENERATE ASTRO ID BUTTON */}
           <button
-            onClick={handleOpenGenerateModal}
+            onClick={canGenerateAstroId ? handleOpenGenerateModal : undefined}
+            disabled={!canGenerateAstroId}
             className="btn-gold"
             style={{
               padding: '8px 18px',
@@ -429,10 +442,13 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              boxShadow: '0 4px 18px rgba(245, 158, 11, 0.45)',
+              boxShadow: canGenerateAstroId ? '0 4px 18px rgba(245, 158, 11, 0.45)' : 'none',
+              opacity: canGenerateAstroId ? 1 : 0.45,
+              cursor: canGenerateAstroId ? 'pointer' : 'not-allowed',
             }}
+            title={canGenerateAstroId ? 'Generate official Astro ID & Welcome Dossier' : 'Action locked: Requires Master Admin permission (canGenerateAstroId)'}
           >
-            <span>✨</span>
+            <span>{canGenerateAstroId ? '✨' : '🔒'}</span>
             <span>Generate New Astro ID</span>
           </button>
 
@@ -459,26 +475,28 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
               <span>Acharya Fleet ({astrologers.length})</span>
             </button>
 
-            <button
-              onClick={() => setActiveTab('master_ledger')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '7px 16px',
-                fontSize: '12.5px',
-                fontWeight: activeTab === 'master_ledger' ? '700' : '600',
-                borderRadius: '8px',
-                border: 'none',
-                cursor: 'pointer',
-                backgroundColor: activeTab === 'master_ledger' ? '#6366F1' : 'transparent',
-                color: activeTab === 'master_ledger' ? '#FFFFFF' : '#A5B4FC',
-                transition: 'all 0.2s',
-              }}
-            >
-              <span>📅</span>
-              <span>Master Day-Wise Ledger</span>
-            </button>
+            {canViewDayWiseIncome && (
+              <button
+                onClick={() => setActiveTab('master_ledger')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '7px 16px',
+                  fontSize: '12.5px',
+                  fontWeight: activeTab === 'master_ledger' ? '700' : '600',
+                  borderRadius: '8px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  backgroundColor: activeTab === 'master_ledger' ? '#6366F1' : 'transparent',
+                  color: activeTab === 'master_ledger' ? '#FFFFFF' : '#A5B4FC',
+                  transition: 'all 0.2s',
+                }}
+              >
+                <span>📅</span>
+                <span>Master Day-Wise Ledger (TDS)</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -778,11 +796,18 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
 
                           {astro.status === 'pending_verification' ? (
                             <button
-                              onClick={() => onApproveAstro(astro.id)}
+                              onClick={canApproveKYC ? () => onApproveAstro(astro.id) : undefined}
+                              disabled={!canApproveKYC}
                               className="btn-primary"
-                              style={{ fontSize: '11px', padding: '5px 10px' }}
+                              style={{
+                                fontSize: '11px',
+                                padding: '5px 10px',
+                                opacity: canApproveKYC ? 1 : 0.45,
+                                cursor: canApproveKYC ? 'pointer' : 'not-allowed',
+                              }}
+                              title={canApproveKYC ? 'Approve Astrologer KYC' : 'Requires Master Admin KYC permission'}
                             >
-                              ✓ KYC
+                              {canApproveKYC ? '✓ KYC' : '🔒 KYC'}
                             </button>
                           ) : (
                             <button
@@ -1045,12 +1070,18 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
                       <div style={{ display: 'flex', gap: '6px' }}>
                         {dayRecord.payoutStatus === 'pending' && dayRecord.netPayout > 0 && onSettlePayout && (
                           <button
-                            onClick={() => onSettlePayout(astro.id, selectedLedgerDate)}
+                            onClick={canSettlePayouts ? () => onSettlePayout(astro.id, selectedLedgerDate) : undefined}
+                            disabled={!canSettlePayouts}
                             className="btn-primary"
-                            style={{ fontSize: '11px', padding: '5px 9px' }}
-                            title="Disburse / Mark payout as settled in bank"
+                            style={{
+                              fontSize: '11px',
+                              padding: '5px 9px',
+                              opacity: canSettlePayouts ? 1 : 0.45,
+                              cursor: canSettlePayouts ? 'pointer' : 'not-allowed',
+                            }}
+                            title={canSettlePayouts ? "Disburse / Mark payout as settled in bank" : "Restricted: Master Admin payout settlement permission required"}
                           >
-                            ✓ Disburse
+                            {canSettlePayouts ? '✓ Disburse' : '🔒 Settle'}
                           </button>
                         )}
                         <button
@@ -1707,11 +1738,19 @@ Please login to start taking live consultations.`}
                 </div>
                 {selectedIncomeAstro.pendingPayout && selectedIncomeAstro.pendingPayout > 0 && onSettlePayout ? (
                   <button
-                    onClick={() => onSettlePayout(selectedIncomeAstro.id)}
+                    onClick={canSettlePayouts ? () => onSettlePayout(selectedIncomeAstro.id) : undefined}
+                    disabled={!canSettlePayouts}
                     className="btn-primary"
-                    style={{ fontSize: '10.5px', padding: '3px 8px', marginTop: '4px' }}
+                    style={{
+                      fontSize: '10.5px',
+                      padding: '3px 8px',
+                      marginTop: '4px',
+                      opacity: canSettlePayouts ? 1 : 0.45,
+                      cursor: canSettlePayouts ? 'pointer' : 'not-allowed',
+                    }}
+                    title={canSettlePayouts ? 'Settle all pending payouts' : 'Restricted: Master Admin permission required'}
                   >
-                    ✓ Settle All Pending
+                    {canSettlePayouts ? '✓ Settle All Pending' : '🔒 Payout Restricted'}
                   </button>
                 ) : (
                   <div style={{ fontSize: '10.5px', color: '#34D399', marginTop: '2px' }}>All settled ✓</div>
@@ -1898,11 +1937,18 @@ Please login to start taking live consultations.`}
                       <td>
                         {d.payoutStatus === 'pending' && onSettlePayout ? (
                           <button
-                            onClick={() => onSettlePayout(selectedIncomeAstro.id, d.date)}
+                            onClick={canSettlePayouts ? () => onSettlePayout(selectedIncomeAstro.id, d.date) : undefined}
+                            disabled={!canSettlePayouts}
                             className="btn-primary"
-                            style={{ fontSize: '10.5px', padding: '4px 8px' }}
+                            style={{
+                              fontSize: '10.5px',
+                              padding: '4px 8px',
+                              opacity: canSettlePayouts ? 1 : 0.45,
+                              cursor: canSettlePayouts ? 'pointer' : 'not-allowed',
+                            }}
+                            title={canSettlePayouts ? 'Mark payout as settled' : 'Restricted: Master Admin permission required'}
                           >
-                            Mark Settled
+                            {canSettlePayouts ? 'Mark Settled' : '🔒 Restricted'}
                           </button>
                         ) : (
                           <span style={{ fontSize: '11px', color: '#34D399' }}>✓ Completed</span>
