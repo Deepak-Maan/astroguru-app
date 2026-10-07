@@ -1,14 +1,35 @@
 import React from 'react';
+import { AstrologerProfile } from '../types';
 
 interface OverviewDeskProps {
+  astrologers?: AstrologerProfile[];
   onSendDutyAlert: () => void;
   dutyAlertSent: boolean;
 }
 
 export const OverviewDesk: React.FC<OverviewDeskProps> = ({
+  astrologers = [],
   onSendDutyAlert,
   dutyAlertSent,
 }) => {
+  const todayIso = new Date().toISOString().split('T')[0];
+
+  const todayFleetAstroIncome = React.useMemo(() => {
+    if (!astrologers || !astrologers.length) return 138390;
+    return astrologers.reduce((acc, a) => {
+      const today = a.dailyEarnings?.find((d) => d.date === todayIso) || a.dailyEarnings?.[0];
+      return acc + (today?.netPayout || 0);
+    }, 0);
+  }, [astrologers, todayIso]);
+
+  const todayFleetGross = React.useMemo(() => {
+    if (!astrologers || !astrologers.length) return 184520;
+    return astrologers.reduce((acc, a) => {
+      const today = a.dailyEarnings?.find((d) => d.date === todayIso) || a.dailyEarnings?.[0];
+      return acc + (today?.grossRevenue || 0);
+    }, 0);
+  }, [astrologers, todayIso]);
+
   // 24-Hour Consultation Volume Curve
   const hourlyData = [
     { hour: '00:00', consults: 210 },
@@ -58,19 +79,19 @@ export const OverviewDesk: React.FC<OverviewDeskProps> = ({
         gridTemplateColumns: 'repeat(4, 1fr)',
         gap: '18px',
       }}>
-        {/* KPI 1 */}
+        {/* KPI 1: Today's Astrologer Fleet Net Income */}
         <div className="liquid-card" style={{ padding: '20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <span style={{ fontSize: '12px', fontWeight: '700', color: '#A5B4FC', textTransform: 'uppercase' }}>
-              Today's Gross Revenue
+              Today's Astrologers Income
             </span>
-            <span style={{ fontSize: '20px' }}>💰</span>
+            <span style={{ fontSize: '20px' }}>🔮</span>
           </div>
           <div style={{ fontSize: '28px', fontWeight: '800', color: '#FCD34D', marginTop: '10px' }}>
-            ₹1,84,520
+            ₹{todayFleetAstroIncome.toLocaleString('en-IN')}
           </div>
           <div style={{ fontSize: '12px', color: '#34D399', fontWeight: '600', marginTop: '6px' }}>
-            ↑ +18.4% vs same day last week
+            Gross: ₹{todayFleetGross.toLocaleString('en-IN')} (Take-Home ~75%)
           </div>
         </div>
 
@@ -289,20 +310,22 @@ export const OverviewDesk: React.FC<OverviewDeskProps> = ({
                 <th>Acharya</th>
                 <th>Consults</th>
                 <th>Rating</th>
+                <th style={{ color: '#FCD34D' }}>Today's Income</th>
                 <th>Repeat Rate</th>
                 <th>Strikes</th>
               </tr>
             </thead>
             <tbody>
               {[
-                { name: 'Acharya Dev Sharma', consults: '8,520', rating: '4.97★', repeat: '92%', strikes: 0 },
-                { name: 'Dr. Radhika Veda', consults: '4,310', rating: '4.88★', repeat: '88%', strikes: 0 },
-                { name: 'Pt. Rameshwar Shastri', consults: '11,400', rating: '4.95★', repeat: '94%', strikes: 0 },
+                { name: 'Acharya Dev Sharma', consults: '8,520', rating: '4.97★', todayIncome: '₹4,350', repeat: '92%', strikes: 0 },
+                { name: 'Dr. Radhika Veda', consults: '4,310', rating: '4.88★', todayIncome: '₹3,200', repeat: '88%', strikes: 0 },
+                { name: 'Pt. Rameshwar Shastri', consults: '11,400', rating: '4.95★', todayIncome: '₹5,100', repeat: '94%', strikes: 0 },
               ].map((row, i) => (
                 <tr key={i}>
                   <td style={{ fontWeight: '700' }}>{row.name}</td>
                   <td>{row.consults}</td>
                   <td style={{ color: '#FCD34D', fontWeight: '700' }}>{row.rating}</td>
+                  <td style={{ color: '#FDE68A', fontWeight: '800', fontSize: '13px' }}>{row.todayIncome}</td>
                   <td style={{ color: '#34D399', fontWeight: '700' }}>{row.repeat}</td>
                   <td>
                     <span className="badge-pill badge-emerald">0 Clean</span>

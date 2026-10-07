@@ -88,8 +88,8 @@ export function generateDailyEarningsForAstro(
   days: number = 30
 ): AstrologerDailyEarning[] {
   const earnings: AstrologerDailyEarning[] = [];
-  // Reference date: 29 Sep 2026
-  const baseDate = new Date(2026, 8, 29);
+  // Reference date: Dynamic Current Date (Today)
+  const baseDate = new Date();
   const rate = astro.ratePerMin || 25;
   const comm = astro.commissionRate || 75;
   const seedMultiplier = (astro.id || 'astro').split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);

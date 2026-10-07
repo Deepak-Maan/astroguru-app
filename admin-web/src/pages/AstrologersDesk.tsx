@@ -68,7 +68,7 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
   const [daySearchQuery, setDaySearchQuery] = useState('');
 
   // Master Ledger State
-  const todayIso = '2026-09-29';
+  const todayIso = new Date().toISOString().split('T')[0];
   const [selectedLedgerDate, setSelectedLedgerDate] = useState<string>(todayIso);
   const [ledgerSearchQuery, setLedgerSearchQuery] = useState('');
 
@@ -174,7 +174,7 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
     let totalPending = 0;
 
     astrologers.forEach((astro) => {
-      const todayRecord = astro.dailyEarnings?.find((d) => d.date === todayIso);
+      const todayRecord = astro.dailyEarnings?.find((d) => d.date === todayIso) || astro.dailyEarnings?.[0];
       if (todayRecord) {
         gross += todayRecord.grossRevenue;
         net += todayRecord.netPayout;
@@ -268,7 +268,7 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
   // Master Ledger Data for selected date across ALL astrologers
   const masterLedgerForDate = useMemo(() => {
     const rows = astrologers.map((astro) => {
-      const dayRecord = astro.dailyEarnings?.find((d) => d.date === selectedLedgerDate);
+      const dayRecord = astro.dailyEarnings?.find((d) => d.date === selectedLedgerDate) || (selectedLedgerDate === todayIso ? astro.dailyEarnings?.[0] : undefined);
       return {
         astro,
         dayRecord: dayRecord || {
@@ -626,7 +626,7 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
               </thead>
               <tbody>
                 {filteredAstrologers.map((astro) => {
-                  const todayEarning = astro.dailyEarnings?.find((d) => d.date === todayIso);
+                  const todayEarning = astro.dailyEarnings?.find((d) => d.date === todayIso) || astro.dailyEarnings?.[0];
                   const pendingTotal = astro.dailyEarnings
                     ?.filter((d) => d.payoutStatus === 'pending')
                     .reduce((sum, d) => sum + d.netPayout, 0) || 0;
@@ -717,11 +717,19 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
                       <td>
                         {todayEarning ? (
                           <div>
-                            <div style={{ fontWeight: '800', color: '#FCD34D', fontSize: '14px' }}>
-                              ₹{todayEarning.netPayout.toLocaleString('en-IN')}
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                              <span style={{ fontWeight: '800', color: '#FCD34D', fontSize: '15px' }}>
+                                ₹{todayEarning.netPayout.toLocaleString('en-IN')}
+                              </span>
+                              <span style={{ fontSize: '10px', color: '#A5B4FC', fontWeight: '600' }}>
+                                (₹{todayEarning.grossRevenue.toLocaleString('en-IN')} gross)
+                              </span>
                             </div>
-                            <div style={{ fontSize: '10.5px', color: '#818CF8' }}>
-                              {todayEarning.consultationsCount} consults · {todayEarning.totalBillableMinutes}m
+                            <div style={{ fontSize: '11px', color: '#34D399', marginTop: '2px', fontWeight: '600' }}>
+                              {todayEarning.consultationsCount} consults ({todayEarning.callConsultations}c · {todayEarning.chatConsultations}m)
+                            </div>
+                            <div style={{ fontSize: '10px', color: '#818CF8', marginTop: '1px' }}>
+                              ⏱️ {todayEarning.totalBillableMinutes}m · 1% TDS: ₹{Math.round(todayEarning.grossRevenue * 0.01)}
                             </div>
                           </div>
                         ) : (
@@ -841,17 +849,34 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
               
               {/* Quick Date Pills */}
               {[
-                { date: '2026-09-29', label: 'Today (29 Sep)' },
-                { date: '2026-09-28', label: 'Yesterday (28 Sep)' },
-                { date: '2026-09-27', label: '27 Sep (Sun)' },
-                { date: '2026-09-26', label: '26 Sep (Sat)' },
-                { date: '2026-09-25', label: '25 Sep (Fri)' },
+                { date: todayIso, label: '⭐ Today' },
+                {
+                  date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                  label: 'Yesterday',
+                },
+                {
+                  date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                  label: '2 Days Ago',
+                },
+                {
+                  date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                  label: '3 Days Ago',
+                },
+                {
+                  date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                  label: '7 Days Ago',
+                },
               ].map((pill) => (
                 <button
                   key={pill.date}
+                  type="button"
                   onClick={() => setSelectedLedgerDate(pill.date)}
-                  className={selectedLedgerDate === pill.date ? 'btn-primary' : 'btn-secondary'}
-                  style={{ fontSize: '11.5px', padding: '6px 12px' }}
+                  className={selectedLedgerDate === pill.date ? 'btn-gold' : 'btn-secondary'}
+                  style={{
+                    fontSize: '11.5px',
+                    padding: '6px 12px',
+                    fontWeight: selectedLedgerDate === pill.date ? '800' : '600',
+                  }}
                 >
                   {pill.label}
                 </button>
@@ -1690,6 +1715,65 @@ Please login to start taking live consultations.`}
                 </button>
               </div>
             </div>
+
+            {/* TODAY'S DEDICATED LIVE INCOME HIGHLIGHT CARD */}
+            {(() => {
+              const todayData = selectedIncomeAstro.dailyEarnings?.find((d) => d.date === todayIso) || selectedIncomeAstro.dailyEarnings?.[0];
+              if (!todayData) return null;
+              const tdsAmount = Math.round(todayData.grossRevenue * 0.01);
+              return (
+                <div style={{
+                  background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.18) 0%, rgba(99, 102, 241, 0.15) 100%)',
+                  border: '1.5px solid rgba(245, 158, 11, 0.45)',
+                  borderRadius: '16px',
+                  padding: '20px 24px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '16px',
+                  boxShadow: '0 8px 32px rgba(245, 158, 11, 0.12)',
+                }}>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span className="badge-pill badge-amber" style={{ fontSize: '11px', fontWeight: '800' }}>
+                        ⭐ TODAY'S LIVE INCOME ({todayData.formattedDate})
+                      </span>
+                      <span className={todayData.payoutStatus === 'settled' ? 'badge-pill badge-emerald' : 'badge-pill badge-rose'} style={{ fontSize: '10.5px' }}>
+                        {todayData.payoutStatus === 'settled' ? '✓ Payout Settled' : '⏳ Payout Pending Settlement'}
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginTop: '8px' }}>
+                      <span style={{ fontSize: '32px', fontWeight: '900', color: '#FDE68A' }}>
+                        ₹{todayData.netPayout.toLocaleString('en-IN')}
+                      </span>
+                      <span style={{ fontSize: '14px', color: '#CBD5E1', fontWeight: '600' }}>
+                        Net Take-Home ({todayData.commissionRate}% Split)
+                      </span>
+                    </div>
+
+                    <div style={{ fontSize: '12px', color: '#EEF2FF', marginTop: '6px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                      <span>💰 Gross Billed: <strong style={{ color: '#FCD34D' }}>₹{todayData.grossRevenue.toLocaleString('en-IN')}</strong></span>
+                      <span>🏛️ Platform Retained: <strong style={{ color: '#38BDF8' }}>₹{todayData.platformCommission.toLocaleString('en-IN')}</strong></span>
+                      <span>📑 1% Section 194-O TDS: <strong style={{ color: '#FB7185' }}>₹{tdsAmount.toLocaleString('en-IN')}</strong></span>
+                      <span>⏱️ Billable: <strong style={{ color: '#34D399' }}>{todayData.totalBillableMinutes} mins</strong> ({todayData.callConsultations} calls · {todayData.chatConsultations} chats)</span>
+                    </div>
+                  </div>
+
+                  {todayData.payoutStatus === 'pending' && onSettlePayout && canSettlePayouts && (
+                    <button
+                      type="button"
+                      onClick={() => onSettlePayout(selectedIncomeAstro.id, todayData.date)}
+                      className="btn-gold"
+                      style={{ fontSize: '12.5px', padding: '10px 18px', fontWeight: '800' }}
+                    >
+                      🏦 Settle Today's ₹{todayData.netPayout.toLocaleString('en-IN')} Payout Now
+                    </button>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* Modal Summary KPI Cards */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px' }}>

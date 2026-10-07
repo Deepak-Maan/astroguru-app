@@ -552,6 +552,7 @@ export const App: React.FC = () => {
         <main style={{ padding: '32px', flex: 1, overflowY: 'auto' }}>
           {currentTab === 'overview' && (
             <OverviewDesk
+              astrologers={astrologers}
               onSendDutyAlert={handleSendDutyAlert}
               dutyAlertSent={dutyAlertSent}
             />
