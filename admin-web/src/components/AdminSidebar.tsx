@@ -22,6 +22,8 @@ interface AdminSidebarProps {
   incidentCount: number;
   pendingAstrosCount: number;
   liveSessionsCount?: number;
+  isOpenMobile?: boolean;
+  onCloseMobile?: () => void;
 }
 
 export const AdminSidebar: React.FC<AdminSidebarProps> = ({
@@ -32,6 +34,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   incidentCount,
   pendingAstrosCount,
   liveSessionsCount = 3,
+  isOpenMobile = false,
+  onCloseMobile,
 }) => {
   const allNavItems = [
     {
@@ -137,59 +141,77 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
 
 
   return (
-    <aside style={{
-      width: '280px',
-      minWidth: '280px',
-      backgroundColor: 'rgba(15, 19, 39, 0.95)',
-      backdropFilter: 'blur(20px)',
-      borderRight: '1px solid rgba(129, 140, 248, 0.22)',
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100vh',
-      position: 'sticky',
-      top: 0,
-      zIndex: 50,
-    }}>
+    <aside
+      className={`admin-sidebar ${isOpenMobile ? 'drawer-open' : ''}`}
+    >
       {/* Brand Header */}
       <div style={{
-        padding: '24px 20px',
+        padding: '20px 18px',
         borderBottom: '1px solid rgba(129, 140, 248, 0.15)',
         display: 'flex',
         alignItems: 'center',
+        justifyContent: 'space-between',
         gap: '12px',
       }}>
-        <div style={{
-          width: '44px',
-          height: '44px',
-          borderRadius: '12px',
-          background: 'linear-gradient(135deg, #6366F1 0%, #EC4899 100%)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '22px',
-          boxShadow: '0 0 16px rgba(99, 102, 241, 0.5)',
-        }}>
-          🔮
-        </div>
-        <div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{
-            fontSize: '17px',
-            fontWeight: '800',
-            letterSpacing: '0.3px',
-            color: '#EEF2FF',
+            width: '42px',
+            height: '42px',
+            borderRadius: '12px',
+            background: 'linear-gradient(135deg, #6366F1 0%, #EC4899 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '22px',
+            boxShadow: '0 0 16px rgba(99, 102, 241, 0.5)',
+            flexShrink: 0,
           }}>
-            AstroGuru
+            🔮
           </div>
-          <div style={{
-            fontSize: '11px',
-            fontWeight: '700',
-            letterSpacing: '0.8px',
-            color: '#FCD34D',
-            textTransform: 'uppercase',
-          }}>
-            Web Admin Portal
+          <div>
+            <div style={{
+              fontSize: '17px',
+              fontWeight: '800',
+              letterSpacing: '0.3px',
+              color: '#EEF2FF',
+            }}>
+              AstroGuru
+            </div>
+            <div style={{
+              fontSize: '10.5px',
+              fontWeight: '700',
+              letterSpacing: '0.8px',
+              color: '#FCD34D',
+              textTransform: 'uppercase',
+            }}>
+              Web Admin Portal
+            </div>
           </div>
         </div>
+
+        {/* Mobile Close Button */}
+        {onCloseMobile && (
+          <button
+            onClick={onCloseMobile}
+            style={{
+              background: 'rgba(255, 255, 255, 0.08)',
+              border: '1px solid rgba(129, 140, 248, 0.3)',
+              color: '#EEF2FF',
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '15px',
+              flexShrink: 0,
+            }}
+            title="Close navigation menu"
+          >
+            ✕
+          </button>
+        )}
       </div>
 
       {/* Navigation Links */}
@@ -217,7 +239,10 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           return (
             <button
               key={item.id}
-              onClick={() => onSelectTab(item.id)}
+              onClick={() => {
+                onSelectTab(item.id);
+                onCloseMobile?.();
+              }}
               style={{
                 width: '100%',
                 padding: '11px 14px',
@@ -305,7 +330,10 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           </div>
 
           <button
-            onClick={onLogout}
+            onClick={() => {
+              onLogout();
+              onCloseMobile?.();
+            }}
             title="Sign Out"
             style={{
               background: 'rgba(244, 63, 94, 0.15)',

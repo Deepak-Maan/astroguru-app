@@ -165,7 +165,7 @@ export const UsersDesk: React.FC<UsersDeskProps> = ({
       </div>
 
       {/* Users Table */}
-      <div className="liquid-card" style={{ overflow: 'hidden' }}>
+      <div className="liquid-card table-responsive-wrapper">
         <table className="cosmic-table">
           <thead>
             <tr>
@@ -308,9 +308,9 @@ export const UsersDesk: React.FC<UsersDeskProps> = ({
           justifyContent: 'center',
           alignItems: 'center',
           zIndex: 100,
-          padding: '20px',
+          padding: '16px',
         }}>
-          <div className="liquid-card" style={{ width: '560px', maxWidth: '100%', padding: '28px', maxHeight: '90vh', overflowY: 'auto' }}>
+          <div className="liquid-card responsive-modal-box">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
                 <span className="badge-pill badge-indigo" style={{ fontSize: '10px' }}>
@@ -455,8 +455,9 @@ export const UsersDesk: React.FC<UsersDeskProps> = ({
           justifyContent: 'center',
           alignItems: 'center',
           zIndex: 100,
+          padding: '16px',
         }}>
-          <div className="liquid-card" style={{ width: '460px', padding: '28px' }}>
+          <div className="liquid-card responsive-modal-box" style={{ maxWidth: '480px' }}>
             <h2 style={{ fontSize: '18px', fontWeight: '800', color: '#EEF2FF' }}>
               Manual Wallet Adjustment
             </h2>

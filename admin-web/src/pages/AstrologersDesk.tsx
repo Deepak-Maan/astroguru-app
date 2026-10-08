@@ -502,7 +502,7 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
       </div>
 
       {/* Fleet Executive Financial KPI Strip */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
+      <div className="responsive-grid-4">
         <div className="liquid-card" style={{ padding: '18px 20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '11px', fontWeight: '700', color: '#A5B4FC', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
@@ -609,7 +609,7 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
           </div>
 
           {/* Astrologers Table with Copyable Astro ID, In-line Today & Lifetime Earnings */}
-          <div className="liquid-card" style={{ overflow: 'hidden' }}>
+          <div className="liquid-card table-responsive-wrapper">
             <table className="cosmic-table">
               <thead>
                 <tr>
@@ -932,11 +932,7 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
           </div>
 
           {/* Date Summary Card Strip */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(5, 1fr)',
-            gap: '12px',
-          }}>
+          <div className="responsive-grid-5">
             <div className="inset-box" style={{ padding: '14px 16px' }}>
               <div style={{ fontSize: '11px', color: '#A5B4FC', fontWeight: '700' }}>TOTAL BILLED ON {selectedLedgerDate}</div>
               <div style={{ fontSize: '20px', fontWeight: '800', color: '#FCD34D', marginTop: '4px' }}>
@@ -979,7 +975,7 @@ export const AstrologersDesk: React.FC<AstrologersDeskProps> = ({
           </div>
 
           {/* Master Day-Wise Table */}
-          <div className="liquid-card" style={{ overflow: 'hidden' }}>
+          <div className="liquid-card table-responsive-wrapper">
             <table className="cosmic-table">
               <thead>
                 <tr>
@@ -1776,7 +1772,7 @@ Please login to start taking live consultations.`}
             })()}
 
             {/* Modal Summary KPI Cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px' }}>
+            <div className="responsive-grid-4">
               <div className="inset-box" style={{ padding: '14px 16px' }}>
                 <span style={{ fontSize: '11px', fontWeight: '700', color: '#A5B4FC', textTransform: 'uppercase' }}>
                   Total Lifetime Earned
@@ -1937,7 +1933,7 @@ Please login to start taking live consultations.`}
             </div>
 
             {/* Day-Wise Table */}
-            <div className="liquid-card" style={{ maxHeight: '340px', overflowY: 'auto' }}>
+            <div className="liquid-card table-responsive-wrapper" style={{ maxHeight: '340px' }}>
               <table className="cosmic-table">
                 <thead>
                   <tr>

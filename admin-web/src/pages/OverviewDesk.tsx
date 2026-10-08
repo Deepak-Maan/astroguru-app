@@ -53,7 +53,7 @@ export const OverviewDesk: React.FC<OverviewDeskProps> = ({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       {/* Page Title & Status */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
         <div>
           <h1 style={{ fontSize: '24px', fontWeight: '800', color: '#EEF2FF', letterSpacing: '0.2px' }}>
             Executive Business Intelligence & Traffic Heatmap
@@ -62,7 +62,7 @@ export const OverviewDesk: React.FC<OverviewDeskProps> = ({
             Real-time consultation demand, astrologer supply equilibrium, and platform financial metrics.
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           <span className="badge-pill badge-emerald">
             <span className="pulse-dot" style={{ backgroundColor: '#10B981', color: '#10B981' }} />
             Telemetry Live Sync
@@ -74,11 +74,7 @@ export const OverviewDesk: React.FC<OverviewDeskProps> = ({
       </div>
 
       {/* 4 Executive KPI Cards */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)',
-        gap: '18px',
-      }}>
+      <div className="responsive-grid-4">
         {/* KPI 1: Today's Astrologer Fleet Net Income */}
         <div className="liquid-card" style={{ padding: '20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -152,8 +148,10 @@ export const OverviewDesk: React.FC<OverviewDeskProps> = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '16px',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1, minWidth: '260px' }}>
           <div style={{
             fontSize: '32px',
             backgroundColor: 'rgba(245, 158, 11, 0.25)',
@@ -164,11 +162,12 @@ export const OverviewDesk: React.FC<OverviewDeskProps> = ({
             alignItems: 'center',
             justifyContent: 'center',
             border: '1px solid rgba(252, 211, 77, 0.5)',
+            flexShrink: 0,
           }}>
             ⚡
           </div>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
               <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#FCD34D' }}>
                 Astrologer Supply Deficit Warning
               </h3>
@@ -185,7 +184,7 @@ export const OverviewDesk: React.FC<OverviewDeskProps> = ({
         <button
           onClick={onSendDutyAlert}
           className="btn-gold"
-          style={{ padding: '10px 20px', fontSize: '13px' }}
+          style={{ padding: '10px 20px', fontSize: '13px', whiteSpace: 'nowrap' }}
         >
           {dutyAlertSent ? '✅ Surge Alert Dispatched!' : '🚀 Broadcast Peak Duty Alert (+25% Surge Bonus)'}
         </button>
@@ -193,7 +192,7 @@ export const OverviewDesk: React.FC<OverviewDeskProps> = ({
 
       {/* 24-Hour Consultation Traffic Heatmap */}
       <div className="liquid-card" style={{ padding: '24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '20px' }}>
           <div>
             <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#EEF2FF' }}>
               24-Hour Consultation Traffic Heatmap
@@ -202,7 +201,7 @@ export const OverviewDesk: React.FC<OverviewDeskProps> = ({
               Hourly consultation volume across India Standard Time (IST). Gold bars highlight the 8:00 PM – 12:30 AM surge window.
             </p>
           </div>
-          <div style={{ display: 'flex', gap: '14px', fontSize: '12px' }}>
+          <div style={{ display: 'flex', gap: '14px', fontSize: '12px', flexWrap: 'wrap' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#EEF2FF' }}>
               <span style={{ width: '12px', height: '12px', borderRadius: '3px', backgroundColor: '#6366F1', display: 'inline-block' }} />
               Regular Traffic
@@ -214,66 +213,70 @@ export const OverviewDesk: React.FC<OverviewDeskProps> = ({
           </div>
         </div>
 
-        {/* Bar Visualizer */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'flex-end',
-          height: '220px',
-          gap: '16px',
-          padding: '10px 0',
-          borderBottom: '1px solid rgba(129, 140, 248, 0.2)',
-        }}>
-          {hourlyData.map((d, i) => {
-            const heightPct = Math.round((d.consults / maxVolume) * 100);
-            return (
-              <div
-                key={i}
-                style={{
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  height: '100%',
-                  justifyContent: 'flex-end',
-                  gap: '8px',
-                }}
-              >
-                <div style={{
-                  fontSize: '11px',
-                  fontWeight: '700',
-                  color: d.isPeak ? '#FCD34D' : '#A5B4FC',
-                }}>
-                  {d.consults}
-                </div>
+        {/* Scrollable Container on Mobile for Heatmap */}
+        <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '6px' }}>
+          {/* Bar Visualizer */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'flex-end',
+            height: '220px',
+            gap: '14px',
+            minWidth: '600px',
+            padding: '10px 0',
+            borderBottom: '1px solid rgba(129, 140, 248, 0.2)',
+          }}>
+            {hourlyData.map((d, i) => {
+              const heightPct = Math.round((d.consults / maxVolume) * 100);
+              return (
                 <div
+                  key={i}
                   style={{
-                    width: '100%',
-                    height: `${heightPct}%`,
-                    backgroundColor: d.isPeak ? '#F59E0B' : '#6366F1',
-                    borderRadius: '6px 6px 0 0',
-                    boxShadow: d.isPeak
-                      ? '0 0 16px rgba(245, 158, 11, 0.45)'
-                      : '0 0 8px rgba(99, 102, 241, 0.2)',
-                    transition: 'all 0.2s ease',
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    height: '100%',
+                    justifyContent: 'flex-end',
+                    gap: '8px',
                   }}
-                  title={`${d.hour}: ${d.consults} consultations`}
-                />
-                <div style={{
-                  fontSize: '11px',
-                  color: '#64748B',
-                  fontWeight: '600',
-                  whiteSpace: 'nowrap',
-                }}>
-                  {d.hour}
+                >
+                  <div style={{
+                    fontSize: '11px',
+                    fontWeight: '700',
+                    color: d.isPeak ? '#FCD34D' : '#A5B4FC',
+                  }}>
+                    {d.consults}
+                  </div>
+                  <div
+                    style={{
+                      width: '100%',
+                      height: `${heightPct}%`,
+                      backgroundColor: d.isPeak ? '#F59E0B' : '#6366F1',
+                      borderRadius: '6px 6px 0 0',
+                      boxShadow: d.isPeak
+                        ? '0 0 16px rgba(245, 158, 11, 0.45)'
+                        : '0 0 8px rgba(99, 102, 241, 0.2)',
+                      transition: 'all 0.2s ease',
+                    }}
+                    title={`${d.hour}: ${d.consults} consultations`}
+                  />
+                  <div style={{
+                    fontSize: '11px',
+                    color: '#64748B',
+                    fontWeight: '600',
+                    whiteSpace: 'nowrap',
+                  }}>
+                    {d.hour}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
 
       {/* Category Revenue Breakdown & Leaderboard */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+      <div className="responsive-grid-2">
         {/* Category Share */}
         <div className="liquid-card" style={{ padding: '24px' }}>
           <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#EEF2FF', marginBottom: '16px' }}>
@@ -304,36 +307,38 @@ export const OverviewDesk: React.FC<OverviewDeskProps> = ({
           <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#EEF2FF', marginBottom: '16px' }}>
             Acharya Quality Scorecard Leaderboard
           </h2>
-          <table className="cosmic-table">
-            <thead>
-              <tr>
-                <th>Acharya</th>
-                <th>Consults</th>
-                <th>Rating</th>
-                <th style={{ color: '#FCD34D' }}>Today's Income</th>
-                <th>Repeat Rate</th>
-                <th>Strikes</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                { name: 'Acharya Dev Sharma', consults: '8,520', rating: '4.97★', todayIncome: '₹4,350', repeat: '92%', strikes: 0 },
-                { name: 'Dr. Radhika Veda', consults: '4,310', rating: '4.88★', todayIncome: '₹3,200', repeat: '88%', strikes: 0 },
-                { name: 'Pt. Rameshwar Shastri', consults: '11,400', rating: '4.95★', todayIncome: '₹5,100', repeat: '94%', strikes: 0 },
-              ].map((row, i) => (
-                <tr key={i}>
-                  <td style={{ fontWeight: '700' }}>{row.name}</td>
-                  <td>{row.consults}</td>
-                  <td style={{ color: '#FCD34D', fontWeight: '700' }}>{row.rating}</td>
-                  <td style={{ color: '#FDE68A', fontWeight: '800', fontSize: '13px' }}>{row.todayIncome}</td>
-                  <td style={{ color: '#34D399', fontWeight: '700' }}>{row.repeat}</td>
-                  <td>
-                    <span className="badge-pill badge-emerald">0 Clean</span>
-                  </td>
+          <div className="table-responsive-wrapper">
+            <table className="cosmic-table">
+              <thead>
+                <tr>
+                  <th>Acharya</th>
+                  <th>Consults</th>
+                  <th>Rating</th>
+                  <th style={{ color: '#FCD34D' }}>Today's Income</th>
+                  <th>Repeat Rate</th>
+                  <th>Strikes</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {[
+                  { name: 'Acharya Dev Sharma', consults: '8,520', rating: '4.97★', todayIncome: '₹4,350', repeat: '92%', strikes: 0 },
+                  { name: 'Dr. Radhika Veda', consults: '4,310', rating: '4.88★', todayIncome: '₹3,200', repeat: '88%', strikes: 0 },
+                  { name: 'Pt. Rameshwar Shastri', consults: '11,400', rating: '4.95★', todayIncome: '₹5,100', repeat: '94%', strikes: 0 },
+                ].map((row, i) => (
+                  <tr key={i}>
+                    <td style={{ fontWeight: '700', whiteSpace: 'nowrap' }}>{row.name}</td>
+                    <td>{row.consults}</td>
+                    <td style={{ color: '#FCD34D', fontWeight: '700' }}>{row.rating}</td>
+                    <td style={{ color: '#FDE68A', fontWeight: '800', fontSize: '13px' }}>{row.todayIncome}</td>
+                    <td style={{ color: '#34D399', fontWeight: '700' }}>{row.repeat}</td>
+                    <td>
+                      <span className="badge-pill badge-emerald">0 Clean</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

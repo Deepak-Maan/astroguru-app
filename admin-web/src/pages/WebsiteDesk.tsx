@@ -277,10 +277,9 @@ export const WebsiteDesk: React.FC = () => {
 
       {/* TAB 1: HERO & BRANDING CMS */}
       {activeTab === 'content' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '20px' }}>
+        <div className="responsive-split-settings">
           {/* Main Hero Card */}
           <div style={{
-            gridColumn: 'span 8',
             padding: '24px',
             borderRadius: '20px',
             backgroundColor: 'rgba(15, 23, 42, 0.7)',
@@ -293,7 +292,7 @@ export const WebsiteDesk: React.FC = () => {
               <span>☀️</span> Hero Section & Value Proposition
             </h3>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div className="responsive-grid-2">
               <div>
                 <label style={{ fontSize: '12px', fontWeight: '700', color: '#94A3B8', display: 'block', marginBottom: '6px' }}>
                   Hero Headline Prefix
@@ -388,7 +387,7 @@ export const WebsiteDesk: React.FC = () => {
               <div style={{ fontSize: '12px', fontWeight: '700', color: '#94A3B8', marginBottom: '10px' }}>
                 Social Proof & Credibility Metrics
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+              <div className="responsive-grid-3">
                 <div>
                   <label style={{ fontSize: '11px', color: '#64748B', display: 'block' }}>Rating</label>
                   <input
@@ -447,7 +446,6 @@ export const WebsiteDesk: React.FC = () => {
 
           {/* Side Controls: Banner, Maintenance, Tarot */}
           <div style={{
-            gridColumn: 'span 4',
             display: 'flex',
             flexDirection: 'column',
             gap: '20px',
@@ -608,7 +606,7 @@ export const WebsiteDesk: React.FC = () => {
             <span>These 4 chapters control the pinned 3D phone scrolling presentation shown on the website at <strong>/sticky</strong>.</span>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '18px' }}>
+          <div className="responsive-grid-2" style={{ gap: '18px' }}>
             {config.chapters.map((ch, idx) => (
               <div
                 key={ch.id}

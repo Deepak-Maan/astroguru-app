@@ -64,7 +64,7 @@ export const LiveDesk: React.FC<LiveDeskProps> = ({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <h1 style={{ fontSize: '24px', fontWeight: '800', color: '#EEF2FF' }}>
@@ -80,7 +80,7 @@ export const LiveDesk: React.FC<LiveDeskProps> = ({
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           <span className="badge-pill badge-emerald">
             {activeSessions.length} Active Sessions
           </span>
@@ -91,7 +91,7 @@ export const LiveDesk: React.FC<LiveDeskProps> = ({
       </div>
 
       {/* 3 Telemetry Metrics */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '18px' }}>
+      <div className="responsive-grid-3">
         <div className="liquid-card" style={{ padding: '20px' }}>
           <div style={{ fontSize: '11px', fontWeight: '700', color: '#A5B4FC', textTransform: 'uppercase' }}>
             Ongoing Consultations
@@ -142,111 +142,114 @@ export const LiveDesk: React.FC<LiveDeskProps> = ({
           </div>
         </div>
 
-        <table className="cosmic-table">
-          <thead>
-            <tr>
-              <th>Session ID</th>
-              <th>Channel</th>
-              <th>Astrologer</th>
-              <th>Seeker (User)</th>
-              <th>Rate / min</th>
-              <th>Live Timer</th>
-              <th>Accrued Bill</th>
-              <th>Status / Threat</th>
-              <th>Emergency Control</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sessions.map((ses) => {
-              const currentSecs = sessionTimes[ses.id] || ses.durationSeconds;
-              const liveBilled = Math.round((currentSecs / 60) * ses.ratePerMin);
+        <div className="table-responsive-wrapper">
+          <table className="cosmic-table">
+            <thead>
+              <tr>
+                <th>Session ID</th>
+                <th>Channel</th>
+                <th>Astrologer</th>
+                <th>Seeker (User)</th>
+                <th>Rate / min</th>
+                <th>Live Timer</th>
+                <th>Accrued Bill</th>
+                <th>Status / Threat</th>
+                <th>Emergency Control</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sessions.map((ses) => {
+                const currentSecs = sessionTimes[ses.id] || ses.durationSeconds;
+                const liveBilled = Math.round((currentSecs / 60) * ses.ratePerMin);
 
-              return (
-                <tr key={ses.id} style={{ backgroundColor: ses.flaggedReason ? 'rgba(244, 63, 94, 0.08)' : 'transparent' }}>
-                  <td>
-                    <span style={{ fontFamily: 'monospace', fontWeight: '700', color: '#FCD34D' }}>
-                      {ses.id}
-                    </span>
-                  </td>
-                  <td>
-                    <span className="badge-pill badge-indigo">
-                      {ses.type === 'audio_call' ? '🎙️ Audio' : ses.type === 'video_call' ? '📹 Video' : '💬 Chat'}
-                    </span>
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <img
-                        src={ses.astrologerAvatar}
-                        alt=""
-                        style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }}
-                      />
-                      <span style={{ fontWeight: '600', color: '#EEF2FF' }}>{ses.astrologerName}</span>
-                    </div>
-                  </td>
-                  <td>
-                    <div>
-                      <div style={{ fontWeight: '600', color: '#EEF2FF' }}>{ses.userName}</div>
-                      <div style={{ fontSize: '11px', color: '#94A3B8' }}>{ses.userPhone}</div>
-                    </div>
-                  </td>
-                  <td>
-                    <span style={{ fontWeight: '700', color: '#EEF2FF' }}>₹{ses.ratePerMin}</span>
-                  </td>
-                  <td>
-                    {ses.status === 'active' ? (
-                      <span style={{
-                        fontFamily: 'monospace',
-                        fontSize: '14px',
-                        fontWeight: '800',
-                        color: '#34D399',
-                        padding: '4px 8px',
-                        backgroundColor: 'rgba(52, 211, 153, 0.1)',
-                        borderRadius: '6px',
-                        border: '1px solid rgba(52, 211, 153, 0.3)',
-                      }}>
-                        ⏱️ {formatTimer(currentSecs)}
+                return (
+                  <tr key={ses.id} style={{ backgroundColor: ses.flaggedReason ? 'rgba(244, 63, 94, 0.08)' : 'transparent' }}>
+                    <td>
+                      <span style={{ fontFamily: 'monospace', fontWeight: '700', color: '#FCD34D' }}>
+                        {ses.id}
                       </span>
-                    ) : (
-                      <span style={{ color: '#94A3B8', fontSize: '12px' }}>Ended ({formatTimer(currentSecs)})</span>
-                    )}
-                  </td>
-                  <td>
-                    <span style={{ fontWeight: '800', color: '#FCD34D', fontSize: '14px' }}>
-                      ₹{liveBilled}
-                    </span>
-                  </td>
-                  <td>
-                    {ses.status === 'terminated_by_admin' ? (
-                      <span className="badge-pill badge-rose">KILLED BY ADMIN</span>
-                    ) : ses.flaggedReason ? (
-                      <div>
-                        <span className="badge-pill badge-rose" style={{ fontSize: '10px' }}>⚠️ SUSPICIOUS</span>
-                        <div style={{ fontSize: '10px', color: '#FB7185', maxWidth: '160px', marginTop: '3px' }}>
-                          {ses.flaggedReason}
-                        </div>
+                    </td>
+                    <td>
+                      <span className="badge-pill badge-indigo">
+                        {ses.type === 'audio_call' ? '🎙️ Audio' : ses.type === 'video_call' ? '📹 Video' : '💬 Chat'}
+                      </span>
+                    </td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <img
+                          src={ses.astrologerAvatar}
+                          alt=""
+                          style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }}
+                        />
+                        <span style={{ fontWeight: '600', color: '#EEF2FF', whiteSpace: 'nowrap' }}>{ses.astrologerName}</span>
                       </div>
-                    ) : (
-                      <span className="badge-pill badge-emerald">HEALTHY</span>
-                    )}
-                  </td>
-                  <td>
-                    {ses.status === 'active' ? (
-                      <button
-                        onClick={() => setTerminatingSession(ses)}
-                        className="btn-danger"
-                        style={{ fontSize: '11px', padding: '6px 12px' }}
-                      >
-                        🔴 Kill Switch
-                      </button>
-                    ) : (
-                      <span style={{ fontSize: '11px', color: '#64748B' }}>Refund Processed</span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                    </td>
+                    <td>
+                      <div>
+                        <div style={{ fontWeight: '600', color: '#EEF2FF', whiteSpace: 'nowrap' }}>{ses.userName}</div>
+                        <div style={{ fontSize: '11px', color: '#94A3B8' }}>{ses.userPhone}</div>
+                      </div>
+                    </td>
+                    <td>
+                      <span style={{ fontWeight: '700', color: '#EEF2FF' }}>₹{ses.ratePerMin}</span>
+                    </td>
+                    <td>
+                      {ses.status === 'active' ? (
+                        <span style={{
+                          fontFamily: 'monospace',
+                          fontSize: '14px',
+                          fontWeight: '800',
+                          color: '#34D399',
+                          padding: '4px 8px',
+                          backgroundColor: 'rgba(52, 211, 153, 0.1)',
+                          borderRadius: '6px',
+                          border: '1px solid rgba(52, 211, 153, 0.3)',
+                          whiteSpace: 'nowrap',
+                        }}>
+                          ⏱️ {formatTimer(currentSecs)}
+                        </span>
+                      ) : (
+                        <span style={{ color: '#94A3B8', fontSize: '12px' }}>Ended ({formatTimer(currentSecs)})</span>
+                      )}
+                    </td>
+                    <td>
+                      <span style={{ fontWeight: '800', color: '#FCD34D', fontSize: '14px' }}>
+                        ₹{liveBilled}
+                      </span>
+                    </td>
+                    <td>
+                      {ses.status === 'terminated_by_admin' ? (
+                        <span className="badge-pill badge-rose">KILLED BY ADMIN</span>
+                      ) : ses.flaggedReason ? (
+                        <div>
+                          <span className="badge-pill badge-rose" style={{ fontSize: '10px' }}>⚠️ SUSPICIOUS</span>
+                          <div style={{ fontSize: '10px', color: '#FB7185', maxWidth: '160px', marginTop: '3px' }}>
+                            {ses.flaggedReason}
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="badge-pill badge-emerald">HEALTHY</span>
+                      )}
+                    </td>
+                    <td>
+                      {ses.status === 'active' ? (
+                        <button
+                          onClick={() => setTerminatingSession(ses)}
+                          className="btn-danger"
+                          style={{ fontSize: '11px', padding: '6px 12px', whiteSpace: 'nowrap' }}
+                        >
+                          🔴 Kill Switch
+                        </button>
+                      ) : (
+                        <span style={{ fontSize: '11px', color: '#64748B' }}>Refund Processed</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* SECTION 2: Astrologer Fleet Ranking & Boost Manager */}
@@ -262,7 +265,8 @@ export const LiveDesk: React.FC<LiveDeskProps> = ({
           </div>
         </div>
 
-        <table className="cosmic-table">
+        <div className="table-responsive-wrapper">
+          <table className="cosmic-table">
           <thead>
             <tr>
               <th>Acharya Profile</th>
@@ -390,6 +394,7 @@ export const LiveDesk: React.FC<LiveDeskProps> = ({
             })}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Emergency Kill Switch Modal */}

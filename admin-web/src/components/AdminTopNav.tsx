@@ -5,6 +5,7 @@ interface AdminTopNavProps {
   onSendDutyAlert: () => void;
   searchQuery: string;
   onSearchChange: (q: string) => void;
+  onToggleMobileMenu?: () => void;
 }
 
 export const AdminTopNav: React.FC<AdminTopNavProps> = ({
@@ -12,6 +13,7 @@ export const AdminTopNav: React.FC<AdminTopNavProps> = ({
   onSendDutyAlert,
   searchQuery,
   onSearchChange,
+  onToggleMobileMenu,
 }) => {
   const [timeStr, setTimeStr] = useState('');
 
@@ -33,87 +35,104 @@ export const AdminTopNav: React.FC<AdminTopNavProps> = ({
   }, []);
 
   return (
-    <header style={{
-      height: '70px',
-      backgroundColor: 'rgba(15, 19, 39, 0.85)',
-      backdropFilter: 'blur(16px)',
-      borderBottom: '1px solid rgba(129, 140, 248, 0.2)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '0 28px',
-      position: 'sticky',
-      top: 0,
-      zIndex: 40,
-    }}>
-      {/* Global Search Bar */}
-      <div style={{ position: 'relative', width: '380px' }}>
-        <span style={{
-          position: 'absolute',
-          left: '14px',
-          top: '50%',
-          transform: 'translateY(-50%)',
-          fontSize: '15px',
-          color: '#818CF8',
-        }}>
-          🔍
-        </span>
-        <input
-          type="text"
-          placeholder="Search user ID, phone, device UUID, UPI ID, or astrologer..."
-          value={searchQuery}
-          onChange={(e) => onSearchChange(e.target.value)}
-          className="cosmic-input"
-          style={{ paddingLeft: '40px', fontSize: '13px' }}
-        />
+    <header className="top-nav-container">
+      {/* Left Area: Mobile Menu Toggle + Mobile Brand Pill + Search */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
+        {/* Hamburger Menu Toggle (Visible on screens < 1024px) */}
+        {onToggleMobileMenu && (
+          <button
+            onClick={onToggleMobileMenu}
+            className="mobile-hamburger-btn"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '38px',
+              height: '38px',
+              borderRadius: '10px',
+              border: '1px solid rgba(129, 140, 248, 0.35)',
+              backgroundColor: 'rgba(26, 33, 64, 0.8)',
+              color: '#EEF2FF',
+              fontSize: '18px',
+              cursor: 'pointer',
+              flexShrink: 0,
+            }}
+            title="Toggle Navigation Menu"
+            aria-label="Toggle navigation menu"
+          >
+            ☰
+          </button>
+        )}
+
+        {/* Global Search Bar */}
+        <div style={{ position: 'relative', flex: 1, maxWidth: '380px', minWidth: '130px' }}>
+          <span style={{
+            position: 'absolute',
+            left: '12px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            fontSize: '14px',
+            color: '#818CF8',
+            pointerEvents: 'none',
+          }}>
+            🔍
+          </span>
+          <input
+            type="text"
+            placeholder="Search seeker, phone, UUID, astro..."
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="cosmic-input"
+            style={{
+              paddingLeft: '34px',
+              fontSize: '12.5px',
+              paddingTop: '8px',
+              paddingBottom: '8px',
+            }}
+          />
+        </div>
       </div>
 
-      {/* System Health Status Pills */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          background: 'rgba(10, 12, 22, 0.65)',
-          border: '1px solid rgba(129, 140, 248, 0.25)',
-          borderRadius: '999px',
-          padding: '6px 14px',
-          fontSize: '11px',
-          fontWeight: '700',
-        }}>
+      {/* Right Area: System Status, Live Time, Actions */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+        {/* Live Backend Pill */}
+        <div
+          className="top-nav-pill-secondary"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            background: 'rgba(10, 12, 22, 0.65)',
+            border: '1px solid rgba(129, 140, 248, 0.25)',
+            borderRadius: '999px',
+            padding: '5px 12px',
+            fontSize: '11px',
+            fontWeight: '700',
+          }}
+        >
           <span className="pulse-dot" style={{ backgroundColor: '#10B981', color: '#10B981' }} />
-          <span style={{ color: '#EEF2FF' }}>Backend API :5000</span>
-          <span style={{ color: '#64748B' }}>·</span>
+          <span style={{ color: '#EEF2FF' }}>:5000</span>
           <span style={{ color: '#34D399' }}>Live</span>
         </div>
 
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          background: 'rgba(10, 12, 22, 0.65)',
-          border: '1px solid rgba(129, 140, 248, 0.25)',
-          borderRadius: '999px',
-          padding: '6px 14px',
-          fontSize: '11px',
-          fontWeight: '700',
-        }}>
-          <span style={{ color: '#FCD34D' }}>⚡ EAS OTA</span>
-          <span style={{ color: '#EEF2FF' }}>v3.0.1</span>
-        </div>
-
         {/* Real-time Clock */}
-        <div style={{
-          fontSize: '12px',
-          color: '#A5B4FC',
-          fontWeight: '600',
-          fontVariantNumeric: 'tabular-nums',
-          minWidth: '95px',
-        }}>
+        <div
+          className="top-nav-pill-secondary"
+          style={{
+            fontSize: '11.5px',
+            color: '#A5B4FC',
+            fontWeight: '600',
+            fontVariantNumeric: 'tabular-nums',
+            padding: '5px 10px',
+            background: 'rgba(10, 12, 22, 0.45)',
+            borderRadius: '8px',
+            border: '1px solid rgba(129, 140, 248, 0.15)',
+          }}
+        >
           🕒 {timeStr}
         </div>
 
-        {/* View Live Website Button */}
+        {/* Live Website Button */}
         <a
           href={typeof window !== 'undefined' && window.location.port === '3000' ? `http://${window.location.hostname}:4000` : '/'}
           target="_blank"
@@ -123,7 +142,7 @@ export const AdminTopNav: React.FC<AdminTopNavProps> = ({
             alignItems: 'center',
             gap: '6px',
             fontSize: '12px',
-            padding: '7px 12px',
+            padding: '6px 12px',
             textDecoration: 'none',
             color: '#EEF2FF',
             borderRadius: '10px',
@@ -136,28 +155,28 @@ export const AdminTopNav: React.FC<AdminTopNavProps> = ({
           title="Open live public landing website in a new tab"
         >
           <span>🌐</span>
-          <span>Live Website</span>
+          <span className="top-nav-action-label">Website</span>
         </a>
 
         {/* Quick Operational Actions */}
         <button
           onClick={onSendDutyAlert}
           className="btn-gold"
-          style={{ fontSize: '12.5px', padding: '7px 14px' }}
+          style={{ fontSize: '12px', padding: '6px 12px' }}
           title="Notify off-duty astrologers with +25% surge bonus"
         >
           <span>🚀</span>
-          <span>Surge Broadcast</span>
+          <span className="top-nav-action-label">Surge Alert</span>
         </button>
 
         <button
           onClick={onOpenBanModal}
           className="btn-danger"
-          style={{ fontSize: '12.5px', padding: '7px 14px' }}
+          style={{ fontSize: '12px', padding: '6px 12px' }}
           title="Sanction bad actors, multi-account burner UUIDs, or UPI leak bypasses"
         >
           <span>🔨</span>
-          <span>Universal Ban</span>
+          <span className="top-nav-action-label">Universal Ban</span>
         </button>
       </div>
     </header>

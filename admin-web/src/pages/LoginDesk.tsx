@@ -188,13 +188,12 @@ export const LoginDesk: React.FC<LoginDeskProps> = ({ onLoginSuccess }) => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '24px',
+      padding: '16px',
       position: 'relative',
     }}>
-      <div className="liquid-card" style={{
+      <div className="liquid-card responsive-modal-box" style={{
         width: '100%',
         maxWidth: '460px',
-        padding: '36px',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -295,7 +294,7 @@ export const LoginDesk: React.FC<LoginDeskProps> = ({ onLoginSuccess }) => {
             QUICK ROLE DEMO & RBAC TESTING
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(135px, 1fr))', gap: '8px' }}>
             <button
               type="button"
               onClick={() => {
@@ -365,14 +364,13 @@ export const LoginDesk: React.FC<LoginDeskProps> = ({ onLoginSuccess }) => {
           alignItems: 'center',
           justifyContent: 'center',
           zIndex: 300,
-          padding: '20px',
+          padding: '16px',
         }}>
-          <div className="liquid-card" style={{
+          <div className="liquid-card responsive-modal-box" style={{
             width: '100%',
             maxWidth: '520px',
             border: '2px solid rgba(245, 158, 11, 0.6)',
             boxShadow: '0 0 50px rgba(245, 158, 11, 0.25)',
-            padding: '32px',
             position: 'relative',
             maxHeight: '90vh',
             overflowY: 'auto',

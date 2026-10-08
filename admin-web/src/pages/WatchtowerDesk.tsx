@@ -40,7 +40,7 @@ export const WatchtowerDesk: React.FC<WatchtowerDeskProps> = ({
       </div>
 
       {/* 4 Security KPIs */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '18px' }}>
+      <div className="responsive-grid-4">
         <div className="liquid-card" style={{ padding: '20px' }}>
           <div style={{ fontSize: '11px', fontWeight: '700', color: '#A5B4FC', textTransform: 'uppercase' }}>
             Flagged Interceptions (24h)
@@ -142,8 +142,8 @@ export const WatchtowerDesk: React.FC<WatchtowerDeskProps> = ({
               .filter((i) => i.status === 'pending')
               .map((inc) => (
                 <div key={inc.id} className="liquid-card" style={{ padding: '22px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                       <span className={`badge-pill ${inc.severity === 'critical' ? 'badge-rose' : 'badge-amber'}`}>
                         {inc.severity.toUpperCase()} PRIORITY
                       </span>
@@ -157,7 +157,7 @@ export const WatchtowerDesk: React.FC<WatchtowerDeskProps> = ({
                       </span>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                       <button
                         onClick={() => onIssueStrike(inc.id)}
                         className="btn-secondary"
@@ -200,7 +200,7 @@ export const WatchtowerDesk: React.FC<WatchtowerDeskProps> = ({
                   </div>
 
                   {/* Metadata Row */}
-                  <div style={{ display: 'flex', gap: '24px', marginTop: '12px', fontSize: '12px', color: '#A5B4FC' }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginTop: '12px', fontSize: '12px', color: '#A5B4FC' }}>
                     <div>
                       <strong style={{ color: '#EEF2FF' }}>Seeker:</strong> {inc.userName} ({inc.userId})
                     </div>
@@ -222,7 +222,7 @@ export const WatchtowerDesk: React.FC<WatchtowerDeskProps> = ({
 
       {/* TAB 2: Active Blacklist Ledger */}
       {activeTab === 'blacklist' && (
-        <div className="liquid-card" style={{ overflow: 'hidden' }}>
+        <div className="liquid-card table-responsive-wrapper">
           <table className="cosmic-table">
             <thead>
               <tr>

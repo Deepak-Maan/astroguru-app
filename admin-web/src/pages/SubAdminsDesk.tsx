@@ -245,7 +245,7 @@ export const SubAdminsDesk: React.FC<SubAdminsDeskProps> = ({
       </div>
 
       {/* Executive Financial & Licensing KPI Strip */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
+      <div className="responsive-grid-4">
         <div className="liquid-card" style={{ padding: '18px 20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '11px', fontWeight: '700', color: '#A5B4FC', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
@@ -345,7 +345,7 @@ export const SubAdminsDesk: React.FC<SubAdminsDeskProps> = ({
       </div>
 
       {/* Sub-Admins Table */}
-      <div className="liquid-card" style={{ overflow: 'hidden' }}>
+      <div className="liquid-card table-responsive-wrapper">
         <table className="cosmic-table">
           <thead>
             <tr>

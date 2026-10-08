@@ -149,7 +149,7 @@ export const SystemAuditDesk: React.FC<SystemAuditDeskProps> = ({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <h1 style={{ fontSize: '24px', fontWeight: '800', color: '#EEF2FF' }}>
@@ -164,7 +164,7 @@ export const SystemAuditDesk: React.FC<SystemAuditDeskProps> = ({
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           <button onClick={exportAuditLogsCsv} className="btn-secondary" style={{ fontSize: '12px' }}>
             📄 Export Audit Log (CSV)
           </button>
@@ -172,7 +172,7 @@ export const SystemAuditDesk: React.FC<SystemAuditDeskProps> = ({
       </div>
 
       {/* TOP ROW: Maintenance Mode Switch & Universal 1-Click Exporters */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px' }}>
+      <div className="responsive-split-settings">
         {/* Maintenance Mode Controller Card */}
         <div className="liquid-card" style={{ padding: '24px', border: maintenanceMode ? '1.5px solid rgba(244, 63, 94, 0.5)' : '1px solid rgba(129, 140, 248, 0.22)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
@@ -307,7 +307,7 @@ export const SystemAuditDesk: React.FC<SystemAuditDeskProps> = ({
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div className="responsive-grid-2">
             <button
               onClick={exportUsersCsv}
               className="btn-secondary"
@@ -381,7 +381,7 @@ export const SystemAuditDesk: React.FC<SystemAuditDeskProps> = ({
 
       {/* SECTION 2: Tamper-Proof Administrative Audit Ledger */}
       <div className="liquid-card" style={{ padding: '24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px', marginBottom: '18px' }}>
           <div>
             <h2 style={{ fontSize: '18px', fontWeight: '800', color: '#EEF2FF' }}>
               📜 Administrative Action Audit Trail
@@ -391,7 +391,7 @@ export const SystemAuditDesk: React.FC<SystemAuditDeskProps> = ({
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
             <input
               type="text"
               placeholder="Search admin, action, target..."
@@ -428,7 +428,8 @@ export const SystemAuditDesk: React.FC<SystemAuditDeskProps> = ({
           </div>
         </div>
 
-        <table className="cosmic-table">
+        <div className="table-responsive-wrapper">
+          <table className="cosmic-table">
           <thead>
             <tr>
               <th>Log ID</th>
@@ -505,6 +506,7 @@ export const SystemAuditDesk: React.FC<SystemAuditDeskProps> = ({
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

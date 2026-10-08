@@ -23,7 +23,7 @@ export const UpdatesDesk: React.FC = () => {
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '24px' }}>
+      <div className="responsive-split-settings">
         {/* Version Settings Form */}
         <div className="liquid-card" style={{ padding: '28px' }}>
           <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#EEF2FF', marginBottom: '20px' }}>

@@ -91,6 +91,7 @@ export const App: React.FC = () => {
   // Navigation State
   const [currentTab, setCurrentTab] = useState<AdminTab>('overview');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Operational State
   const [incidents, setIncidents] = useState<SecurityIncident[]>(INITIAL_INCIDENTS);
@@ -541,15 +542,29 @@ export const App: React.FC = () => {
         </div>
       )}
 
-      {/* Desktop Sidebar */}
+      {/* Mobile Drawer Backdrop */}
+      {isMobileMenuOpen && (
+        <div
+          className="drawer-backdrop"
+          onClick={() => setIsMobileMenuOpen(false)}
+          aria-label="Close navigation drawer"
+        />
+      )}
+
+      {/* Desktop Sidebar & Mobile Slide-Out Drawer */}
       <AdminSidebar
         currentTab={currentTab}
-        onSelectTab={(tab) => setCurrentTab(tab)}
+        onSelectTab={(tab) => {
+          setCurrentTab(tab);
+          setIsMobileMenuOpen(false);
+        }}
         adminUser={adminUser}
         onLogout={handleLogout}
         incidentCount={incidents.filter((i) => i.status === 'pending').length}
         pendingAstrosCount={astrologers.filter((a) => a.status === 'pending_verification').length}
         liveSessionsCount={liveSessions.filter((s) => s.status === 'active').length}
+        isOpenMobile={isMobileMenuOpen}
+        onCloseMobile={() => setIsMobileMenuOpen(false)}
       />
 
       {/* Main Content Area */}
@@ -559,9 +574,10 @@ export const App: React.FC = () => {
           onSendDutyAlert={handleSendDutyAlert}
           searchQuery={searchQuery}
           onSearchChange={(q) => setSearchQuery(q)}
+          onToggleMobileMenu={() => setIsMobileMenuOpen((prev) => !prev)}
         />
 
-        <main style={{ padding: '32px', flex: 1, overflowY: 'auto' }}>
+        <main className="admin-main-content">
           {currentTab === 'overview' && (
             <OverviewDesk
               astrologers={astrologers}
@@ -661,6 +677,49 @@ export const App: React.FC = () => {
         onClose={() => setIsBanModalOpen(false)}
         onConfirmBan={handleConfirmUniversalBan}
       />
+
+      {/* Mobile Sticky Bottom Tab Bar */}
+      <nav className="mobile-bottom-bar" aria-label="Mobile Quick Desks">
+        <button
+          onClick={() => setCurrentTab('overview')}
+          className={`mobile-bottom-btn ${currentTab === 'overview' ? 'active' : ''}`}
+        >
+          <span className="btn-icon">📊</span>
+          <span>Overview</span>
+        </button>
+
+        <button
+          onClick={() => setCurrentTab('live')}
+          className={`mobile-bottom-btn ${currentTab === 'live' ? 'active' : ''}`}
+        >
+          <span className="btn-icon">🔴</span>
+          <span>Live</span>
+        </button>
+
+        <button
+          onClick={() => setCurrentTab('astrologers')}
+          className={`mobile-bottom-btn ${currentTab === 'astrologers' ? 'active' : ''}`}
+        >
+          <span className="btn-icon">🔮</span>
+          <span>Fleet</span>
+        </button>
+
+        <button
+          onClick={() => setCurrentTab('astromall')}
+          className={`mobile-bottom-btn ${currentTab === 'astromall' ? 'active' : ''}`}
+        >
+          <span className="btn-icon">🪔</span>
+          <span>Mall</span>
+        </button>
+
+        <button
+          onClick={() => setIsMobileMenuOpen(true)}
+          className="mobile-bottom-btn"
+        >
+          <span className="btn-icon">☰</span>
+          <span>Menu</span>
+        </button>
+      </nav>
     </div>
   );
 };

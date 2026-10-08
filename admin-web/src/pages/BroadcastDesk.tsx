@@ -343,7 +343,7 @@ export const BroadcastDesk: React.FC<BroadcastDeskProps> = ({
       </div>
 
       {/* Top Financial & Re-engagement Impact KPI Strip */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
+      <div className="responsive-grid-4">
         <div className="liquid-card" style={{ padding: '18px 20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '11px', fontWeight: '700', color: '#A5B4FC', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
@@ -409,9 +409,9 @@ export const BroadcastDesk: React.FC<BroadcastDeskProps> = ({
       {/* TAB 1: MULTI-CHANNEL CAMPAIGN COMPOSER & LIVE SIMULATOR               */}
       {/* ===================================================================== */}
       {activeTab === 'composer' && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1.25fr 0.75fr', gap: '24px' }}>
+        <div className="responsive-split-composer">
           {/* Left Form: Composer */}
-          <div className="liquid-card" style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div className="liquid-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {/* Quick Templates Strip */}
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
@@ -449,7 +449,7 @@ export const BroadcastDesk: React.FC<BroadcastDeskProps> = ({
               <label style={{ fontSize: '11px', fontWeight: '700', color: '#A5B4FC', display: 'block', marginBottom: '6px' }}>
                 TARGET AUDIENCE SEGMENT (CLICK TO TARGET)
               </label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
+              <div className="responsive-grid-2">
                 {[
                   {
                     id: 'dormant_with_balance',
@@ -873,7 +873,7 @@ export const BroadcastDesk: React.FC<BroadcastDeskProps> = ({
             </button>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+          <div className="responsive-grid-2">
             {triggerRules.map((rule) => (
               <div key={rule.id} className="liquid-card" style={{ padding: '22px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -970,7 +970,7 @@ export const BroadcastDesk: React.FC<BroadcastDeskProps> = ({
             </button>
           </div>
 
-          <div className="liquid-card" style={{ overflow: 'hidden' }}>
+          <div className="liquid-card table-responsive-wrapper">
             <table className="cosmic-table">
               <thead>
                 <tr>

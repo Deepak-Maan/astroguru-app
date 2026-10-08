@@ -125,7 +125,7 @@ export const AstroMallDesk: React.FC<AstroMallDeskProps> = ({
       </div>
 
       {/* KPI Stats Strip */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '14px' }}>
+      <div className="responsive-grid-5">
         {[
           { label: 'New Bookings', count: orders.filter((o) => o.status === 'pending').length, color: '#FCD34D', icon: '⏳' },
           { label: 'Pandit Assigned', count: orders.filter((o) => o.status === 'pandit_assigned').length, color: '#38BDF8', icon: '🙏' },
@@ -191,7 +191,7 @@ export const AstroMallDesk: React.FC<AstroMallDeskProps> = ({
 
       {/* VIEW 1: ACTIVE ORDERS & DISPATCH PIPELINE */}
       {activeTab === 'orders' && (
-        <div className="liquid-card" style={{ overflow: 'hidden' }}>
+        <div className="liquid-card table-responsive-wrapper">
           <table className="cosmic-table">
             <thead>
               <tr>
@@ -309,7 +309,7 @@ export const AstroMallDesk: React.FC<AstroMallDeskProps> = ({
 
       {/* VIEW 2: SACRED CONSECRATED CATALOG (APP SYNCHRONIZED) */}
       {activeTab === 'catalog' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '18px' }}>
+        <div className="responsive-grid-3">
           {filteredProducts.map((p) => (
             <div key={p.id} className="liquid-card" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
               <div style={{ position: 'relative', height: '140px' }}>
@@ -421,9 +421,9 @@ export const AstroMallDesk: React.FC<AstroMallDeskProps> = ({
           justifyContent: 'center',
           alignItems: 'center',
           zIndex: 100,
-          padding: '20px',
+          padding: '16px',
         }}>
-          <div className="liquid-card" style={{ width: '520px', maxWidth: '100%', padding: '28px', maxHeight: '90vh', overflowY: 'auto' }}>
+          <div className="liquid-card responsive-modal-box" style={{ maxWidth: '520px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
                 <span className="badge-pill badge-amber" style={{ fontSize: '10px' }}>

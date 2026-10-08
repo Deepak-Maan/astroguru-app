@@ -47,7 +47,7 @@ export const BanHammerModal: React.FC<BanHammerModalProps> = ({
       alignItems: 'center',
       zIndex: 100,
     }}>
-      <div className="liquid-card" style={{ width: '520px', padding: '32px' }}>
+      <div className="liquid-card responsive-modal-box" style={{ width: '100%', maxWidth: '520px', padding: '24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span style={{ fontSize: '24px' }}>🔨</span>
@@ -73,7 +73,7 @@ export const BanHammerModal: React.FC<BanHammerModalProps> = ({
             <label style={{ fontSize: '11px', fontWeight: '700', color: '#A5B4FC' }}>
               SANCTION TARGET TYPE
             </label>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginTop: '6px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '8px', marginTop: '6px' }}>
               {[
                 { id: 'device', label: '📱 Device UUID' },
                 { id: 'phone', label: '📞 Phone' },
@@ -148,7 +148,7 @@ export const BanHammerModal: React.FC<BanHammerModalProps> = ({
             <label style={{ fontSize: '11px', fontWeight: '700', color: '#A5B4FC' }}>
               SANCTION DURATION
             </label>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginTop: '6px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '8px', marginTop: '6px' }}>
               {['24 Hours', '7 Days', '30 Days', 'Permanent'].map((d) => (
                 <button
                   key={d}
@@ -163,7 +163,7 @@ export const BanHammerModal: React.FC<BanHammerModalProps> = ({
             </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap', gap: '10px', marginTop: '16px' }}>
             <button type="button" onClick={onClose} className="btn-secondary">
               Cancel
             </button>
