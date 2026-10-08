@@ -59,6 +59,8 @@ export interface AstrologerProfile {
   phone: string;
   avatar: string;
   specialties: string[];
+  languages?: string[];
+  about?: string;
   experienceYears: number;
   ratePerMin: number;
   rating: number;
@@ -74,6 +76,13 @@ export interface AstrologerProfile {
   dailyEarnings?: AstrologerDailyEarning[];
   lifetimeEarned?: number;
   pendingPayout?: number;
+  bankDetails?: {
+    accountNumber: string;
+    ifscCode: string;
+    bankName: string;
+    holderName: string;
+    upiId?: string;
+  };
 }
 
 export interface LiveConsultationSession {
@@ -113,6 +122,16 @@ export interface SystemHealthConfig {
 }
 
 
+export interface UserRechargeRecord {
+  id: string;
+  amount: number;
+  bonus: number;
+  packLabel: string;
+  method: string;
+  date: string;
+  utr?: string;
+}
+
 export interface UserRecord {
   id: string;
   name: string;
@@ -124,6 +143,34 @@ export interface UserRecord {
   isVip: boolean;
   createdAt: string;
   status: 'active' | 'warned' | 'suspended';
+  moonSign?: string;
+  ascendant?: string;
+  nakshatra?: string;
+  mangalDosha?: boolean;
+  sadeSatiActive?: boolean;
+  city?: string;
+  birthDate?: string;
+  rechargeHistory?: UserRechargeRecord[];
+  consultationsCount?: number;
+}
+
+export interface AstroMallProduct {
+  id: string;
+  name: string;
+  sanskritName?: string;
+  category: 'puja' | 'rudraksha' | 'gemstone' | 'yantra';
+  price: number;
+  originalPrice: number;
+  rating: number;
+  reviews: number;
+  image: string;
+  templeOrOrigin: string;
+  consecration: string;
+  doshaTarget: string;
+  benefits: string[];
+  certification: string;
+  inStock: boolean;
+  prashadIncluded?: boolean;
 }
 
 export interface OrderItem {
@@ -136,6 +183,12 @@ export interface OrderItem {
   sankalpDetails?: string;
   status: 'pending' | 'pandit_assigned' | 'performed' | 'dispatched' | 'delivered';
   trackingNumber?: string;
+  courierPartner?: string;
+  assignedPandit?: string;
+  temple?: string;
+  videoProofUrl?: string;
+  gotra?: string;
+  nakshatra?: string;
   createdAt: string;
 }
 

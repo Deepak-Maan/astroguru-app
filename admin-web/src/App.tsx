@@ -303,11 +303,23 @@ export const App: React.FC = () => {
   const handleUpdateOrderStatus = (
     orderId: string,
     status: OrderItem['status'],
-    tracking?: string
+    tracking?: string,
+    courier?: string,
+    pandit?: string,
+    videoProof?: string
   ) => {
     setOrders((prev) =>
       prev.map((o) =>
-        o.id === orderId ? { ...o, status, trackingNumber: tracking || o.trackingNumber } : o
+        o.id === orderId
+          ? {
+              ...o,
+              status,
+              trackingNumber: tracking || o.trackingNumber,
+              courierPartner: courier || o.courierPartner,
+              assignedPandit: pandit || o.assignedPandit,
+              videoProofUrl: videoProof || o.videoProofUrl,
+            }
+          : o
       )
     );
     showToast(`Order ${orderId} updated to ${status.replace('_', ' ').toUpperCase()}`);
