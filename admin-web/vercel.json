@@ -2,6 +2,13 @@
   "framework": "vite",
   "cleanUrls": true,
   "rewrites": [
+    { "source": "/admin/assets/(.*)", "destination": "/assets/$1" },
+    { "source": "/admin/favicon.png", "destination": "/favicon.png" },
+    { "source": "/assets/(.*)", "destination": "/assets/$1" },
+    { "source": "/favicon.png", "destination": "/favicon.png" },
+    { "source": "/admin/(.*)", "destination": "/index.html" },
+    { "source": "/admin", "destination": "/index.html" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

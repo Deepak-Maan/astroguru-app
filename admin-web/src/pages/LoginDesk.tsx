@@ -95,10 +95,15 @@ export const LoginDesk: React.FC<LoginDeskProps> = ({ onLoginSuccess }) => {
       body: JSON.stringify({ email: email.trim(), password: password.trim() }),
     })
       .then(async (res) => {
-        const data = await res.json();
+        let data: any = null;
+        try {
+          data = await res.json();
+        } catch (_) {
+          data = null;
+        }
         setLoading(false);
 
-        if (res.status === 402 || data.error === 'FEE_PENDING') {
+        if (data && (res.status === 402 || data.error === 'FEE_PENDING')) {
           // Open mandatory ₹599 Fee Clearance Gate
           setPendingFeeSubAdmin(data.subAdmin || {
             id: 'subadmin_1003',
@@ -111,7 +116,7 @@ export const LoginDesk: React.FC<LoginDeskProps> = ({ onLoginSuccess }) => {
           return;
         }
 
-        if (data.success && data.admin) {
+        if (data && data.success && data.admin) {
           onLoginSuccess(data.admin);
         } else {
           const localUser = checkLocalCredentials(email, password);
@@ -122,7 +127,7 @@ export const LoginDesk: React.FC<LoginDeskProps> = ({ onLoginSuccess }) => {
           if (localUser) {
             onLoginSuccess(localUser as AdminUser);
           } else {
-            setError(data.error || data.message || 'Invalid administrator email or password.');
+            setError(data?.error || data?.message || 'Invalid administrator email or password.');
           }
         }
       })
