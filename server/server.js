@@ -115,6 +115,205 @@ app.get('/api/users', (req, res) => {
   res.json({ success: true, users });
 });
 
+// ── USER / SEEKER PROFILE UPDATE & RETRIEVAL ──
+app.post(['/api/user/profile', '/api/users/profile'], (req, res) => {
+  const {
+    userId, id, name, email, phone, gender, avatar,
+    dateOfBirth, timeOfBirth, placeOfBirth, placeDetails,
+    gotra, maritalStatus, kundliSummary
+  } = req.body;
+  const targetId = userId || id;
+  if (!targetId && !email && !phone) {
+    return res.status(400).json({ success: false, error: 'User ID, email, or phone is required.' });
+  }
+
+  const db = loadDb();
+  if (!db.users) db.users = [];
+
+  let userIndex = db.users.findIndex(
+    (u) => (targetId && u.id === targetId) ||
+           (email && (u.email || '').toLowerCase() === email.toLowerCase()) ||
+           (phone && u.phone === phone)
+  );
+
+  const updatedData = {
+    name: name !== undefined ? name.trim() : undefined,
+    email: email !== undefined ? email.trim() : undefined,
+    phone: phone !== undefined ? phone.trim() : undefined,
+    gender: gender !== undefined ? gender : undefined,
+    avatar: avatar !== undefined ? avatar : undefined,
+    dateOfBirth: dateOfBirth !== undefined ? dateOfBirth : undefined,
+    timeOfBirth: timeOfBirth !== undefined ? timeOfBirth : undefined,
+    placeOfBirth: placeOfBirth !== undefined ? placeOfBirth : undefined,
+    placeDetails: placeDetails !== undefined ? placeDetails : undefined,
+    gotra: gotra !== undefined ? gotra.trim() : undefined,
+    maritalStatus: maritalStatus !== undefined ? maritalStatus : undefined,
+    kundliSummary: kundliSummary !== undefined ? kundliSummary : undefined,
+    updatedAt: Date.now(),
+  };
+
+  // Strip undefined keys
+  Object.keys(updatedData).forEach((k) => updatedData[k] === undefined && delete updatedData[k]);
+
+  if (userIndex >= 0) {
+    db.users[userIndex] = {
+      ...db.users[userIndex],
+      ...updatedData,
+    };
+  } else {
+    const newUser = {
+      id: targetId || `usr_${Date.now()}`,
+      role: 'user',
+      wallet: 50,
+      createdAt: new Date().toISOString().split('T')[0],
+      ...updatedData,
+    };
+    db.users.push(newUser);
+    userIndex = db.users.length - 1;
+  }
+
+  saveDb(db);
+
+  const { password: _, ...cleanUser } = db.users[userIndex];
+
+  // Best effort async Firebase sync
+  try {
+    fetch(`https://astroguru-d3c86-default-rtdb.firebaseio.com/users/${cleanUser.id}.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(cleanUser),
+    }).catch(() => {});
+  } catch (_) {}
+
+  res.json({
+    success: true,
+    user: cleanUser,
+    message: 'User profile updated successfully!',
+  });
+});
+
+app.get('/api/user/profile/:id', (req, res) => {
+  const { id } = req.params;
+  const db = loadDb();
+  const user = (db.users || []).find((u) => u.id === id);
+  if (!user) {
+    return res.status(404).json({ success: false, error: 'User profile not found.' });
+  }
+  const { password: _, ...cleanUser } = user;
+  res.json({ success: true, user: cleanUser });
+});
+
+// ── ASTROLOGER / ACHARYA PROFILE UPDATE & RETRIEVAL ──
+app.post(['/api/astrologer/profile', '/api/astrologers/profile'], (req, res) => {
+  const {
+    astrologerId, id, name, email, phone, avatar, about, bio,
+    experienceYears, pricePerMin, rate, specialties, languages,
+    online, onDuty, status
+  } = req.body;
+  const targetId = astrologerId || id;
+  if (!targetId && !email) {
+    return res.status(400).json({ success: false, error: 'Astrologer ID or email is required.' });
+  }
+
+  const db = loadDb();
+  if (!db.astrologers) db.astrologers = [];
+  if (!db.users) db.users = [];
+
+  let astroIndex = db.astrologers.findIndex(
+    (a) => (targetId && a.id === targetId) ||
+           (email && (a.email || '').toLowerCase() === email.toLowerCase())
+  );
+
+  const updatedData = {
+    name: name !== undefined ? name.trim() : undefined,
+    email: email !== undefined ? email.trim() : undefined,
+    phone: phone !== undefined ? phone.trim() : undefined,
+    avatar: avatar !== undefined ? avatar : undefined,
+    about: (bio !== undefined ? bio.trim() : undefined) || (about !== undefined ? about.trim() : undefined),
+    experienceYears: experienceYears !== undefined ? Number(experienceYears) : undefined,
+    pricePerMin: pricePerMin !== undefined ? Number(pricePerMin) : (rate !== undefined ? Number(rate) : undefined),
+    specialties: Array.isArray(specialties) ? specialties : undefined,
+    languages: Array.isArray(languages) ? languages : undefined,
+    online: online !== undefined ? Boolean(online) : undefined,
+    onDuty: onDuty !== undefined ? Boolean(onDuty) : undefined,
+    status: status !== undefined ? status : undefined,
+    updatedAt: Date.now(),
+  };
+
+  // Strip undefined keys
+  Object.keys(updatedData).forEach((k) => updatedData[k] === undefined && delete updatedData[k]);
+
+  if (astroIndex >= 0) {
+    db.astrologers[astroIndex] = {
+      ...db.astrologers[astroIndex],
+      ...updatedData,
+    };
+  } else {
+    const newAstro = {
+      id: targetId || `astro_${Date.now()}`,
+      role: 'astrologer',
+      rating: 5.0,
+      reviews: 1,
+      consultations: 0,
+      status: 'active',
+      ...updatedData,
+    };
+    db.astrologers.unshift(newAstro);
+    astroIndex = 0;
+  }
+
+  // Also sync corresponding user record in db.users
+  const currentAstro = db.astrologers[astroIndex];
+  const userIndex = db.users.findIndex(
+    (u) => (currentAstro.id && u.id === currentAstro.id) ||
+           (currentAstro.email && (u.email || '').toLowerCase() === currentAstro.email.toLowerCase())
+  );
+  if (userIndex >= 0) {
+    db.users[userIndex] = {
+      ...db.users[userIndex],
+      name: currentAstro.name,
+      email: currentAstro.email,
+      phone: currentAstro.phone || db.users[userIndex].phone,
+    };
+  }
+
+  saveDb(db);
+
+  const { password: _, ...cleanAstro } = currentAstro;
+
+  // Best effort async Firebase sync
+  try {
+    fetch(`https://astroguru-d3c86-default-rtdb.firebaseio.com/astrologers/${cleanAstro.id}.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(cleanAstro),
+    }).catch(() => {});
+    fetch(`https://astroguru-d3c86-default-rtdb.firebaseio.com/jyotishis/${cleanAstro.id}.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(cleanAstro),
+    }).catch(() => {});
+  } catch (_) {}
+
+  res.json({
+    success: true,
+    astrologer: cleanAstro,
+    message: 'Astrologer profile updated successfully!',
+  });
+});
+
+app.get('/api/astrologer/profile/:id', (req, res) => {
+  const { id } = req.params;
+  const db = loadDb();
+  const astro = (db.astrologers || []).find((a) => a.id === id);
+  if (!astro) {
+    return res.status(404).json({ success: false, error: 'Astrologer profile not found.' });
+  }
+  const { password: _, ...cleanAstro } = astro;
+  res.json({ success: true, astrologer: cleanAstro });
+});
+
+
 function generate6DigitOtp() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }

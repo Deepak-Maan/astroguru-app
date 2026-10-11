@@ -82,4 +82,26 @@ export const ApiClient = {
   // Astrologers
   getAstrologers: async () => request<{ success: boolean; astrologers: any[] }>('/astrologers'),
   checkUpdates: async () => request<{ success: boolean; updates: any }>('/updates/check'),
+
+  // User Profile
+  updateUserProfile: async (profileData: Record<string, any>) => {
+    return request<{ success: boolean; user?: any; message?: string; error?: string }>('/user/profile', {
+      method: 'POST',
+      body: JSON.stringify(profileData),
+    });
+  },
+  getUserProfile: async (userId: string) => {
+    return request<{ success: boolean; user?: any }>(`/user/profile/${userId}`);
+  },
+
+  // Astrologer Profile
+  updateAstrologerProfile: async (profileData: Record<string, any>) => {
+    return request<{ success: boolean; astrologer?: any; message?: string; error?: string }>('/astrologer/profile', {
+      method: 'POST',
+      body: JSON.stringify(profileData),
+    });
+  },
+  getAstrologerProfile: async (astroId: string) => {
+    return request<{ success: boolean; astrologer?: any }>(`/astrologer/profile/${astroId}`);
+  },
 };

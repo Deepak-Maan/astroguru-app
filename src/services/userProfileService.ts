@@ -5,6 +5,7 @@
  */
 import { ref, set, get } from 'firebase/database';
 import { firebaseDb } from './firebaseConfig';
+import { ApiClient } from './apiClient';
 import { useUserStore } from '../store/userStore';
 import { useAuthStore } from '../store/authStore';
 import { useWalletStore } from '../store/walletStore';
@@ -135,14 +136,18 @@ export async function syncUserProfileToDatabase(
       console.warn('[Firebase Database Write Warning]', dbErr?.message || dbErr);
     }
 
-    // 5. Non-blocking sync to REST backend server if running
+    // 5. Direct sync to REST backend server database
     try {
-      fetch('http://localhost:5000/api/user/profile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(cloudPayload),
-      }).catch(() => {});
-    } catch (_) {}
+      await ApiClient.updateUserProfile(cloudPayload);
+    } catch (_) {
+      try {
+        fetch(`${ApiClient.baseUrl}/user/profile`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(cloudPayload),
+        }).catch(() => {});
+      } catch (__) {}
+    }
 
     return { success: true, profile: cloudPayload };
   } catch (err: any) {
@@ -152,7 +157,7 @@ export async function syncUserProfileToDatabase(
 }
 
 /**
- * Fetches the latest user profile from Firebase Realtime Database
+ * Fetches the latest user profile from Firebase Realtime Database with backend fallback
  */
 export async function fetchUserProfileFromDatabase(
   userId: string
@@ -184,6 +189,42 @@ export async function fetchUserProfileFromDatabase(
   } catch (e) {
     console.warn('[FetchCloudProfile Warning]', e);
   }
+
+  // Fallback to REST backend database
+  try {
+    const res = await ApiClient.getUserProfile(userId);
+    if (res?.success && res.user) {
+      const u = res.user;
+      const formatted: StoredCloudProfile = {
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        phone: u.phone,
+        gender: u.gender || 'male',
+        avatar: u.avatar,
+        dateOfBirth: u.dateOfBirth,
+        timeOfBirth: u.timeOfBirth,
+        placeOfBirth: u.placeOfBirth,
+        placeDetails: u.placeDetails,
+        gotra: u.gotra,
+        maritalStatus: u.maritalStatus,
+        role: u.role || 'user',
+        wallet: u.wallet,
+        kundliSummary: u.kundliSummary,
+        updatedAt: u.updatedAt || Date.now(),
+      };
+      if (formatted.dateOfBirth && formatted.timeOfBirth && formatted.placeDetails) {
+        useUserStore.getState().setProfile({
+          name: formatted.name,
+          gender: formatted.gender || 'male',
+          date: formatted.dateOfBirth,
+          time: formatted.timeOfBirth,
+          place: formatted.placeDetails,
+        });
+      }
+      return formatted;
+    }
+  } catch (_) {}
 
   return null;
 }

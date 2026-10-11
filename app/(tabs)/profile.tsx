@@ -226,6 +226,9 @@ export default function Profile() {
             if (cloudData.avatar) setEditAvatar(cloudData.avatar);
             if (cloudData.gotra) setEditGotra(cloudData.gotra);
             if (cloudData.maritalStatus) setEditMaritalStatus(cloudData.maritalStatus as any);
+            if (cloudData.phone) setEditPhone(cloudData.phone);
+            if (cloudData.email) setEditEmail(cloudData.email);
+            if (cloudData.name) setEditName(cloudData.name);
           }
         })
         .catch(() => {});
@@ -233,10 +236,10 @@ export default function Profile() {
   }, [authUser?.id]);
 
   const handleOpenEditModal = () => {
-    setEditName(authUser?.name || profile?.name || '');
-    setEditEmail(authUser?.email || '');
-    setEditPhone(authUser?.phone || '');
-    setEditGender((profile?.gender as any) || 'male');
+    setEditName(editName || authUser?.name || profile?.name || '');
+    setEditEmail(editEmail || authUser?.email || '');
+    setEditPhone(editPhone || authUser?.phone || '');
+    setEditGender((profile?.gender as any) || editGender || 'male');
     if (profile?.date) {
       const parts = profile.date.split('-');
       setEditYyyy(parts[0] || '');
@@ -422,7 +425,7 @@ export default function Profile() {
                   variant="gold"
                   size="sm"
                   style={{ marginTop: spacing.md, width: '100%' }}
-                  onPress={handleOpenEditModal}
+                  onPress={() => router.push('/acharya/consultation-profile')}
                 />
               </View>
 
