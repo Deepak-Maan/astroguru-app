@@ -84,7 +84,55 @@ export default function Home() {
     { icon: '💳', label: 'Wallet', href: '/wallet', bg: 'rgba(236, 72, 153, 0.22)' },
     { icon: '🔢', label: 'Numerology', href: '/numerology', bg: 'rgba(129, 140, 248, 0.22)' },
     { icon: '🪄', label: 'Mantras', href: '/spells', bg: 'rgba(168, 85, 247, 0.22)' },
-    { icon: '🔮', label: 'Love Match', href: '/soulmate-ai', bg: 'rgba(244, 114, 182, 0.22)' },
+    { icon: '🎨', label: 'Soulmate', href: '/soulmate-portrait', bg: 'rgba(244, 114, 182, 0.22)' },
+  ];
+
+  const cosmicSuperFeatures = [
+    {
+      id: 'soulmate',
+      icon: '🎨',
+      title: 'AI Soulmate Portrait',
+      desc: 'Predictive face & meeting timeline',
+      href: '/soulmate-portrait',
+      tag: 'VIRAL',
+      colors: ['#EC4899', '#8B5CF6'] as [string, string],
+    },
+    {
+      id: 'decision',
+      icon: '🛡️',
+      title: 'Decision Radar',
+      desc: 'Live Choghadiya & Rahu Kaal shield',
+      href: '/decision-radar',
+      tag: 'REAL-TIME',
+      colors: ['#10B981', '#06B6D4'] as [string, string],
+    },
+    {
+      id: 'karma',
+      icon: '📿',
+      title: 'Karma Ledger',
+      desc: '21-day streak & digital Japa mala',
+      href: '/karma-ledger',
+      tag: 'HABIT',
+      colors: ['#F59E0B', '#EF4444'] as [string, string],
+    },
+    {
+      id: 'finance',
+      icon: '📈',
+      title: 'Astro-Finance',
+      desc: 'Market trends & wealth timing',
+      href: '/astro-finance',
+      tag: 'MARKETS',
+      colors: ['#3B82F6', '#10B981'] as [string, string],
+    },
+    {
+      id: 'chakra',
+      icon: '🎙️',
+      title: 'Chakra Voice Scanner',
+      desc: 'Nada Yoga bio-acoustic frequency',
+      href: '/vocal-chakra-scanner',
+      tag: 'NEW',
+      colors: ['#8B5CF6', '#EC4899'] as [string, string],
+    },
   ];
 
   const today = new Date().toLocaleDateString('en-GB', {
@@ -222,6 +270,50 @@ export default function Home() {
                 <Text style={styles.quickLabel}>{label}</Text>
               </Pressable>
             ))}
+          </View>
+
+          {/* 🌟 5 Breakthrough Cosmic Super-Features */}
+          <View style={{ gap: spacing.xs, marginVertical: 4 }}>
+            <SectionHeader
+              title="🌟 Cosmic Super-Tools"
+              subtitle="5 exclusive breakthrough Vedic technologies"
+            />
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 12, paddingRight: spacing.lg }}
+            >
+              {cosmicSuperFeatures.map((feat) => (
+                <Pressable
+                  key={feat.id}
+                  onPress={() => router.push(feat.href as never)}
+                  style={({ pressed }) => [
+                    styles.superFeatureCard,
+                    pressed && { opacity: 0.85, transform: [{ scale: 0.97 }] },
+                  ]}
+                >
+                  <LinearGradient
+                    colors={feat.colors}
+                    style={[StyleSheet.absoluteFill, { opacity: 0.16 }]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                  />
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 28 }}>{feat.icon}</Text>
+                    <View style={styles.superFeatureTag}>
+                      <Text style={styles.superFeatureTagText}>{feat.tag}</Text>
+                    </View>
+                  </View>
+                  <View style={{ gap: 2, marginTop: 4 }}>
+                    <Text style={styles.superFeatureTitle}>{feat.title}</Text>
+                    <Text style={styles.superFeatureDesc} numberOfLines={2}>
+                      {feat.desc}
+                    </Text>
+                  </View>
+                  <Text style={styles.superFeatureArrow}>Launch ➔</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
           </View>
 
           {/* Daily Cosmic Directives (Do's & Don'ts & 9:16 Story Card) */}
@@ -797,6 +889,49 @@ const styles = StyleSheet.create({
     fontSize: 22,
     color: '#FCD34D',
     fontWeight: '700',
+  },
+
+  /* Cosmic Super Features */
+  superFeatureCard: {
+    width: 175,
+    backgroundColor: 'rgba(26, 33, 64, 0.85)',
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    borderWidth: 1.2,
+    borderColor: 'rgba(129, 140, 248, 0.35)',
+    gap: 8,
+    overflow: 'hidden',
+    justifyContent: 'space-between',
+  },
+  superFeatureTag: {
+    backgroundColor: 'rgba(252, 211, 77, 0.2)',
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: 'rgba(252, 211, 77, 0.4)',
+  },
+  superFeatureTagText: {
+    fontSize: 9,
+    fontWeight: '900',
+    color: '#FCD34D',
+    letterSpacing: 0.5,
+  },
+  superFeatureTitle: {
+    fontSize: 13.5,
+    fontWeight: '800',
+    color: '#EEF2FF',
+  },
+  superFeatureDesc: {
+    fontSize: 11,
+    color: '#A5B4FC',
+    lineHeight: 15,
+  },
+  superFeatureArrow: {
+    fontSize: 11.5,
+    fontWeight: '800',
+    color: '#38BDF8',
+    marginTop: 4,
   },
 
   /* Floating GuruVani Voice Button */

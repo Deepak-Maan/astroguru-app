@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import {
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -45,6 +46,20 @@ export default function SoulmateAiScreen() {
         <ScreenHeader title="🕊️ AI Soulmate Chemistry" showBack />
 
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+          {/* Link to AI Portrait */}
+          <Pressable onPress={() => router.push('/soulmate-portrait')} style={{ marginBottom: spacing.xs }}>
+            <Card padded style={{ backgroundColor: 'rgba(236, 72, 153, 0.2)', borderColor: 'rgba(236, 72, 153, 0.45)', borderWidth: 1 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Text style={{ fontSize: 10.5, fontWeight: '800', color: '#FCD34D' }}>✨ NEW BREAKTHROUGH FEATURE</Text>
+                  <Text style={{ fontSize: 14, fontWeight: '800', color: '#EEF2FF' }}>🎨 Generate AI Soulmate Portrait</Text>
+                  <Text style={{ fontSize: 11, color: '#CBD5E1' }}>7th house planetary likeness & meeting window</Text>
+                </View>
+                <Text style={{ fontSize: 20, color: '#FCD34D', fontWeight: '800' }}>➔</Text>
+              </View>
+            </Card>
+          </Pressable>
+
           <Card style={{ gap: spacing.md }}>
             <SectionHeader title="Partner Compatibility Input" subtitle="Analyze planetary attraction with your partner" />
 
