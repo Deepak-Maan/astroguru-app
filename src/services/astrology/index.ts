@@ -66,9 +66,16 @@ export function computeLagna(jd: number, latitude: number, eastLongitude: number
 }
 
 const MANGAL_HOUSES = new Set([1, 2, 4, 7, 8, 12]);
+const KUNDLI_CACHE = new Map<string, Kundli>();
 
 export function computeKundli(profile: BirthProfile): Kundli {
   const { date, time, place } = profile;
+  const cacheKey = `${date}_${time}_${place.lat.toFixed(3)}_${place.lon.toFixed(3)}_${place.tz}`;
+  const cached = KUNDLI_CACHE.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
   const jd = birthToJulianDay(date, time, place.tz);
 
   const lagnaLongitude = computeLagna(jd, place.lat, place.lon);
@@ -100,7 +107,7 @@ export function computeKundli(profile: BirthProfile): Kundli {
   const mars = planets.find((p) => p.key === 'mars')!;
   const moonNak = nakshatraOf(moon.longitude);
 
-  return {
+  const result: Kundli = {
     lagnaIndex,
     lagnaLongitude,
     moonRashiIndex: moon.rashiIndex,
@@ -113,6 +120,9 @@ export function computeKundli(profile: BirthProfile): Kundli {
     ayanamsa: ayanamsa(jd),
     computedAt: Date.now(),
   };
+
+  KUNDLI_CACHE.set(cacheKey, result);
+  return result;
 }
 
 /** Current tithi (lunar day 1..30) for a given date. */

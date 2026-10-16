@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
-  FlatList,
   Modal,
   Platform,
   Pressable,
@@ -11,6 +10,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import * as Haptics from 'expo-haptics';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -21,6 +21,8 @@ import { EmptyState } from '../../src/components/EmptyState';
 import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { Card } from '../../src/components/Card';
 import { SectionHeader } from '../../src/components/SectionHeader';
+import { VernacularVoiceMic } from '../../src/components/VernacularVoiceMic';
+import { FloatingKundliSheet } from '../../src/components/FloatingKundliSheet';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { ASTROLOGERS } from '../../src/data/astrologers';
 import { Astrologer } from '../../src/types';
@@ -300,6 +302,12 @@ export default function Consult() {
             <Text style={styles.clearBtn}>✕</Text>
           </Pressable>
         )}
+        <VernacularVoiceMic
+          size={32}
+          onTranscript={(text) => {
+            setQuery(text);
+          }}
+        />
       </View>
 
       {/* ── Online banner ── */}
@@ -443,7 +451,7 @@ export default function Consult() {
             />
           </View>
         ) : (
-          <FlatList
+          <FlashList
             data={list}
             keyExtractor={(a) => a.id}
             ListHeaderComponent={renderHeader}
@@ -462,6 +470,7 @@ export default function Consult() {
             }
           />
         )}
+        <FloatingKundliSheet />
       </SafeAreaView>
     </GradientBackground>
   );

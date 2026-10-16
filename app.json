@@ -64,7 +64,8 @@
           "color": "#F59E0B"
         }
       ],
-      "expo-sharing"
+      "expo-sharing",
+      "expo-image"
     ],
     "extra": {
       "router": {},

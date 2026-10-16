@@ -1,6 +1,7 @@
 import React from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { CosmicImage } from './CosmicImage';
 import { colors, radius } from '../theme';
 
 interface Props {
@@ -27,9 +28,25 @@ export function Avatar({ uri, name, size = 56, online, showStatus = false }: Pro
   return (
     <View style={{ width: size, height: size }}>
       {uri ? (
-        <Image
-          source={{ uri }}
-          style={[styles.img, { width: size, height: size, borderRadius: size / 2 }]}
+        <CosmicImage
+          source={uri}
+          borderRadius={size / 2}
+          style={{ width: size, height: size, borderRadius: size / 2 }}
+          fallbackElement={
+            <LinearGradient
+              colors={['#7D3C98', '#E67E22']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={[
+                styles.fallback,
+                { width: size, height: size, borderRadius: size / 2 },
+              ]}
+            >
+              <Text style={[styles.initials, { fontSize: size * 0.38 }]}>
+                {initials(name)}
+              </Text>
+            </LinearGradient>
+          }
         />
       ) : (
         <LinearGradient

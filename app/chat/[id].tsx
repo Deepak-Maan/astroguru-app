@@ -23,6 +23,8 @@ import { ChatBubble } from '../../src/components/ChatBubble';
 import { EmptyState } from '../../src/components/EmptyState';
 import { VoiceNoteRecorder } from '../../src/components/VoiceNoteRecorder';
 import { InCallRechargeBanner } from '../../src/components/InCallRechargeBanner';
+import { FloatingKundliSheet } from '../../src/components/FloatingKundliSheet';
+import { NetworkQualityBanner } from '../../src/components/NetworkQualityBanner';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { ASTROLOGERS } from '../../src/data/astrologers';
 import { greetingFor, replyTo, typingDelay } from '../../src/services/consult/replies';
@@ -924,6 +926,7 @@ export default function ChatScreen() {
             </View>
           </View>
         </Modal>
+        <FloatingKundliSheet />
       </SafeAreaView>
     </GradientBackground>
   );

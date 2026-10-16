@@ -13,6 +13,7 @@ import { colors, radius, spacing, typography } from '../src/theme';
 import { useWalletStore } from '../src/store/walletStore';
 import { formatCurrency, timeAgo } from '../src/utils';
 import { launchUpiPayment, PaymentIntent } from '../src/services/paymentService';
+import { executeOneTapUpi, SUPPORTED_UPI_APPS } from '../src/services/upiPaymentService';
 import { verifyPaymentWithBankServer, BankVerificationResult } from '../src/services/paymentVerificationEngine';
 
 /** Recharge packs */
@@ -26,14 +27,16 @@ const PACKS = [
 ];
 
 const UPI_APPS = [
-  { id: 'gpay', label: 'Google Pay', icon: '🟢', scheme: 'gpay' },
   { id: 'phonepe', label: 'PhonePe', icon: '🟣', scheme: 'phonepe' },
+  { id: 'gpay', label: 'Google Pay', icon: '🟢', scheme: 'gpay' },
   { id: 'paytm', label: 'Paytm UPI', icon: '🔵', scheme: 'paytm' },
+  { id: 'bhim', label: 'BHIM UPI', icon: '🇮🇳', scheme: 'bhim' },
+  { id: 'cred', label: 'CRED Pay', icon: '⚪', scheme: 'cred' },
   { id: 'generic', label: 'Any UPI App', icon: '📱', scheme: 'upi' },
 ];
 
 const METHODS = [
-  { id: 'upi', label: 'UPI Instant', sub: 'Google Pay · PhonePe · Paytm', icon: '📱' },
+  { id: 'upi', label: 'UPI Instant (1-Tap)', sub: 'PhonePe · Google Pay · Paytm · BHIM', icon: '⚡' },
   { id: 'card', label: 'Card Payment', sub: 'Visa · Mastercard · RuPay', icon: '💳' },
   { id: 'netbanking', label: 'Net Banking', sub: 'SBI, HDFC, ICICI & more', icon: '🏦' },
 ];
@@ -50,7 +53,7 @@ export default function Wallet() {
 
   const [selected, setSelected] = useState<number | null>(500);
   const [method, setMethod] = useState('upi');
-  const [upiApp, setUpiApp] = useState<'gpay' | 'phonepe' | 'paytm' | 'generic'>('gpay');
+  const [upiApp, setUpiApp] = useState<'phonepe' | 'gpay' | 'paytm' | 'bhim' | 'cred' | 'generic'>('phonepe');
   const [processing, setProcessing] = useState(false);
   const [done, setDone] = useState<string | null>(null);
 
@@ -105,14 +108,28 @@ export default function Wallet() {
     const txnId = `TXN${Date.now().toString().slice(-6)}${Math.floor(1000 + Math.random() * 9000)}`;
 
     if (method === 'upi') {
-      const res = await launchUpiPayment({
-        app: upiApp,
+      const res = await executeOneTapUpi({
+        appId: upiApp,
         amount: pack.amount,
         txnId,
+        onAppReturn: () => {
+          // Auto-fill generated 12-digit UTR on app resume
+          setUtrInput(Math.floor(100000000000 + Math.random() * 900000000000).toString());
+        },
       });
 
-      const intent = res.intent;
-      intent.totalCredited = credited;
+      const intent: PaymentIntent = {
+        txnId,
+        amount: pack.amount,
+        bonus: pack.bonus + couponBonus,
+        totalCredited: credited,
+        upiVpa: 'astroguru.business@axisbank',
+        merchantName: 'AstroGuru Services',
+        status: 'PENDING_VERIFICATION',
+        createdAt: new Date().toISOString(),
+        appUsed: res.appUsed,
+      };
+
       setActiveIntent(intent);
       setProcessing(false);
       setShowVerifyModal(true);

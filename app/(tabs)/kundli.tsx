@@ -14,6 +14,9 @@ import { SectionHeader } from '../../src/components/SectionHeader';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { useUserStore } from '../../src/store/userStore';
 import { useAuthStore } from '../../src/store/authStore';
+import { useFamilyProfilesStore } from '../../src/store/familyProfilesStore';
+import { FamilyProfileSwitcher } from '../../src/components/FamilyProfileSwitcher';
+import { NetworkQualityBanner } from '../../src/components/NetworkQualityBanner';
 import { RASHIS } from '../../src/data/rashis';
 import { NAKSHATRAS } from '../../src/data/nakshatras';
 import { PLANETS } from '../../src/data/planets';
@@ -41,8 +44,14 @@ export default function KundliScreen() {
   const router = useRouter();
   const authUser = useAuthStore((s) => s.user);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const profile = useUserStore((s) => s.profile);
-  const kundli = useUserStore((s) => s.kundli);
+  const userProfile = useUserStore((s) => s.profile);
+  const userKundli = useUserStore((s) => s.kundli);
+  const getActiveProfile = useFamilyProfilesStore((s) => s.getActiveProfile);
+
+  const activeFamily = getActiveProfile({ profile: userProfile, kundli: userKundli });
+  const profile = activeFamily.profile;
+  const kundli = activeFamily.kundli;
+
   const [tab, setTab] = useState<TabId>('chart');
   const [chartFormat, setChartFormat] = useState<'north' | 'south'>('north');
   const [matchingResult, setMatchingResult] = useState<any | null>(null);
@@ -136,6 +145,9 @@ export default function KundliScreen() {
           subtitle={`${profile.name} · ${profile.date}`}
           showWallet
         />
+
+        <NetworkQualityBanner />
+        <FamilyProfileSwitcher />
 
         {/* Tab switcher wrapper with fixed height */}
         <View style={styles.tabsWrapper}>

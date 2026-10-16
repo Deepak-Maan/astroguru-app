@@ -13,6 +13,7 @@ import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { colors, radius, spacing, typography } from '../../src/theme';
 import { astrologerById } from '../../src/data/astrologers';
 import { useWalletStore } from '../../src/store/walletStore';
+import { useWaitingRoomStore } from '../../src/store/waitingRoomStore';
 import { formatCurrency } from '../../src/utils';
 import { getAstrologerByIdFromFirebase } from '../../src/services/firebaseAuthService';
 import { Astrologer } from '../../src/types';
@@ -21,6 +22,7 @@ export default function AstrologerProfile() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const balance = useWalletStore((s) => s.balance);
+  const joinQueue = useWaitingRoomStore((s) => s.joinQueue);
   const [astrologer, setAstrologer] = useState<Astrologer | null>(() => astrologerById(String(id)) || null);
   const [loading, setLoading] = useState(!astrologer);
 
@@ -71,6 +73,21 @@ export default function AstrologerProfile() {
       return;
     }
     router.push(`/chat/${astrologer.id}`);
+  }
+
+  function handleJoinQueue(type: 'chat' | 'call' | 'video' = 'chat') {
+    if (!astrologer) return;
+    joinQueue(
+      {
+        id: astrologer.id,
+        name: astrologer.name,
+        avatar: astrologer.avatar,
+        specialty: astrologer.specialties?.[0],
+        rate: astrologer.pricePerMin,
+      },
+      type
+    );
+    router.push('/waiting-room');
   }
 
   return (
@@ -205,34 +222,46 @@ export default function AstrologerProfile() {
             colors={['rgba(10, 12, 22, 0.0)', 'rgba(10, 12, 22, 0.98)']}
             style={styles.actionsGradient}
           />
-          <Pressable
-            onPress={() => router.push(`/consultation/${astrologer.id}?type=audio`)}
-            style={({ pressed }) => [styles.mediaCallBtn, pressed && { transform: [{ translateY: 1.5 }], opacity: 0.85 }]}
-          >
-            <Text style={{ fontSize: 15 }}>📞</Text>
-            <Text style={styles.mediaCallText}>Audio</Text>
-          </Pressable>
+          {!astrologer.online ? (
+            <Button
+              label="⏱️ Join Smart Queue (~3m wait)"
+              variant="primary"
+              size="md"
+              fullWidth
+              onPress={() => handleJoinQueue('chat')}
+            />
+          ) : (
+            <>
+              <Pressable
+                onPress={() => router.push(`/consultation/${astrologer.id}?type=audio`)}
+                style={({ pressed }) => [styles.mediaCallBtn, pressed && { transform: [{ translateY: 1.5 }], opacity: 0.85 }]}
+              >
+                <Text style={{ fontSize: 15 }}>📞</Text>
+                <Text style={styles.mediaCallText}>Audio</Text>
+              </Pressable>
 
-          <Pressable
-            onPress={() => router.push(`/consultation/${astrologer.id}?type=video`)}
-            style={({ pressed }) => [
-              styles.mediaCallBtn,
-              { borderColor: 'rgba(129, 140, 248, 0.45)', backgroundColor: 'rgba(99, 102, 241, 0.25)' },
-              pressed && { transform: [{ translateY: 1.5 }], opacity: 0.85 },
-            ]}
-          >
-            <Text style={{ fontSize: 15 }}>📹</Text>
-            <Text style={[styles.mediaCallText, { color: '#EEF2FF' }]}>Video</Text>
-          </Pressable>
+              <Pressable
+                onPress={() => router.push(`/consultation/${astrologer.id}?type=video`)}
+                style={({ pressed }) => [
+                  styles.mediaCallBtn,
+                  { borderColor: 'rgba(129, 140, 248, 0.45)', backgroundColor: 'rgba(99, 102, 241, 0.25)' },
+                  pressed && { transform: [{ translateY: 1.5 }], opacity: 0.85 },
+                ]}
+              >
+                <Text style={{ fontSize: 15 }}>📹</Text>
+                <Text style={[styles.mediaCallText, { color: '#EEF2FF' }]}>Video</Text>
+              </Pressable>
 
-          <Button
-            label={canAfford ? '💬 Chat' : 'Add Money'}
-            variant={canAfford ? 'coral' : 'primary'}
-            size="md"
-            fullWidth={false}
-            style={{ flex: 1 }}
-            onPress={startChat}
-          />
+              <Button
+                label={canAfford ? '💬 Chat' : 'Add Money'}
+                variant={canAfford ? 'coral' : 'primary'}
+                size="md"
+                fullWidth={false}
+                style={{ flex: 1 }}
+                onPress={startChat}
+              />
+            </>
+          )}
         </View>
       </SafeAreaView>
     </GradientBackground>
