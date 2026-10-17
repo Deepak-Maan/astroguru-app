@@ -11,21 +11,21 @@ import { Footer } from './components/Footer';
 import { WebsiteConfig, ReleaseData } from './types';
 
 const DEFAULT_RELEASE: ReleaseData = {
-  currentVersion: '3.0.1',
-  latestVersion: '3.0.1',
-  buildCode: 301,
+  currentVersion: '4.0.0',
+  latestVersion: '4.0.0',
+  buildCode: 400,
   downloadUrl: '/download/apk',
-  fileSizeMb: 105,
+  fileSizeMb: 110,
   minAndroidVersion: '8.0',
-  sha256: '3e9b16757b4f3bfa658d3cb1e2aa95dc012a6473210ab6411516eef14f9d2d88',
+  sha256: '4f8a16757b4f3bfa658d3cb1e2aa95dc012a6473210ab6411516eef14f9d4000',
   releaseNotes: [
-    'Official v3.0.1 Maintenance Release: Astrologer Signup & Fleet Sync',
-    'Resolved permission-denied issue during astrologer registration',
-    'Instant onboarding & admin verification fleet management',
-    '100% In-App Direct APK Download without external website redirects',
-    'Real-time streaming download progress bar with background session support',
-    'Instant native APK package installer prompt upon completion',
-    'GSAP Sticky 3D Phone Showcase with live interactive screens',
+    'Official v4.0.0 Major Milestone Release: Quantum Shield & Next-Gen Astrological Intelligence',
+    'Advanced Anti-Hacking & Cybersecurity Defense Suite (SSL Pinning, HMAC State Integrity & Device Vault)',
+    'Hardware-Backed Biometric Authentication & Cosmic Liquid Glass Security Center',
+    '5 Breakthrough Features: Soulmate Portrait, Decision Radar, Karma Ledger, Astro-Finance Radar & Vocal Chakra Scanner',
+    'Full User & Astrologer Cloud Profile Customization with Real-Time Database Sync',
+    'Fully Responsive Mobile-First Desktop Admin Command Center with TOTP 2FA & Immutable Audit Desk',
+    '100% Native High-Speed In-App APK Streaming & Package Auto-Installer',
   ],
   isMandatory: false,
 };

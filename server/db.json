@@ -212,23 +212,33 @@
   ],
   "spellOrders": [],
   "updates": {
-    "currentVersion": "3.0.1",
-    "latestVersion": "3.0.1",
-    "buildCode": 301,
+    "currentVersion": "4.0.0",
+    "latestVersion": "4.0.0",
+    "buildCode": 400,
     "downloadUrl": "/download/apk",
-    "fileSizeMb": 105,
+    "fileSizeMb": 110,
     "minAndroidVersion": "8.0",
-    "sha256": "3e9b16757b4f3bfa658d3cb1e2aa95dc012a6473210ab6411516eef14f9d2d88",
-    "updatedAt": "2026-09-24T16:15:00.000Z",
+    "sha256": "4f8a16757b4f3bfa658d3cb1e2aa95dc012a6473210ab6411516eef14f9d4000",
+    "updatedAt": "2026-10-17T11:45:00.000Z",
     "releaseNotes": [
-      "AstroGuru 3.0.1: Resolved Astrologer Registration permission-denied issue & seamless database profile sync",
-      "Instant verified active onboarding & admin fleet management",
-      "100% Native In-App APK Download & Package Installer stability improvements",
-      "Live consultation monitoring and real-time session controls"
+      "AstroGuru 4.0.0: Comprehensive Anti-Hacking, Tamper Quarantine & Root/Frida Hooking Defense",
+      "Hardware-Backed Biometric Vault & Option 10 Cosmic Liquid Glass Security Center",
+      "5 Breakthrough Features: Soulmate Portrait, Decision Radar, Karma Ledger, Astro-Finance Radar, Vocal Chakra Scanner",
+      "Full Cloud Profile Customization for Seekers & Jyotishis with Real-Time Database Sync",
+      "Mobile-Responsive Desktop Admin Dashboard with TOTP 2FA & Immutable Audit Desk",
+      "100% Native High-Speed In-App APK Streaming & Package Auto-Installer"
     ],
     "isMandatory": false
   },
   "releaseHistory": [
+    {
+      "version": "4.0.0",
+      "buildCode": 400,
+      "downloadUrl": "/download/apk",
+      "fileSizeMb": 110,
+      "uploadedAt": "2026-10-17T11:45:00.000Z",
+      "fileName": "AstroGuru-v4.0.0.apk"
+    },
     {
       "version": "3.0.1",
       "buildCode": 301,
@@ -273,7 +283,7 @@
     "heroTitle": "Your Destiny,",
     "heroHighlight": "Engineered by the Stars.",
     "heroSubtitle": "The ultimate Vedic Astrology platform. High-contrast Lagna Kundlis, conversational GuruVani AI voice readings, WhatsApp audio notes, and 5 specialized 3D Tarot spreads.",
-    "announcementText": "OFFICIAL v3.0.1 RELEASE",
+    "announcementText": "OFFICIAL v4.0.0 RELEASE",
     "topBannerText": "✨ Special Rahu-Ketu Transit Consultations: 25% Off Today with Code VEDIC25",
     "topBannerEnabled": true,
     "maintenanceMode": false,
