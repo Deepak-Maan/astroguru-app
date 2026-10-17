@@ -235,8 +235,9 @@
       "version": "4.0.0",
       "buildCode": 400,
       "downloadUrl": "/download/apk",
+      "cloudApkUrl": "https://expo.dev/artifacts/eas/ra_T8ClOu_1tEa_b8OMzyS4Xxcfqdb4lBuYlOccEGfU.apk",
       "fileSizeMb": 110,
-      "uploadedAt": "2026-10-17T11:45:00.000Z",
+      "uploadedAt": "2026-10-17T12:40:46.000Z",
       "fileName": "AstroGuru-v4.0.0.apk"
     },
     {
