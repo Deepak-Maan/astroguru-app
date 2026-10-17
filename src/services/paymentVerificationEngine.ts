@@ -73,10 +73,29 @@ export async function verifyPaymentWithBankServer(
   expectedAmount: number
 ): Promise<BankVerificationResult> {
   const utr = rawUtr.trim();
+  const currentUserId = useAuthStore.getState().user?.id || 'guest';
+
+  // 0. Fraud Guard: Velocity rate limit & lockout check
+  const { validateUtrSubmission, recordVerifiedUtr, recordFailedUtrAttempt } = await import(
+    './security/paymentFraudGuard'
+  );
+  const fraudCheck = await validateUtrSubmission(utr, currentUserId);
+  if (!fraudCheck.allowed) {
+    return {
+      verified: false,
+      status: fraudCheck.isDuplicateUtr ? 'DUPLICATE_UTR' : 'FAILED',
+      utr,
+      bankName: 'AstroGuru Security Engine',
+      timestamp: new Date().toISOString(),
+      gatewayRef: `SEC_BLOCK_${Date.now()}`,
+      message: fraudCheck.message || 'Verification blocked by security rules.',
+    };
+  }
 
   // 1. Check NPCI Structural & Julian Checksum Validation
   const structCheck = validateNcpiUtrStructure(utr);
   if (!structCheck.valid) {
+    await recordFailedUtrAttempt(currentUserId);
     return {
       verified: false,
       status: 'INVALID_CHECKSUM',
@@ -137,6 +156,7 @@ export async function verifyPaymentWithBankServer(
 
     usedUtrs.push(utr);
     await AsyncStorage.setItem(USED_UTRS_KEY, JSON.stringify(usedUtrs));
+    await recordVerifiedUtr(utr, currentUserId);
 
     return {
       verified: true,

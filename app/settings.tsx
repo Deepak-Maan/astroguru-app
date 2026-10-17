@@ -19,6 +19,7 @@ import { Button } from '../src/components/Button';
 import { Card } from '../src/components/Card';
 import { ScreenHeader } from '../src/components/ScreenHeader';
 import { SectionHeader } from '../src/components/SectionHeader';
+import { SecurityShieldCard } from '../src/components/SecurityShieldCard';
 import { AnimatedAuthOverlay } from '../src/components/AnimatedAuthOverlay';
 import { colors, radius, spacing, typography } from '../src/theme';
 import { useSettingsStore } from '../src/store/settingsStore';
@@ -327,6 +328,7 @@ export default function Settings() {
 
           {/* Security & Privacy Vault */}
           <View>
+            <SecurityShieldCard />
             <SectionHeader
               title="🛡️ Security & Privacy Vault"
               subtitle="App Passcode, Biometrics & Encryption"

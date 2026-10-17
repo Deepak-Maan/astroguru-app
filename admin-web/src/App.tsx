@@ -49,6 +49,7 @@ import {
 import { AdminSidebar, AdminTab } from './components/AdminSidebar';
 import { AdminTopNav } from './components/AdminTopNav';
 import { BanHammerModal } from './components/BanHammerModal';
+import { AdminStepUpAuthModal } from './components/AdminStepUpAuthModal';
 import { OverviewDesk } from './pages/OverviewDesk';
 import { WatchtowerDesk } from './pages/WatchtowerDesk';
 import { AstrologersDesk } from './pages/AstrologersDesk';
@@ -142,6 +143,36 @@ export const App: React.FC = () => {
     setTimeout(() => setToastMessage(null), 4000);
   };
 
+  // Step-Up Re-Authentication Guard
+  const [stepUpModal, setStepUpModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: string;
+    onAuthorize: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    description: '',
+    onAuthorize: () => {},
+  });
+
+  const requestStepUpAuth = (title: string, description: string, action: () => void) => {
+    const is2FaOn = localStorage.getItem('astroguru_admin_2fa_enabled') === 'true';
+    if (!is2FaOn) {
+      action();
+      return;
+    }
+    setStepUpModal({
+      isOpen: true,
+      title,
+      description,
+      onAuthorize: () => {
+        setStepUpModal((s) => ({ ...s, isOpen: false }));
+        action();
+      },
+    });
+  };
+
   // Watchtower Actions
   const handleIssueStrike = (incidentId: string) => {
     setIncidents((prev) =>
@@ -214,49 +245,55 @@ export const App: React.FC = () => {
 
   const handleSettlePayout = (astroId: string, date?: string) => {
     const astro = astrologers.find((a) => a.id === astroId);
-    setAstrologers((prev) =>
-      prev.map((a) => {
-        if (a.id !== astroId) return a;
-        const updatedEarnings = a.dailyEarnings?.map((d) => {
-          if (!date || d.date === date) {
+    requestStepUpAuth(
+      'Disburse Astrologer Bank Settlement',
+      `Authorizing bank payout remittance for ${astro?.name || astroId}${date ? ` on date ${date}` : ''}.`,
+      () => {
+        setAstrologers((prev) =>
+          prev.map((a) => {
+            if (a.id !== astroId) return a;
+            const updatedEarnings = a.dailyEarnings?.map((d) => {
+              if (!date || d.date === date) {
+                return {
+                  ...d,
+                  payoutStatus: 'settled' as const,
+                  payoutReference: d.payoutReference || `TXN-NEFT-${Date.now().toString().slice(-6)}`,
+                };
+              }
+              return d;
+            });
+            const pending = updatedEarnings
+              ?.filter((e) => e.payoutStatus === 'pending')
+              .reduce((acc, curr) => acc + curr.netPayout, 0) || 0;
             return {
-              ...d,
-              payoutStatus: 'settled' as const,
-              payoutReference: d.payoutReference || `TXN-NEFT-${Date.now().toString().slice(-6)}`,
+              ...a,
+              dailyEarnings: updatedEarnings,
+              pendingPayout: pending,
             };
-          }
-          return d;
-        });
-        const pending = updatedEarnings
-          ?.filter((e) => e.payoutStatus === 'pending')
-          .reduce((acc, curr) => acc + curr.netPayout, 0) || 0;
-        return {
-          ...a,
-          dailyEarnings: updatedEarnings,
-          pendingPayout: pending,
+          })
+        );
+
+        const newLog: AdminAuditLog = {
+          id: `AUD-${Date.now()}`,
+          timestamp: 'Just now',
+          adminName: adminUser?.name || 'Master Admin',
+          action: 'PAYOUT_DISBURSED',
+          targetEntity: `Acharya: ${astro?.name || astroId}`,
+          details: date ? `Marked day payout for ${date} as settled` : `Settled all pending day payouts`,
+          severity: 'info',
+          ipAddress: '223.185.59.145',
         };
-      })
+        setAuditLogs((prev) => [newLog, ...prev]);
+
+        if (date) {
+          settleDailyPayoutApi(astroId, date);
+          showToast(`✓ Day payout for ${astro?.name || 'Acharya'} (${date}) settled & recorded.`);
+        } else {
+          settleAllPendingPayoutsApi(astroId);
+          showToast(`✓ All pending day payouts for ${astro?.name || 'Acharya'} marked as settled.`);
+        }
+      }
     );
-
-    const newLog: AdminAuditLog = {
-      id: `AUD-${Date.now()}`,
-      timestamp: 'Just now',
-      adminName: adminUser?.name || 'Master Admin',
-      action: 'PAYOUT_DISBURSED',
-      targetEntity: `Acharya: ${astro?.name || astroId}`,
-      details: date ? `Marked day payout for ${date} as settled` : `Settled all pending day payouts`,
-      severity: 'info',
-      ipAddress: '223.185.59.145',
-    };
-    setAuditLogs((prev) => [newLog, ...prev]);
-
-    if (date) {
-      settleDailyPayoutApi(astroId, date);
-      showToast(`✓ Day payout for ${astro?.name || 'Acharya'} (${date}) settled & recorded.`);
-    } else {
-      settleAllPendingPayoutsApi(astroId);
-      showToast(`✓ All pending day payouts for ${astro?.name || 'Acharya'} marked as settled.`);
-    }
   };
 
   const handleCreateAstrologer = (newAstro: AstrologerProfile) => {
@@ -280,13 +317,19 @@ export const App: React.FC = () => {
 
   // User Actions
   const handleAdjustWallet = (userId: string, delta: number, note: string) => {
-    setUsers((prev) =>
-      prev.map((u) =>
-        u.id === userId ? { ...u, walletBalance: Math.max(0, u.walletBalance + delta) } : u
-      )
+    requestStepUpAuth(
+      'Modify User Wallet Balance',
+      `Direct balance modification of ₹${delta > 0 ? '+' : ''}${delta} for User ID ${userId}.`,
+      () => {
+        setUsers((prev) =>
+          prev.map((u) =>
+            u.id === userId ? { ...u, walletBalance: Math.max(0, u.walletBalance + delta) } : u
+          )
+        );
+        adjustUserWalletApi(userId, delta, note);
+        showToast(`Wallet adjusted by ₹${delta > 0 ? '+' : ''}${delta} (${note})`);
+      }
     );
-    adjustUserWalletApi(userId, delta, note);
-    showToast(`Wallet adjusted by ₹${delta > 0 ? '+' : ''}${delta} (${note})`);
   };
 
   const handleToggleUserStatus = (userId: string) => {
@@ -676,6 +719,16 @@ export const App: React.FC = () => {
         isOpen={isBanModalOpen}
         onClose={() => setIsBanModalOpen(false)}
         onConfirmBan={handleConfirmUniversalBan}
+      />
+
+      {/* Step-Up Re-Authentication Modal */}
+      <AdminStepUpAuthModal
+        isOpen={stepUpModal.isOpen}
+        actionTitle={stepUpModal.title}
+        actionDescription={stepUpModal.description}
+        adminEmail={adminUser?.email || 'admin@astroguru.com'}
+        onConfirm={stepUpModal.onAuthorize}
+        onCancel={() => setStepUpModal((s) => ({ ...s, isOpen: false }))}
       />
 
       {/* Mobile Sticky Bottom Tab Bar */}

@@ -4,6 +4,14 @@
  */
 
 import { Platform } from 'react-native';
+import {
+  validateTlsConnection,
+  signApiRequest,
+  getDeviceFingerprint,
+  isDeviceBlacklisted,
+  triggerHoneypotTrap,
+  HONEYPOT_TRAP_ENDPOINTS,
+} from './security';
 
 const LOCAL_WEB_URL  = 'http://localhost:5000/api';
 // Your machine's Wi-Fi LAN IP — Android/iOS on the same network will hit this
@@ -26,14 +34,46 @@ export function setAuthToken(token: string | null) {
 
 async function request<T>(endpoint: string, options?: RequestInit): Promise<T | null> {
   try {
+    // 1. Honeypot check
+    if (HONEYPOT_TRAP_ENDPOINTS.includes(endpoint)) {
+      await triggerHoneypotTrap(endpoint);
+      return null;
+    }
+
+    // 2. Blacklist check
+    if (await isDeviceBlacklisted()) {
+      console.warn('[Security Guard] Request blocked: device is quarantined.');
+      return null;
+    }
+
+    const targetUrl = `${BASE_URL}${endpoint}`;
+
+    // 3. SSL Pinning / Proxy loopback validation
+    const tlsCheck = validateTlsConnection(targetUrl);
+    if (!tlsCheck.isSecure) {
+      console.warn(`[Security Alert] MITM Proxy detected: ${tlsCheck.details}`);
+      return null;
+    }
+
+    // 4. Cryptographic Request Signing with Dynamic Nonce & Device ID
+    const deviceId = await getDeviceFingerprint();
+    const method = options?.method || 'GET';
+    const signedHeaders = signApiRequest({
+      method,
+      endpoint,
+      payload: options?.body,
+      deviceId,
+    });
+
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
+      ...signedHeaders,
     };
     if (authToken) {
       headers['Authorization'] = `Bearer ${authToken}`;
     }
 
-    const res = await fetch(`${BASE_URL}${endpoint}`, {
+    const res = await fetch(targetUrl, {
       headers,
       ...options,
     });
